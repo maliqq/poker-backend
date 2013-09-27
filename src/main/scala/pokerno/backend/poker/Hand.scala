@@ -12,3 +12,5 @@ object Hand {
   case object DeuceSeven extends Ranking
   case object Badugi extends Ranking
 }
+
+case class Hand

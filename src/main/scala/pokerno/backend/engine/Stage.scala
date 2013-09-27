@@ -1,8 +1,9 @@
 package pokerno.backend.engine
 
 import pokerno.backend.model._
-import pokerno.backend.poker.Card
+import pokerno.backend.poker.{Card, Hand}
 import pokerno.backend.protocol._
+import scala.math.{BigDecimal => Decimal}
 
 class Context(
     val dealer: Dealer,
@@ -21,15 +22,20 @@ class StageContainer(var context: Context = null) extends Runnable {
     def run: Unit = run(context)
 }
 
-object Betting extends Stage {
-  def apply(bigBets: Boolean): Stage = {
-    // TODO
-    this
-  }
-  
+class Betting(private var _bigBets: Boolean = false) extends Stage {
   def run(context: Context) {
   }
 }
+
+
+object Betting extends Stage {
+  def apply(bigBets: Boolean): Stage = new Betting(bigBets)
+  
+  def run(context: Context) {
+    (new Betting).run(context)
+  }
+}
+
 object Discarding extends Stage {
   def run(context: Context) {
   }
@@ -80,6 +86,76 @@ class BringIn extends Stage {
 class BettingComplete extends Stage {
   def run(context: Context) {
     val total = context.pot.total
+  }
+}
+
+class Showdown extends Stage {
+  def best(pot: SidePot, hands: Map[Player, Hand]): Tuple2[Option[Player], Option[Hand]] = {
+    var winner: Option[Player] = None
+    var best: Option[Hand] = None
+    pot.members.keys foreach { member =>
+      val hand: Option[Hand] = hands.get(member)
+      if (hand.isDefined) {
+        winner = Some(member)
+        best = hand
+      }
+    }
+    (winner, best)
+  }
+  
+  def declareWinner(pos: Int) {
+    
+  }
+  
+  def declareWinners(hi: Option[Map[Player, Hand]], lo: Option[Map[Player, Hand]]) = {
+    val split: Boolean = hi.isDefined && lo.isDefined
+    val pot = new Pot
+    pot.sidePots foreach { side  =>
+      val total = side.total
+      var winnerLow: Option[Player] = None
+      var winnerHigh: Option[Player] = None
+      var bestLow: Option[Hand] = None
+      
+      if (lo.isDefined) {
+        val (_winner, _best) = best(side, lo.get)
+        winnerLow = _winner
+        bestLow = _best
+      }
+      
+      if (hi.isDefined)
+        winnerHigh = best(side, hi.get)._1
+      
+      var winners: Map[Player, Decimal] = Map.empty
+      if (split && bestLow.isDefined) {
+        winners += (winnerLow.get -> total / 2.)
+        winners += (winnerHigh.get -> total / 2.)
+      } else {
+        if (hi.isDefined)
+          winners += (winnerHigh.get -> total)
+        else
+          winners += (winnerLow.get -> total)
+      }
+    }
+  }
+  
+  def showHands(r: Hand.Ranking): Option[Map[Player, Hand]] = Some(Map.empty)
+  
+  def run(context: Context) {
+    val stillInPot: List[Tuple2[Int, Seat]] = List.empty
+    if (stillInPot.size == 1) {
+      declareWinner(stillInPot(0)._1)
+    } else {
+      var hiHands: Option[Map[Player, Hand]] = None
+      var loHands: Option[Map[Player, Hand]] = None
+      
+      context.game.options.hiRanking match {
+        case Some(ranking) => hiHands = showHands(ranking)
+      }
+      context.game.options.loRanking match {
+        case Some(ranking) => loHands = showHands(ranking)
+      }
+      declareWinners(hiHands, loHands)
+    }
   }
 }
 

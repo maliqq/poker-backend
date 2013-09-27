@@ -53,8 +53,8 @@ object Game {
   
     val pocketSize: Int = 0,
     val streetsNum: Int = 0,
-    val hiRanking: Hand.Ranking = null,
-    val loRanking: Hand.Ranking = null,
+    val hiRanking: Option[Hand.Ranking] = None,
+    val loRanking: Option[Hand.Ranking] = None,
     
     val defaultLimit: Limit = NoLimit
   )
@@ -85,7 +85,7 @@ object Games {
       hasBoard = true,
       hasBlinds = true,
       maxTableSize = 10,
-      hiRanking = Hand.High,
+      hiRanking = Some(Hand.High),
       pocketSize = 2,
       defaultLimit = Game.NoLimit
   ),
@@ -96,7 +96,7 @@ object Games {
     hasBlinds =    true,
     maxTableSize = 10,
     pocketSize =   4,
-    hiRanking = Hand.High,
+    hiRanking = Some(Hand.High),
     defaultLimit = Game.PotLimit
   ),
 
@@ -106,8 +106,8 @@ object Games {
     hasBlinds =    true,
     maxTableSize = 10,
     pocketSize =   4,
-    hiRanking = Hand.High,
-    loRanking = Hand.AceFive8,
+    hiRanking = Some(Hand.High),
+    loRanking = Some(Hand.AceFive8),
     defaultLimit = Game.PotLimit
   ),
 
@@ -118,7 +118,7 @@ object Games {
     hasVela =      true,
     maxTableSize = 8,
     pocketSize =   7,
-    hiRanking = Hand.High,
+    hiRanking = Some(Hand.High),
     defaultLimit = Game.FixedLimit
   ),
 
@@ -129,8 +129,8 @@ object Games {
     hasVela =      true,
     maxTableSize = 8,
     pocketSize =   7,
-    hiRanking = Hand.High,
-    loRanking = Hand.AceFive8,
+    hiRanking = Some(Hand.High),
+    loRanking = Some(Hand.AceFive8),
     defaultLimit = Game.FixedLimit
   ),
 
@@ -141,7 +141,7 @@ object Games {
     hasVela =      true,
     maxTableSize = 8,
     pocketSize =   7,
-    hiRanking = Hand.AceFive,
+    hiRanking = Some(Hand.AceFive),
     defaultLimit = Game.FixedLimit
   ),
 
@@ -152,7 +152,7 @@ object Games {
     hasVela =      true,
     maxTableSize = 8,
     pocketSize =   7,
-    hiRanking = Hand.AceSix,
+    hiRanking = Some(Hand.AceSix),
     defaultLimit = Game.FixedLimit
   ),
 
@@ -164,7 +164,7 @@ object Games {
     maxTableSize = 6,
     pocketSize =   5,
     streetsNum =      1,
-    hiRanking = Hand.High,
+    hiRanking = Some(Hand.High),
     defaultLimit = Game.FixedLimit
   ),
 
@@ -176,7 +176,7 @@ object Games {
     maxTableSize = 6,
     pocketSize =   5,
     streetsNum =      1,
-    hiRanking = Hand.DeuceSeven,
+    hiRanking = Some(Hand.DeuceSeven),
     defaultLimit = Game.FixedLimit
   ),
 
@@ -188,7 +188,7 @@ object Games {
     maxTableSize = 6,
     pocketSize =   5,
     streetsNum =      3,
-    hiRanking = Hand.DeuceSeven,
+    hiRanking = Some(Hand.DeuceSeven),
     defaultLimit = Game.FixedLimit
   ),
 
@@ -199,7 +199,7 @@ object Games {
     reshuffle =    true,
     maxTableSize = 6,
     pocketSize =   4,
-    hiRanking = Hand.Badugi,
+    hiRanking = Some(Hand.Badugi),
     defaultLimit = Game.FixedLimit
   ))
 }

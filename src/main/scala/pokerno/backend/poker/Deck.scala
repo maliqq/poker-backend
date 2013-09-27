@@ -2,7 +2,12 @@ package pokerno.backend.poker
 
 import scala.util.Random
 
-class Deck(private var _cards: List[Card] = List.empty) {
+object Deck {
+  def shuffle: List[Card] = Random.shuffle(Card.All)
+  def apply = shuffle
+}
+
+class Deck(private var _cards: List[Card] = Deck.shuffle) {
   private var _discarded: List[Card] = List.empty
   private var _dealt: List[Card] = List.empty
   private var _burned: List[Card] = List.empty

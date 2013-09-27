@@ -13,13 +13,14 @@ object Message {
   }
   
   case class DealCards (
-    val dealing: Deal.Value,
+    val _type: Deal.Value,
     val pos: Option[Int],
     val cards: List[Card]
   ) extends Serializable with Cards with Position
   
-  case class AddBet[T <: Bet.Type] (
+  case class AddBet(
+    val _type: Bet.Value,
     val pos: Option[Int],
-    val bet: Bet[T]
+    val bet: Bet
   ) extends Serializable with Position 
 }

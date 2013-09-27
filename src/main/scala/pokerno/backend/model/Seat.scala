@@ -22,7 +22,7 @@ class Seat {
       throw new Error("seat is taken")
     if (state == Seat.Ready && _state != Seat.Taken)
       return
-    if (value == Seat.Bet && _amount == .0)
+    if (value == Seat.Bet && _amount.getOrElse(.0) == .0)
       _state = Seat.AllIn
       return
     _state = value

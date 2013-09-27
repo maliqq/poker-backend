@@ -1,15 +1,14 @@
 package pokerno.backend.model
 
 import scala.math.{BigDecimal => Decimal}
-import scala.reflect.runtime.universe._
 
 object Rates {
-  val Default: Map[Type, Decimal] = Map(
-      typeOf[Bet.BringIn] -> 0.125,
-      typeOf[Bet.Ante] -> 0.25,
-      typeOf[Bet.SmallBlind] -> 0.5,
-      typeOf[Bet.BigBlind] -> 1.0,
-      typeOf[Bet.DoubleBet] -> 2.0
+  val Default: Map[Bet.Value, Decimal] = Map(
+      Bet.BringIn -> 0.125,
+      Bet.Ante -> 0.25,
+      Bet.SmallBlind -> 0.5,
+      Bet.BigBlind -> 1.0,
+      Bet.DoubleBet -> 2.0
   )
 }
 
@@ -19,18 +18,18 @@ class Stake(
     Ante: Either[Decimal, Boolean] = Right(false),
     BringIn: Either[Decimal, Boolean]= Right(false)) {
  
-  def amount[T : Manifest]: Decimal = manifest[T] match {
-      case Bet.bringIn => bringIn.get
-      case Bet.ante => ante.get
-      case Bet.smallBlind => smallBlind
-      case Bet.bigBlind => bigBlind
-      case Bet.doubleBet => doubleBet
+  def amount(t: Bet.Value): Decimal = t match {
+      case Bet.BringIn => bringIn.get
+      case Bet.Ante => ante.get
+      case Bet.SmallBlind => smallBlind
+      case Bet.BigBlind => bigBlind
+      case Bet.DoubleBet => doubleBet
     }
   
-  private def _rated(t: Type): Decimal = Rates.Default(t) * bigBlind
+  private def _rate(t: Bet.Value): Decimal = Rates.Default(t) * bigBlind
   
-  val smallBlind: Decimal = SmallBlind.getOrElse(_rated(typeOf[Bet.SmallBlind]))
-  val doubleBet: Decimal = _rated(typeOf[Bet.DoubleBet])
+  val smallBlind: Decimal = SmallBlind.getOrElse(_rate(Bet.SmallBlind))
+  val doubleBet: Decimal = _rate(Bet.DoubleBet)
   
   val ante: Option[Decimal] = Ante match {
     case Left(amount) =>
@@ -40,7 +39,7 @@ class Stake(
         None
     case Right(withAnte) =>
       if (withAnte)
-        Some(_rated(typeOf[Bet.Ante]))
+        Some(_rate(Bet.Ante))
       else
         None
   }
@@ -53,7 +52,7 @@ class Stake(
         None
     case Right(withBringIn) =>
       if (withBringIn)
-        Some(_rated(typeOf[Bet.BringIn]))
+        Some(_rate(Bet.BringIn))
       else
         None
   }

@@ -16,3 +16,15 @@ class BettingContext {
   var pot: Pot = new Pot()
   var betRange: Tuple2[Decimal, Decimal] = (0, 0)
 }
+
+class BettingProcess {
+  
+}
+
+class DealContext {
+  
+}
+
+class DealProcess {
+  
+}

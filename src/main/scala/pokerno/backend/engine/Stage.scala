@@ -1,6 +1,5 @@
 package pokerno.backend.engine
 
-import scala.reflect.runtime.universe._
 import pokerno.backend.model._
 import pokerno.backend.poker.Card
 import pokerno.backend.protocol._
@@ -47,7 +46,7 @@ class Dealing(private var _dealType: Deal.Value) extends Stage {
       var seats: List[Tuple2[Int, Seat]] = List()
       seats foreach { case (pos, seat) =>
         val message = new Message.DealCards(
-            dealing = _dealType,
+            _type = _dealType,
             pos = Some(pos),
             cards = context.dealer.dealPocket(_dealType, n, seat.player.get)
         )
@@ -55,7 +54,7 @@ class Dealing(private var _dealType: Deal.Value) extends Stage {
       
     case Deal.Board =>
       val message = new Message.DealCards(
-          dealing = _dealType,
+          _type = _dealType,
           pos = None,
           cards = context.dealer.dealBoard(_dealType.cardsNum.get)
       )
@@ -67,7 +66,7 @@ class PostAntes extends Stage {
   def run(context: Context) {
     val seats: List[Tuple2[Int, Seat]] = List.empty
     seats foreach {case (pos, seat) =>
-      val bet = Bet.force[Bet.Ante](context.stake)
+      val bet = Bet.force(Bet.Ante, context.stake)
     }
   }
 }
@@ -85,7 +84,7 @@ class BettingComplete extends Stage {
 }
 
 object Stages {
-  val Default = List(
+  val Default = List[Stage](
       
   )
 }

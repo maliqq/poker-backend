@@ -1,15 +1,13 @@
 package pokerno.backend.model
-import scala.reflect.runtime.universe._
 
 import scala.math.{BigDecimal => Decimal}
 
-class Bet[T <: Bet.Type : TypeTag](val amount: Decimal = .0) {
-  private val _betType = typeOf[T]
+class Bet(val betType: Bet.Value, val amount: Decimal = .0) {
   override def toString = {
     if (amount > .0)
-      "%s %.2f".format(_betType.toString, amount)
+      "%s %.2f".format(betType.toString, amount)
     else
-      _betType.toString
+      betType.toString
   }
 }
 
@@ -44,43 +42,36 @@ object Bet {
     }
   }
   
-  trait Type
+  trait Value
   
-  abstract class ForcedBet extends Type
-  abstract class PassiveBet extends Type
-  abstract class ActiveBet extends Type
-  abstract class DoubleBet extends Type
-  abstract class CardAction extends Type
-  val doubleBet = manifest[DoubleBet]
+  abstract class ForcedBet extends Value
+  abstract class PassiveBet extends Value
+  abstract class ActiveBet extends Value
+  object DoubleBet extends Value
+  abstract class CardAction extends Value
   
-  case class SmallBlind extends ForcedBet
-  val smallBlind = manifest[SmallBlind]
-  case class BigBlind extends ForcedBet
-  val bigBlind = manifest[BigBlind]
-  case class Ante extends ForcedBet
-  val ante = manifest[Ante]
-  case class BringIn extends ForcedBet
-  val bringIn = manifest[BringIn]
-  case class GuestBlind extends ForcedBet
-  val guestBlind = manifest[GuestBlind]
-  case class Straddle extends ForcedBet
-  val straddle = manifest[Straddle]
+  case object SmallBlind extends ForcedBet
+  case object BigBlind extends ForcedBet
+  case object Ante extends ForcedBet
+  case object BringIn extends ForcedBet
+  case object GuestBlind extends ForcedBet
+  case object Straddle extends ForcedBet
   
-  case class Fold extends ActiveBet
-  case class Call extends ActiveBet
+  case object Fold extends ActiveBet
+  case object Call extends ActiveBet
   
-  case class Raise extends PassiveBet
-  case class Check extends PassiveBet
+  case object Raise extends PassiveBet
+  case object Check extends PassiveBet
   
-  case class Discard extends CardAction
-  case class StandPat extends CardAction
-  case class Show extends CardAction
-  case class Muck extends CardAction
+  case object Discard extends CardAction
+  case object StandPat extends CardAction
+  case object Show extends CardAction
+  case object Muck extends CardAction
   
-  def check = new Bet[Check]()
-  def fold = new Bet[Fold]()
-  def call(amount: Decimal) = new Bet[Call](amount)
-  def raise(amount: Decimal) = new Bet[Raise](amount)
+  def check = new Bet(Check)
+  def fold = new Bet(Fold)
+  def call(amount: Decimal) = new Bet(Call, amount)
+  def raise(amount: Decimal) = new Bet(Raise, amount)
   
-  def force[T <: ForcedBet : Manifest](stake: Stake): Bet[T] = new Bet[T](stake.amount[T])
+  def force(t: Bet.Value, stake: Stake):Bet = new Bet(t, stake.amount(t))
 }

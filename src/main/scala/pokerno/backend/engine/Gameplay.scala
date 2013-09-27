@@ -3,12 +3,9 @@ package pokerno.backend.engine
 import scala.math.{BigDecimal => Decimal}
 import pokerno.backend.model._
 
-class Pot {
-}
-
-class Betting {
-  val DEFAULT_RAISE_COUNT = 9
-  var raiseCount: Int = DEFAULT_RAISE_COUNT
+class BettingContext {
+  val MaxRaiseCount = 9
+  var raiseCount: Int = 0
   
   private var _bigBets: Boolean = false
   def bigBets = _bigBets

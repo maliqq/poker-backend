@@ -1,116 +1,49 @@
 package pokerno.backend.model
 
-class Dealer {
+import pokerno.backend.poker.{Card, Deck}
 
+object Deal {
+  trait Type
+  case class Hole extends Type
+  case class Door extends Type
+  case class Board extends Type
+  
+  trait Value {
+    var cardsNum: Option[Int] = None
+    def apply(n: Int): Value = {
+      cardsNum = Some(n)
+      this
+    }
+  }
+  case object Hole extends Value
+  case object Door extends Value
+  case object Board extends Value
 }
 
-/*
-package model
-
-import (
-	"fmt"
-)
-
-import (
-	"gopoker/poker"
-)
-
-// Dealer - cards dealer
-type Dealer struct {
-	Deck      poker.Cards
-	burned    poker.Cards
-	discarded poker.Cards
-	shared    poker.Cards
-	dealt     poker.Cards
+class Dealer(private var _deck: Deck = new Deck) {
+  private var _board: List[Card] = List.empty
+  def board = _board
+  
+  private var _pockets: Map[Player, List[Tuple2[Deal.Value, Card]]] = Map.empty
+  
+  def dealPocket(t: Deal.Value, n: Int, p: Player): List[Card] = {
+    val cards = _deck.share(n)
+    val pocket = _pockets.getOrElse(p, List.empty)
+    _pockets += (p -> (pocket ++ cards.map(card => (t, card))))
+    cards
+  }
+  
+  def discard(old: List[Card], p: Player): List[Card] = {
+    val cards = _deck.discard(old) // FIXME validate old
+    _pockets += (p -> cards.map(card => (Deal.Hole, card)))
+    cards
+  }
+  
+  def dealBoard(n: Int): List[Card] = {
+    _deck.burn(1)
+    val cards = _deck.deal(n)
+    _board ++= cards
+    cards
+  }
+  
 }
-
-// NewDealerWithDeck - create dealer with deck
-func NewDealerWithDeck(deck poker.Cards) *Dealer {
-	return &Dealer{
-		Deck:      deck,
-		burned:    poker.Cards{},
-		discarded: poker.Cards{},
-		shared:    poker.Cards{},
-		dealt:     poker.Cards{},
-	}
-}
-
-// NewDealer - create dealer with random deck
-func NewDealer() *Dealer {
-	return NewDealerWithDeck(poker.NewDeck())
-}
-
-func (dealer *Dealer) give(n int) (poker.Cards, error) {
-	if l := len(dealer.Deck); l < n {
-		return nil, fmt.Errorf("can't deal %d cards in deck with %d cards", n, l)
-	}
-
-	cards := dealer.Deck[0:n]
-
-	dealer.Deck = dealer.Deck.Diff(cards)
-
-	return cards, nil
-}
-
-func (dealer *Dealer) burn(n int) {
-	cards, _ := dealer.give(n)
-
-	dealer.burned = append(dealer.burned, cards...)
-}
-
-// Burn - burn cards
-func (dealer *Dealer) Burn(cards poker.Cards) {
-	dealer.Deck = dealer.Deck.Diff(cards)
-	dealer.burned = append(dealer.burned, cards...)
-}
-
-// Discard - discard cards
-func (dealer *Dealer) Discard(cards poker.Cards) poker.Cards {
-	n := len(cards)
-	if n > len(dealer.Deck) {
-		dealer.reshuffle()
-	}
-
-	dealt, _ := dealer.give(n)
-
-	dealer.burned = append(dealer.burned, cards...)
-
-	dealer.dealt = append(dealer.dealt.Diff(cards), dealt...)
-
-	return dealt
-}
-
-// Share - share cards
-func (dealer *Dealer) Share(n int) poker.Cards {
-	dealer.burn(1)
-
-	cards, _ := dealer.give(n)
-
-	dealer.shared = append(dealer.shared, cards...)
-
-	return cards
-}
-
-// Deal - deal cards
-func (dealer *Dealer) Deal(n int) poker.Cards {
-	cards, _ := dealer.give(n)
-
-	dealer.dealt = append(dealer.dealt, cards...)
-
-	return cards
-}
-
-func (dealer *Dealer) reshuffle() {
-	newDeck := append(dealer.Deck, dealer.burned...)
-
-	dealer.Deck = newDeck.Shuffle()
-	dealer.burned = poker.Cards{}
-}
-
-// String - dealer to string
-func (dealer *Dealer) String() string {
-	return fmt.Sprintf("dealer: deck=%s dealt=%s burned=%s", dealer.Deck, dealer.dealt, dealer.burned)
-}
-
-
-*/

@@ -3,7 +3,7 @@ package pokerno.backend.model
 import scala.math.{BigDecimal => Decimal}
 
 object Rates {
-  val Default: Map[Bet.Value, Decimal] = Map(
+  final val Default: Map[Bet.Value, Decimal] = Map(
       Bet.BringIn -> 0.125,
       Bet.Ante -> 0.25,
       Bet.SmallBlind -> 0.5,

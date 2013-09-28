@@ -1,10 +1,10 @@
 package pokerno.backend.poker
 
 object Kind {
-  private val _short = "23456789TJQK".toList
-  private val _full: List[String] = List("deuce", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "jack", "queen", "king", "ace")
+  private final val _short = "23456789TJQK".toList
+  private final val _full: List[String] = List("deuce", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "jack", "queen", "king", "ace")
   
-  abstract class Value(val toInt: Int = All.indexOf(this)) {
+  sealed class Value(val toInt: Int = All.indexOf(this)) {
     def short: Char = _short(toInt)
     def full: String = _full(toInt)
     override def toString: String = short.toString
@@ -26,5 +26,5 @@ object Kind {
   case object King extends Value
   case object Ace extends Value
   
-  val All: List[Value] = List(Deuce, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King, Ace)
+  final val All: List[Value] = List(Deuce, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King, Ace)
 }

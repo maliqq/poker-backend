@@ -24,55 +24,50 @@ trait Badugi extends Hand {
     if (paired.isEmpty && suited.isEmpty)
       return None
 
-    var (a: Option[Card], b: Option[Card], c: Option[Card]) = (None, None, None)
-
-    if (paired.size == 1 && suited.isDefined && suited.get.size != 2) {
+    val (a: Card, b: Card, c: Card) = if (paired.size == 1 && suited.isDefined && suited.get.size != 2) {
+      
       val value = paired.get.head
       val diff = cards.value.diff(value)
       
-      a = Some(value.head)
-      val List(_b, _c, _*) = diff.filter { card => a.get.kind != card.kind }
+      var _a = value.head
+      val List(_b, _c, _*) = diff.filter { card => _a.kind != card.kind }
       if (_b.suit == _c.suit)
         return None
       
-      if (a.get.suit == _b.suit || a.get.suit == _c.suit)
-        a = Some(value.head)
+      if (_a.suit == _b.suit || _a.suit == _c.suit)
+        _a = value.head
       
-      b = Some(_b)
-      c = Some(_c)
+      (_a, _b, _c)
 
     } else if (paired.isEmpty && suited.isDefined && suited.get.size == 1) {
+      
       val value = suited.get.head
       val diff = cards.value.diff(value)
       
-      a = Some(value.min)
+      val _a = value.min
       
-      val List(_b, _c, _*) = diff.filter { card => a.get.suit != card.suit }
+      val List(_b, _c, _*) = diff.filter { card => _a.suit != card.suit }
       
       if (_b.kind == _c.kind)
         return None
       
-      b = Some(_b)
-      c = Some(_c)
+      (_a, _b, _c)
 
     } else
       return None
 
-    return Some(new Hand(value = List(a.get, b.get, c.get)))
+    return Some(new Hand(value = List(a, b, c)))
   }
 
   def isBadugiTwo: Option[Hand] ={
-    var a: Option[Card] = None
-    var b: Option[Card] = None
-
     val sets = cards.paired.get(3)
 
-    if (sets.isDefined) {
+    val (a: Card, b: Card) = if (sets.isDefined) {
       val value = sets.get.head
       val diff = cards.value.diff(value)
+      val _a = diff.head
 
-      b = Some(diff.head)
-      a = Some(value.filter{ card => b.get.suit != card.suit }.head)
+      (_a, value.filter{ card => _a.suit != card.suit }.head)
     
     } else if (cards.suited.contains(3)) {
     
@@ -80,27 +75,27 @@ trait Badugi extends Hand {
       
       val value = suited.head
       val diff = cards.value.diff(value)
+      val _a = diff.head
 
-      a = Some(diff.head)
-      b = Some(value.filter { card => a.get.kind != card.kind }.min)
+      (_a, value.filter { card => _a.kind != card.kind }.min)
 
     } else if (cards.groupSuit.size > 0) {
       
       val value = cards.groupSuit(0)
       val diff = cards.value.diff(value)
+      val _a = value.min
 
-      a = Some(value.min)
-      b = Some(diff.filter{ card => a.get.suit != card.suit && a.get.kind != card.kind }.min)
+      (_a, diff.filter{ card => _a.suit != card.suit && _a.kind != card.kind }.min)
 
     } else {
     
       val value = cards.groupKind(0)
       val diff = cards.value.diff(value)
+      val _a = value.head
 
-      a = Some(value.head)
-      b = Some(diff.filter { card => a.get.kind != card.kind }.min)
+      (_a, diff.filter { card => _a.kind != card.kind }.min)
     }
-    Some(new Hand(value = List(a.get, b.get)))
+    Some(new Hand(value = List(a, b)))
   }
 /*
   def isBadugi(cards *Cards) {

@@ -3,7 +3,7 @@ package pokerno.backend.model
 import scala.math.{BigDecimal => Decimal}
 
 object Seat {
-  trait State
+  sealed trait State
   
   case object Empty extends State
   case object Taken extends State
@@ -35,6 +35,12 @@ class Seat {
   }
   
   private var _bet: Option[Decimal] = None
+  def bet = _bet
+  def bet_=(amount: Decimal) {
+    net(-amount + _bet.getOrElse(.0))
+    _bet = Some(amount)
+    state = Seat.Bet
+  }
   
   private var _player: Option[Player] = None
   def player = _player
@@ -75,12 +81,6 @@ class Seat {
   
   def called(amount: Decimal): Boolean = {
     _state == Seat.AllIn || amount <= _bet.getOrElse(.0)
-  }
-  
-  def bet_=(amount: Decimal) {
-    net(-amount + _bet.getOrElse(.0))
-    _bet = Some(amount)
-    state = Seat.Bet
   }
 }
 

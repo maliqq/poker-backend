@@ -1,7 +1,7 @@
 package pokerno.backend.model
 
 object Mix {
-  val MaxTableSize = 8
+  final val MaxTableSize = 8
 }
 
 class Mix(val game: Game.Mixed, var _tableSize: Int = Mix.MaxTableSize) {

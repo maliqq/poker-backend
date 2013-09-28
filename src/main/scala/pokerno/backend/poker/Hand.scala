@@ -4,7 +4,11 @@ object Hand {
   sealed trait Ranking
   
   abstract class HighRanking extends Ranking
-  case object High extends HighRanking
+  case object High extends HighRanking {
+    def apply(cards: List[Card]): Option[Rank.High] = {
+      None
+    } 
+  }
   
   abstract class LowRanking extends Ranking
   case object AceFive extends LowRanking
@@ -14,10 +18,6 @@ object Hand {
   case object DeuceSeven extends LowRanking
 
   abstract class BadugiRanking extends Ranking
-  case object BadugiOne extends BadugiRanking
-  case object BadugiTwo extends BadugiRanking
-  case object BadugiThree extends BadugiRanking
-  case object BadigiFour extends BadugiRanking
   
   class Cards(val value: List[Card]) {
     lazy val gaps = groupByGaps

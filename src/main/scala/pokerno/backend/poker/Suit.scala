@@ -1,11 +1,11 @@
 package pokerno.backend.poker
 
 object Suit {
-  private val _short = "shdc"
-  private val _unicode = List("♠", "♥", "♦", "♣")
-  private val _colors: List[String] = List(Console.YELLOW, Console.RED, Console.CYAN, Console.GREEN)
+  private final val _short = "shdc"
+  private final val _unicode = List("♠", "♥", "♦", "♣")
+  private final val _colors: List[String] = List(Console.YELLOW, Console.RED, Console.CYAN, Console.GREEN)
   
-  abstract class Value(val toInt: Int = All.indexOf(this)) {
+  sealed class Value(val toInt: Int = All.indexOf(this)) {
     def short: Char = _short(toInt)
     def unicode: String = _unicode(toInt)
     def color: String = _colors(toInt)
@@ -19,5 +19,5 @@ object Suit {
   case object Diamond extends Value
   case object Club extends Value
   
-  val All: List[Value] = List(Spade, Heart, Diamond, Club)
+  final val All: List[Value] = List(Spade, Heart, Diamond, Club)
 }

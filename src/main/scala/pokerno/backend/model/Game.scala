@@ -36,7 +36,7 @@ object Game {
   case object SingleDraw extends Group
   case object TripleDraw extends Group
   
-  val MaxTableSize = 10
+  final val MaxTableSize = 10
   
   class Options(
     val group: Group = Holdem,
@@ -78,7 +78,7 @@ class Game(val game: Game.Limited, var _limit: Option[Game.Limit] = None, var _t
 }
 
 object Games {
-  val Default: Map[Game.Limited, Game.Options] = Map(
+  final val Default: Map[Game.Limited, Game.Options] = Map(
   
   Game.Texas -> new Game.Options(
       group = Game.Holdem,

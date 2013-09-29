@@ -1,47 +1,25 @@
 package pokerno.backend.poker
 
-/*
-object Low extends RankedHand {
-  def isAceFive(c *Cards) (*Hand, error) {
-    val helper = cardsHelper{
-      Cards:    *c,
-      Ordering: AceLow,
-      Low:      true
-    }
+class Low {
+self: Hand.Cards =>
+  def isLow: Option[Hand] = {
+    val uniq: List[Card] = groupKind.values.map(_(0)).toList
+    val lowCards = uniq.reverse.take(5)
+    if (lowCards.size == 0)
+      return None
 
-    return helper.IsLow()
+    var hand = new Hand(value = lowCards, high = List(lowCards.max))
+    if (lowCards.size == 5)
+      hand ranked Rank.CompleteLow
+    else
+      hand ranked Rank.IncompleteLow
   }
-
-  def isAceFive8(c *Cards) (*Hand, error) {
-    val helper = cardsHelper{
-      Cards:    *c,
-      Ordering: AceLow,
-      Low:      true
-    }
-
-    helper.Qualify(card.Eight)
-
-    return helper.IsLow()
-  }
-
-  def isAceSix(c *Cards) (*Hand, error) {
-    val helper = cardsHelper{
-      Cards:    *c,
-      Ordering: AceLow,
-      Low:      true
-    }
-
-    return helper.IsGapLow()
-  }
-
-  def isDeuceSeven(c *Cards) (*Hand, error) {
-    val helper = cardsHelper{
-      Cards:    *c,
-      Ordering: AceHigh,
-      Low:      true
-    }
-
-    return helper.IsGapLow()
+  
+  def isGapLow: Option[Hand] = {
+    val hand = (new Hand.Cards(value) with HighHand).isHigh
+    if (hand.get.rank == Rank.HighCard)
+      isLow
+    else
+      hand
   }
 }
-*/

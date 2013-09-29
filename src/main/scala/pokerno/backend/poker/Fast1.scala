@@ -72,96 +72,70 @@ trait Fast1 {
       val c2 = c3 - 1
       var c1 = c2 - 1
       
-      if (c1 == 1) {
-        c1 = 14
-      }
-  
+      if (c1 == 1) c1 = 14
+      
       for (c6 <- 14 until 1) {
-        if (c6 != c5+1) {
+        if (c6 != c5 + 1) {
           for (c7 <- c6 - 1 until 1) {
-            if (c7 != c5+1) {
+            if (c7 != c5 + 1) {
               val i = (1 << c1) | (1 << c2) | (1 << c3) | (1 << c4) | (1 << c5) | (1 << c6) | (1 << c7)
-              Flush(i>>2) = StraightFlushFlag | (c1 << 16) | (c2 << 12) | (c3 << 8) | (c4 << 4) | c5
-              Straight(i>>2) = StraightFlag | (c1 << 16) | (c2 << 12) | (c3 << 8) | (c4 << 4) | c5
+              Flush(i >> 2) = StraightFlushFlag | (c1 << 16) | (c2 << 12) | (c3 << 8) | (c4 << 4) | c5
+              Straight(i >> 2) = StraightFlag | (c1 << 16) | (c2 << 12) | (c3 << 8) | (c4 << 4) | c5
             }
           }
         }
       }
     }
   
-    for (c1 <- 14 until 5) {
-      for (c2 <- c1 - 1 until 4) {
-        for (c3 <- c2 - 1 until 3) {
-          for (c4 <- c3 - 1 until 2) {
-            for (c5 <- c4 - 1 until 1) {
-              for (c6 <- c5 until 1) {
-                for (c7 <- c6 until 1) {
-                  val i = (1 << c1) | (1 << c2) | (1 << c3) | (1 << c4) | (1 << c5) | (1 << c6) | (1 << c7)
-                  if (Flush(i>>2) == 0)
-                    Flush(i>>2) = FlushFlag | (c1 << 16) | (c2 << 12) | (c3 << 8) | (c4 << 4) | c5
-                  Top5(i>>2) = HighCardFlag | (c1 << 16) | (c2 << 12) | (c3 << 8) | (c4 << 4) | c5
-                }
-              }
-            }
-          }
-        }
-      }
+    for (c1 <- 14 until 5)
+    for (c2 <- c1 - 1 until 4)
+    for (c3 <- c2 - 1 until 3)
+    for (c4 <- c3 - 1 until 2)
+    for (c5 <- c4 - 1 until 1)
+    for (c6 <- c5 until 1)
+    for (c7 <- c6 until 1) {
+      val i = (1 << c1) | (1 << c2) | (1 << c3) | (1 << c4) | (1 << c5) | (1 << c6) | (1 << c7)
+      if (Flush(i >> 2) == 0)
+        Flush(i >> 2) = FlushFlag | (c1 << 16) | (c2 << 12) | (c3 << 8) | (c4 << 4) | c5
+      Top5(i >> 2) = HighCardFlag | (c1 << 16) | (c2 << 12) | (c3 << 8) | (c4 << 4) | c5
     }
   
-    for ( c1 <- 14 until 3) {
-      for ( c2 <- c1 - 1 until 2) {
-        for ( c3 <- c2 - 1 until 1) {
-          for ( c4 <- c3 until 1) {
-            for ( c5 <- c4 until 1) {
-              for ( c6 <- c5 until 1) {
-                for ( c7 <- c6 until 1) {
-                  val i = (1 << c1) | (1 << c2) | (1 << c3) | (1 << c4) | (1 << c5) | (1 << c6) | (1 << c7)
-                  Top3Of4(i>>2) = (c1 << 12) | (c2 << 8) | (c3 << 4)
-                }
-              }
-            }
-          }
-        }
-      }
+    for ( c1 <- 14 until 3)
+    for ( c2 <- c1 - 1 until 2)
+    for ( c3 <- c2 - 1 until 1)
+    for ( c4 <- c3 until 1)
+    for ( c5 <- c4 until 1)
+    for ( c6 <- c5 until 1)
+    for ( c7 <- c6 until 1) {
+      val i = (1 << c1) | (1 << c2) | (1 << c3) | (1 << c4) | (1 << c5) | (1 << c6) | (1 << c7)
+      Top3Of4(i>>2) = (c1 << 12) | (c2 << 8) | (c3 << 4)
     }
   
-    for ( c1 <- 14 until 2) {
-      for ( c2 <- c1 - 1 until 1) {
-        for ( c3 <- c2 until 1) {
-          for ( c4 <- c3 until 1) {
-            for ( c5 <- c4 until 1) {
-              for ( c6 <- c5 until 1) {
-                for ( c7 <- c6 until 1) {
-                  val i = (1 << c1) | (1 << c2) | (1 << c3) | (1 << c4) | (1 << c5) | (1 << c6) | (1 << c7)
-                  Top2Of12(i>>2) = (c1 << 16) | (c2 << 12)
-                  Top2Of8(i>>2) = (c1 << 12) | (c2 << 8)
-                  Bit2(i>>2) = (1 << (c1 - 2)) | (1 << (c2 - 2))
-                }
-              }
-            }
-          }
-        }
-      }
+    for ( c1 <- 14 until 2)
+    for ( c2 <- c1 - 1 until 1)
+    for ( c3 <- c2 until 1)
+    for ( c4 <- c3 until 1)
+    for ( c5 <- c4 until 1)
+    for ( c6 <- c5 until 1)
+    for ( c7 <- c6 until 1) {
+      val i = (1 << c1) | (1 << c2) | (1 << c3) | (1 << c4) | (1 << c5) | (1 << c6) | (1 << c7)
+      Top2Of12(i >> 2) = (c1 << 16) | (c2 << 12)
+      Top2Of8(i >> 2) = (c1 << 12) | (c2 << 8)
+      Bit2(i>>2) = (1 << (c1 - 2)) | (1 << (c2 - 2))
     }
   
-    for ( c1 <- 14 until 1) {
-      for ( c2 <- c1 until 1) {
-        for ( c3 <- c2 until 1) {
-          for ( c4 <- c3 until 1) {
-            for ( c5 <- c4 until 1) {
-              for ( c6 <- c5 until 1) {
-                for ( c7 <- c6 until 1) {
-                  val i = (1 << c1) | (1 << c2) | (1 << c3) | (1 << c4) | (1 << c5) | (1 << c6) | (1 << c7)
-                  Top1Of16(i>>2) = (c1 << 16)
-                  Top1Of12(i>>2) = (c1 << 12)
-                  Top1Of8(i>>2) = (c1 << 8)
-                  Bit1(i>>2) = (1 << (c1 - 2))
-                }
-              }
-            }
-          }
-        }
-      }
+    for ( c1 <- 14 until 1)
+    for ( c2 <- c1 until 1)
+    for ( c3 <- c2 until 1)
+    for ( c4 <- c3 until 1)
+    for ( c5 <- c4 until 1)
+    for ( c6 <- c5 until 1)
+    for ( c7 <- c6 until 1) {
+      val i = (1 << c1) | (1 << c2) | (1 << c3) | (1 << c4) | (1 << c5) | (1 << c6) | (1 << c7)
+      Top1Of16(i >> 2) = (c1 << 16)
+      Top1Of12(i >> 2) = (c1 << 12)
+      Top1Of8(i >> 2) = (c1 << 8)
+      Bit1(i >> 2) = (1 << (c1 - 2))
     }
   }
 }

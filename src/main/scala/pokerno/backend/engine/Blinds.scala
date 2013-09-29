@@ -3,7 +3,13 @@ package pokerno.backend.engine
 import pokerno.backend.model._
 import pokerno.backend.protocol._
 
-class Blinds(val context: Gameplay.Context, val betting: Betting.Context) extends Stage {
+object Blinds extends Stage {
+  def run(context: Gameplay.Context) = {
+    
+  }
+}
+
+class Blinds(val context: Gameplay.Context, val betting: Betting.Context) {
   def postSB(pos: Int) {
     val bet = Bet.force(Bet.SmallBlind, context.stake)
     

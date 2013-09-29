@@ -5,29 +5,33 @@ import pokerno.backend.poker.{Card, Hand}
 import pokerno.backend.protocol._
 import scala.math.{BigDecimal => Decimal}
 
-trait Context
+trait ctx
 
-trait Stage {
-  def run(context: Context)
+trait Stage[T <: ctx] {
+  def run(context: T)
 }
 
-class StageContainer(var context: Context = null) extends Runnable {
+class StageContainer[T <: ctx](var context: T) extends Runnable {
   this : Stage =>
     def run: Unit = run(context)
 }
 
 
-object Discarding extends Stage {
+object Discarding extends Stage[Context] {
+  class Context extends ctx {
+    
+  }
+  
   def run(context: Context) {
   }
 }
 
-class BettingComplete extends Stage {
-  def run(context: Context) {
+class BettingComplete extends Stage[Gameplay.Context] {
+  def run(context: ctx) {
   }
 }
 
 object Stages {
-  val Default = List[Stage](
+  val Default = List[Stage[ctx]](
   )
 }

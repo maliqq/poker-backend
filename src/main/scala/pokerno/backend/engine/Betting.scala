@@ -5,7 +5,7 @@ import pokerno.backend.model._
 import pokerno.backend.protocol._
 
 object Betting extends Stage {
-  class Context extends Round[Tuple2[Seat, Int]] {
+  class Context extends pokerno.backend.engine.Context with Round[Tuple2[Seat, Int]] {
     final val MaxRaiseCount = 8
     private var _raiseCount: Int = 0
     

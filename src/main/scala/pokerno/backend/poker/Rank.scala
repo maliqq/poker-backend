@@ -29,7 +29,7 @@ object Rank {
   case object BadugiThree extends Badugi
   case object BadugiFour extends Badugi
   
-  sealed class Low extends Type
-  case object CompleteLow extends Low
-  case object IncompleteLow extends Low
+  //sealed class Low extends Type
+  //case object CompleteLow extends Low
+  //case object IncompleteLow extends Low
 }

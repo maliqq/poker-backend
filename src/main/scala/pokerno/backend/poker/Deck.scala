@@ -3,11 +3,11 @@ package pokerno.backend.poker
 import scala.util.Random
 
 object Deck {
-  def shuffle: List[Card] = Random.shuffle(Card.All)
-  def apply = shuffle
+  def shuffle(cards: List[Card] = Card.All) = Random.shuffle(cards)
+  def apply = shuffle()
 }
 
-class Deck(private var _cards: List[Card] = Deck.shuffle) {
+class Deck(private var _cards: List[Card] = Deck.shuffle()) {
   private var _discarded: List[Card] = List.empty
   private var _dealt: List[Card] = List.empty
   private var _burned: List[Card] = List.empty
@@ -33,6 +33,13 @@ class Deck(private var _cards: List[Card] = Deck.shuffle) {
   def burn(n: Int) {
     _burned ++= deal(n)
   }
+  
+  def burn(cards: List[Card]) {
+    _cards = _cards diff cards
+    _burned ++= cards
+  }
+  
+  def without(cards: List[Card]) = new Deck(_cards diff cards)
   
   def discard(old: List[Card]): List[Card] = {
     val n = old.length

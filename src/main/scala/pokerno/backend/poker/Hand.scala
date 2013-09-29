@@ -13,11 +13,21 @@ object Hand {
   }
   
   abstract class LowRanking extends Ranking
-  case object AceFive extends LowRanking
-  case object AceFive8 extends LowRanking
-  case object AceSix extends LowRanking
-  case object DeuceSix extends LowRanking
-  case object DeuceSeven extends LowRanking
+  case object AceFive extends LowRanking {
+    def apply(cards: List[Card]) = None
+  }
+  case object AceFive8 extends LowRanking {
+    def apply(cards: List[Card]) = None
+  }
+  case object AceSix extends LowRanking {
+    def apply(cards: List[Card]) = None
+  }
+  case object DeuceSix extends LowRanking {
+    def apply(cards: List[Card]) = None
+  }
+  case object DeuceSeven extends LowRanking {
+    def apply(cards: List[Card]) = None
+  }
 
   abstract class BadugiRanking extends Ranking
   case object Badugi extends BadugiRanking {

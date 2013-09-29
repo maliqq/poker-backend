@@ -5,7 +5,7 @@ import pokerno.backend.model._
 import pokerno.backend.protocol._
 
 object Betting extends Stage {
-  class Context extends pokerno.backend.engine.Context with Round[Tuple2[Seat, Int]] {
+  class Context extends Round[Tuple2[Seat, Int]] {
     final val MaxRaiseCount = 8
     private var _raiseCount: Int = 0
     
@@ -93,21 +93,21 @@ class Betting(private var _bigBets: Boolean = false) extends Stage {
   def context: Gameplay.Context
   def betting: Betting.Context
   def exit
-  def run(context: Context) {
+  def run(context: Betting.Context) {
   }
   
   def requireBetting {
-    val ring = context.table.ring
+    val table = context.table
   
-    ring.stillInPlay foreach { case (seat, pos) =>
+    table.stillInPlay foreach { case (seat, pos) =>
       if (!betting.called(seat))
         seat.state = Seat.Play
     }
     
-    if (ring.stillInPot.size < 2)
+    if (table.stillInPot.size < 2)
       return exit
     
-    val active = ring.playing
+    val active = table.playing
     if (active.size == 0)
       return exit
   
@@ -118,18 +118,17 @@ class Betting(private var _bigBets: Boolean = false) extends Stage {
     val (seat, pos) = betting.current
     
     context.broadcast.one(seat.player.get) {
-      new Message.RequireBet(call = call, min = min, max = max, pos = pos)
+      Message.RequireBet(call = call, min = min, max = max, pos = pos)
     }
   }
   
   def completeBetting {
     betting.reset
     
-    val ring = context.table.ring
-    ring.stillInPlay map(_._1.play)
+    context.table.stillInPlay map(_._1.play)
   
     val total = betting.pot.total
-    val message = new Message.CollectPot(total = total)
+    val message = Message.CollectPot(total = total)
     context.broadcast.all(message)
   }
 

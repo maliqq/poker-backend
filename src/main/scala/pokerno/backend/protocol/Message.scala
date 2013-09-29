@@ -52,4 +52,9 @@ object Message {
     val pos: Int
   ) extends Value
   
+  case class PlayStart(game: Game, stake: Stake) extends Value
+  case class StreetStart(name: String) extends Value
+  case class ChangeGame(game: Game) extends Value
+  
+  case class JoinTable(pos: Int, player: Player, amount: Decimal) extends Value
 }

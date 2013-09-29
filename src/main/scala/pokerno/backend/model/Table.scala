@@ -20,27 +20,11 @@ trait Button {
   }
 }
 
-class Table(var size: Int) extends Button {
-  val seats: List[Seat] = List.fill(size) { new Seat }
+trait Traverse {
+  def traverse: List[Tuple2[Seat, Int]]
   
-  def ring: Ring = {
-    val btn = seats(button)
-    val traverse = seats.zipWithIndex
-    val (left, right) = traverse.span(_._2 == button)
-    new Ring(List[Tuple2[Seat, Int]]((btn, button)) ++ left ++ right)
-  }
-  
-  private var _seating: Map[Player, Int] = Map.empty
-  def addPlayer(player: Player, at: Int, amount: Decimal) {
-  }
-  
-  def removePlayer(player: Player) {
-  }
-}
-
-class Ring(val seats: List[Tuple2[Seat, Int]]) {
   def where(f: (Seat) => Boolean): List[Tuple2[Seat, Int]] =
-    seats filter { case (seat, _) => f(seat) }
+    traverse filter { case (seat, _) => f(seat) }
   
   def active: List[Tuple2[Seat, Int]] =
     where { seat => seat.state == Seat.Play || seat.state == Seat.PostBB }
@@ -56,4 +40,21 @@ class Ring(val seats: List[Tuple2[Seat, Int]]) {
   
   def stillInPot: List[Tuple2[Seat, Int]] =
     where { seat => seat.state == Seat.Play || seat.state == Seat.Bet || seat.state == Seat.AllIn }
+}
+
+class Table(var size: Int) extends Button with Traverse {
+  val seats: List[Seat] = List.fill(size) { new Seat }
+  
+  def traverse = {
+    val btn = seats(button)
+    val (left, right) = seats.zipWithIndex.span(_._2 == button)
+    List[Tuple2[Seat, Int]]((btn, button)) ++ left ++ right
+  }
+  
+  private var _seating: Map[Player, Int] = Map.empty
+  def addPlayer(player: Player, at: Int, amount: Decimal) {
+  }
+  
+  def removePlayer(player: Player) {
+  }
 }

@@ -53,6 +53,7 @@ class Instance extends Actor with FSM[State, Data] {
     case Created -> Running =>
       stateData match {
         case g: Gameplay =>
+        case _ =>
       }
   }
   

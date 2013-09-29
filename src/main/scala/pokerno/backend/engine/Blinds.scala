@@ -19,7 +19,7 @@ class Blinds(val context: Gameplay.Context, val betting: Betting.Context) {
     case e: Exception =>
     }
     
-    val message = new Message.AddBet(pos = Some(pos), _type = Bet.SmallBlind, bet = bet)
+    val message = Message.AddBet(pos = Some(pos), _type = Bet.SmallBlind, bet = bet)
     context.broadcast.all(message)
   }
   
@@ -32,17 +32,15 @@ class Blinds(val context: Gameplay.Context, val betting: Betting.Context) {
     } catch {
     case e: Exception =>
     }
-    val message = new Message.AddBet(pos = Some(pos), _type = Bet.BigBlind, bet = bet)
+    val message = Message.AddBet(pos = Some(pos), _type = Bet.BigBlind, bet = bet)
     context.broadcast.all(message)
   }
   
   def run {
     context.moveButton
     
-    val ring = context.table.ring
-    
-    val active = ring.active
-    val waiting = ring.waiting
+    val active = context.table.active
+    val waiting = context.table.waiting
     
     if (active.size + waiting.size >= 2) {
       betting.start(active)

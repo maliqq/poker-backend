@@ -1,7 +1,7 @@
 package pokerno.backend.poker
 
 object Math {
-  final val DefaultSamplesCount: Int = 1000
+  final val DefaultSamplesNum: Int = 1000
   final val FullBoardLen: Int = 5
   
   class Sample {
@@ -33,9 +33,7 @@ object Math {
     }
   }
   
-  trait AgainstOne {
-    val samplesNum: Int
-    
+  case class AgainstOne(val samplesNum: Int = DefaultSamplesNum) {
     def preflop(hole: List[Card], other: List[Card]): Sample = {
       val sample = new Sample
       (0 to samplesNum) foreach { _ =>
@@ -68,10 +66,7 @@ object Math {
     }
   }
   
-  trait AgainstN {
-    val opponentsNum: Int
-    var samplesNum: Int
-    
+  case class Against(val opponentsNum: Int, val samplesNum: Int = DefaultSamplesNum) {
     def equity(hole: List[Card], board: List[Card]): Double = {
       var sample = if (board.size == 0)
         preflop(hole)
@@ -97,10 +92,6 @@ object Math {
       if (board.size > 5 || board.size == 0)
         throw new Error("board invalid")
     
-      if (samplesNum == 0) {
-        samplesNum = DefaultSamplesCount
-      }
-      
       val holeCardsNum = hole.size
       val cardsNumToCompleteBoard = FullBoardLen - board.size
     

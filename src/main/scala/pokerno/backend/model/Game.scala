@@ -2,6 +2,10 @@ package pokerno.backend.model
 
 import pokerno.backend.poker.Hand
 
+trait Variation {
+  def isMixed: Boolean = this.isInstanceOf[Mix]
+}
+
 object Game {
   trait Limit
   
@@ -60,7 +64,7 @@ object Game {
   )
 }
 
-class Game(val game: Game.Limited, var _limit: Option[Game.Limit] = None, var _tableSize: Option[Int] = None) {
+class Game(val game: Game.Limited, var _limit: Option[Game.Limit] = None, var _tableSize: Option[Int] = None) extends Variation {
   val options = Games.Default(game)
   val tableSize: Int = _tableSize match {
     case None => Game.MaxTableSize

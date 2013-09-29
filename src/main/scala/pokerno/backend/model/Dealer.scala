@@ -25,7 +25,6 @@ class Dealer(private var _deck: Deck = new Deck) {
   def board = _board
   
   private var _pockets: Map[Player, List[Tuple2[Dealer.Value, Card]]] = Map.empty
-  
   def pocket(p: Player): List[Card] = _pockets(p).map(_._2)
   
   def dealPocket(t: Dealer.Value, n: Int, p: Player): List[Card] = {

@@ -7,31 +7,21 @@ import scala.math.{BigDecimal => Decimal}
 
 trait ctx
 
-trait Stage[T <: ctx] {
-  def run(context: T)
+trait Stage {
+  def run(context: ctx)
 }
 
-class StageContainer[T <: ctx](var context: T) extends Runnable {
-  this : Stage =>
-    def run: Unit = run(context)
-}
-
-
-object Discarding extends Stage[Context] {
-  class Context extends ctx {
-    
-  }
-  
-  def run(context: Context) {
-  }
-}
-
-class BettingComplete extends Stage[Gameplay.Context] {
+object Discarding extends Stage {
   def run(context: ctx) {
   }
 }
 
+class BettingComplete extends Stage {
+  def run(context: Gameplay.Context) {
+  }
+}
+
 object Stages {
-  val Default = List[Stage[ctx]](
+  val Default = List[Stage](
   )
 }

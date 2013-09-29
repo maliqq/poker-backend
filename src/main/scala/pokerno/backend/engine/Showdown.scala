@@ -23,7 +23,7 @@ class Showdown(val context: Gameplay.Context, val deal: Deal, val betting: Betti
       val amount = side.total
       val winner = seat.player.get
       seat.net(amount)
-      val message = new Message.Winner(pos = pos, winner = winner, amount = amount)
+      val message = Message.Winner(pos = pos, winner = winner, amount = amount)
       context.broadcast.all(message)
     }
   }
@@ -60,7 +60,7 @@ class Showdown(val context: Gameplay.Context, val deal: Deal, val betting: Betti
         val pos = 0
         val seat = new Seat
         seat.net(amount)
-        val message = new Message.Winner(pos = pos, winner = winner, amount = amount)
+        val message = Message.Winner(pos = pos, winner = winner, amount = amount)
       }
     }
   }
@@ -83,18 +83,17 @@ class Showdown(val context: Gameplay.Context, val deal: Deal, val betting: Betti
   def showHands(ranking: Hand.Ranking): Map[Player, Hand] = {
     var hands: Map[Player, Hand] = Map.empty
     
-    val ring = context.table.ring
-    ring.stillInPot foreach { case (seat, pos) =>
+    context.table.stillInPot foreach { case (seat, pos) =>
       val (pocket, hand) = rank(seat.player.get, ranking)
       hands += (seat.player.get -> hand)
-      val message = new Message.ShowHand(pos = pos, cards = pocket, hand = hand)
+      val message = Message.ShowHand(pos = pos, cards = pocket, hand = hand)
       context.broadcast.all(message)
     }
     hands
   }
   
   def run(context: Gameplay.Context) {
-    val stillInPot = context.table.ring.stillInPot
+    val stillInPot = context.table.stillInPot
     if (stillInPot.size == 1) {
       declareWinner(stillInPot.head)
     } else {
@@ -103,9 +102,11 @@ class Showdown(val context: Gameplay.Context, val deal: Deal, val betting: Betti
       
       context.game.options.hiRanking match {
         case Some(ranking) => hiHands = Some(showHands(ranking))
+        case None =>
       }
       context.game.options.loRanking match {
         case Some(ranking) => loHands = Some(showHands(ranking))
+        case None =>
       }
       declareWinners(betting.pot, hiHands, loHands)
     }

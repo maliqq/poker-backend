@@ -2,6 +2,8 @@ package pokerno.backend.engine
 
 import pokerno.backend.model._
 import pokerno.backend.protocol._
+import akka.dataflow._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 object Gameplay {
   trait Rotation {
@@ -32,6 +34,7 @@ object Gameplay {
     val dealer: Dealer,
     val broadcast: Broadcast,
     val variation: Variation,
+    val betting: Betting.Context,
     val stake: Stake,
     val table: Table
   ) extends Rotation {
@@ -70,6 +73,20 @@ object Gameplay {
   }
 }
 
-class Gameplay {
+class Gameplay(val context: Gameplay.Context) {
+  val stages: List[Stage] = List()
+  def run = {
+    context.prepareSeats
+    context.rotateGame
+    val betting = new Betting.Context
+    new PostAntes(context).run
+    new PostBlinds(context).run
   
+    val streets = Streets.ByGameGroup(context.game.options.group)
+    for(street <- streets) {
+      street.run(context)
+    }
+    
+    //new Showdown(context).run
+  }
 }

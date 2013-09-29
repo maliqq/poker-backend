@@ -3,18 +3,18 @@ package pokerno.backend.engine
 import pokerno.backend.model._
 import pokerno.backend.protocol._
 
-object Blinds extends Stage {
+object PostBlinds extends Stage {
   def run(context: Gameplay.Context) = {
     
   }
 }
 
-class Blinds(val context: Gameplay.Context, val betting: Betting.Context) {
+class PostBlinds(val context: Gameplay.Context) {
   def postSB(pos: Int) {
     val bet = Bet.force(Bet.SmallBlind, context.stake)
     
     try {
-      betting.force(bet)
+      context.betting.force(bet)
     } catch {
     case e: Exception =>
     }
@@ -24,11 +24,11 @@ class Blinds(val context: Gameplay.Context, val betting: Betting.Context) {
   }
   
   def postBB(pos: Int) {
-    val (seat, pos) = betting.current
+    val (seat, pos) = context.betting.current
     
     val bet = Bet.force(Bet.BigBlind, context.stake)
     try {
-      betting.force(bet)
+      context.betting.force(bet)
     } catch {
     case e: Exception =>
     }
@@ -43,13 +43,13 @@ class Blinds(val context: Gameplay.Context, val betting: Betting.Context) {
     val waiting = context.table.waiting
     
     if (active.size + waiting.size >= 2) {
-      betting.start(active)
+      context.betting.start(active)
       
-      betting.step { case (seat, pos) =>
+      context.betting.step { case (seat, pos) =>
         postSB(pos)
       }
       
-      betting.step { case (seat, pos) =>
+      context.betting.step { case (seat, pos) =>
         postBB(pos)
       }
     }

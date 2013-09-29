@@ -27,6 +27,11 @@ object Street {
 }
 
 class Street(val name: Street.Value, val stages: List[Stage]) {
+  def run(context: Gameplay.Context) {
+    for (stage <- stages) {
+      stage.run(context)
+    }
+  }
 }
 
 object Streets {

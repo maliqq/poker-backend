@@ -3,6 +3,8 @@ package pokerno.backend.engine
 import scala.math.{BigDecimal => Decimal}
 import pokerno.backend.model._
 import pokerno.backend.protocol._
+import akka.dataflow._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 object Betting extends Stage {
   class Context extends Round[Tuple2[Seat, Int]] {
@@ -84,23 +86,31 @@ object Betting extends Stage {
   
   def apply(bigBets: Boolean): Stage = new Betting(bigBets)
   
-  def run(context: Context) {
+  def run(context: Gameplay.Context) {
     //(new Betting).run(context)
   }
 }
 
 class Betting(private var _bigBets: Boolean = false) extends Stage {
-  def context: Gameplay.Context
-  def betting: Betting.Context
-  def exit
-  def run(context: Betting.Context) {
+  def exit = {}
+  
+  var context: Gameplay.Context = null
+  
+  def run(_context: Gameplay.Context) {
+    context = _context
+    
+    flow {
+      val table = context.table
+      
+      Iterator.continually(requireBetting) takeWhile(_ => true)
+    }
   }
   
   def requireBetting {
     val table = context.table
   
     table.stillInPlay foreach { case (seat, pos) =>
-      if (!betting.called(seat))
+      if (!context.betting.called(seat))
         seat.state = Seat.Play
     }
     
@@ -111,11 +121,11 @@ class Betting(private var _bigBets: Boolean = false) extends Stage {
     if (active.size == 0)
       return exit
   
-    betting.start(active)
+    context.betting.start(active)
     
-    val range = betting.raiseRange(context.game.limit, context.stake)
-    val (call, min, max) = betting.require(range)
-    val (seat, pos) = betting.current
+    val range = context.betting.raiseRange(context.game.limit, context.stake)
+    val (call, min, max) = context.betting.require(range)
+    val (seat, pos) = context.betting.current
     
     context.broadcast.one(seat.player.get) {
       Message.RequireBet(call = call, min = min, max = max, pos = pos)
@@ -123,11 +133,11 @@ class Betting(private var _bigBets: Boolean = false) extends Stage {
   }
   
   def completeBetting {
-    betting.reset
+    context.betting.reset
     
     context.table.stillInPlay map(_._1.play)
   
-    val total = betting.pot.total
+    val total = context.betting.pot.total
     val message = Message.CollectPot(total = total)
     context.broadcast.all(message)
   }

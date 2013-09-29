@@ -12,37 +12,6 @@ class Bet(val betType: Bet.Value, val amount: Decimal = .0) {
 }
 
 object Bet {
-  type Range = Tuple2[Decimal, Decimal]
-  
-  case class Requirement(private var _call: Option[Decimal], private var _raise: Option[Range] = None) {
-    def call = _call
-    def raise = _raise
-    def reset {
-      _call = None
-      _raise = None
-    }
-    def disableRaise {
-      _raise = None
-    }
-    def raise_=(value: Range) {
-      _raise = Some((_call.get + value._1, _call.get + value._2))
-    }
-    
-    def available_=(value: Decimal) {
-      // FIXME .get
-      val (min, max) = _raise.get
-      
-      if (value < max) {
-        if (value < _call.get)
-          _raise = None
-        else if (value < min)
-          _raise = Some((value, value))
-        else
-          _raise = Some((min, value))
-      }
-    }
-  }
-  
   trait Value
   
   abstract class ForcedBet extends Value
@@ -76,35 +45,46 @@ object Bet {
   
   def force(t: Bet.Value, stake: Stake):Bet = new Bet(t, stake.amount(t))
   
-  trait Validator {
-  b : Bet =>
-    def validate(seat: Seat, r: Requirement) = b.betType match {
-      case Fold => Unit
-      
-      case Check =>
-        if (r.call != seat.bet)
-          throw new Error("Can't check: need to call=%.2f".format(r.call))
-      
-      case Call | Raise =>
-        if (amount > seat.amount.get)
-          throw new Error("Can't bet: got amount=%.2f, stack=%.2f".format(amount, seat.amount.get))
-
-        if (betType == Call)
-          validateRange(amount, r.call.get, r.call.get, amount == seat.amount)
-        if (betType == Raise)
-          validateRange(amount, r.raise.get._1, r.raise.get._2, amount == seat.amount)
+  class Requirement(private var _call: Option[Decimal] = None, private var _raise: Option[Range] = None) {
+    def call = _call
+    def call_=(amount: Decimal) = _call = Some(amount)
+    
+    def raise = _raise
+    def raise_=(r: Range) {
+      _raise = Some(r)
     }
+    def reset {
+      _call = None
+      _raise = None
+    }
+    def disableRaise {
+      _raise = None
+    }
+    
+    def adjustRaise(r: Range, value: Decimal) =
+      if (value < _call.get)
+        _raise = None
+      else {
+        var min = _call.get + r.min
+        var max = _call.get + r.max
+        _raise = Some(Range(List(value, min).min, List(value, max).min))
+      }
+    
+    def validate(bet: Bet, seat: Seat) = bet.betType match {
+      case Bet.Fold =>
+      case Bet.Check =>
+        if (_call.get != seat.put)
+          throw new Error("Can't check: need to call=%.2f".format(_call.get))
+      
+      case Bet.Call | Bet.Raise =>
+        if (bet.amount > seat.amount.get)
+          throw new Error("Can't bet: got amount=%.2f, stack=%.2f".format(bet.amount, seat.amount.get))
 
-    def validateRange(amount: Decimal, min: Decimal, max: Decimal, allIn: Boolean = false) {
-      if (max == 0.)
-        throw new Error("Nothing to bet: got amount=%.2f".format(amount))
-      
-      if (amount > max)
-        throw new Error("Bet invalid: got amount=%.2f, required max=%.2f".format(amount, max))
-      
-      if (amount < min && !allIn)
-        throw new Error("Bet invalid: got amount=%.2f, required min=%.2f".format(amount, min))
-      
+        val isAllIn = bet.amount == seat.amount
+        if (bet.betType == Bet.Call)
+          Range(_call.get, _call.get).validate(bet.amount, isAllIn)
+        if (bet.betType == Bet.Raise)
+          _raise.get.validate(bet.amount, isAllIn)
     }
   }
 }

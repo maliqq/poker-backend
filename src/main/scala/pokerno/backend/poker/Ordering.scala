@@ -1,5 +1,8 @@
 package pokerno.backend.poker
 
+case object AceHigh extends Ordering[Card]
+case object AceLow extends Ordering[Card]
+
 /*def (g GroupedCards) String() string {
   val s = "["
 

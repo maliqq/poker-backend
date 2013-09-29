@@ -1,9 +1,12 @@
 package pokerno.backend.protocol
 
-import pokerno.backend.poker.Card
+import scala.math.{BigDecimal => Decimal}
+import pokerno.backend.poker.{Card, Hand}
 import pokerno.backend.model._
 
 object Message {
+  abstract class Value extends Serializable
+  
   trait Position {
     def pos: Option[Int]
   }
@@ -13,14 +16,40 @@ object Message {
   }
   
   case class DealCards (
-    val _type: Deal.Value,
+    val _type: Dealer.Value,
     val pos: Option[Int],
     val cards: List[Card]
-  ) extends Serializable with Cards with Position
+  ) extends Value with Cards with Position
+
+  case class RequireBet(
+    val pos: Int,
+    val call: Decimal,
+    val min: Decimal,
+    val max: Decimal
+  ) extends Value
   
   case class AddBet(
     val _type: Bet.Value,
     val pos: Option[Int],
     val bet: Bet
-  ) extends Serializable with Position 
+  ) extends Value with Position
+  
+  case class MoveButton(
+    val pos: Int
+  ) extends Value
+  
+  case class ShowHand(
+    val pos: Int,
+    val hand: Hand,
+    val cards: List[Card]
+  ) extends Value
+  
+  case class CollectPot(val total: Decimal) extends Value
+  
+  case class Winner(
+    val winner: Player,
+    val amount: Decimal,
+    val pos: Int
+  ) extends Value
+  
 }

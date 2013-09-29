@@ -3,7 +3,7 @@ package pokerno.backend.model
 import scala.math.{BigDecimal => Decimal}
 import scala.collection.mutable.ListBuffer
 
-class SidePot(val cap: Decimal = .0) {
+class SidePot(val cap: Option[Decimal] = None) {
   var members: Map[Player, Decimal] = Map.empty
   
   def total: Decimal = members.values.sum
@@ -11,18 +11,19 @@ class SidePot(val cap: Decimal = .0) {
   def active: Boolean = members.size > 0 && total > .0
 
   def add(member: Player, amount: Decimal): Decimal = {
-    if (amount > .0) {
-      val value: Decimal = members.getOrElse(member, .0)
+    if (amount == .0)
+      return .0
     
-      if (cap == .0) {
-        members += (member -> (value + amount))
-        return .0
-      }
-    
-      if (cap >= amount) {
-        members += (member -> cap)
-        return value + amount - cap
-      }
+    val value: Decimal = members.getOrElse(member, .0)
+  
+    if (!cap.isDefined) {
+      members += (member -> (value + amount))
+      return .0
+    }
+  
+    if (cap.get >= amount) {
+      members += (member -> cap.get)
+      return value + amount - cap.get
     }
     
     amount
@@ -32,17 +33,17 @@ class SidePot(val cap: Decimal = .0) {
     val value: Decimal = members.getOrElse(member, .0)
     val bet = value + left
     members += (member -> bet)
-    val main = new SidePot(.0)
-    val side = new SidePot(bet)
     
-    members foreach { case (key, value) =>
-      if (value > bet) {
-        if (key != member)
-          main.members += (key -> (value - bet))
-        side.members += (key -> bet)
-      } else
-        side.members += (key -> value)
+    val main = new SidePot
+    main.members = members.
+      filter { case (key, value) => value > bet && key != member }.
+      map { case (key, value) => (key, value - bet) }
+    
+    val side = new SidePot(Some(bet))
+    side.members = members.map { case (key, value) =>
+      (key, List(value, bet).min)
     }
+    
     (main, side)
   }
   
@@ -56,7 +57,7 @@ class SidePot(val cap: Decimal = .0) {
 }
 
 class Pot {
-  var main: SidePot = new SidePot(.0)
+  var main: SidePot = new SidePot
   var side: List[SidePot] = List.empty
   
   def total: Decimal = sidePots.map( _.total).sum

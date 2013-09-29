@@ -12,39 +12,40 @@ case object Closed extends State
 
 sealed trait Data
 case object Empty extends Data
-case class Gameplay(DealProcess: ActorRef) extends Data
 
-class Instance extends Actor with FSM[State, Data] {
-
+object Instance {
   case object Stop
   case object Pause
   case object Resume
   case object Start
   case class JoinTable
+}
+
+class Instance extends Actor with FSM[State, Data] {
+
   
   startWith(Created, Empty)
   
   when(Created) {
-    case Event(Start, g: Gameplay) =>
+    case Event(Instance.Start, g: Gameplay) =>
       goto(Running) using g
   }
 
   when(Paused) {
-    case Event(Resume, g: Gameplay) =>
+    case Event(Instance.Resume, g: Gameplay) =>
       goto(Running) using g
   }
   
   when(Waiting) {
-    case Event(join: JoinTable, g: Gameplay) =>
-      g.DealProcess ! join
+    case Event(join: Instance.JoinTable, g: Gameplay) =>
       stay using g
   }
   
   when(Running) {
-    case Event(Pause, g: Gameplay) =>
+    case Event(Instance.Pause, g: Gameplay) =>
       goto(Paused) using g
   
-    case Event(Stop, g: Gameplay) =>
+    case Event(Instance.Stop, g: Gameplay) =>
       goto(Closed) using g
   }
   
@@ -52,7 +53,6 @@ class Instance extends Actor with FSM[State, Data] {
     case Created -> Running =>
       stateData match {
         case g: Gameplay =>
-          g.DealProcess ! "1"
       }
   }
   

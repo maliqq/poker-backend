@@ -2,7 +2,7 @@ package pokerno.backend.model
 
 import pokerno.backend.poker.{Card, Deck}
 
-object Deal {
+object Dealer {
   trait Type
   case class Hole extends Type
   case class Door extends Type
@@ -24,9 +24,11 @@ class Dealer(private var _deck: Deck = new Deck) {
   private var _board: List[Card] = List.empty
   def board = _board
   
-  private var _pockets: Map[Player, List[Tuple2[Deal.Value, Card]]] = Map.empty
+  private var _pockets: Map[Player, List[Tuple2[Dealer.Value, Card]]] = Map.empty
   
-  def dealPocket(t: Deal.Value, n: Int, p: Player): List[Card] = {
+  def pocket(p: Player): List[Card] = _pockets(p).map(_._2)
+  
+  def dealPocket(t: Dealer.Value, n: Int, p: Player): List[Card] = {
     val cards = _deck.share(n)
     val pocket = _pockets.getOrElse(p, List.empty)
     _pockets += (p -> (pocket ++ cards.map(card => (t, card))))
@@ -35,7 +37,7 @@ class Dealer(private var _deck: Deck = new Deck) {
   
   def discard(old: List[Card], p: Player): List[Card] = {
     val cards = _deck.discard(old) // FIXME validate old
-    _pockets += (p -> cards.map(card => (Deal.Hole, card)))
+    _pockets += (p -> cards.map(card => (Dealer.Hole, card)))
     cards
   }
   

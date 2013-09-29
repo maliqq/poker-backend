@@ -12,6 +12,8 @@ object Seat {
   case object Bet extends State
   case object Fold extends State
   case object AllIn extends State
+  case object WaitBB extends State
+  case object PostBB extends State
 }
 
 class Seat {
@@ -34,12 +36,11 @@ class Seat {
     _amount = Some(value)
   }
   
-  private var _bet: Option[Decimal] = None
-  def bet = _bet
-  def bet_=(amount: Decimal) {
-    net(-amount + _bet.getOrElse(.0))
-    _bet = Some(amount)
-    state = Seat.Bet
+  private var _put: Option[Decimal] = None
+  def put = _put
+  def put_=(amount: Decimal) {
+    net(-amount + _put.getOrElse(.0))
+    _put = Some(amount)
   }
   
   private var _player: Option[Player] = None
@@ -53,26 +54,49 @@ class Seat {
     state = Seat.Empty
     _player = None
     _amount = None
-    _bet = None
+    _put = None
   }
   
   def play {
     state = Seat.Play
-    _bet = None
+    _put = None
   }
   
-  def check {
+  def check = {
     state = Seat.Play
+    .0
   }
   
-  def fold {
+  def fold = {
     state = Seat.Fold
-    _bet = None
+    _put = None
+    .0
+  }
+  
+  def force(amount: Decimal) = {
+    val d = List[Decimal](amount, _amount.get).min
+    put = d
+    state = Seat.Bet
+    d
+  }
+  
+  def raise(amount: Decimal) = {
+    val d = amount - _put.getOrElse(.0)
+    put = amount
+    state = Seat.Play
+    d
+  }
+  
+  def bet(bet: Bet): Decimal = bet.betType match {
+    case Bet.Fold => fold
+    case Bet.Check => check
+    case Bet.Call | Bet.Raise => raise(bet.amount)
+    case _: Bet.ForcedBet => force(bet.amount)
   }
   
   def buyIn(amount: Decimal) {
-    state = Seat.Ready
     net(amount)
+    state = Seat.Ready
   }
   
   def net(amount: Decimal) {
@@ -80,11 +104,6 @@ class Seat {
   }
   
   def called(amount: Decimal): Boolean = {
-    _state == Seat.AllIn || amount <= _bet.getOrElse(.0)
+    _state == Seat.AllIn || amount <= _put.getOrElse(.0)
   }
-}
-
-class Seats(size: Int) {
-  val seats: List[Seat] = List.fill(size) { new Seat }
-  private var _seating: Map[Player, Int] = Map.empty
 }

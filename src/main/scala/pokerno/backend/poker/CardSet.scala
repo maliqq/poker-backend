@@ -2,7 +2,7 @@ package pokerno.backend.poker
 
 class CardSet(
     var cards: List[Card],
-    val ordering: Ordering[Card],
+    val ordering: Ordering[Card] = AceHigh,
     qualifier: Option[Kind.Value] = None
 ) {
   if (qualifier.isDefined)

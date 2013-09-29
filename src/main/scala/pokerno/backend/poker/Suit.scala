@@ -5,7 +5,8 @@ object Suit {
   private final val _unicode = List("♠", "♥", "♦", "♣")
   private final val _colors: List[String] = List(Console.YELLOW, Console.RED, Console.CYAN, Console.GREEN)
   
-  sealed class Value(val toInt: Int = All.indexOf(this)) {
+  sealed class Value {
+    def toInt: Int = All.indexOf(this)
     def short: Char = _short(toInt)
     def unicode: String = _unicode(toInt)
     def color: String = _colors(toInt)

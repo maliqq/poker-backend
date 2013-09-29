@@ -1,5 +1,6 @@
 package pokerno.backend.poker
 
+/*
 object Low extends RankedHand {
   def isAceFive(c *Cards) (*Hand, error) {
     val helper = cardsHelper{
@@ -43,3 +44,4 @@ object Low extends RankedHand {
     return helper.IsGapLow()
   }
 }
+*/

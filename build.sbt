@@ -12,5 +12,6 @@ libraryDependencies ++= Seq(
   "com.twitter" % "finagle-http_2.10" % "6.6.2",
   "com.typesafe.akka" % "akka-actor_2.10" % "2.2.1",
   "com.typesafe.akka" % "akka-zeromq_2.10" % "2.2.1",
-  "asia.stampy" % "stampy-core" % "1.0-RELEASE"
+  "asia.stampy" % "stampy-core" % "1.0-RELEASE",
+  "org.scalatest" % "scalatest_2.10" % "1.9.2" % "test"
 )

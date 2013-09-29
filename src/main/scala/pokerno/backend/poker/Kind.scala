@@ -4,7 +4,8 @@ object Kind {
   private final val _short = "23456789TJQK".toList
   private final val _full: List[String] = List("deuce", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "jack", "queen", "king", "ace")
   
-  sealed class Value(val toInt: Int = All.indexOf(this)) {
+  sealed class Value {
+    def toInt: Int = All.indexOf(this)
     def short: Char = _short(toInt)
     def full: String = _full(toInt)
     override def toString: String = short.toString

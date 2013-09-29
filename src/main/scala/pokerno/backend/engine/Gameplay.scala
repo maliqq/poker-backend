@@ -1,30 +1,30 @@
 package pokerno.backend.engine
 
-import scala.math.{BigDecimal => Decimal}
 import pokerno.backend.model._
+import pokerno.backend.protocol._
 
-class BettingContext {
-  val MaxRaiseCount = 9
-  var raiseCount: Int = 0
-  
-  private var _bigBets: Boolean = false
-  def bigBets = _bigBets
-  def turnOnBigBets = {
-    _bigBets = true
+object Gameplay {
+  class Context(
+    val dealer: Dealer,
+    val broadcast: Broadcast,
+    val game: Game,
+    val stake: Stake,
+    val table: Table
+  ) {
+    
+    def moveButton {
+      table.moveButton
+      val message = new Message.MoveButton(pos = table.button)
+    }
+    
+    def setButton(pos: Int) {
+      table.button = pos
+      val message = new Message.MoveButton(pos = table.button)
+    }
+    
   }
-  
-  var pot: Pot = new Pot()
-  var betRange: Tuple2[Decimal, Decimal] = (0, 0)
 }
 
-class BettingProcess {
-  
-}
-
-class DealContext {
-  
-}
-
-class DealProcess {
+class Gameplay {
   
 }

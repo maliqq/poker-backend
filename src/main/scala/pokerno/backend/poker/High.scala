@@ -1,108 +1,80 @@
 package pokerno.backend.poker
 
-trait High extends Hand {
-  val noFlushRanks = ()
-  val noStraightRanks = ()
-  
-  def isStraightFlush: Option[Hand] = {
-    val maybeFlush = isFlush
-    if (maybeFlush.isEmpty) {
-      val hand = Hand.Detect(noFlushRanks)
-      if (hand.isDefined)
-        hand.get._rank = true
-      return hand
-    }
-
-    val flushCards = maybeFlush.get.value
-    val newhc = NewHandCards(&flushCards, cards.Ordering, false)
-
-    if (val maybeStraight = newcards.isStraight; maybeStraight != nil) {
-      return maybeStraight
-    }
-
-    val maybeHigher = cards.Detect(noStraightRanks)
-
-    if (maybeHigher != nil) {
-      maybeHigher.rank = true
-      return maybeHigher
-    }
-
-    val justFlush = *maybeFlush
-
-    justFlush.rank = true
-    justFlush.Rank = hand.Flush
-
-    return &justFlush
+trait HighHand {
+self: Hand.Cards =>
+  def isStraightFlush: Option[Hand] = isFlush match {
+    case None => isFourKind orElse isFullHouse orElse isStraight
+    case Some(flush) =>
+      Hand.High(flush.value) match {
+        case Some(hand) => hand ranked Rank.StraightFlush
+        case None => isFourKind orElse isFullHouse orElse Some(flush)
+      }
   }
   
-  def isFourKind: Option[Hand] = cards.paired.get(4) match {
+  def isFourKind: Option[Hand] = paired.get(4) match {
     case Some(quads) =>
       val cards = quads.head
-      Some(new Hand(value = cards, high = cards, _kicker = true))
+      new Hand(value = cards, high = cards, _kicker = true) ranked Rank.FourKind
     case None => None
   }
 
-  def isFullHouse: Option[Hand] = cards.paired.get(3) match {
+  def isFullHouse: Option[Hand] = paired.get(3) match {
     case Some(sets) =>
       val (major, minor) = if (sets.size > 1) {
         val List(minor, major, _*) = sets.sorted(Cards.OrderingByHead).take(2)
         (major, minor)
       } else {
-        val pairs = cards.paired.get(2)
-        if (pairs.isEmpty)
-          return None
-        val minor = pairs.get.sorted(Cards.OrderingByHead).head
-        val major = sets.head
-        (major, minor)
+        paired.get(2) match {
+          case None => return None
+          case Some(pairs) =>
+            val minor = pairs.sorted(Cards.OrderingByHead).head
+            val major = sets.head
+            (major, minor)
+        }
       }
-      Some(new Hand(value = major ++ minor, high = List(major.head, minor.head)))
+      new Hand(value = major ++ minor, high = List(major.head, minor.head)) ranked Rank.FullHouse
     case None => None
   }
 
-  def isFlush: Option[Hand] = {
-    val group = cards.suited.find { case (count, group) => count >= 5 }
-    if (group.isDefined) {
-      val cards = group.get._2.head.sorted
-      return Some(new Hand(value = cards.take(5), high = cards.take(1)))
-    }
-    return None
+  def isFlush: Option[Hand] = suited.find { case (count, group) => count >= 5 } match {
+    case Some(group) =>
+      val cards = group._2.head.sorted
+      new Hand(value = value.take(5), high = value.take(1)) ranked Rank.Flush
+    case None => None
   }
   
-  def isStraight: Option[Hand] = {
-    val group = cards.gaps.find { group => group.size > 5 }
-    if (group.isDefined) {
-      val cards = group.get.sorted
-      return Some(new Hand(value = cards.take(5), high = cards.take(1)))
-    }
-    return None
-  }
-
-  def isThreeKind: Option[Hand] = cards.paired.get(3) match {
-    case Some(sets) =>
-      Some(new Hand(value = sets.head, _high = true, _kicker = true))
+  def isStraight: Option[Hand] = gaps.find { group => group.size > 5 } match {
+    case Some(group) =>
+      val cards = group.sorted
+      new Hand(value = value.take(5), high = value.take(1)) ranked Rank.Straight
     case None => None
   }
 
-  def isTwoPair: Option[Hand] = cards.paired.get(2) match {
+  def isThreeKind: Option[Hand] = paired.get(3) match {
+    case Some(sets) =>
+      new Hand(value = sets.head, _high = true, _kicker = true) ranked Rank.ThreeKind
+    case None => None
+  }
+
+  def isTwoPair: Option[Hand] = paired.get(2) match {
     case Some(pairs) =>
       val List(major, minor, _*) = pairs.sorted(Cards.OrderingByMax)
-      Some(new Hand(value = major ++ minor, high = List(major.head, minor.head), _kicker = true))
+      new Hand(value = major ++ minor, high = List(major.head, minor.head), _kicker = true) ranked Rank.TwoPair
     case None => None
   }
 
-  def isOnePair: Option[Hand] = cards.paired.get(2) match {
+  def isOnePair: Option[Hand] = paired.get(2) match {
     case Some(pairs) =>
-      Some(new Hand(value = pairs.head, _high = true, _kicker = true))
+      new Hand(value = pairs.head, _high = true, _kicker = true) ranked Rank.OnePair
     case None => None
   }
 
-  def isHighCard: Option[Hand] = Some(new Hand(value = cards.value.sorted, _high = true, _kicker = true))
+  def isHighCard: Option[Hand] = new Hand(value = value.sorted, _high = true, _kicker = true) ranked Rank.HighCard
 
-  def isHigh(_cards: List[Card]): Option[Hand] = {
-    if (_cards.size < 5)
+  def isHigh: Option[Hand] = {
+    if (value.size < 5)
       throw new Error("5 or more cards required to detect high hand")
     
-    val cardSet = new CardSet(_cards, ordering = AceHigh)
-    cardSet.detectWith(highRanks)
+    isStraightFlush orElse isThreeKind orElse isTwoPair orElse isOnePair orElse isHighCard
   }
 }

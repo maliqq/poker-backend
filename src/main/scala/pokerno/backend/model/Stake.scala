@@ -33,27 +33,19 @@ class Stake(
   
   val ante: Option[Decimal] = Ante match {
     case Left(amount) =>
-      if (amount > .0)
-        Some(amount)
-      else
-        None
+      if (amount > .0) Some(amount)
+      else None
     case Right(withAnte) =>
-      if (withAnte)
-        Some(_rate(Bet.Ante))
-      else
-        None
+      if (withAnte) Some(_rate(Bet.Ante))
+      else None
   }
   
   val bringIn: Option[Decimal] = BringIn match {
     case Left(amount) =>
-      if (amount > .0)
-        Some(amount)
-      else
-        None
+      if (amount > .0) Some(amount)
+      else None
     case Right(withBringIn) =>
-      if (withBringIn)
-        Some(_rate(Bet.BringIn))
-      else
-        None
+      if (withBringIn) Some(_rate(Bet.BringIn))
+      else None
   }
 }

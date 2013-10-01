@@ -91,19 +91,13 @@ object Betting extends Stage {
   }
 }
 
-class Betting(private var _bigBets: Boolean = false) extends Stage {
-  def exit = {}
-  
+import akka.actor.ActorRef
+
+class Betting(bettingProcess: ActorRef, private var _bigBets: Boolean = false) extends Stage {
   var context: Gameplay.Context = null
   
   def run(_context: Gameplay.Context) {
     context = _context
-    
-    flow {
-      val table = context.table
-      
-      Iterator.continually(requireBetting) takeWhile(_ => true)
-    }
   }
   
   def requireBetting {
@@ -115,11 +109,13 @@ class Betting(private var _bigBets: Boolean = false) extends Stage {
     }
     
     if (table.stillInPot.size < 2)
-      return exit
+      bettingProcess ! BettingProcess.Showdown
+      return
     
     val active = table.playing
     if (active.size == 0)
-      return exit
+      bettingProcess ! BettingProcess.Exit
+      return
   
     context.betting.start(active)
     

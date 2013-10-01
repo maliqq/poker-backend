@@ -5,7 +5,8 @@ import pokerno.backend.protocol._
 import pokerno.backend.model._
 import pokerno.backend.poker._
 
-class Showdown(val context: Gameplay.Context, val deal: Deal, val betting: Betting.Context) {
+trait Showdown {
+context: Gameplay.Context =>
   def best(pot: SidePot, hands: Map[Player, Hand]): Tuple2[Player, Hand] = {
     var winner: Option[Player] = None
     var best: Option[Hand] = None
@@ -83,7 +84,7 @@ class Showdown(val context: Gameplay.Context, val deal: Deal, val betting: Betti
   def showHands(ranking: Hand.Ranking): Map[Player, Hand] = {
     var hands: Map[Player, Hand] = Map.empty
     
-    context.table.stillInPot foreach { case (seat, pos) =>
+    context.table.where(_.inPot) foreach { case (seat, pos) =>
       val (pocket, hand) = rank(seat.player.get, ranking)
       hands += (seat.player.get -> hand)
       val message = Message.ShowHand(pos = pos, cards = pocket, hand = hand)
@@ -92,8 +93,8 @@ class Showdown(val context: Gameplay.Context, val deal: Deal, val betting: Betti
     hands
   }
   
-  def run(context: Gameplay.Context) {
-    val stillInPot = context.table.stillInPot
+  def showdown {
+    val stillInPot = context.table.where(_.inPot)
     if (stillInPot.size == 1) {
       declareWinner(stillInPot.head)
     } else {

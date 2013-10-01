@@ -50,27 +50,3 @@ class StageProcess extends Actor {
     case Exit =>
   }
 }
-
-object BettingProcess {
-  
-  case object Showdown
-  case object Exit
-  
-}
-
-class BettingProcess extends Actor {
-  case class Run
-  case class Stop
-  case class Next
-  
-  def receive = {
-    case Run =>
-      
-    case Stop =>
-      context.stop(self)
-      context.parent ! Deal.Stop
-      
-    case Next =>
-      
-  }
-}

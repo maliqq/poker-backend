@@ -3,11 +3,10 @@ package pokerno.backend.engine
 import scala.math.{BigDecimal => Decimal}
 import pokerno.backend.model._
 import pokerno.backend.protocol._
-import akka.dataflow._
-import scala.concurrent.ExecutionContext.Implicits.global
+import akka.actor.Actor
 
 object Betting extends Stage {
-  class Context extends Round[Tuple2[Seat, Int]] {
+  class Context(val items: List[Tuple2[Seat, Int]]) extends Round[Tuple2[Seat, Int]] {
     final val MaxRaiseCount = 8
     private var _raiseCount: Int = 0
     
@@ -29,10 +28,10 @@ object Betting extends Stage {
       _seat
     }
     
-    def reset {
+    def clear {
       _raiseCount = 0
       _require.reset
-      stop
+      reset
     }
 
     def force(bet: Bet) {
@@ -58,8 +57,8 @@ object Betting extends Stage {
       (_require.call.get, _require.raise.get.min, _require.raise.get.max)
     }
     
-    def called(seat: Seat): Boolean = seat.called(_require.call.getOrElse(.0)) 
- 
+    def called(seat: Seat): Boolean = seat.called(_require.call.getOrElse(.0))
+    
     def add(bet: Bet) {
       val (seat, pos) = current
       try {
@@ -84,7 +83,7 @@ object Betting extends Stage {
     }
   }
   
-  def apply(bigBets: Boolean): Stage = new Betting(bigBets)
+  //def apply(bigBets: Boolean): Stage = new Betting(bigBets)
   
   def run(context: Gameplay.Context) {
     //(new Betting).run(context)
@@ -103,21 +102,21 @@ class Betting(bettingProcess: ActorRef, private var _bigBets: Boolean = false) e
   def requireBetting {
     val table = context.table
   
-    table.stillInPlay foreach { case (seat, pos) =>
+    table.where(_.inPlay) foreach { case (seat, pos) =>
       if (!context.betting.called(seat))
         seat.state = Seat.Play
     }
     
-    if (table.stillInPot.size < 2)
+    if (table.where(_.inPot).size < 2)
       bettingProcess ! BettingProcess.Showdown
       return
     
-    val active = table.playing
+    val active = table.where(_.isPlaying)
     if (active.size == 0)
       bettingProcess ! BettingProcess.Exit
       return
   
-    context.betting.start(active)
+    context.betting = new Betting.Context(active)
     
     val range = context.betting.raiseRange(context.game.limit, context.stake)
     val (call, min, max) = context.betting.require(range)
@@ -129,13 +128,35 @@ class Betting(bettingProcess: ActorRef, private var _bigBets: Boolean = false) e
   }
   
   def completeBetting {
-    context.betting.reset
+    context.betting.clear
     
-    context.table.stillInPlay map(_._1.play)
+    context.table.where(_.inPlay) map(_._1.play)
   
     val total = context.betting.pot.total
     val message = Message.CollectPot(total = total)
     context.broadcast.all(message)
   }
 
+}
+
+object BettingProcess {
+  case object Showdown
+  case object Exit
+}
+
+class BettingProcess extends Actor {
+  case class Run
+  case class Stop
+  case class Next
+  
+  def receive = {
+    case Run =>
+      
+    case Stop =>
+      context.stop(self)
+      context.parent ! Deal.Stop
+      
+    case Next =>
+      
+  }
 }

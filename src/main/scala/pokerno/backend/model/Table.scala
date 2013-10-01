@@ -4,20 +4,33 @@ import scala.math.{BigDecimal => Decimal}
 
 case class Player
 
-trait Button {
-  def size: Int
+trait Round[T] {
+  def items: List[T]
+  def size = items.size
   
-  protected var _button: Int = 0
-  def button = _button
-  def button_=(at: Int) = {
-    _button = at
-    _button %= size
+  protected var _current: Int = 0
+  
+  def reset = {
+    _current = 0
   }
   
-  def moveButton = {
-    _button += 1
-    _button %= size
+  def current: T = items(_current)
+  def current_=(at: Int) {
+    _current = at
+    _current %= size
   }
+  def move = {
+    _current += 1
+    _current %= size
+  }
+}
+
+trait Button extends Round[Seat] {
+  def button = _current
+  def button_=(at: Int) {
+    current = at
+  }
+  def moveButton = move
 }
 
 trait Traverse {
@@ -25,25 +38,11 @@ trait Traverse {
   
   def where(f: (Seat) => Boolean): List[Tuple2[Seat, Int]] =
     traverse filter { case (seat, _) => f(seat) }
-  
-  def active: List[Tuple2[Seat, Int]] =
-    where { seat => seat.state == Seat.Play || seat.state == Seat.PostBB }
-
-  def waiting: List[Tuple2[Seat, Int]] =
-    where { seat => seat.state == Seat.WaitBB }
-  
-  def playing: List[Tuple2[Seat, Int]] =
-    where { seat => seat.state == Seat.Play }
-  
-  def stillInPlay: List[Tuple2[Seat, Int]] =
-    where { seat => seat.state == Seat.Play || seat.state == Seat.Bet }
-  
-  def stillInPot: List[Tuple2[Seat, Int]] =
-    where { seat => seat.state == Seat.Play || seat.state == Seat.Bet || seat.state == Seat.AllIn }
 }
 
 class Table(var size: Int) extends Button with Traverse {
   val seats: List[Seat] = List.fill(size) { new Seat }
+  def items = seats
   
   def traverse = {
     val btn = seats(button)

@@ -2,8 +2,6 @@ package pokerno.backend.engine
 
 import pokerno.backend.model._
 import pokerno.backend.protocol._
-import akka.dataflow._
-import scala.concurrent.ExecutionContext.Implicits.global
 
 object Gameplay {
   trait Rotation {
@@ -30,25 +28,52 @@ object Gameplay {
     }
   }
   
+  trait Antes {
+  c: Context =>
+    
+    def postAntes {
+      val active = table.where(_.isActive)
+      
+      betting = new Betting.Context(active)
+      (0 to betting.size) foreach { _ =>
+        forceBet(Bet.Ante)
+        betting.move
+      }
+    }
+  }
+  
+  trait Blinds {
+  c: Context =>
+    def postBlinds {
+      moveButton
+      
+      val active = table.where(_.isActive)
+      val waiting = table.where(_.isWaitingBB)
+      
+      if (active.size + waiting.size >= 2) {
+        betting = new Betting.Context(active)
+        
+        forceBet(Bet.SmallBlind)
+        betting.move
+        
+        forceBet(Bet.BigBlind)
+        betting.move
+      }
+    }
+  }
+  
   class Context(
     val dealer: Dealer,
     val broadcast: Broadcast,
     val variation: Variation,
-    val betting: Betting.Context,
+    var betting: Betting.Context,
     val stake: Stake,
     val table: Table
-  ) extends Rotation {
+  ) extends Rotation with Antes with Blinds with Showdown {
     
     var game: Game = variation match {
       case g: Game => g
       case m: Mix => m.games.head
-    }
-    
-    def rotateGame {
-      rotateNext { g =>
-        game = g
-        broadcast.all(Message.ChangeGame(game = game))
-      }
     }
     
     def moveButton {
@@ -61,32 +86,29 @@ object Gameplay {
       broadcast.all(Message.MoveButton(pos = table.button))
     }
     
-    def prepareSeats {
-      table.seats foreach { (seat) =>
-        seat.state match {
-          case Seat.Ready | Seat.Play | Seat.Fold =>
-            seat.play
-          case _ =>
-        }
+    def forceBet(betType: Bet.Value) {
+      val bet = Bet.force(betType, stake)
+    
+      try {
+        betting.force(bet)
+        broadcast.all(Message.AddBet(Bet.Ante, pos = Some(betting.pos), bet = bet))
+      } catch {
+      case e: Exception =>
       }
     }
-  }
-}
-
-class Gameplay(val context: Gameplay.Context) {
-  val stages: List[Stage] = List()
-  def run = {
-    context.prepareSeats
-    context.rotateGame
-    val betting = new Betting.Context
-    new PostAntes(context).run
-    new PostBlinds(context).run
-  
-    val streets = Streets.ByGameGroup(context.game.options.group)
-    for(street <- streets) {
-      street.run(context)
-    }
     
-    //new Showdown(context).run
+    def run {
+      table.where(_.isReady).map(_._1.play)
+      
+      rotateNext { g =>
+        game = g
+        broadcast.all(Message.ChangeGame(game = game))
+      }
+      
+      val streets = Streets.ByGameGroup(game.options.group)
+      for (street <- streets) {
+        street.run(this)
+      }
+    }
   }
 }

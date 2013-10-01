@@ -22,8 +22,6 @@ object Instance {
 }
 
 class Instance extends Actor with FSM[State, Data] {
-
-  
   startWith(Created, Empty)
   
   when(Created) {
@@ -57,5 +55,5 @@ class Instance extends Actor with FSM[State, Data] {
       }
   }
   
-  initialize()
+  initialize
 }

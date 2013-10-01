@@ -11,7 +11,7 @@ class Dealing(private var _dealType: Dealer.Value) extends Stage {
       if (n == 0)
         n = context.game.options.pocketSize
       
-      context.table.active foreach { case (seat, pos) =>
+      context.table.where(_.isActive) foreach { case (seat, pos) =>
         val message = Message.DealCards(
           _type = _dealType,
           pos = Some(pos),

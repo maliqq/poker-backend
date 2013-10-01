@@ -57,4 +57,6 @@ object Message {
   case class ChangeGame(game: Game) extends Value
   
   case class JoinTable(pos: Int, player: Player, amount: Decimal) extends Value
+  
+  case class SeatStateChange(pos: Int, state: Seat.State) extends Value
 }

@@ -73,26 +73,6 @@ class Seat {
     .0
   }
   
-  def isWaitingBB = state == Seat.WaitBB
-  def isPlaying = state == Seat.Play
-  
-  def isReady = state match {
-    case Seat.Ready | Seat.Play | Seat.Fold => true
-    case _ => false
-  }
-  
-  def isActive = state match {
-    case Seat.Play | Seat.PostBB => true
-    case _ => false
-  }
-  
-  def inPlay = state match {
-    case Seat.Play | Seat.Bet => true
-    case _ => false
-  }
-  
-  def inPot = inPlay || state == Seat.AllIn
-  
   def force(amount: Decimal) = {
     val d = List[Decimal](amount, _amount.get).min
     put = d
@@ -126,4 +106,12 @@ class Seat {
   def called(amount: Decimal): Boolean = {
     _state == Seat.AllIn || amount <= _put.getOrElse(.0)
   }
+  
+  def isReady = state == Seat.Ready || state == Seat.Play || state == Seat.Fold
+  def isActive = state == Seat.Play || state == Seat.PostBB
+  def isWaitingBB = state == Seat.WaitBB
+  def isPlaying = state == Seat.Play
+  def inPlay = state == Seat.Play || state == Seat.Bet 
+  def inPot = inPlay || state == Seat.AllIn
+
 }

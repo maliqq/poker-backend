@@ -18,7 +18,7 @@ object Instance {
   case object Pause
   case object Resume
   case object Start
-  case class JoinTable
+  case class JoinTable()
 }
 
 class Instance extends Actor with FSM[State, Data] {

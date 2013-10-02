@@ -30,7 +30,7 @@ abstract class Bot extends Actor with Context with Simple {
   
     Console.printf("joining table...")
   
-    room ! Message.JoinTable(pos = pos, amount = amount, player = new Player)
+    room ! Message.JoinTable(pos = pos, amount = amount, player = new Player("x"))
   }
 
   def receive = {

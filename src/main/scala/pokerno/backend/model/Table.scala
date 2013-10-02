@@ -2,14 +2,12 @@ package pokerno.backend.model
 
 import scala.math.{BigDecimal => Decimal}
 
-case class Player
+case class Player(val name: String)
 
 trait Round[T] {
   def items: List[T]
-  def size = items.size
   
   protected var _current: Int = 0
-  
   def reset = {
     _current = 0
   }
@@ -17,12 +15,13 @@ trait Round[T] {
   def current: T = items(_current)
   def current_=(at: Int) {
     _current = at
-    _current %= size
+    _current %= items.size
   }
   def move = {
     _current += 1
-    _current %= size
+    _current %= items.size
   }
+  def moveButton = move
 }
 
 trait Button extends Round[Seat] {

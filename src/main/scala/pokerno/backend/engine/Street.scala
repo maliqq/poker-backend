@@ -2,63 +2,125 @@ package pokerno.backend.engine
 
 import pokerno.backend.model._
 
-object Street {
-  trait Value {
-    def apply(stages: List[Stage]): Street = new Street(this, stages)
-  }
-  
-  object Preflop extends Value
-  object Flop extends Value
-  object Turn extends Value
-  object River extends Value
-  
-  object Second extends Value
-  object Third extends Value
-  object Fourth extends Value
-  object Fifth extends Value
-  object Sixth extends Value
-  object Seventh extends Value
-  
-  object Predraw extends Value
-  object Draw extends Value
-  object FirstDraw extends Value
-  object SecondDraw extends Value
-  object ThirdDraw extends Value
-}
-
-class Street(val name: Street.Value, val stages: List[Stage]) {
-  def run(context: Gameplay.Context) {
+class Street(val name: Street.Value, val stages: List[Function1[Gameplay, Unit]]) {
+  def run(gameplay: Gameplay) {
+    Console.printf("= street %s start\n", name)
     for (stage <- stages) {
-      stage.run(context)
+      stage(gameplay)
     }
   }
 }
 
+object Street {
+  trait Value {
+    def apply(stages: List[Function1[Gameplay, Unit]]): Street = new Street(this, stages)
+  }
+  
+  case object Preflop extends Value {
+    override def toString = "preflop"
+  }
+  case object Flop extends Value {
+    override def toString = "flop"
+  }
+  case object Turn extends Value {
+    override def toString = "turn"
+  }
+  case object River extends Value {
+    override def toString = "river"
+  }
+  
+  case object Second extends Value {
+    override def toString = "second"
+  }
+  case object Third extends Value {
+    override def toString = "third"
+  }
+  case object Fourth extends Value {
+    override def toString = "fourth"
+  }
+  case object Fifth extends Value {
+    override def toString = "fifth"
+  }
+  case object Sixth extends Value {
+    override def toString = "sixth"
+  }
+  case object Seventh extends Value {
+    override def toString = "seventh"
+  }
+  
+  case object Predraw extends Value {
+    override def toString = "predraw"
+  }
+  case object Draw extends Value {
+    override def toString = "draw"
+  }
+  case object FirstDraw extends Value {
+    override def toString = "first-draw"
+  }
+  case object SecondDraw extends Value {
+    override def toString = "second-draw"
+  }
+  case object ThirdDraw extends Value {
+    override def toString = "third-draw"
+  }
+}
+
 object Streets {
+  type stage = Function1[Gameplay, Unit]
+  
+  val dealing = new stage {
+    def apply(gameplay: Gameplay) = {
+      Console.printf("*** [dealing] start...\n")
+    }
+  }
+  val betting = new stage {
+    def apply(gameplay: Gameplay) = {
+      Console.printf("*** [betting] start...\n")
+    }
+  }
+  val discarding = new stage {
+    def apply(gameplay: Gameplay) = {
+      Console.printf("*** [discarding] start...\n")
+    }
+  }
+  
+  def betting(bigBets: Boolean) = new stage {
+    def apply(gameplay: Gameplay) = {
+      Console.printf("*** [betting] start...\n")
+    }
+  }
+  
+  def dealing(dealType: Dealer.DealType, cardsNum: Option[Int] = None): stage = new stage {
+    def apply(gameplay: Gameplay) = {
+      Console.printf("*** [dealing] start...\n")
+      new Dealing(dealType, cardsNum).run(gameplay)
+    }
+  }
+  
   final val ByGameGroup: Map[Game.Group, List[Street]] = Map(
       Game.Holdem -> List(
           Street.Preflop(
               List(
-                 new Dealing(Dealer.Hole),
-                 Betting
+                 dealing(Dealer.Hole),
+                 betting
              )
           ),
           Street.Flop(
               List(
-                 new Dealing(Dealer.Board(3)),
-                 Betting
+                 dealing(Dealer.Board, Some(3)),
+                 betting
              )
          ),
           Street.Turn(
               List(
-                 new Dealing(Dealer.Board(1)),
-                 Betting(bigBets = true)
+                 dealing(Dealer.Board, Some(1)),
+                 betting(bigBets = true)
              )
          ),
           Street.River(
               List(
-                 new Dealing(Dealer.Board(1)),
-                 Betting
+                 dealing(Dealer.Board, Some(1)),
+                 betting
              )
           )
       ),
@@ -66,37 +128,37 @@ object Streets {
       Game.SevenCard -> List(
           Street.Second(
               List(
-                 new Dealing(Dealer.Hole(2))
+                 dealing(Dealer.Hole, Some(2))
              )
          ),
           Street.Third(
               List(
-                 new Dealing(Dealer.Door(1)),
-                 Betting
+                 dealing(Dealer.Door, Some(1)),
+                 betting
              )
          ),
           Street.Fourth(
               List(
-                 new Dealing(Dealer.Door(1)),
-                 Betting
+                 dealing(Dealer.Door, Some(1)),
+                 betting
              )
          ),
           Street.Fifth(
               List(
-                 new Dealing(Dealer.Door(1)),
-                 Betting(bigBets = true)
+                 dealing(Dealer.Door, Some(1)),
+                 betting(bigBets = true)
              )
          ),
           Street.Sixth(
               List(
-                 new Dealing(Dealer.Door(1)),
-                 Betting
+                 dealing(Dealer.Door, Some(1)),
+                 betting
              )
          ),
           Street.Seventh(
               List(
-                 new Dealing(Dealer.Hole(1)),
-                 Betting
+                 dealing(Dealer.Hole, Some(1)),
+                 betting
              )
          )
       ),
@@ -104,15 +166,15 @@ object Streets {
       Game.SingleDraw -> List(
           Street.Predraw(
               List(
-                 new Dealing(Dealer.Hole(5)),
-                 Betting,
-                 Discarding
+                 dealing(Dealer.Hole, Some(5)),
+                 betting,
+                 discarding
              )
          ),
           Street.Draw(
               List(
-                 Betting(bigBets = true),
-                 Discarding
+                 betting(bigBets = true),
+                 discarding
              )
          )
       ),
@@ -120,27 +182,27 @@ object Streets {
       Game.TripleDraw -> List(
           Street.Predraw(
               List(
-                 new Dealing(Dealer.Hole),
-                 Betting,
-                 Discarding
+                 dealing(Dealer.Hole),
+                 betting,
+                 discarding
              )
          ),
           Street.FirstDraw(
               List(
-                 Betting,
-                 Discarding
+                 betting,
+                 discarding
              )
          ),
           Street.SecondDraw(
               List(
-                 Betting(bigBets = true),
-                 Discarding
+                 betting(bigBets = true),
+                 discarding
              )
          ),
           Street.ThirdDraw(
               List(
-                 Betting,
-                 Discarding
+                 betting,
+                 discarding
              )
           )
       )

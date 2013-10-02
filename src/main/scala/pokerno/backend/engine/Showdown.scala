@@ -5,7 +5,8 @@ import pokerno.backend.protocol._
 import pokerno.backend.model._
 import pokerno.backend.poker._
 
-class Showdown(val context: Gameplay.Context, val deal: Deal, val betting: Betting.Context) {
+trait Showdown {
+gameplay: Gameplay =>
   def best(pot: SidePot, hands: Map[Player, Hand]): Tuple2[Player, Hand] = {
     var winner: Option[Player] = None
     var best: Option[Hand] = None
@@ -24,7 +25,7 @@ class Showdown(val context: Gameplay.Context, val deal: Deal, val betting: Betti
       val winner = seat.player.get
       seat.net(amount)
       val message = Message.Winner(pos = pos, winner = winner, amount = amount)
-      context.broadcast.all(message)
+      broadcast.all(message)
     }
   }
   
@@ -47,8 +48,8 @@ class Showdown(val context: Gameplay.Context, val deal: Deal, val betting: Betti
       
       var winners: Map[Player, Decimal] = Map.empty
       if (split && bestLow.isDefined) {
-        winners += (winnerLow.get -> total / 2.)
-        winners += (winnerHigh.get -> total / 2.)
+        winners += (winnerLow.get -> total / 2.0)
+        winners += (winnerHigh.get -> total / 2.0)
       } else {
         if (hi.isDefined)
           winners += (winnerHigh.get -> total)
@@ -66,15 +67,15 @@ class Showdown(val context: Gameplay.Context, val deal: Deal, val betting: Betti
   }
   
   def rank(player: Player, ranking: Hand.Ranking): Tuple2[List[Card], Hand] = {
-    val pocket = context.dealer.pocket(player)
-    val board = context.dealer.board
+    val pocket = dealer.pocket(player)
+    val board = dealer.board
     
     if (board.size == 0)
       return (pocket, ranking(pocket).get)
     
     var hands = for {
       pair <- pocket.combinations(2);
-      board <- context.dealer.board.combinations(3)
+      board <- dealer.board.combinations(3)
     } yield(ranking(pair ++ board).get)
   
     (pocket, hands.toList.max)
@@ -83,28 +84,28 @@ class Showdown(val context: Gameplay.Context, val deal: Deal, val betting: Betti
   def showHands(ranking: Hand.Ranking): Map[Player, Hand] = {
     var hands: Map[Player, Hand] = Map.empty
     
-    context.table.stillInPot foreach { case (seat, pos) =>
+    table.where(_.inPot) foreach { case (seat, pos) =>
       val (pocket, hand) = rank(seat.player.get, ranking)
       hands += (seat.player.get -> hand)
       val message = Message.ShowHand(pos = pos, cards = pocket, hand = hand)
-      context.broadcast.all(message)
+      broadcast.all(message)
     }
     hands
   }
   
-  def run(context: Gameplay.Context) {
-    val stillInPot = context.table.stillInPot
+  def showdown {
+    val stillInPot = table.where(_.inPot)
     if (stillInPot.size == 1) {
       declareWinner(stillInPot.head)
     } else {
       var hiHands: Option[Map[Player, Hand]] = None
       var loHands: Option[Map[Player, Hand]] = None
       
-      context.game.options.hiRanking match {
+      game.options.hiRanking match {
         case Some(ranking) => hiHands = Some(showHands(ranking))
         case None =>
       }
-      context.game.options.loRanking match {
+      game.options.loRanking match {
         case Some(ranking) => loHands = Some(showHands(ranking))
         case None =>
       }

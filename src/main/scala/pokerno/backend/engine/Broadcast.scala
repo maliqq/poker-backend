@@ -15,7 +15,7 @@ case class Notification(message: Message.Value, from: Route = NoOne, to: Route =
 
 class Broadcast extends scala.collection.mutable.Publisher[Notification] {
   override def publish(event: Notification) {
-    Console.printf("!!! [%s] %s".format(event.to, event.message))
+    Console.printf("!!! [%s] %s\n".format(event.to, event.message))
   }
   
   def all(message: Message.Value) {

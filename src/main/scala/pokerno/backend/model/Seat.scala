@@ -106,4 +106,12 @@ class Seat {
   def called(amount: Decimal): Boolean = {
     _state == Seat.AllIn || amount <= _put.getOrElse(.0)
   }
+  
+  def isReady = state == Seat.Ready || state == Seat.Play || state == Seat.Fold
+  def isActive = state == Seat.Play || state == Seat.PostBB
+  def isWaitingBB = state == Seat.WaitBB
+  def isPlaying = state == Seat.Play
+  def inPlay = state == Seat.Play || state == Seat.Bet 
+  def inPot = inPlay || state == Seat.AllIn
+
 }

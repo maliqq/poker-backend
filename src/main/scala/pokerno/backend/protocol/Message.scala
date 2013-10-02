@@ -16,7 +16,7 @@ object Message {
   }
   
   case class DealCards (
-    val _type: Dealer.Value,
+    val _type: Dealer.DealType,
     val pos: Option[Int],
     val cards: List[Card]
   ) extends Value with Cards with Position
@@ -29,9 +29,9 @@ object Message {
   ) extends Value
   
   case class AddBet(
-    val _type: Bet.Value,
-    val pos: Option[Int],
-    val bet: Bet
+      val _type: Bet.Value,
+      val pos: Option[Int],
+      val bet: Bet
   ) extends Value with Position
   
   case class MoveButton(
@@ -39,22 +39,38 @@ object Message {
   ) extends Value
   
   case class ShowHand(
-    val pos: Int,
-    val hand: Hand,
-    val cards: List[Card]
+      val pos: Int,
+      val hand: Hand,
+      val cards: List[Card]
   ) extends Value
   
   case class CollectPot(val total: Decimal) extends Value
   
   case class Winner(
-    val winner: Player,
-    val amount: Decimal,
-    val pos: Int
+      val winner: Player,
+      val amount: Decimal,
+      val pos: Int
   ) extends Value
   
-  case class PlayStart(game: Game, stake: Stake) extends Value
-  case class StreetStart(name: String) extends Value
-  case class ChangeGame(game: Game) extends Value
+  case class PlayStart(
+      val game: Game,
+      val stake: Stake) extends Value
+  case class StreetStart(
+      val name: String) extends Value
+  case class ChangeGame(
+      val game: Game) extends Value
   
-  case class JoinTable(pos: Int, player: Player, amount: Decimal) extends Value
+  // table state
+  case class SitOut() extends Value
+  case class ComeBack() extends Value
+  case class JoinTable(
+      val pos: Int,
+      val player: Player,
+      val amount: Decimal) extends Value
+  case class LeaveTable() extends Value
+  case class KickPlayer() extends Value
+  
+  case class ChatMessage() extends Value
+  case class ErrorMessage() extends Value
+  case class DealerMessage() extends Value
 }

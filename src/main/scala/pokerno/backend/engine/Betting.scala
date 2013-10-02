@@ -3,11 +3,53 @@ package pokerno.backend.engine
 import scala.math.{BigDecimal => Decimal}
 import pokerno.backend.model._
 import pokerno.backend.protocol._
-import akka.dataflow._
-import scala.concurrent.ExecutionContext.Implicits.global
+import akka.actor.{Actor, ActorLogging, ActorRef}
 
-object Betting extends Stage {
-  class Context extends Round[Tuple2[Seat, Int]] {
+object Betting {
+  // go to next seat
+  case object Next
+  // stop current deal
+  case object Stop
+  // betting done - wait for next street to occur
+  case object Done
+  // betting timeout - go to next seat
+  case object Timeout
+  
+  class Process(gameplay: Gameplay) extends Actor with ActorLogging {
+    import context._
+    var betting: Betting = null
+    
+    override def preStart {
+      betting = new Betting(gameplay, self)
+    }
+    
+    def receive = {
+      case Next =>
+        log.info("require bet")
+        betting.require
+      
+      case Done =>
+        log.info("done betting round")
+        stop(self)
+        
+      case Stop =>
+        log.info("go to showdown")
+        stop(self)
+        parent ! Deal.Stop
+
+      case Timeout =>
+        log.info("timeout")
+        betting.forceFold
+        self ! Next
+    }
+    
+    override def postStop {
+      log.info("betting complete")
+      betting.complete
+    }
+  }
+
+  class Context(val items: List[Tuple2[Seat, Int]]) extends Round[Tuple2[Seat, Int]] {
     final val MaxRaiseCount = 8
     private var _raiseCount: Int = 0
     
@@ -29,10 +71,10 @@ object Betting extends Stage {
       _seat
     }
     
-    def reset {
+    def clear {
       _raiseCount = 0
       _require.reset
-      stop
+      reset
     }
 
     def force(bet: Bet) {
@@ -83,59 +125,51 @@ object Betting extends Stage {
       }
     }
   }
-  
-  def apply(bigBets: Boolean): Stage = new Betting(bigBets)
-  
-  def run(context: Gameplay.Context) {
-    //(new Betting).run(context)
-  }
 }
 
 import akka.actor.ActorRef
 
-class Betting(bettingProcess: ActorRef, private var _bigBets: Boolean = false) extends Stage {
-  var context: Gameplay.Context = null
+class Betting(val gameplay: Gameplay, actor: ActorRef = null) {
+  private var _bigBets: Boolean = false
   
-  def run(_context: Gameplay.Context) {
-    context = _context
+  def forceFold {
+    
   }
   
-  def requireBetting {
-    val table = context.table
-  
-    table.stillInPlay foreach { case (seat, pos) =>
-      if (!context.betting.called(seat))
+  def require {
+    gameplay.table.where(_.inPlay) foreach { case (seat, pos) =>
+      if (!gameplay.betting.called(seat))
         seat.state = Seat.Play
     }
     
-    if (table.stillInPot.size < 2)
-      bettingProcess ! BettingProcess.Showdown
+    if (gameplay.table.where(_.inPot).size < 2)
+      actor ! Betting.Stop
       return
     
-    val active = table.playing
+    val active = gameplay.table.where(_.isPlaying)
     if (active.size == 0)
-      bettingProcess ! BettingProcess.Exit
+      actor ! Betting.Done
       return
   
-    context.betting.start(active)
+    gameplay.betting = new Betting.Context(active)
     
-    val range = context.betting.raiseRange(context.game.limit, context.stake)
-    val (call, min, max) = context.betting.require(range)
-    val (seat, pos) = context.betting.current
+    val range = gameplay.betting.raiseRange(gameplay.game.limit, gameplay.stake)
+    val (call, min, max) = gameplay.betting.require(range)
+    val (seat, pos) = gameplay.betting.current
     
-    context.broadcast.one(seat.player.get) {
+    gameplay.broadcast.one(seat.player.get) {
       Message.RequireBet(call = call, min = min, max = max, pos = pos)
     }
   }
   
-  def completeBetting {
-    context.betting.reset
+  def complete {
+    gameplay.betting.clear
     
-    context.table.stillInPlay map(_._1.play)
+    gameplay.table.where(_.inPlay) map(_._1.play)
   
-    val total = context.betting.pot.total
+    val total = gameplay.betting.pot.total
     val message = Message.CollectPot(total = total)
-    context.broadcast.all(message)
+    gameplay.broadcast.all(message)
   }
 
 }

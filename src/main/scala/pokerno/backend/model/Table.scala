@@ -1,6 +1,7 @@
 package pokerno.backend.model
 
 import scala.math.{BigDecimal => Decimal}
+import scala.collection._
 
 case class Player(val name: String)
 
@@ -38,6 +39,9 @@ trait Traverse {
     traverse filter { case (seat, _) => f(seat) }
 }
 
+object Table {
+}
+
 class Table(var size: Int) extends Button with Traverse {
   val seats: List[Seat] = List.fill(size) { new Seat }
   def items = seats
@@ -48,10 +52,16 @@ class Table(var size: Int) extends Button with Traverse {
     List[Tuple2[Seat, Int]]((btn, button)) ++ left ++ right
   }
   
-  private var _seating: Map[Player, Int] = Map.empty
+  private var _seating: mutable.Map[Player, Int] = mutable.Map.empty
   def addPlayer(player: Player, at: Int, amount: Decimal) {
+    seats(at).player = player
+    seats(at).amount = amount
+    _seating(player) = at
   }
   
   def removePlayer(player: Player) {
+    val at = _seating(player)
+    seats(at).clear
+    _seating.remove(player)
   }
 }

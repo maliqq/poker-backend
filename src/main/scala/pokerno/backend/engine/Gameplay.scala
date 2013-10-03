@@ -2,7 +2,7 @@ package pokerno.backend.engine
 
 import pokerno.backend.model._
 import pokerno.backend.protocol._
-import akka.actor.ActorRef
+import akka.actor.{Actor, ActorRef}
 import scala.concurrent.Future
 
 trait Rotation {
@@ -26,6 +26,41 @@ trait Rotation {
     _rotationIndex += 1
     _rotationIndex %= mix.games.size
     mix.games(_rotationIndex)
+  }
+}
+
+object Gameplay {
+  case object Start
+  case object NextStreet
+  case object Showdown
+  
+  class Process(val gameplay: Gameplay) extends Actor {
+    import context._
+
+    private var _streetIndex = 0
+    def streets = Streets.ByGameGroup(gameplay.game.options.group)
+    
+    override def preStart {
+      gameplay.table.where(_.isReady).map(_._1.play)
+      gameplay.rotateNext { game =>
+        gameplay.game = game
+        gameplay.broadcast.all(Message.ChangeGame(game = game))
+      }
+    }
+    
+    def receive = {
+      case NextStreet =>
+        _streetIndex += 1
+        if (_streetIndex > streets.size)
+          stop(self)
+        else
+          streets(_streetIndex).run(gameplay)
+    }
+    
+    override def postStop {
+      gameplay.showdown
+      parent ! Deal.Done
+    }
   }
 }
   
@@ -58,21 +93,5 @@ class Gameplay (
     val bet = Bet.force(betType, stake)
     betting.force(bet)
     broadcast.all(Message.AddBet(Bet.Ante, pos = Some(betting.pos), bet = bet))
-  }
-  
-  def run(actor: ActorRef) {
-    table.where(_.isReady).map(_._1.play)
-    
-    rotateNext { g =>
-      game = g
-      broadcast.all(Message.ChangeGame(game = game))
-    }
-    
-    val streets = Streets.ByGameGroup(game.options.group)
-    for(street <- streets) {
-      street.run(this)
-    }
-    
-    showdown
   }
 }

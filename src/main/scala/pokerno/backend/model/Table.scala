@@ -22,6 +22,7 @@ trait Round[T] {
     _current += 1
     _current %= items.size
   }
+  def moveButton = move
 }
 
 trait Button extends Round[Seat] {

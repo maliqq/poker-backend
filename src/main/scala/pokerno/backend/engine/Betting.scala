@@ -15,37 +15,54 @@ object Betting {
   // betting timeout - go to next seat
   case object Timeout
   
-  class Process(gameplay: Gameplay) extends Actor with ActorLogging {
+  class Process(var gameplay: Gameplay) extends Actor with ActorLogging {
     import context._
-    var betting: Betting = null
     
     override def preStart {
-      betting = new Betting(gameplay, self)
-    }
-    
-    def receive = {
-      case Next =>
-        log.info("require bet")
-        betting.require
-      
-      case Done =>
-        log.info("done betting round")
-        stop(self)
-        
-      case Stop =>
-        log.info("go to showdown")
-        stop(self)
-        parent ! Deal.Stop
-
-      case Timeout =>
-        log.info("timeout")
-        betting.forceFold
-        self ! Next
     }
     
     override def postStop {
       log.info("betting complete")
-      betting.complete
+      complete
+    }
+    
+    def forceFold {}
+    
+    def require {
+      gameplay.table.where(_.inPlay) foreach { case (seat, pos) =>
+        if (!gameplay.betting.called(seat))
+          seat.state = Seat.Play
+      }
+      
+      if (gameplay.table.where(_.inPot).size < 2)
+        self ! Betting.Stop
+        return
+      
+      val active = gameplay.table.where(_.isPlaying)
+      if (active.size == 0)
+        self ! Betting.Done
+        return
+    
+      gameplay.betting = new Betting.Context(active)
+      
+      val range = gameplay.betting.raiseRange(gameplay.game.limit, gameplay.stake)
+      val (call, min, max) = gameplay.betting.require(range)
+      val (seat, pos) = gameplay.betting.current
+      
+      gameplay.broadcast.one(seat.player.get) {
+        Message.RequireBet(call = call, min = min, max = max, pos = pos)
+      }
+      self ! Betting.Next
+    }
+    
+    def complete {
+      gameplay.betting.clear
+      
+      gameplay.table.where(_.inPlay) map(_._1.play)
+    
+      val total = gameplay.betting.pot.total
+      val message = Message.CollectPot(total = total)
+      gameplay.broadcast.all(message)
     }
   }
 
@@ -100,8 +117,8 @@ object Betting {
       (_require.call.get, _require.raise.get.min, _require.raise.get.max)
     }
     
-    def called(seat: Seat): Boolean = seat.called(_require.call.getOrElse(.0)) 
- 
+    def called(seat: Seat): Boolean = seat.called(_require.call.getOrElse(.0))
+    
     def add(bet: Bet) {
       val (seat, pos) = current
       try {
@@ -125,51 +142,4 @@ object Betting {
       }
     }
   }
-}
-
-import akka.actor.ActorRef
-
-class Betting(val gameplay: Gameplay, actor: ActorRef = null) {
-  private var _bigBets: Boolean = false
-  
-  def forceFold {
-    
-  }
-  
-  def require {
-    gameplay.table.where(_.inPlay) foreach { case (seat, pos) =>
-      if (!gameplay.betting.called(seat))
-        seat.state = Seat.Play
-    }
-    
-    if (gameplay.table.where(_.inPot).size < 2)
-      actor ! Betting.Stop
-      return
-    
-    val active = gameplay.table.where(_.isPlaying)
-    if (active.size == 0)
-      actor ! Betting.Done
-      return
-  
-    gameplay.betting = new Betting.Context(active)
-    
-    val range = gameplay.betting.raiseRange(gameplay.game.limit, gameplay.stake)
-    val (call, min, max) = gameplay.betting.require(range)
-    val (seat, pos) = gameplay.betting.current
-    
-    gameplay.broadcast.one(seat.player.get) {
-      Message.RequireBet(call = call, min = min, max = max, pos = pos)
-    }
-  }
-  
-  def complete {
-    gameplay.betting.clear
-    
-    gameplay.table.where(_.inPlay) map(_._1.play)
-  
-    val total = gameplay.betting.pot.total
-    val message = Message.CollectPot(total = total)
-    gameplay.broadcast.all(message)
-  }
-
 }

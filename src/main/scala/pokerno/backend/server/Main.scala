@@ -16,7 +16,7 @@ object Main {
     val game = new Game(Game.Texas, Some(Game.NoLimit), Some(9))
     val gameplay = new Gameplay(dealer, broadcast, game, stake, table)
     
-    val deal = system.actorOf(Props(classOf[Deal.Process], gameplay), name = "test-deal-1")
+    val deal = system.actorOf(classOf[Deal.Process], name = "test-deal-1")
     deal ! Deal.Start
   }
   

@@ -69,7 +69,8 @@ object Message {
       val amount: Decimal) extends Value
   case class LeaveTable() extends Value
   case class KickPlayer() extends Value
-  
+  case class SeatStateChange(pos: Int, state: Seat.State) extends Value
+
   case class ChatMessage() extends Value
   case class ErrorMessage() extends Value
   case class DealerMessage() extends Value

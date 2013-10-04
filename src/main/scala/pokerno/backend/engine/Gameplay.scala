@@ -2,7 +2,11 @@ package pokerno.backend.engine
 
 import pokerno.backend.model._
 import pokerno.backend.protocol._
+<<<<<<< HEAD
 import akka.actor.{Actor, ActorRef}
+=======
+import akka.actor.{Actor, Props, ActorLogging, ActorRef}
+>>>>>>> af770ee2c6fa519880c6fa6dd166f41337b04077
 import scala.concurrent.Future
 
 trait Rotation {
@@ -29,41 +33,51 @@ trait Rotation {
   }
 }
 
+case class StageContext(val gameplay: Gameplay, betting: ActorRef, process: ActorRef)
+
 object Gameplay {
   case object Start
   case object NextStreet
   case object Showdown
+  case object Stop
   
-  class Process(val gameplay: Gameplay) extends Actor {
+  class Process(val gameplay: Gameplay) extends Actor with ActorLogging {
     import context._
-
-    private var _streetIndex = 0
-    def streets = Streets.ByGameGroup(gameplay.game.options.group)
     
-    override def preStart {
-      gameplay.table.where(_.isReady).map(_._1.play)
-      gameplay.rotateNext { game =>
-        gameplay.game = game
-        gameplay.broadcast.all(Message.ChangeGame(game = game))
-      }
-    }
+    val streets = Streets.ByGameGroup(gameplay.game.options.group)
+    
+    private var _currentStreet = 0
+    def currentStreet = streets(_currentStreet)
     
     def receive = {
+      case Start =>
+        gameplay.table.where(_.isReady).map(_._1.play)
+        
+        gameplay.rotateNext { g =>
+          gameplay.game = g
+          gameplay.broadcast.all(Message.ChangeGame(game = gameplay.game))
+        }
+        self ! NextStreet
+      
       case NextStreet =>
-        _streetIndex += 1
-        if (_streetIndex > streets.size)
-          stop(self)
-        else
-          streets(_streetIndex).run(gameplay)
-    }
-    
-    override def postStop {
-      gameplay.showdown
-      parent ! Deal.Done
+        if (_currentStreet >= streets.size)
+          self ! Showdown
+        else {
+          val street = currentStreet
+          log.info("= street %s start\n", street.name)
+          for (stage <- street.stages) {
+            stage(gameplay, self)
+          }
+        }
+        _currentStreet += 1
+      
+      case Showdown =>
+        gameplay.showdown
+        parent ! Deal.Done
     }
   }
 }
-  
+
 class Gameplay (
   val dealer: Dealer,
   val broadcast: Broadcast,

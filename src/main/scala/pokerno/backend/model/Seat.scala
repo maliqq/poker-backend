@@ -14,6 +14,10 @@ object Seat {
   case object AllIn extends State
   case object WaitBB extends State
   case object PostBB extends State
+  
+  case class IsTaken extends Error {
+    def toString = "seat is taken"
+  }
 }
 
 class Seat {
@@ -21,7 +25,7 @@ class Seat {
   def state = _state
   def state_=(value: Seat.State) {
     if (_state == Seat.Taken && _state != Seat.Empty)
-      throw new Error("seat is taken")
+      throw Seat.IsTaken()
     if (state == Seat.Ready && _state != Seat.Taken)
       return
     if (value == Seat.Bet && _amount.getOrElse(.0) == .0)

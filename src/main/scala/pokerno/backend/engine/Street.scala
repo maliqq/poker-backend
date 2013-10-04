@@ -1,19 +1,13 @@
 package pokerno.backend.engine
 
 import pokerno.backend.model._
+import akka.actor.ActorRef
 
-class Street(val name: Street.Value, val stages: List[Function1[Gameplay, Unit]]) {
-  def run(gameplay: Gameplay) {
-    Console.printf("= street %s start\n", name)
-    for (stage <- stages) {
-      stage(gameplay)
-    }
-  }
-}
+case class Street(val name: Street.Value, val stages: List[Function2[Gameplay, ActorRef, Unit]])
 
 object Street {
   trait Value {
-    def apply(stages: List[Function1[Gameplay, Unit]]): Street = new Street(this, stages)
+    def apply(stages: List[Function2[Gameplay, ActorRef, Unit]]): Street = new Street(this, stages)
   }
   
   case object Preflop extends Value {
@@ -66,32 +60,32 @@ object Street {
 }
 
 object Streets {
-  type stage = Function1[Gameplay, Unit]
+  type stage = Function2[Gameplay, ActorRef, Unit]
   
   val dealing = new stage {
-    def apply(gameplay: Gameplay) = {
+    def apply(gameplay: Gameplay, actor: ActorRef) = {
       Console.printf("*** [dealing] start...\n")
     }
   }
   val betting = new stage {
-    def apply(gameplay: Gameplay) = {
+    def apply(gameplay: Gameplay, actor: ActorRef) = {
       Console.printf("*** [betting] start...\n")
     }
   }
   val discarding = new stage {
-    def apply(gameplay: Gameplay) = {
+    def apply(gameplay: Gameplay, actor: ActorRef) = {
       Console.printf("*** [discarding] start...\n")
     }
   }
   
   def betting(bigBets: Boolean) = new stage {
-    def apply(gameplay: Gameplay) = {
+    def apply(gameplay: Gameplay, actor: ActorRef) = {
       Console.printf("*** [betting] start...\n")
     }
   }
   
   def dealing(dealType: Dealer.DealType, cardsNum: Option[Int] = None): stage = new stage {
-    def apply(gameplay: Gameplay) = {
+    def apply(gameplay: Gameplay, actor: ActorRef) = {
       Console.printf("*** [dealing] start...\n")
       new Dealing(dealType, cardsNum).run(gameplay)
     }

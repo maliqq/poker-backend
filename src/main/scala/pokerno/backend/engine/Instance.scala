@@ -55,5 +55,5 @@ class Instance extends Actor with FSM[State, Data] {
       }
   }
   
-  initialize()
+  initialize
 }

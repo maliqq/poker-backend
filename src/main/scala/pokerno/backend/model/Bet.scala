@@ -3,12 +3,9 @@ package pokerno.backend.model
 import scala.math.{BigDecimal => Decimal}
 
 class Bet(val betType: Bet.Value, val amount: Decimal = .0) {
-  override def toString = {
-    if (amount > .0)
-      "%s %.2f".format(betType.toString, amount)
-    else
-      betType.toString
-  }
+  override def toString =
+    if (amount > .0) "%s %.2f".format(betType.toString, amount)
+    else betType.toString
 }
 
 object Bet {

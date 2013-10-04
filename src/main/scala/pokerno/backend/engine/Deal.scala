@@ -1,6 +1,6 @@
 package pokerno.backend.engine
 
-import akka.actor.{Actor, ActorLogging, ActorRef}
+import akka.actor.{Actor, ActorSystem, ActorLogging, ActorRef, Props}
 import scala.concurrent.Future
 import akka.event.Logging
 import pokerno.backend.protocol._
@@ -9,11 +9,12 @@ object Deal {
   case object Start
   case object Stop
   
-  class Process(val gameplay: Gameplay) extends Actor {
+  class Process extends Actor {
     import context.dispatcher
     import context._
     
     var log = Logging(system, this)
+    var gameplay: ActorRef
     
     override def preStart {
     }
@@ -21,12 +22,9 @@ object Deal {
     def receive = {
       case Deal.Start =>
         log.info("starting new deal")
-        Future{
-          gameplay.run(self)
-        } onSuccess { case _ =>
-          log.info("deal success")
-          self ! Deal.Start
-        }
+        gameplay = actorOf(Props[Gameplay.Process])
+        gameplay ! Gameplay.Start
+        
       case Message.SitOut =>
       case Message.ComeBack =>
       case Message.AddBet =>
@@ -35,7 +33,7 @@ object Deal {
       case Message.LeaveTable =>
       case Message.KickPlayer =>
       case Deal.Stop =>
-        stop(self)
+        stop(self)  
     }
     
     override def postStop {

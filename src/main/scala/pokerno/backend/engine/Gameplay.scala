@@ -2,7 +2,7 @@ package pokerno.backend.engine
 
 import pokerno.backend.model._
 import pokerno.backend.protocol._
-import akka.actor.ActorRef
+import akka.actor.{Actor, Props, ActorLogging, ActorRef}
 import scala.concurrent.Future
 
 trait Rotation {
@@ -28,7 +28,51 @@ trait Rotation {
     mix.games(_rotationIndex)
   }
 }
+
+case class StageContext(val gameplay: Gameplay, betting: ActorRef, process: ActorRef)
+
+object Gameplay {
+  case object Start
+  case object NextStreet
+  case object Showdown
+  case object Stop
   
+  class Process(val gameplay: Gameplay) extends Actor with ActorLogging {
+    import context._
+    
+    val streets = Streets.ByGameGroup(gameplay.game.options.group)
+    
+    private var _currentStreet = 0
+    def currentStreet = streets(_currentStreet)
+    
+    def receive = {
+      case Start =>
+        gameplay.table.where(_.isReady).map(_._1.play)
+        
+        gameplay.rotateNext { g =>
+          gameplay.game = g
+          gameplay.broadcast.all(Message.ChangeGame(game = gameplay.game))
+        }
+        self ! NextStreet
+      
+      case NextStreet =>
+        if (_currentStreet >= streets.size)
+          self ! Showdown
+        else {
+          val street = currentStreet
+          log.info("= street %s start\n", street.name)
+          for (stage <- street.stages) {
+            stage(gameplay, self)
+          }
+        }
+        _currentStreet += 1
+      
+      case Showdown =>
+        gameplay.showdown
+    }
+  }
+}
+
 class Gameplay (
   val dealer: Dealer,
   val broadcast: Broadcast,
@@ -58,21 +102,5 @@ class Gameplay (
     val bet = Bet.force(betType, stake)
     betting.force(bet)
     broadcast.all(Message.AddBet(Bet.Ante, pos = Some(betting.pos), bet = bet))
-  }
-  
-  def run(actor: ActorRef) {
-    table.where(_.isReady).map(_._1.play)
-    
-    rotateNext { g =>
-      game = g
-      broadcast.all(Message.ChangeGame(game = game))
-    }
-    
-    val streets = Streets.ByGameGroup(game.options.group)
-    for(street <- streets) {
-      street.run(this)
-    }
-    
-    showdown
   }
 }

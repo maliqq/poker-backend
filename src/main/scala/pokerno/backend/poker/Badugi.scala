@@ -4,9 +4,9 @@ trait BadugiHand {
 self: Hand.Cards =>
   def isBadugiOne: Option[Hand] =
     if (groupKind.size == 1) {
-      Some(new Hand(value = value.take(1)))
+      Some(new Hand(value = value take(1)))
     } else if (groupSuit.size == 1) {
-      val card = groupSuit(0).min
+      val card = groupSuit(0) min
 
       new Hand(value = List(card)) ranked Rank.BadugiOne
     } else
@@ -68,7 +68,7 @@ self: Hand.Cards =>
       val diff = value diff(value)
       val _a = diff head
 
-      (_a, value.filter{ card => _a.suit != card.suit }.head)
+      (_a, value.filter{ card => _a.suit != card.suit } head)
     
     } else if (suited contains(3)) {
     
@@ -78,7 +78,7 @@ self: Hand.Cards =>
       val diff = value diff(value)
       val _a = diff head
 
-      (_a, value.filter { card => _a.kind != card.kind }.min)
+      (_a, value.filter { card => _a.kind != card.kind } min)
 
     } else if (groupSuit.size > 0) {
       
@@ -86,7 +86,7 @@ self: Hand.Cards =>
       val diff = value diff(value)
       val _a = value min
 
-      (_a, diff.filter{ card => _a.suit != card.suit && _a.kind != card.kind }.min)
+      (_a, diff.filter{ card => _a.suit != card.suit && _a.kind != card.kind } min)
 
     } else {
     
@@ -94,7 +94,7 @@ self: Hand.Cards =>
       val diff = value diff(value)
       val _a = value head
 
-      (_a, diff.filter { card => _a.kind != card.kind }.min)
+      (_a, diff.filter { card => _a.kind != card.kind } min)
     }
     new Hand(value = List(a, b)) ranked Rank.BadugiTwo
   }

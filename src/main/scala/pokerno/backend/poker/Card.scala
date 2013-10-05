@@ -23,7 +23,7 @@ object Card {
   final val All = for { kind <- Kind.All; suit <- Suit.All } yield(new Card(kind, suit))
   final val CardsNum = All.size
   final val Masks: List[Int] = for { kind <- Kind.All; suit <- Suit.All } yield(kind.toInt << (1 << 4 * suit.toInt))
-  final val Seq = List.range(0, 51)
+  final val Seq = List range(0, 51)
   
   def apply(value: Any): Card = value match {
     case i: Int => parseInt(i)
@@ -66,10 +66,10 @@ object Cards {
     matching.toList
   }
   
-  val OrderingByHead = Ordering.by[List[Card], Card](_.head)
-  val OrderingByMax = Ordering.by[List[Card], Card](_.max)
+  val OrderingByHead = Ordering.by[List[Card], Card](_ head)
+  val OrderingByMax = Ordering.by[List[Card], Card](_ max)
 }
 
 class Cards(val cards: List[Card]) {
-  override def toString = cards.map(_.toString) mkString("")
+  override def toString = cards.map(_ toString) mkString("")
 }

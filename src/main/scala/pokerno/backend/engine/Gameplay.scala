@@ -108,7 +108,7 @@ class Gameplay (
     broadcast all(Message.AddBet(Bet.Ante, pos = Some(betting.pos), bet = bet))
   }
   
-  def rotateGame = if (variation.isMixed)
+  def rotateGame = if (variation isMixed)
     rotateNext { g =>
       game = g
       broadcast all(Message.ChangeGame(game = game))

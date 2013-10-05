@@ -31,7 +31,7 @@ object Poker {
       val cards = Cards(r.cards)
       val hand = Hand.High(cards)
       
-      Future.value(evaluateResp(hand = hand.get))
+      Future value(evaluateResp(hand = hand.get))
     }
     
     // compare two hands
@@ -46,7 +46,7 @@ object Poker {
       val h1 = Hand.High(a ++ board)
       val h2 = Hand.High(b ++ board)
       
-      Future.value(compareResp(h1 = h1.get, h2 = h2.get, result = h1.get.compare(h2.get)))
+      Future value(compareResp(h1 = h1.get, h2 = h2.get, result = h1.get compare(h2 get)))
     }
     
     // simulate hands
@@ -59,7 +59,7 @@ object Poker {
       val board = Cards(r.board)
       
       val hu = PokerMath.Headsup(a, b, r.samples)
-      Future.value(simulateResp(sample = hu.withBoard(board)))
+      Future value(simulateResp(sample = hu withBoard(board)))
     }
   }
   
@@ -75,6 +75,6 @@ object Poker {
 class Poker extends Runnable {
   def run {
     val address = new InetSocketAddress(Node.Config.host, Node.Config.port)
-    val server: Server = ServerBuilder().codec(Http()).bindTo(address).name(Node.Config.name).build(Node.service)
+    val server: Server = ServerBuilder().codec(Http()).bindTo(address).name(Node.Config.name) build(Node.service)
   }
 }

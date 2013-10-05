@@ -26,17 +26,15 @@ class Stake(
       case Bet.DoubleBet => doubleBet
     }
   
-  private def _rate(t: Bet.Value): Decimal = Rates.Default(t) * bigBlind
-  
-  val smallBlind: Decimal = SmallBlind getOrElse(_rate(Bet.SmallBlind))
-  val doubleBet: Decimal = _rate(Bet.DoubleBet)
+  val smallBlind: Decimal = SmallBlind getOrElse(Bet.SmallBlind rateWith(bigBlind))
+  val doubleBet: Decimal = Bet.DoubleBet rateWith(bigBlind)
   
   val ante: Option[Decimal] = Ante match {
     case Left(amount) =>
       if (amount > .0) Some(amount)
       else None
     case Right(withAnte) =>
-      if (withAnte) Some(_rate(Bet.Ante))
+      if (withAnte) Some(Bet.Ante rateWith(bigBlind))
       else None
   }
   
@@ -45,7 +43,7 @@ class Stake(
       if (amount > .0) Some(amount)
       else None
     case Right(withBringIn) =>
-      if (withBringIn) Some(_rate(Bet.BringIn))
+      if (withBringIn) Some(Bet.BringIn rateWith(bigBlind))
       else None
   }
 }

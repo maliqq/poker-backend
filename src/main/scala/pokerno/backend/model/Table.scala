@@ -54,8 +54,8 @@ class Table(var size: Int) extends Button with Traverse {
   
   private var _seating: mutable.Map[Player, Int] = mutable.Map.empty
   def addPlayer(player: Player, at: Int, amount: Decimal) {
-    seats(at).player = player
-    seats(at).amount = amount
+    seats(at) player = player
+    seats(at) amount = amount
     _seating(player) = at
   }
   

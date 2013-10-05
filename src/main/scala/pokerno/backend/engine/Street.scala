@@ -13,7 +13,7 @@ class StreetActor(val gameplay: Gameplay, val name: Street.Value, val stages: Li
   
   def receive = {
     case Stage.Next =>
-      if (stagesIterator.hasNext) {
+      if (stagesIterator hasNext) {
         log.info("stage start")
         val stage = stagesIterator.next
         stage proceed(StageEnv(gameplay = gameplay, streetRef = self))

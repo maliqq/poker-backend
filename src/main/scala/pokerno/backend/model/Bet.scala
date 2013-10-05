@@ -4,23 +4,28 @@ import scala.math.{BigDecimal => Decimal}
 
 class Bet(val betType: Bet.Value, val amount: Decimal = .0) {
   override def toString =
-    if (amount > .0) "%s %.2f" format(betType.toString, amount)
+    if (amount > .0) "%s %.2f" format(betType toString, amount)
     else betType.toString
 }
 
 object Bet {
   trait Value
   
+  trait Rateable {
+  v: Value =>
+    def rateWith(amount: Decimal): Decimal = Rates.Default(this) * amount
+  }
+  
   abstract class ForcedBet extends Value
   abstract class PassiveBet extends Value
   abstract class ActiveBet extends Value
-  object DoubleBet extends Value
+  object DoubleBet extends Value with Rateable
   abstract class CardAction extends Value
   
-  case object SmallBlind extends ForcedBet
-  case object BigBlind extends ForcedBet
-  case object Ante extends ForcedBet
-  case object BringIn extends ForcedBet
+  case object SmallBlind extends ForcedBet with Rateable
+  case object BigBlind extends ForcedBet with Rateable
+  case object Ante extends ForcedBet with Rateable
+  case object BringIn extends ForcedBet with Rateable
   case object GuestBlind extends ForcedBet
   case object Straddle extends ForcedBet
   

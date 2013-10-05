@@ -97,7 +97,7 @@ class Betting(var gameplay: Gameplay, street: ActorRef) {
   def forceFold {}
   
   def require {
-    gameplay.table.where(_.inPlay) foreach { case (seat, pos) =>
+    gameplay.table.where(_ inPlay) foreach { case (seat, pos) =>
       if (!gameplay.betting.called(seat))
         seat.state = Seat.Play
     }

@@ -32,7 +32,7 @@ gameplay: Gameplay =>
   def declareWinners(pot: Pot, hi: Option[Map[Player, Hand]], lo: Option[Map[Player, Hand]]) = {
     val split: Boolean = hi.isDefined && lo.isDefined
     pot.sidePots foreach { side  =>
-      val total = side.total
+      val total = side total
       var winnerLow: Option[Player] = None
       var winnerHigh: Option[Player] = None
       var bestLow: Option[Hand] = None
@@ -60,15 +60,15 @@ gameplay: Gameplay =>
       winners foreach { case (winner, amount) =>
         val pos = 0
         val seat = new Seat
-        seat.net(amount)
+        seat net(amount)
         val message = Message.Winner(pos = pos, winner = winner, amount = amount)
       }
     }
   }
   
   def rank(player: Player, ranking: Hand.Ranking): Tuple2[List[Card], Hand] = {
-    val pocket = dealer.pocket(player)
-    val board = dealer.board
+    val pocket = dealer pocket(player)
+    val board = dealer board
     
     if (board.size == 0)
       return (pocket, ranking(pocket) get)
@@ -78,7 +78,7 @@ gameplay: Gameplay =>
       board <- dealer.board combinations(3)
     } yield(ranking(pair ++ board) get)
   
-    (pocket, hands.toList.max)
+    (pocket, hands.toList max)
   }
 
   def showHands(ranking: Hand.Ranking): Map[Player, Hand] = {

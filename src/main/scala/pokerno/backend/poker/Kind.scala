@@ -28,5 +28,5 @@ object Kind {
   case object Ace extends Value
   
   final val All: List[Value] = List(Deuce, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King, Ace)
-  final val Seq = List.range(0, 12)
+  final val Seq = List range(0, 12)
 }

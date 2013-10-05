@@ -8,7 +8,7 @@ import org.jboss.netty.handler.codec.http._
 object Room {
   class Service extends finagle.Service[HttpRequest, HttpResponse] {
     def apply(request: HttpRequest) = {
-      Future.value(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK))
+      Future value(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK))
     }
   }
 }

@@ -11,7 +11,7 @@ self: Hand.Cards =>
       }
   }
   
-  def isFourKind: Option[Hand] = paired.get(4) match {
+  def isFourKind: Option[Hand] = paired get(4) match {
     case Some(quads) =>
       val cards = quads.head
       new Hand(value = cards, high = cards, _kicker = true) ranked Rank.FourKind
@@ -46,20 +46,20 @@ self: Hand.Cards =>
   def isStraight: Option[Hand] = gaps find { group => group.size > 5 } match {
     case Some(group) =>
       val cards = group.sorted
-      new Hand(value = value.take(5), high = value.take(1)) ranked Rank.Straight
+      new Hand(value = value take(5), high = value take(1)) ranked Rank.Straight
     case None => None
   }
 
   def isThreeKind: Option[Hand] = paired get(3) match {
     case Some(sets) =>
-      new Hand(value = sets.head, _high = true, _kicker = true) ranked Rank.ThreeKind
+      new Hand(value = sets head, _high = true, _kicker = true) ranked Rank.ThreeKind
     case None => None
   }
 
   def isTwoPair: Option[Hand] = paired get(2) match {
     case Some(pairs) =>
       val List(major, minor, _*) = pairs sorted(Cards.OrderingByMax)
-      new Hand(value = major ++ minor, high = List(major.head, minor.head), _kicker = true) ranked Rank.TwoPair
+      new Hand(value = major ++ minor, high = List(major head, minor head), _kicker = true) ranked Rank.TwoPair
     case None => None
   }
 

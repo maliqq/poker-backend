@@ -9,19 +9,19 @@ object Main {
   val system = ActorSystem("MySystem")
 
   def main(args: Array[String]) {
-    val dealer = new Dealer()
-    val broadcast = new Broadcast()
+    val dealer = new Dealer
+    val broadcast = new Broadcast
     val table = new Table(9)
     val stake = new Stake(10.0)
     val game = new Game(Game.Texas, Some(Game.NoLimit), Some(9))
     val gameplay = new Gameplay(dealer, broadcast, game, stake, table)
     
-    val deal = system.actorOf(Props(classOf[DealActor], gameplay), name = "test-deal-1")
+    val deal = system actorOf(Props(classOf[DealActor], gameplay), name = "test-deal-1")
     deal ! Deal.Start
   }
   
   def main2(args: Array[String]) {
-    val instance = system.actorOf(Props[Instance], name = "greeter")
+    val instance = system actorOf(Props[Instance], name = "greeter")
     instance ! Instance.Start
   }
 }

@@ -40,7 +40,7 @@ class SidePot(val cap: Option[Decimal] = None) {
       map { case (key, value) => (key, value - bet) }
     
     val side = new SidePot(Some(bet))
-    side.members = members.map { case (key, value) =>
+    side.members = members map { case (key, value) =>
       (key, List(value, bet).min)
     }
     
@@ -89,9 +89,9 @@ class Pot {
       main add(member, left)
   }
   
-  override def toString: String = {
+  override def toString = {
     val s = new StringBuilder
     sidePots foreach { sidePot => s ++= sidePot.toString }
-    s.toString
+    s toString
   }
 }

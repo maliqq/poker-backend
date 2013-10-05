@@ -2,7 +2,7 @@ package pokerno.backend.poker
 
 import scala.collection.mutable
 
-trait Fast1 {
+trait FastHigh{
   final val HighCardFlag = 0x100000
   final val OnePairFlag = 0x200000
   final val TwoPairFlag = 0x300000

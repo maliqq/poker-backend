@@ -1,7 +1,7 @@
 package pokerno.backend.poker
 
 object Kind {
-  private final val _short = "23456789TJQK".toList
+  private final val _short = "23456789TJQKA".toList
   private final val _full: List[String] = List("deuce", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "jack", "queen", "king", "ace")
   
   sealed class Value {
@@ -28,4 +28,5 @@ object Kind {
   case object Ace extends Value
   
   final val All: List[Value] = List(Deuce, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King, Ace)
+  final val Seq = List.range(0, 12)
 }

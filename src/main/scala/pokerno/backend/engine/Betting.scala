@@ -15,57 +15,6 @@ object Betting {
   // betting timeout - go to next seat
   case object Timeout
   
-  class Process(var gameplay: Gameplay) extends Actor with ActorLogging {
-    import context._
-    
-    override def preStart {
-    }
-    
-    override def postStop {
-      log.info("betting complete")
-      complete
-    }
-    
-    def forceFold {}
-    
-    def require {
-      gameplay.table.where(_.inPlay) foreach { case (seat, pos) =>
-        if (!gameplay.betting.called(seat))
-          seat.state = Seat.Play
-      }
-      
-      if (gameplay.table.where(_.inPot).size < 2)
-        self ! Betting.Stop
-        return
-      
-      val active = gameplay.table.where(_.isPlaying)
-      if (active.size == 0)
-        self ! Betting.Done
-        return
-    
-      gameplay.betting = new Betting.Context(active)
-      
-      val range = gameplay.betting.raiseRange(gameplay.game.limit, gameplay.stake)
-      val (call, min, max) = gameplay.betting.require(range)
-      val (seat, pos) = gameplay.betting.current
-      
-      gameplay.broadcast.one(seat.player.get) {
-        Message.RequireBet(call = call, min = min, max = max, pos = pos)
-      }
-      self ! Betting.Next
-    }
-    
-    def complete {
-      gameplay.betting.clear
-      
-      gameplay.table.where(_.inPlay) map(_._1.play)
-    
-      val total = gameplay.betting.pot.total
-      val message = Message.CollectPot(total = total)
-      gameplay.broadcast.all(message)
-    }
-  }
-
   class Context(val items: List[Tuple2[Seat, Int]]) extends Round[Tuple2[Seat, Int]] {
     final val MaxRaiseCount = 8
     private var _raiseCount: Int = 0
@@ -77,7 +26,7 @@ object Betting {
     }
     
     var pot: Pot = new Pot()
-    private var _require: Bet.Requirement = new Bet.Requirement
+    private var _require: Bet.Validation = new Bet.Validation
     
     def pos: Int = {
       val (_, _pos) = current
@@ -140,6 +89,40 @@ object Betting {
       } catch {
       case e: Error => seat.fold
       }
+    }
+  }
+}
+
+class Betting(var gameplay: Gameplay, street: ActorRef) {
+  def forceFold {}
+  
+  def require {
+    gameplay.table.where(_.inPlay) foreach { case (seat, pos) =>
+      if (!gameplay.betting.called(seat))
+        seat.state = Seat.Play
+    }
+    
+    if (gameplay.table.where(_.inPot).size < 2) {
+      // 1 player left - go to showdown
+      street ! Street.Exit
+      return
+    }
+    
+    val active = gameplay.table.where(_.isPlaying)
+    if (active.size == 0) {
+      // betting done - go to next stage
+      street ! Stage.Next
+      return
+    }
+  
+    gameplay.betting = new Betting.Context(active)
+    
+    val range = gameplay.betting.raiseRange(gameplay.game.limit, gameplay.stake)
+    val (call, min, max) = gameplay.betting.require(range)
+    val (seat, pos) = gameplay.betting.current
+    
+    gameplay.broadcast.one(seat.player.get) {
+      Message.RequireBet(call = call, min = min, max = max, pos = pos)
     }
   }
 }

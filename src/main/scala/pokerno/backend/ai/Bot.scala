@@ -37,7 +37,7 @@ abstract class Bot extends Actor with Context with Simple {
     case msg: Message.PlayStart =>
       cards = List[Card]()
       board = List[Card]()
-      pot = 0.
+      pot = .0
       opponentsNum = 6
       stake = msg.stake
   
@@ -46,7 +46,7 @@ abstract class Bot extends Actor with Context with Simple {
 
     case msg: Message.CollectPot =>
       pot = msg.total
-      bet = 0.
+      bet = .0
 
     case msg: Message.DealCards =>
       msg._type match {
@@ -73,7 +73,7 @@ abstract class Bot extends Actor with Context with Simple {
   
   def doCheck = addBet(Bet.check)
   def doFold {
-    bet = 0.
+    bet = .0
     addBet(Bet.fold)
   }
   

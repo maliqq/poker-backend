@@ -97,7 +97,7 @@ gameplay: Gameplay =>
     val stillInPot = table.where(_.inPot)
     if (stillInPot.size == 1) {
       declareWinner(stillInPot.head)
-    } else {
+    } else if (stillInPot.size > 1) {
       var hiHands: Option[Map[Player, Hand]] = None
       var loHands: Option[Map[Player, Hand]] = None
       

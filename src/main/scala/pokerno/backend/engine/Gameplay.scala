@@ -2,11 +2,7 @@ package pokerno.backend.engine
 
 import pokerno.backend.model._
 import pokerno.backend.protocol._
-<<<<<<< HEAD
-import akka.actor.{Actor, ActorRef}
-=======
 import akka.actor.{Actor, Props, ActorLogging, ActorRef}
->>>>>>> af770ee2c6fa519880c6fa6dd166f41337b04077
 import scala.concurrent.Future
 
 trait Rotation {
@@ -33,49 +29,52 @@ trait Rotation {
   }
 }
 
-case class StageContext(val gameplay: Gameplay, betting: ActorRef, process: ActorRef)
+class GameplayActor(val gameplay: Gameplay) extends Actor with ActorLogging {
+  import context._
+  
+  private val streets = Streets.ByGameGroup(gameplay.game.options.group)
+  private val streetsIterator = streets.iterator
+  
+  var currentStreet: ActorRef = system.deadLetters
+  
+  override def preStart = {
+    log.info("start gameplay")
+    
+    gameplay.table.where(_.isReady).map(_._1.play)
+    gameplay.rotateGame
+    
+    self ! Street.Next
+  }
+  
+  def receive = {
+    case Street.Next =>
+      log.info("next street")
+      
+      if (sender != self)
+        stop(currentStreet)
+      
+      if (streetsIterator.hasNext) {
+        val Street(name, stages) = streetsIterator.next
+        currentStreet = actorOf(Props(classOf[StreetActor], gameplay, name, stages), name = "street-%s".format(name))
+        currentStreet ! Stage.Next
+      } else
+        self ! Street.Exit
+    
+    case Street.Exit =>
+      log.info("showdown")
+      gameplay.showdown
+      stop(self)
+  }
+
+  override def postStop {
+    log.info("stop gameplay")
+    parent ! Deal.Done
+  }
+}
 
 object Gameplay {
   case object Start
-  case object NextStreet
-  case object Showdown
   case object Stop
-  
-  class Process(val gameplay: Gameplay) extends Actor with ActorLogging {
-    import context._
-    
-    val streets = Streets.ByGameGroup(gameplay.game.options.group)
-    
-    private var _currentStreet = 0
-    def currentStreet = streets(_currentStreet)
-    
-    def receive = {
-      case Start =>
-        gameplay.table.where(_.isReady).map(_._1.play)
-        
-        gameplay.rotateNext { g =>
-          gameplay.game = g
-          gameplay.broadcast.all(Message.ChangeGame(game = gameplay.game))
-        }
-        self ! NextStreet
-      
-      case NextStreet =>
-        if (_currentStreet >= streets.size)
-          self ! Showdown
-        else {
-          val street = currentStreet
-          log.info("= street %s start\n", street.name)
-          for (stage <- street.stages) {
-            stage(gameplay, self)
-          }
-        }
-        _currentStreet += 1
-      
-      case Showdown =>
-        gameplay.showdown
-        parent ! Deal.Done
-    }
-  }
 }
 
 class Gameplay (
@@ -108,4 +107,21 @@ class Gameplay (
     betting.force(bet)
     broadcast.all(Message.AddBet(Bet.Ante, pos = Some(betting.pos), bet = bet))
   }
+  
+  def rotateGame = if (variation.isMixed)
+    rotateNext { g =>
+      game = g
+      broadcast.all(Message.ChangeGame(game = game))
+    }
+  
+  def completeBetting {
+    betting.clear
+    
+    table.where(_.inPlay) map(_._1.play)
+  
+    val total = betting.pot.total
+    val message = Message.CollectPot(total = total)
+    broadcast.all(message)
+  }
+
 }

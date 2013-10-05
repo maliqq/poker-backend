@@ -21,4 +21,5 @@ object Suit {
   case object Club extends Value
   
   final val All: List[Value] = List(Spade, Heart, Diamond, Club)
+  final val Seq = List.range(0, 3)
 }

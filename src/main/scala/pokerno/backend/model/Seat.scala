@@ -15,9 +15,7 @@ object Seat {
   case object WaitBB extends State
   case object PostBB extends State
   
-  case class IsTaken extends Error {
-    def toString = "seat is taken"
-  }
+  case class IsTaken() extends Error("seat is taken")
 }
 
 class Seat {

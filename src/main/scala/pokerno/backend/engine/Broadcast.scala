@@ -2,6 +2,7 @@ package pokerno.backend.engine
 
 import pokerno.backend.model._
 import pokerno.backend.protocol._
+import akka.event.{EventBus}
 
 trait Route
 case object NoOne extends Route
@@ -13,8 +14,20 @@ case class Except[T](endpoints: List[T]) extends Route
 
 case class Notification(message: Message.Value, from: Route = NoOne, to: Route = All)
 
-class Broadcast extends scala.collection.mutable.Publisher[Notification] {
-  override def publish(event: Notification) {
+class Broadcast extends EventBus {
+  def subscribe(subscriber: Subscriber, to: Classifier): Boolean = {
+    true
+  }
+  
+  def unsubscribe(subscriber: Subscriber, from: Classifier): Boolean = {
+    true
+  }
+  
+  def unsubscribe(subscriber: Subscriber) = {}
+  
+  def publish(event: Event) = {}
+  
+  def publish(event: Notification) {
     Console.printf("!!! [%s] %s\n".format(event.to, event.message))
   }
   

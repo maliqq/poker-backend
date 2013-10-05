@@ -6,12 +6,23 @@ import com.twitter.finagle
 import com.twitter.finagle.http.Http
 import org.jboss.netty.handler.codec.http._
 import java.net.InetSocketAddress
+import java.util.UUID
+
+import pokerno.backend.model._
 
 object Node {
   class Service extends finagle.Service[HttpRequest, HttpResponse] {
     def apply(request: HttpRequest) = {
       Future.value(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK))
     }
+    
+    // create new room
+    case class createRoomRq(guid: UUID, variation: Variation, stake: Stake)
+    def createRoom(r: createRoomRq) = {}
+    
+    // close existing room
+    case class closeRoomRq(guid: UUID)
+    def closeRoom(r: closeRoomRq) = {}
   }
   
   val service: finagle.Service[HttpRequest, HttpResponse] = new Service

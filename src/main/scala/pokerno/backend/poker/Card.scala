@@ -13,28 +13,34 @@ class Card(val kind: Kind.Value, val suit: Suit.Value) extends Ordered[Card] {
 }
 
 object Card {
+  case class NotACard(value: Any) extends Error("not a card: %s".format(value))
+  case class InvalidCard(value: Any) extends Error("invalid card: %s".format(value))
+  case class ParseError(s: String) extends Error("can't parse card: %s".format(s))
+  
   private var _all: ListBuffer[Card] = new ListBuffer
   private var _masks: ListBuffer[Int] = new ListBuffer
 
   final val All = for { kind <- Kind.All; suit <- Suit.All } yield(new Card(kind, suit))
   final val CardsNum = All.size
   final val Masks: List[Int] = for { kind <- Kind.All; suit <- Suit.All } yield(kind.toInt << (1 << 4 * suit.toInt))
+  final val Seq = List.range(0, 51)
   
   def apply(value: Any): Card = value match {
     case i: Int => parseInt(i)
     case s: String => parseString(s)
-    case _ => throw new Error("can't build card: %s".format(value))
+    case c: Card => c
+    case _ => throw NotACard()
   }
   
   implicit def parseInt(i: Int): Card = {
     if (i <= 0 || i > CardsNum)
-      throw new Error("invalid card index: %s".format(i))
+      throw InvalidCard(i)
     new Card(i >> 2, i % 4)
   }
   
   implicit def parseString(s: String): Card = {
     if (s.size != 2)
-      throw new Error("can't parse card: %s".format(s))
+      throw ParseError(s)
     val List(kind, suit) = s.toList
     new Card(kind, suit)
   }
@@ -48,6 +54,8 @@ object Cards {
     case Binary(b) => parseBinary(b)
   }
   
+  def wrap(cards: List[Card]) = new Cards(cards)
+  
   def parseBinary(b: List[Int]): List[Card] = for { i <- b } yield(Card(i))
   
   def parseString(s: String): List[Card] = {
@@ -60,4 +68,8 @@ object Cards {
   
   val OrderingByHead = Ordering.by[List[Card], Card](_.head)
   val OrderingByMax = Ordering.by[List[Card], Card](_.max)
+}
+
+class Cards(val cards: List[Card]) {
+  override def toString = cards.map(_.toString).mkString("")
 }

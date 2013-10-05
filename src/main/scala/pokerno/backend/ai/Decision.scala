@@ -63,7 +63,7 @@ trait Simple {
       )
     else if (chances.wins > tightness / 2)
       Decision(
-        maxBet = (stack + bet) / 3.,
+        maxBet = (stack + bet) / 3.0,
         raiseChance = .2
       )
     else if (chances.ties > 0.8)

@@ -1,108 +1,98 @@
 package pokerno.backend.engine
 
 import pokerno.backend.model._
-import akka.actor.ActorRef
+import akka.actor.{Actor, Props, ActorLogging, ActorRef}
 
-case class Street(val name: Street.Value, val stages: List[Function2[Gameplay, ActorRef, Unit]])
+class StreetActor(val gameplay: Gameplay, val name: Street.Value, val stages: List[Stage]) extends Actor with ActorLogging {
+  import context._
+  val stagesIterator = stages.iterator
 
-object Street {
-  trait Value {
-    def apply(stages: List[Function2[Gameplay, ActorRef, Unit]]): Street = new Street(this, stages)
+  override def preStart {
+    log.info("street %s START".format(name))
   }
   
-  case object Preflop extends Value {
-    override def toString = "preflop"
-  }
-  case object Flop extends Value {
-    override def toString = "flop"
-  }
-  case object Turn extends Value {
-    override def toString = "turn"
-  }
-  case object River extends Value {
-    override def toString = "river"
-  }
-  
-  case object Second extends Value {
-    override def toString = "second"
-  }
-  case object Third extends Value {
-    override def toString = "third"
-  }
-  case object Fourth extends Value {
-    override def toString = "fourth"
-  }
-  case object Fifth extends Value {
-    override def toString = "fifth"
-  }
-  case object Sixth extends Value {
-    override def toString = "sixth"
-  }
-  case object Seventh extends Value {
-    override def toString = "seventh"
+  def receive = {
+    case Stage.Next =>
+      if (stagesIterator.hasNext) {
+        log.info("stage start")
+        val stage = stagesIterator.next
+        stage.proceed(StageEnv(gameplay = gameplay, streetRef = self))
+      } else
+        parent ! Street.Next
+    
+    case Street.Next => parent ! Street.Next
+    case Street.Exit => parent ! Street.Exit
   }
   
-  case object Predraw extends Value {
-    override def toString = "predraw"
-  }
-  case object Draw extends Value {
-    override def toString = "draw"
-  }
-  case object FirstDraw extends Value {
-    override def toString = "first-draw"
-  }
-  case object SecondDraw extends Value {
-    override def toString = "second-draw"
-  }
-  case object ThirdDraw extends Value {
-    override def toString = "third-draw"
+  override def postStop {
+    log.info("street %s STOP".format(name))
   }
 }
 
+case class Street(val name: Street.Value, val stages: List[Stage])
+
+object Street {
+  case object Start
+  case object Next
+  case object Exit
+  
+  trait Value {
+    def apply(stages: List[Stage]): Street = new Street(this, stages)
+  }
+  
+  case object Preflop extends Value
+  case object Flop extends Value
+  case object Turn extends Value
+  case object River extends Value
+  
+  case object Second extends Value
+  case object Third extends Value
+  case object Fourth extends Value
+  case object Fifth extends Value
+  case object Sixth extends Value
+  case object Seventh extends Value
+  
+  case object Predraw extends Value
+  case object Draw extends Value
+  case object FirstDraw extends Value
+  case object SecondDraw extends Value
+  case object ThirdDraw extends Value
+}
+
 object Streets {
-  type stage = Function2[Gameplay, ActorRef, Unit]
-  
-  val dealing = new stage {
-    def apply(gameplay: Gameplay, actor: ActorRef) = {
-      Console.printf("*** [dealing] start...\n")
-    }
-  }
-  val betting = new stage {
-    def apply(gameplay: Gameplay, actor: ActorRef) = {
-      Console.printf("*** [betting] start...\n")
-    }
-  }
-  val discarding = new stage {
-    def apply(gameplay: Gameplay, actor: ActorRef) = {
-      Console.printf("*** [discarding] start...\n")
+  val discarding = new Stage {
+    def name = "discarding"
+    def run(env: StageEnv) = {
     }
   }
   
-  def betting(bigBets: Boolean) = new stage {
-    def apply(gameplay: Gameplay, actor: ActorRef) = {
-      Console.printf("*** [betting] start...\n")
+  def betting(bigBets: Boolean = false) = new Skippable {
+    def name = "betting"
+    def run(env: StageEnv) = {
+      new Betting(env.gameplay, env.streetRef).require
     }
   }
   
-  def dealing(dealType: Dealer.DealType, cardsNum: Option[Int] = None): stage = new stage {
-    def apply(gameplay: Gameplay, actor: ActorRef) = {
-      Console.printf("*** [dealing] start...\n")
-      new Dealing(dealType, cardsNum).run(gameplay)
+  def dealing(dealType: Dealer.DealType, cardsNum: Option[Int] = None): Stage = new Stage {
+    def name = "dealing"
+    def run(env: StageEnv) = {
+      val dealing = new Dealing(dealType, cardsNum)
+      dealing.run(env.gameplay)
     }
   }
-  
+    
   final val ByGameGroup: Map[Game.Group, List[Street]] = Map(
       Game.Holdem -> List(
           Street.Preflop(
               List(
                  dealing(Dealer.Hole),
-                 betting
+                 betting()
              )
           ),
           Street.Flop(
               List(
                  dealing(Dealer.Board, Some(3)),
-                 betting
+                 betting()
              )
          ),
           Street.Turn(
@@ -114,7 +104,7 @@ object Streets {
           Street.River(
               List(
                  dealing(Dealer.Board, Some(1)),
-                 betting
+                 betting()
              )
           )
       ),
@@ -128,13 +118,13 @@ object Streets {
           Street.Third(
               List(
                  dealing(Dealer.Door, Some(1)),
-                 betting
+                 betting()
              )
          ),
           Street.Fourth(
               List(
                  dealing(Dealer.Door, Some(1)),
-                 betting
+                 betting()
              )
          ),
           Street.Fifth(
@@ -146,13 +136,13 @@ object Streets {
           Street.Sixth(
               List(
                  dealing(Dealer.Door, Some(1)),
-                 betting
+                 betting()
              )
          ),
           Street.Seventh(
               List(
                  dealing(Dealer.Hole, Some(1)),
-                 betting
+                 betting()
              )
          )
       ),
@@ -161,7 +151,7 @@ object Streets {
           Street.Predraw(
               List(
                  dealing(Dealer.Hole, Some(5)),
-                 betting,
+                 betting(),
                  discarding
              )
          ),
@@ -177,13 +167,13 @@ object Streets {
           Street.Predraw(
               List(
                  dealing(Dealer.Hole),
-                 betting,
+                 betting(),
                  discarding
              )
          ),
           Street.FirstDraw(
               List(
-                 betting,
+                 betting(),
                  discarding
              )
          ),
@@ -195,7 +185,7 @@ object Streets {
          ),
           Street.ThirdDraw(
               List(
-                 betting,
+                 betting(),
                  discarding
              )
           )

@@ -66,6 +66,22 @@ object Math {
     }
   }
   
+  case class Headsup(val a: List[Card], val b: List[Card], val samplesNum: Int = DefaultSamplesNum) {
+    def withBoard(board: List[Card]) = {
+      val deck = new Deck without(a) without(b) without(board)
+      val cardsLeft = deck.cards
+      val cardsNumToCompleteBoard = FullBoardLen - board.size
+    
+      val sample = new Sample
+      (0 to samplesNum) foreach { _ =>
+        val sampleDealer = new Deck(Deck.shuffle(cardsLeft))
+        val fullBoard = board ++ sampleDealer.deal(cardsNumToCompleteBoard)
+        sample.compare(a ++ fullBoard, b ++ fullBoard)
+      }
+      sample
+    }
+  }
+  
   case class Against(val opponentsNum: Int, val samplesNum: Int = DefaultSamplesNum) {
     def equity(hole: List[Card], board: List[Card]): Double = {
       var sample = if (board.size == 0)

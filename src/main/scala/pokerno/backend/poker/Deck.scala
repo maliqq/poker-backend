@@ -4,7 +4,9 @@ import scala.util.Random
 
 object Deck {
   def shuffle(cards: List[Card] = Card.All) = Random.shuffle(cards)
-  def apply = shuffle()
+  def apply() = shuffle()
+  
+  case class NoCardsLeft() extends Error("No cards left in deck")
 }
 
 class Deck(private var _cards: List[Card] = Deck.shuffle()) {
@@ -45,7 +47,7 @@ class Deck(private var _cards: List[Card] = Deck.shuffle()) {
     val n = old.length
     
     if (n > _cards.length + _burned.length)
-      throw new Error("no cards left in deck")
+      throw Deck.NoCardsLeft()
     
     if (n > _cards.length)
       reshuffle

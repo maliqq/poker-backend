@@ -42,22 +42,34 @@ object Bet {
   
   def force(t: Bet.Value, stake: Stake):Bet = new Bet(t, stake.amount(t))
   
-  class Requirement(private var _call: Option[Decimal] = None, private var _raise: Option[Range] = None) {
+  case class CantCheck(call: Decimal)
+    extends Error("Can't check: need to call=%.2f".format(call))
+  
+  case class CantBet(amount: Decimal, stack: Decimal)
+    extends Error("Can't bet: got amount=%.2f, stack=%.2f".format(amount, stack))
+  
+  class Validation(private var _call: Option[Decimal] = None, private var _raise: Option[Range] = None) {
     def call = _call
     def call_=(amount: Decimal) = _call = Some(amount)
     
+    // sets raise range
     def raise = _raise
     def raise_=(r: Range) {
       _raise = Some(r)
     }
+    
+    // resets validation
     def reset {
       _call = None
       _raise = None
     }
+    
+    // disables raise
     def disableRaise {
       _raise = None
     }
     
+    // adjusts raise range according to available stack
     def adjustRaise(r: Range, value: Decimal) =
       if (value < _call.get)
         _raise = None
@@ -71,11 +83,11 @@ object Bet {
       case Bet.Fold =>
       case Bet.Check =>
         if (_call.get != seat.put)
-          throw new Error("Can't check: need to call=%.2f".format(_call.get))
+          throw CantCheck(_call.get)
       
       case Bet.Call | Bet.Raise =>
         if (bet.amount > seat.amount.get)
-          throw new Error("Can't bet: got amount=%.2f, stack=%.2f".format(bet.amount, seat.amount.get))
+          throw CantBet(bet.amount, seat.amount.get)
 
         val isAllIn = bet.amount == seat.amount
         if (bet.betType == Bet.Call)

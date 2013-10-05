@@ -8,7 +8,7 @@ class StreetActor(val gameplay: Gameplay, val name: Street.Value, val stages: Li
   val stagesIterator = stages.iterator
 
   override def preStart {
-    log.info("street %s START".format(name))
+    log.info("street %s START" format(name))
   }
   
   def receive = {
@@ -16,7 +16,7 @@ class StreetActor(val gameplay: Gameplay, val name: Street.Value, val stages: Li
       if (stagesIterator.hasNext) {
         log.info("stage start")
         val stage = stagesIterator.next
-        stage.proceed(StageEnv(gameplay = gameplay, streetRef = self))
+        stage proceed(StageEnv(gameplay = gameplay, streetRef = self))
       } else
         parent ! Street.Next
     
@@ -25,7 +25,7 @@ class StreetActor(val gameplay: Gameplay, val name: Street.Value, val stages: Li
   }
   
   override def postStop {
-    log.info("street %s STOP".format(name))
+    log.info("street %s STOP" format(name))
   }
 }
 
@@ -69,7 +69,7 @@ object Streets {
   def betting(bigBets: Boolean = false) = new Skippable {
     def name = "betting"
     def run(env: StageEnv) = {
-      new Betting(env.gameplay, env.streetRef).require
+      new Betting(env.gameplay, env.streetRef) require
     }
   }
   
@@ -77,7 +77,7 @@ object Streets {
     def name = "dealing"
     def run(env: StageEnv) = {
       val dealing = new Dealing(dealType, cardsNum)
-      dealing.run(env.gameplay)
+      dealing run(env.gameplay)
     }
   }
     

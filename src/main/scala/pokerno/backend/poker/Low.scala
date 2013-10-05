@@ -3,12 +3,12 @@ package pokerno.backend.poker
 class Low {
 self: Hand.Cards =>
   def isLow: Option[Hand] = {
-    val uniq: List[Card] = groupKind.values.map(_(0)).toList
-    val lowCards = uniq.reverse.take(5)
+    val uniq: List[Card] = groupKind.values map(_(0)) toList
+    val lowCards = uniq.reverse take(5)
     if (lowCards.size == 0)
       return None
 
-    var hand = new Hand(value = lowCards, high = List(lowCards.max))
+    var hand = new Hand(value = lowCards, high = List(lowCards max))
     if (lowCards.size == 5)
       hand ranked Rank.CompleteLow
     else

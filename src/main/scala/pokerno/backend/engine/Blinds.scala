@@ -8,8 +8,8 @@ gameplay: Gameplay =>
   def postBlinds {
     moveButton
     
-    val active = table.where(_.isActive)
-    val waiting = table.where(_.isWaitingBB)
+    val active = table where(_ isActive)
+    val waiting = table where(_ isWaitingBB)
     
     if (active.size + waiting.size < 2)
       return
@@ -17,9 +17,9 @@ gameplay: Gameplay =>
     betting = new Betting.Context(active)
     
     forceBet(Bet.SmallBlind)
-    betting.move
+    betting move
     
     forceBet(Bet.SmallBlind)
-    betting.move
+    betting move
   }
 }

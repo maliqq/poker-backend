@@ -15,7 +15,7 @@ object Math {
     def ties: Double = _ties / total
     def loses: Double = _loses / total
     
-    override def toString = "wins=%.2f ties=%.2f loses=%.2f".format(wins, ties, loses)
+    override def toString = "wins=%.2f ties=%.2f loses=%.2f" format(wins, ties, loses)
 
     def compare(c1: List[Card], c2: List[Card]) {
       val h1 = Hand.High(c1)

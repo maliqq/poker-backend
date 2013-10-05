@@ -4,13 +4,13 @@ import scala.math.{BigDecimal => Decimal}
 
 object Range {
   case class Disabled(amount: Decimal)
-    extends Error("amount=%.2f".format(amount))
+    extends Error("amount=%.2f" format(amount))
   
   case class GreaterThanMax(amount: Decimal, max: Decimal)
-    extends Error("amount=%.2f max=%.2f".format(amount, max))
+    extends Error("amount=%.2f max=%.2f" format(amount, max))
   
   case class LessThanMin(amount: Decimal, min: Decimal)
-    extends Error("amount=%2.f min=%.2f".format(amount, min))
+    extends Error("amount=%2.f min=%.2f" format(amount, min))
   
   def apply(min: Decimal, max: Decimal): Range = new Range((min, max))
 }

@@ -13,7 +13,7 @@ gameplay: Gameplay =>
     
     hands.filter { case (player, hand) =>
       pot.members.contains(player)
-    }.toList.maxBy { case (player, hand) =>
+    }.toList maxBy { case (player, hand) =>
       hand
     }
   }
@@ -21,11 +21,11 @@ gameplay: Gameplay =>
   def declareWinner(box: Tuple2[Seat, Int]) = {
     val (seat, pos) = box
     betting.pot.sidePots foreach { side =>
-      val amount = side.total
+      val amount = side total
       val winner = seat.player.get
       seat.net(amount)
       val message = Message.Winner(pos = pos, winner = winner, amount = amount)
-      broadcast.all(message)
+      broadcast all(message)
     }
   }
   
@@ -71,12 +71,12 @@ gameplay: Gameplay =>
     val board = dealer.board
     
     if (board.size == 0)
-      return (pocket, ranking(pocket).get)
+      return (pocket, ranking(pocket) get)
     
     var hands = for {
-      pair <- pocket.combinations(2);
-      board <- dealer.board.combinations(3)
-    } yield(ranking(pair ++ board).get)
+      pair <- pocket combinations(2);
+      board <- dealer.board combinations(3)
+    } yield(ranking(pair ++ board) get)
   
     (pocket, hands.toList.max)
   }
@@ -84,19 +84,19 @@ gameplay: Gameplay =>
   def showHands(ranking: Hand.Ranking): Map[Player, Hand] = {
     var hands: Map[Player, Hand] = Map.empty
     
-    table.where(_.inPot) foreach { case (seat, pos) =>
-      val (pocket, hand) = rank(seat.player.get, ranking)
+    table where(_ inPot) foreach { case (seat, pos) =>
+      val (pocket, hand) = rank(seat.player get, ranking)
       hands += (seat.player.get -> hand)
       val message = Message.ShowHand(pos = pos, cards = pocket, hand = hand)
-      broadcast.all(message)
+      broadcast all(message)
     }
     hands
   }
   
-  def showdown {
-    val stillInPot = table.where(_.inPot)
+  def showdown = {
+    val stillInPot = table where(_ inPot)
     if (stillInPot.size == 1) {
-      declareWinner(stillInPot.head)
+      declareWinner(stillInPot head)
     } else if (stillInPot.size > 1) {
       var hiHands: Option[Map[Player, Hand]] = None
       var loHands: Option[Map[Player, Hand]] = None

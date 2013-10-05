@@ -78,7 +78,7 @@ class Game(val game: Game.Limited, var _limit: Option[Game.Limit] = None, var _t
     case None => options.defaultLimit
     case Some(limit) => limit
   }
-  override def toString = "%s %s".format(game, limit)
+  override def toString = "%s %s" format(game, limit)
 }
 
 object Games {

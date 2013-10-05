@@ -6,11 +6,11 @@ object Suit {
   private final val _colors: List[String] = List(Console.YELLOW, Console.RED, Console.CYAN, Console.GREEN)
   
   sealed class Value {
-    def toInt: Int = All.indexOf(this)
+    def toInt: Int = All indexOf(this)
     def short: Char = _short(toInt)
     def unicode: String = _unicode(toInt)
     def color: String = _colors(toInt)
-    override def toString: String = short.toString
+    override def toString: String = short toString
   }
   
   implicit def int2Value(i: Int): Value = All(i)

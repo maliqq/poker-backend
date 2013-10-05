@@ -52,26 +52,26 @@ object Betting {
       val bb = stake.bigBlind
       
       limit match {
-      case Game.NoLimit => Range(bb, seat.amount.get)
-      case Game.PotLimit => Range(bb, pot.total)
+      case Game.NoLimit => Range(bb, seat.amount get)
+      case Game.PotLimit => Range(bb, pot total)
       case Game.FixedLimit => if (_bigBets) Range(bb * 2, bb * 2) else Range(bb, bb)
       }
     }
     
     def require(r: Range) = {
       if (_raiseCount > MaxRaiseCount)
-        _require.disableRaise
+        _require disableRaise
       else
-        _require.adjustRaise(r, seat.amount.get)
-      (_require.call.get, _require.raise.get.min, _require.raise.get.max)
+        _require adjustRaise(r, seat.amount get)
+      (_require.call get, _require.raise.get min, _require.raise.get max)
     }
     
-    def called(seat: Seat): Boolean = seat.called(_require.call.getOrElse(.0))
+    def called(seat: Seat): Boolean = seat.called(_require.call getOrElse(.0))
     
     def add(bet: Bet) {
       val (seat, pos) = current
       try {
-        _require.validate(bet, seat)
+        _require validate(bet, seat)
 
         val amount = bet.amount
         val put = seat.bet(bet)
@@ -84,10 +84,10 @@ object Betting {
             _raiseCount += 1
           }
     
-          pot.add(seat.player.get, put, seat.state == Seat.AllIn)
+          pot add(seat.player get, put, seat.state == Seat.AllIn)
         }
       } catch {
-      case e: Error => seat.fold
+      case e: Error => seat fold
       }
     }
   }
@@ -102,13 +102,13 @@ class Betting(var gameplay: Gameplay, street: ActorRef) {
         seat.state = Seat.Play
     }
     
-    if (gameplay.table.where(_.inPot).size < 2) {
+    if (gameplay.table.where(_ inPot).size < 2) {
       // 1 player left - go to showdown
       street ! Street.Exit
       return
     }
     
-    val active = gameplay.table.where(_.isPlaying)
+    val active = gameplay.table where(_ isPlaying)
     if (active.size == 0) {
       // betting done - go to next stage
       street ! Stage.Next
@@ -117,9 +117,9 @@ class Betting(var gameplay: Gameplay, street: ActorRef) {
   
     gameplay.betting = new Betting.Context(active)
     
-    val range = gameplay.betting.raiseRange(gameplay.game.limit, gameplay.stake)
-    val (call, min, max) = gameplay.betting.require(range)
-    val (seat, pos) = gameplay.betting.current
+    val range = gameplay.betting raiseRange(gameplay.game.limit, gameplay.stake)
+    val (call, min, max) = gameplay.betting require(range)
+    val (seat, pos) = gameplay.betting current
     
     gameplay.broadcast.one(seat.player.get) {
       Message.RequireBet(call = call, min = min, max = max, pos = pos)

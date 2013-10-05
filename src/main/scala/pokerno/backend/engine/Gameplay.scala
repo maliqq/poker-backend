@@ -40,8 +40,8 @@ class GameplayActor(val gameplay: Gameplay) extends Actor with ActorLogging {
   override def preStart = {
     log.info("start gameplay")
     
-    gameplay.table.where(_.isReady).map(_._1.play)
-    gameplay.rotateGame
+    gameplay.table where(_ isReady) map(_._1 play)
+    gameplay rotateGame
     
     self ! Street.Next
   }
@@ -53,9 +53,9 @@ class GameplayActor(val gameplay: Gameplay) extends Actor with ActorLogging {
       if (sender != self)
         stop(currentStreet)
       
-      if (streetsIterator.hasNext) {
+      if (streetsIterator hasNext) {
         val Street(name, stages) = streetsIterator.next
-        currentStreet = actorOf(Props(classOf[StreetActor], gameplay, name, stages), name = "street-%s".format(name))
+        currentStreet = actorOf(Props(classOf[StreetActor], gameplay, name, stages), name = "street-%s" format(name))
         currentStreet ! Stage.Next
       } else
         self ! Street.Exit
@@ -94,34 +94,34 @@ class Gameplay (
   
   def moveButton {
     table.moveButton
-    broadcast.all(Message.MoveButton(pos = table.button))
+    broadcast all(Message.MoveButton(pos = table.button))
   }
   
   def setButton(pos: Int) {
     table.button = pos
-    broadcast.all(Message.MoveButton(pos = table.button))
+    broadcast all(Message.MoveButton(pos = table.button))
   }
   
   def forceBet(betType: Bet.Value) {
-    val bet = Bet.force(betType, stake)
-    betting.force(bet)
-    broadcast.all(Message.AddBet(Bet.Ante, pos = Some(betting.pos), bet = bet))
+    val bet = Bet force(betType, stake)
+    betting force(bet)
+    broadcast all(Message.AddBet(Bet.Ante, pos = Some(betting.pos), bet = bet))
   }
   
   def rotateGame = if (variation.isMixed)
     rotateNext { g =>
       game = g
-      broadcast.all(Message.ChangeGame(game = game))
+      broadcast all(Message.ChangeGame(game = game))
     }
   
   def completeBetting {
-    betting.clear
+    betting clear
     
-    table.where(_.inPlay) map(_._1.play)
+    table where(_ inPlay) map(_._1 play)
   
-    val total = betting.pot.total
+    val total = betting.pot total
     val message = Message.CollectPot(total = total)
-    broadcast.all(message)
+    broadcast all(message)
   }
 
 }

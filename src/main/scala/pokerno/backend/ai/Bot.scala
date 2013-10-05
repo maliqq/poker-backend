@@ -28,7 +28,7 @@ abstract class Bot extends Actor with Context with Simple {
     pos = at
     stack = amount
   
-    Console.printf("joining table...")
+    Console printf("joining table...")
   
     room ! Message.JoinTable(pos = pos, amount = amount, player = new Player("x"))
   }
@@ -68,7 +68,7 @@ abstract class Bot extends Actor with Context with Simple {
   }
 
   def addBet(b: Bet) {
-    Console.printf("=== %s", b)
+    Console printf("=== %s", b)
   }
   
   def doCheck = addBet(Bet.check)
@@ -80,18 +80,18 @@ abstract class Bot extends Actor with Context with Simple {
   def doRaise(amount: Decimal) {
     stack += bet - amount
     bet = amount
-    addBet(Bet.raise(amount))
+    addBet(Bet raise(amount))
   }
   
   def doCall(amount: Decimal) {
     stack += bet - amount
     bet = amount
-    addBet(Bet.call(amount))
+    addBet(Bet call(amount))
   }
   
   def decide(msg: Message.RequireBet) {
     if (cards.size != 2) {
-      Console.printf("*** can't decide with cards=%s", cards)
+      Console printf("*** can't decide with cards=%s", cards)
       doFold
       return
     }
@@ -105,7 +105,7 @@ abstract class Bot extends Actor with Context with Simple {
   def invoke(decision: Decision, msg: Message.RequireBet) {
     val (call, minRaise, maxRaise) = (msg.call, msg.min, msg.max)
     
-    Console.printf("decision=%#v call=%.2f minRaise=%.2f maxRaise=%.2f", decision, call, minRaise, maxRaise)
+    Console printf("decision=%#v call=%.2f minRaise=%.2f maxRaise=%.2f", decision, call, minRaise, maxRaise)
   
     val min = if (call > stack + bet) stack + bet else call
     val max = decision.maxBet

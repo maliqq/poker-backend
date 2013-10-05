@@ -18,10 +18,10 @@ trait Simple {
   def bet: Decimal
   
   def decidePreflop(cards: List[Card]): Decision = {
-    val group = Tables.sklanskyMalmuthGroup(cards.head, cards.last)
+    val group = Tables sklanskyMalmuthGroup(cards.head, cards.last)
     val bb = stake.bigBlind
   
-    Console.printf("group=%d", group)
+    Console printf("group=%d", group)
     
     group match {
     case 9 => Decision(maxBet = .0)
@@ -50,7 +50,7 @@ trait Simple {
   
   def opponentsNum: Int
   def decideBoard(cards: List[Card], board: List[Card]): Decision = {
-    val chances = Against(opponentsNum).withBoard(cards, board)
+    val chances = Against(opponentsNum) withBoard(cards, board)
   
     Console.printf("chances=%s", chances)
   

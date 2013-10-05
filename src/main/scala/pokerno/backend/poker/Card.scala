@@ -3,19 +3,19 @@ package pokerno.backend.poker
 import scala.collection.mutable.ListBuffer
 
 class Card(val kind: Kind.Value, val suit: Suit.Value) extends Ordered[Card] {
-  def colored = "%s%s %s%s".format(suit.color, kind.toString, suit.toString, Console.RESET)
+  def colored = "%s%s %s%s" format(suit.color, kind.toString, suit.toString, Console.RESET)
   
   def toInt: Int = kind.toInt << 2 + suit.toInt
-  def toByte: Byte = (toInt + 1).toByte
+  def toByte: Byte = (toInt + 1) toByte
   
   override def toString = kind.toString + suit.toString
   override def compare(other: Card): Int = 1
 }
 
 object Card {
-  case class NotACard(value: Any) extends Error("not a card: %s".format(value))
-  case class InvalidCard(value: Any) extends Error("invalid card: %s".format(value))
-  case class ParseError(s: String) extends Error("can't parse card: %s".format(s))
+  case class NotACard(value: Any) extends Error("not a card: %s" format(value))
+  case class InvalidCard(value: Any) extends Error("invalid card: %s" format(value))
+  case class ParseError(s: String) extends Error("can't parse card: %s" format(s))
   
   private var _all: ListBuffer[Card] = new ListBuffer
   private var _masks: ListBuffer[Int] = new ListBuffer
@@ -71,5 +71,5 @@ object Cards {
 }
 
 class Cards(val cards: List[Card]) {
-  override def toString = cards.map(_.toString).mkString("")
+  override def toString = cards.map(_.toString) mkString("")
 }

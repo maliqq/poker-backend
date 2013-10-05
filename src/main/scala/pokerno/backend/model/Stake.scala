@@ -19,8 +19,8 @@ class Stake(
     BringIn: Either[Decimal, Boolean]= Right(false)) {
  
   def amount(t: Bet.Value): Decimal = t match {
-      case Bet.BringIn => bringIn.get
-      case Bet.Ante => ante.get
+      case Bet.BringIn => bringIn get
+      case Bet.Ante => ante get
       case Bet.SmallBlind => smallBlind
       case Bet.BigBlind => bigBlind
       case Bet.DoubleBet => doubleBet
@@ -28,7 +28,7 @@ class Stake(
   
   private def _rate(t: Bet.Value): Decimal = Rates.Default(t) * bigBlind
   
-  val smallBlind: Decimal = SmallBlind.getOrElse(_rate(Bet.SmallBlind))
+  val smallBlind: Decimal = SmallBlind getOrElse(_rate(Bet.SmallBlind))
   val doubleBet: Decimal = _rate(Bet.DoubleBet)
   
   val ante: Option[Decimal] = Ante match {

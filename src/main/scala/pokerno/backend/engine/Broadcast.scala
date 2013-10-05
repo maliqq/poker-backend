@@ -28,7 +28,7 @@ class Broadcast extends EventBus {
   def publish(event: Event) = {}
   
   def publish(event: Notification) {
-    Console.printf("!!! [%s] %s\n".format(event.to, event.message))
+    Console.printf("!!! [%s] %s\n" format(event.to, event.message))
   }
   
   def all(message: Message.Value) {

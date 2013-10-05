@@ -48,7 +48,7 @@ class Table(var size: Int) extends Button with Traverse {
   
   def traverse = {
     val btn = seats(button)
-    val (left, right) = seats.zipWithIndex.span(_._2 == button)
+    val (left, right) = seats.zipWithIndex span(_._2 == button)
     List[Tuple2[Seat, Int]]((btn, button)) ++ left ++ right
   }
   
@@ -62,6 +62,6 @@ class Table(var size: Int) extends Button with Traverse {
   def removePlayer(player: Player) {
     val at = _seating(player)
     seats(at).clear
-    _seating.remove(player)
+    _seating remove(player)
   }
 }

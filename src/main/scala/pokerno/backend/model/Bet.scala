@@ -4,7 +4,7 @@ import scala.math.{BigDecimal => Decimal}
 
 class Bet(val betType: Bet.Value, val amount: Decimal = .0) {
   override def toString =
-    if (amount > .0) "%s %.2f".format(betType.toString, amount)
+    if (amount > .0) "%s %.2f" format(betType.toString, amount)
     else betType.toString
 }
 
@@ -40,13 +40,13 @@ object Bet {
   def call(amount: Decimal) = new Bet(Call, amount)
   def raise(amount: Decimal) = new Bet(Raise, amount)
   
-  def force(t: Bet.Value, stake: Stake):Bet = new Bet(t, stake.amount(t))
+  def force(t: Bet.Value, stake: Stake):Bet = new Bet(t, stake amount(t))
   
   case class CantCheck(call: Decimal)
-    extends Error("Can't check: need to call=%.2f".format(call))
+    extends Error("Can't check: need to call=%.2f" format(call))
   
   case class CantBet(amount: Decimal, stack: Decimal)
-    extends Error("Can't bet: got amount=%.2f, stack=%.2f".format(amount, stack))
+    extends Error("Can't bet: got amount=%.2f, stack=%.2f" format(amount, stack))
   
   class Validation(private var _call: Option[Decimal] = None, private var _raise: Option[Range] = None) {
     def call = _call
@@ -76,7 +76,7 @@ object Bet {
       else {
         var min = _call.get + r.min
         var max = _call.get + r.max
-        _raise = Some(Range(List(value, min).min, List(value, max).min))
+        _raise = Some(Range(List(value, min) min, List(value, max) min))
       }
     
     def validate(bet: Bet, seat: Seat) = bet.betType match {
@@ -87,13 +87,13 @@ object Bet {
       
       case Bet.Call | Bet.Raise =>
         if (bet.amount > seat.amount.get)
-          throw CantBet(bet.amount, seat.amount.get)
+          throw CantBet(bet.amount, seat.amount get)
 
         val isAllIn = bet.amount == seat.amount
         if (bet.betType == Bet.Call)
-          Range(_call.get, _call.get).validate(bet.amount, isAllIn)
+          Range(_call.get, _call.get) validate(bet.amount, isAllIn)
         if (bet.betType == Bet.Raise)
-          _raise.get.validate(bet.amount, isAllIn)
+          _raise.get validate(bet.amount, isAllIn)
     }
   }
 }

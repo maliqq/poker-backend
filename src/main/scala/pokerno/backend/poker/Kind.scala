@@ -5,10 +5,10 @@ object Kind {
   private final val _full: List[String] = List("deuce", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "jack", "queen", "king", "ace")
   
   sealed class Value {
-    def toInt: Int = All.indexOf(this)
+    def toInt: Int = All indexOf(this)
     def short: Char = _short(toInt)
     def full: String = _full(toInt)
-    override def toString: String = short.toString
+    override def toString: String = short toString
   }
   
   implicit def int2Value(i: Int): Value = All(i)

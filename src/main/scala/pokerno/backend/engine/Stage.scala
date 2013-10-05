@@ -11,9 +11,9 @@ object Stage {
 
 abstract class Stage {
   def proceed(context: StageEnv) {
-    Console.printf("*** [%s] START...\n", name)
+    Console printf("*** [%s] START...\n", name)
     run(context)
-    Console.printf("*** [%s] DONE\n", name)
+    Console printf("*** [%s] DONE\n", name)
     context.streetRef ! Stage.Next
   }
   
@@ -24,8 +24,8 @@ abstract class Stage {
 
 abstract class Skippable extends Stage {
   override def proceed(context: StageEnv) {
-    Console.printf("*** [%s] START...\n", name)
+    Console printf("*** [%s] START...\n", name)
     run(context)
-    Console.printf("*** [%s] DONE...\n", name)
+    Console printf("*** [%s] DONE...\n", name)
   }
 }

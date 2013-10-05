@@ -18,21 +18,21 @@ self: Hand.Cards =>
     case None => None
   }
 
-  def isFullHouse: Option[Hand] = paired.get(3) match {
+  def isFullHouse: Option[Hand] = paired get(3) match {
     case Some(sets) =>
       val (major, minor) = if (sets.size > 1) {
-        val List(minor, major, _*) = sets.sorted(Cards.OrderingByHead).take(2)
+        val List(minor, major, _*) = sets sorted(Cards.OrderingByHead) take(2)
         (major, minor)
       } else {
         paired.get(2) match {
           case None => return None
           case Some(pairs) =>
-            val minor = pairs.sorted(Cards.OrderingByHead).head
+            val minor = pairs sorted(Cards.OrderingByHead) head
             val major = sets.head
             (major, minor)
         }
       }
-      new Hand(value = major ++ minor, high = List(major.head, minor.head)) ranked Rank.FullHouse
+      new Hand(value = major ++ minor, high = List(major head, minor head)) ranked Rank.FullHouse
     case None => None
   }
 
@@ -43,33 +43,33 @@ self: Hand.Cards =>
     case None => None
   }
   
-  def isStraight: Option[Hand] = gaps.find { group => group.size > 5 } match {
+  def isStraight: Option[Hand] = gaps find { group => group.size > 5 } match {
     case Some(group) =>
       val cards = group.sorted
       new Hand(value = value.take(5), high = value.take(1)) ranked Rank.Straight
     case None => None
   }
 
-  def isThreeKind: Option[Hand] = paired.get(3) match {
+  def isThreeKind: Option[Hand] = paired get(3) match {
     case Some(sets) =>
       new Hand(value = sets.head, _high = true, _kicker = true) ranked Rank.ThreeKind
     case None => None
   }
 
-  def isTwoPair: Option[Hand] = paired.get(2) match {
+  def isTwoPair: Option[Hand] = paired get(2) match {
     case Some(pairs) =>
-      val List(major, minor, _*) = pairs.sorted(Cards.OrderingByMax)
+      val List(major, minor, _*) = pairs sorted(Cards.OrderingByMax)
       new Hand(value = major ++ minor, high = List(major.head, minor.head), _kicker = true) ranked Rank.TwoPair
     case None => None
   }
 
-  def isOnePair: Option[Hand] = paired.get(2) match {
+  def isOnePair: Option[Hand] = paired get(2) match {
     case Some(pairs) =>
-      new Hand(value = pairs.head, _high = true, _kicker = true) ranked Rank.OnePair
+      new Hand(value = pairs head, _high = true, _kicker = true) ranked Rank.OnePair
     case None => None
   }
 
-  def isHighCard: Option[Hand] = new Hand(value = value.sorted, _high = true, _kicker = true) ranked Rank.HighCard
+  def isHighCard: Option[Hand] = new Hand(value = value sorted, _high = true, _kicker = true) ranked Rank.HighCard
 
   def isHigh: Option[Hand] = {
     if (value.size < 5)

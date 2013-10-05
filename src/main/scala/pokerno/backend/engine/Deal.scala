@@ -37,7 +37,7 @@ class DealActor(val gameplay: Gameplay) extends Actor {
     
     case Deal.Done =>
       log.info("deal done - starting next deal in 5 seconds")
-      system.scheduler.scheduleOnce(5 seconds, self, Deal.Start)
+      system.scheduler scheduleOnce(5 seconds, self, Deal.Start)
     
     case Deal.Stop =>
       log.info("deal stop")

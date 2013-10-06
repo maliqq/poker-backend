@@ -11,8 +11,17 @@ object Main {
   def main(args: Array[String]) {
     val dealer = new Dealer
     val broadcast = new Broadcast
-    val table = new Table(9)
-    val stake = new Stake(10.0)
+    val table = new Table(6)
+    
+    table.addPlayer(new Player("A"), 0, 10000)
+    table.addPlayer(new Player("B"), 1, 10000)
+    table.addPlayer(new Player("C"), 2, 10000)
+    table.addPlayer(new Player("D"), 3, 10000)
+    table.addPlayer(new Player("E"), 4, 10000)
+    table.addPlayer(new Player("F"), 5, 10000)
+    
+    val stake = new Stake(50.0)
+    
     val game = new Game(Game.Texas, Some(Game.NoLimit), Some(9))
     val gameplay = new Gameplay(dealer, broadcast, game, stake, table)
 

@@ -1,10 +1,10 @@
 package pokerno.backend.poker
 
 class Low {
-self: Hand.Cards =>
+  self: Hand.Cards ⇒
   def isLow: Option[Hand] = {
-    val uniq: List[Card] = groupKind.values map(_(0)) toList
-    val lowCards = uniq.reverse take(5)
+    val uniq: List[Card] = groupKind.values map (_(0)) toList
+    val lowCards = uniq.reverse take (5)
     if (lowCards.size == 0)
       return None
 
@@ -14,7 +14,7 @@ self: Hand.Cards =>
     else
       hand ranked Rank.IncompleteLow
   }
-  
+
   def isGapLow: Option[Hand] = {
     val hand = (new Hand.Cards(value) with HighHand).isHigh
     if (hand.get.rank == Rank.HighCard)

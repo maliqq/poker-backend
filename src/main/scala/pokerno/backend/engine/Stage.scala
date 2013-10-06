@@ -3,29 +3,29 @@ package pokerno.backend.engine
 import akka.actor.ActorRef
 import akka.actor.actorRef2Scala
 
-case class StageEnv(val gameplay: Gameplay, val streetRef: ActorRef)
-
 object Stage {
   case object Next
+  
+  case class Context(val gameplay: Gameplay, val street: ActorRef, val betting: ActorRef)
 }
 
 abstract class Stage {
-  def proceed(context: StageEnv) {
-    Console printf("*** [%s] START...\n", name)
+  def proceed(context: Stage.Context) {
+    Console printf ("*** [%s] START...\n", name)
     run(context)
-    Console printf("*** [%s] DONE\n", name)
-    context.streetRef ! Stage.Next
+    Console printf ("*** [%s] DONE\n", name)
+    context.street ! Stage.Next
   }
-  
+
   def name: String
-  
-  def run(context: StageEnv)
+
+  def run(context: Stage.Context)
 }
 
 abstract class Skippable extends Stage {
-  override def proceed(context: StageEnv) {
-    Console printf("*** [%s] START...\n", name)
+  override def proceed(context: Stage.Context) {
+    Console printf ("*** [%s] START...\n", name)
     run(context)
-    Console printf("*** [%s] DONE...\n", name)
+    Console printf ("*** [%s] DONE...\n", name)
   }
 }

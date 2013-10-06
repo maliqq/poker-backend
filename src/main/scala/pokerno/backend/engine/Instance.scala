@@ -1,6 +1,6 @@
 package pokerno.backend.engine
 
-import akka.actor.{Actor, ActorSystem, ActorRef, Props, FSM}
+import akka.actor.{ Actor, ActorSystem, ActorRef, Props, FSM }
 
 sealed trait State
 
@@ -23,37 +23,37 @@ object Instance {
 
 class Instance extends Actor with FSM[State, Data] {
   startWith(Created, Empty)
-  
+
   when(Created) {
-    case Event(Instance.Start, g: Gameplay) =>
+    case Event(Instance.Start, g: Gameplay) ⇒
       goto(Running) using g
   }
 
   when(Paused) {
-    case Event(Instance.Resume, g: Gameplay) =>
+    case Event(Instance.Resume, g: Gameplay) ⇒
       goto(Running) using g
   }
-  
+
   when(Waiting) {
-    case Event(join: Instance.JoinTable, g: Gameplay) =>
+    case Event(join: Instance.JoinTable, g: Gameplay) ⇒
       stay using g
   }
-  
+
   when(Running) {
-    case Event(Instance.Pause, g: Gameplay) =>
+    case Event(Instance.Pause, g: Gameplay) ⇒
       goto(Paused) using g
-  
-    case Event(Instance.Stop, g: Gameplay) =>
+
+    case Event(Instance.Stop, g: Gameplay) ⇒
       goto(Closed) using g
   }
-  
+
   onTransition {
-    case Created -> Running =>
+    case Created -> Running ⇒
       stateData match {
-        case g: Gameplay =>
-        case _ =>
+        case g: Gameplay ⇒
+        case _           ⇒
       }
   }
-  
+
   initialize
 }

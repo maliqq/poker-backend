@@ -4,12 +4,14 @@ import pokerno.backend.model._
 import pokerno.backend.protocol._
 
 trait Antes {
-gameplay: Gameplay =>
-  def postAntes {
-    betting = new Betting.Context(table where(_ isActive))
-    (0 to betting.items.size) foreach { _ =>
+  g: Gameplay ⇒
+  def postAntes = if (game.options.hasAnte && stake.ante.isDefined) {
+    val round = table.seats where (_ isActive)
+    
+    round foreach { case (seat, pos) ⇒
+      betting current = (seat, pos)
+      
       forceBet(Bet.Ante)
-      betting move
     }
   }
 }

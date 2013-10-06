@@ -3,7 +3,7 @@ package pokerno.backend.server
 import pokerno.backend.engine._
 import pokerno.backend.model._
 
-import akka.actor.{ActorSystem, Props}
+import akka.actor.{ ActorSystem, Props }
 
 object Main {
   val system = ActorSystem("MySystem")
@@ -15,13 +15,13 @@ object Main {
     val stake = new Stake(10.0)
     val game = new Game(Game.Texas, Some(Game.NoLimit), Some(9))
     val gameplay = new Gameplay(dealer, broadcast, game, stake, table)
-    
-    val deal = system actorOf(Props(classOf[DealActor], gameplay), name = "test-deal-1")
+
+    val deal = system actorOf (Props(classOf[DealActor], gameplay), name = "test-deal-1")
     deal ! Deal.Start
   }
-  
+
   def main2(args: Array[String]) {
-    val instance = system actorOf(Props[Instance], name = "greeter")
+    val instance = system actorOf (Props[Instance], name = "greeter")
     instance ! Instance.Start
   }
 }

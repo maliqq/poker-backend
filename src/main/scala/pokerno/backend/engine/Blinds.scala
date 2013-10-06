@@ -4,22 +4,24 @@ import pokerno.backend.model._
 import pokerno.backend.protocol._
 
 trait Blinds {
-gameplay: Gameplay =>
+  g: Gameplay ⇒
   def postBlinds {
     moveButton
+
+    val round = table.seatsFromButton
     
-    val active = table where(_ isActive)
-    val waiting = table where(_ isWaitingBB)
-    
+    val active = round where (_ isActive)
+    val waiting = round where (_ isWaitingBB)
+
     if (active.size + waiting.size < 2)
       return
 
-    betting = new Betting.Context(active)
+    val List(sb, bb, _*) = active
     
+    betting current = sb
     forceBet(Bet.SmallBlind)
-    betting move
-    
+
+    betting current = bb
     forceBet(Bet.SmallBlind)
-    betting move
   }
 }

@@ -8,29 +8,25 @@ import akka.actor.{ Actor, ActorRef }
 import scala.util.Random
 
 trait Context {
-  var opponentsNum: Int
   var game: Game
   var stake: Stake
-  var street: String
-  var bet: Decimal
-  var pot: Decimal
-  var cards: List[Card]
-  var board: List[Card]
+  
+  var opponentsNum: Int = 0
+  var street: String = ""
+  var bet: Decimal = .0
+  var pot: Decimal = .0
+  var cards: List[Card] = List.empty
+  var board: List[Card] = List.empty
 }
 
-abstract class Bot extends Actor with Context with Simple {
+class Bot(room: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var stake: Stake)
+    extends Actor with Context with Simple {
   var id: String = java.util.UUID.randomUUID().toString
-  var room: ActorRef
-  var pos: Int
-  var stack: Decimal
 
-  def join(at: Int, amount: Decimal) {
-    pos = at
-    stack = amount
-
+  def join {
     Console printf ("joining table...")
 
-    room ! Message.JoinTable(pos = pos, amount = amount, player = new Player("x"))
+    room ! Message.JoinTable(pos = pos, amount = stack, player = new Player(id))
   }
 
   def receive = {

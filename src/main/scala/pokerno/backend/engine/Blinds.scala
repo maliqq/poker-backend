@@ -22,6 +22,6 @@ trait Blinds {
     forceBet(Bet.SmallBlind)
 
     betting current = bb
-    forceBet(Bet.SmallBlind)
+    forceBet(Bet.BigBlind)
   }
 }

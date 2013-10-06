@@ -7,11 +7,9 @@ import akka.actor.{ Actor, ActorLogging, ActorRef }
 
 trait Betting {
 g: Gameplay =>
-  def self: ActorRef
-  
   def forceFold = {}
   
-  def bettingRound {
+  def bettingRound(street: ActorRef) {
     val (seat, pos) = betting.current
     
     val round = table.seats from(pos)
@@ -23,17 +21,19 @@ g: Gameplay =>
     }
 
     if (round.where(_ inPot).size < 2) {
-      self ! Betting.Stop
+      completeBetting
+      street ! Street.Exit
       return
     }
 
     val active = round where (_ isPlaying)
     if (active.size == 0) {
-      self ! Betting.Done
+      completeBetting
+      street ! Street.Next
       return
     }
     
-    betting current = (seat, pos)
+    betting current = active.head
 
     requireBet
   }

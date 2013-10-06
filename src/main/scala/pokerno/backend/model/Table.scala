@@ -17,6 +17,8 @@ class Table(size: Int) {
   
   def seatsFromButton = seats.from(button)
   
+  def seatAtButton: Tuple2[Seat, Int] = (seats(button), button)
+  
   private var _seating: mutable.Map[Player, Int] = mutable.Map.empty
   def addPlayer(player: Player, at: Int, amount: Decimal) {
     seats(at) player = player

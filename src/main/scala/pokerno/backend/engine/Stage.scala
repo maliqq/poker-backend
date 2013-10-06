@@ -6,7 +6,7 @@ import akka.actor.actorRef2Scala
 object Stage {
   case object Next
   
-  case class Context(val gameplay: Gameplay, val street: ActorRef, val betting: ActorRef)
+  case class Context(val gameplay: Gameplay, val street: ActorRef)
 }
 
 abstract class Stage {

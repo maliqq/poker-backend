@@ -13,5 +13,7 @@ trait Antes {
       
       forceBet(Bet.Ante)
     }
+    
+    completeBetting
   }
 }

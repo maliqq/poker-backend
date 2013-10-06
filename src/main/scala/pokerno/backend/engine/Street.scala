@@ -3,7 +3,7 @@ package pokerno.backend.engine
 import pokerno.backend.model._
 import akka.actor.{ Actor, Props, ActorLogging, ActorRef }
 
-class StreetActor(val gameplay: Gameplay, val betting: ActorRef, val name: Street.Value, val stages: List[Stage]) extends Actor with ActorLogging {
+class StreetActor(val gameplay: Gameplay, val name: Street.Value, val stages: List[Stage]) extends Actor with ActorLogging {
   import context._
   val stagesIterator = stages.iterator
 
@@ -16,7 +16,7 @@ class StreetActor(val gameplay: Gameplay, val betting: ActorRef, val name: Stree
       if (stagesIterator hasNext) {
         log.info("stage start")
         val stage = stagesIterator.next
-        stage proceed (Stage.Context(gameplay = gameplay, street = self, betting = betting))
+        stage proceed (Stage.Context(gameplay = gameplay, street = self))
       } else
         parent ! Street.Next
 
@@ -83,7 +83,7 @@ object Streets {
   val betting = new Skippable {
     def name = "betting"
     def run(context: Stage.Context) = {
-      context.betting ! Betting.Next
+      context.gameplay.bettingRound(context.street)
     }
   }
 

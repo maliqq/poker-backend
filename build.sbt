@@ -12,7 +12,7 @@ libraryDependencies <+= scalaVersion {
 
 scalacOptions += "-P:continuations:enable"
 
-mainClass in (Compile, run) := Some("pokerno.backend.server.Main")
+//mainClass in (Compile, run) := Some("pokerno.backend.server.Main")
 
 libraryDependencies ++= Seq(
   "org.scalaz" % "scalaz-core_2.10" % "7.0.3",

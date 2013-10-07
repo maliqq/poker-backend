@@ -28,6 +28,22 @@ object Game {
   }
 
   trait Limited
+  
+  object Limited {
+    implicit def string2Limited(v: String): Limited = v match {
+      case "texas" => Texas
+      case "omaha" => Omaha
+      case "omaha8" => Omaha8
+      case "stud" => Stud
+      case "stud8" => Stud8
+      case "razz" => Razz
+      case "london" => London
+      case "five-card" => FiveCard
+      case "single27" => Single27
+      case "triple27" => Triple27
+      case "badugi" => Badugi
+    }
+  }
 
   case object Texas extends Limited
   case object Omaha extends Limited
@@ -42,11 +58,20 @@ object Game {
   case object Single27 extends Limited
   case object Triple27 extends Limited
   case object Badugi extends Limited
-
+  
+  
   trait Mixed
+  
+  object Mixed {
+    implicit def string2Mixed(v: String): Mixed = v match {
+      case "eight" => Game.Eight
+      case "horse" => Game.Horse
+    }
+  }
 
   case object Horse extends Mixed
   case object Eight extends Mixed
+  
 
   trait Group
   case object Holdem extends Group

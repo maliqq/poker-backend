@@ -99,6 +99,7 @@ object Bet {
           Range(_call.get, _call.get) validate (bet.amount, isAllIn)
         if (bet.betType == Bet.Raise)
           _raise.get validate (bet.amount, isAllIn)
+      case _ =>
     }
   }
 }

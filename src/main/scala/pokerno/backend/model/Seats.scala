@@ -18,6 +18,12 @@ class Seats(size: Int) {
   }
   
   def apply(pos: Int) = value(pos)
+  
+  override def toString = {
+    value.zipWithIndex map { case (seat, index) =>
+      "Seat %d: %s".format(index, seat toString)
+    } mkString("\n")
+  }
 
   class Slice(val value: List[Item]) {
     def where(f: (Seat => Boolean)) = {

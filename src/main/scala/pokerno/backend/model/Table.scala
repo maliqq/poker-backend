@@ -22,7 +22,7 @@ class Table(size: Int) {
   private var _seating: mutable.Map[Player, Int] = mutable.Map.empty
   def addPlayer(player: Player, at: Int, amount: Decimal) {
     seats(at) player = player
-    seats(at) amount = amount
+    seats(at) buyIn(amount)
     _seating(player) = at
   }
 

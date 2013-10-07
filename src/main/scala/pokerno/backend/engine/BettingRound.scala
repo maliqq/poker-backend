@@ -20,7 +20,7 @@ class BettingRound(button: Tuple2[Seat, Int]) {
   def current_=(item: Tuple2[Seat, Int]) {
     _current = item
   }
-  
+
   def pos: Int = {
     val (_, _pos) = current
     _pos
@@ -29,7 +29,7 @@ class BettingRound(button: Tuple2[Seat, Int]) {
     val (_seat, _) = current
     _seat
   }
-  
+
   def clear {
     _raiseCount = 0
     _require.reset
@@ -48,7 +48,7 @@ class BettingRound(button: Tuple2[Seat, Int]) {
       _require adjustRaise (r, seat.amount get)
     (_require.call get, _require.raise.get min, _require.raise.get max)
   }
-  
+
   def range(limit: Game.Limit, stake: Stake) = limit.raise(seat.amount get, stake.bigBlind, pot total)
 
   def called(seat: Seat): Boolean = seat.called(_require.call getOrElse (.0))

@@ -7,60 +7,54 @@ import pokerno.backend.model._
 object Message {
   abstract class Value extends Serializable
 
-  trait Position {
-    def pos: Option[Int]
-  }
-
-  trait Cards {
-    def cards: List[Card]
-  }
-
   case class DealCards(
-    val _type: Dealer.DealType,
-    val pos: Option[Int],
-    val cards: List[Card]) extends Value with Cards with Position
+    _type: Dealer.DealType,
+    pos: Option[Int],
+    cards: List[Card]) extends Value
 
+  case class RequireDiscard(pos: Int) extends Value
+  case class DiscardCards(pos: Int, cards: List[Card]) extends Value
+    
   case class RequireBet(
-    val pos: Int,
-    val call: Decimal,
-    val min: Decimal,
-    val max: Decimal) extends Value
+    pos: Int,
+    call: Decimal,
+    min: Decimal,
+    max: Decimal) extends Value
 
   case class AddBet(
-    val _type: Bet.Value,
-    val pos: Option[Int],
-    val bet: Bet) extends Value with Position
+    pos: Int,
+    bet: Bet) extends Value
 
   case class MoveButton(
-    val pos: Int) extends Value
+    pos: Int) extends Value
 
   case class ShowHand(
-    val pos: Int,
-    val hand: Hand,
-    val cards: List[Card]) extends Value
+    pos: Int,
+    hand: Hand,
+    cards: List[Card]) extends Value
 
-  case class CollectPot(val total: Decimal) extends Value
+  case class CollectPot(total: Decimal) extends Value
 
   case class Winner(
-    val winner: Player,
-    val amount: Decimal,
-    val pos: Int) extends Value
+    winner: Player,
+    amount: Decimal,
+    pos: Int) extends Value
 
   case class PlayStart(
-    val game: Game,
-    val stake: Stake) extends Value
+    game: Game,
+    stake: Stake) extends Value
   case class StreetStart(
-    val name: String) extends Value
+    name: String) extends Value
   case class ChangeGame(
-    val game: Game) extends Value
+    game: Game) extends Value
 
   // table state
   case class SitOut() extends Value
   case class ComeBack() extends Value
   case class JoinTable(
-    val pos: Int,
-    val player: Player,
-    val amount: Decimal) extends Value
+    pos: Int,
+    player: Player,
+    amount: Decimal) extends Value
   case class LeaveTable() extends Value
   case class KickPlayer() extends Value
   case class SeatStateChange(pos: Int, state: Seat.State) extends Value

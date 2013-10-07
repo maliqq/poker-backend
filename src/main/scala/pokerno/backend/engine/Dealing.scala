@@ -4,7 +4,7 @@ import pokerno.backend.protocol._
 import pokerno.backend.model._
 
 trait Dealing {
-g: Gameplay =>
+  g: Gameplay ⇒
   def dealCards(_dealType: Dealer.DealType, cardsNum: Option[Int] = None) {
     _dealType match {
       case Dealer.Hole | Dealer.Door ⇒
@@ -13,8 +13,8 @@ g: Gameplay =>
           n = game.options.pocketSize
 
         Console printf ("dealing %s %d cards\n", _dealType, n)
-      
-      Console printf("%s\n", table.seats.toString)
+
+        Console printf ("%s\n", table.seats.toString)
 
         table.seats where (_ isActive) foreach {
           case (seat, pos) ⇒

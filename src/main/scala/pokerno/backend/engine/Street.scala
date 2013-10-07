@@ -65,14 +65,14 @@ object Streets {
     def run(context: Stage.Context) = {
     }
   }
-  
+
   val bringIn = new Stage {
     def name = "bring-in"
     def run(context: Stage.Context) = {
       context.gameplay.bringIn
     }
   }
-  
+
   val bigBets = new Stage {
     def name = "big-bets"
     def run(context: Stage.Context) = {

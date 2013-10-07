@@ -10,7 +10,7 @@ import scala.util.Random
 trait Context {
   var game: Game
   var stake: Stake
-  
+
   var opponentsNum: Int = 0
   var street: String = ""
   var bet: Decimal = .0

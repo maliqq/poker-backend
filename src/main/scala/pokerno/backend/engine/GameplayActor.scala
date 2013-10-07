@@ -16,13 +16,13 @@ class GameplayActor(val gameplay: Gameplay) extends Actor with ActorLogging {
 
     log.info("prepare seats")
     gameplay.prepareSeats
-    
+
     log.info("rotate game")
     gameplay.rotateGame
-    
+
     log.info("post antes")
     gameplay.postAntes
-    
+
     log.info("post blinds")
     gameplay.postBlinds
 

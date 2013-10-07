@@ -4,7 +4,7 @@ import pokerno.backend.model._
 import pokerno.backend.protocol._
 
 trait GameRotation {
-g: Gameplay =>
+  g: Gameplay ⇒
   def variation: Variation
 
   final val rotateEvery = 8
@@ -26,7 +26,7 @@ g: Gameplay =>
     _rotationIndex %= mix.games.size
     mix.games(_rotationIndex)
   }
-  
+
   def rotateGame = if (variation isMixed)
     rotateNext { g ⇒
       game = g

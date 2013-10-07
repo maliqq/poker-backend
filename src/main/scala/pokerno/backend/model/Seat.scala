@@ -24,22 +24,22 @@ class Seat {
   def state_=(value: Seat.State) {
     if (value == Seat.Taken && _state != Seat.Empty)
       throw Seat.IsTaken()
-    
+
     if (value == Seat.Ready && _state != Seat.Taken)
       return
-    
+
     if (value == Seat.Bet && _amount.getOrElse(.0) == .0) {
       _state = Seat.AllIn
       return
     }
-    
+
     _state = value
   }
 
   private var _amount: Option[Decimal] = None
   def amount = _amount
   def amount_=(value: Decimal) {
-    _amount = Some(value) 
+    _amount = Some(value)
   }
 
   private var _put: Option[Decimal] = None
@@ -119,7 +119,7 @@ class Seat {
   def isPlaying = state == Seat.Play
   def inPlay = state == Seat.Play || state == Seat.Bet
   def inPot = inPlay || state == Seat.AllIn
-  
+
   override def toString = if (_player.isDefined)
     "%s - %s (%.2f)".format(_player get, _state, _amount get)
   else

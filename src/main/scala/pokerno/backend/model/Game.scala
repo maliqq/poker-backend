@@ -1,7 +1,7 @@
 package pokerno.backend.model
 
 import pokerno.backend.poker.Hand
-import scala.math.{ BigDecimal => Decimal }
+import scala.math.{ BigDecimal ⇒ Decimal }
 
 trait Variation {
   def isMixed: Boolean = this.isInstanceOf[Mix]
@@ -15,33 +15,33 @@ object Game {
   case object NoLimit extends Limit {
     def raise(stack: Decimal, bb: Decimal, potSize: Decimal, bigBets: Boolean = false) = Range(bb, stack)
   }
-  
+
   case object FixedLimit extends Limit {
     def raise(stack: Decimal, bb: Decimal, potSize: Decimal, bigBets: Boolean = false) = if (bigBets)
       Range(bb, bb)
     else
       Range(bb * 2, bb * 2)
   }
-  
+
   case object PotLimit extends Limit {
     def raise(stack: Decimal, bb: Decimal, potSize: Decimal, bigBets: Boolean = false) = Range(bb, potSize)
   }
 
   trait Limited
-  
+
   object Limited {
     implicit def string2Limited(v: String): Limited = v match {
-      case "texas" => Texas
-      case "omaha" => Omaha
-      case "omaha8" => Omaha8
-      case "stud" => Stud
-      case "stud8" => Stud8
-      case "razz" => Razz
-      case "london" => London
-      case "five-card" => FiveCard
-      case "single27" => Single27
-      case "triple27" => Triple27
-      case "badugi" => Badugi
+      case "texas"     ⇒ Texas
+      case "omaha"     ⇒ Omaha
+      case "omaha8"    ⇒ Omaha8
+      case "stud"      ⇒ Stud
+      case "stud8"     ⇒ Stud8
+      case "razz"      ⇒ Razz
+      case "london"    ⇒ London
+      case "five-card" ⇒ FiveCard
+      case "single27"  ⇒ Single27
+      case "triple27"  ⇒ Triple27
+      case "badugi"    ⇒ Badugi
     }
   }
 
@@ -58,20 +58,18 @@ object Game {
   case object Single27 extends Limited
   case object Triple27 extends Limited
   case object Badugi extends Limited
-  
-  
+
   trait Mixed
-  
+
   object Mixed {
     implicit def string2Mixed(v: String): Mixed = v match {
-      case "eight" => Game.Eight
-      case "horse" => Game.Horse
+      case "eight" ⇒ Game.Eight
+      case "horse" ⇒ Game.Horse
     }
   }
 
   case object Horse extends Mixed
   case object Eight extends Mixed
-  
 
   trait Group
   case object Holdem extends Group

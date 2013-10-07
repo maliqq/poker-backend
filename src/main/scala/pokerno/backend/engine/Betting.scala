@@ -6,15 +6,15 @@ import pokerno.backend.protocol._
 import akka.actor.{ Actor, ActorLogging, ActorRef }
 
 trait Betting {
-g: Gameplay =>
+  g: Gameplay ⇒
   def forceFold = {}
-  
+
   def bettingRound(street: ActorRef) {
     val (seat, pos) = betting.current
-    
-    val round = table.seats from(pos)
-    
-    round where(_ inPlay) foreach {
+
+    val round = table.seats from (pos)
+
+    round where (_ inPlay) foreach {
       case (seat, pos) ⇒
         if (!betting.called(seat))
           seat.state = Seat.Play
@@ -32,12 +32,12 @@ g: Gameplay =>
       street ! Street.Next
       return
     }
-    
+
     betting current = active.head
 
     requireBet
   }
-  
+
 }
 
 object Betting {

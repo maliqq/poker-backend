@@ -7,13 +7,14 @@ trait Antes {
   g: Gameplay ⇒
   def postAntes = if (game.options.hasAnte && stake.ante.isDefined) {
     val round = table.seats where (_ isActive)
-    
-    round foreach { case (seat, pos) ⇒
-      betting current = (seat, pos)
-      
-      forceBet(Bet.Ante)
+
+    round foreach {
+      case (seat, pos) ⇒
+        betting current = (seat, pos)
+
+        forceBet(Bet.Ante)
     }
-    
+
     completeBetting
   }
 }

@@ -1,10 +1,11 @@
 package pokerno.backend.model
 
 import scala.math.{ BigDecimal ⇒ Decimal }
+import java.util.Locale
 
 class Bet(val betType: Bet.Value, val amount: Decimal = .0) {
   override def toString =
-    if (amount > .0) "%s %.2f" format (betType toString, amount)
+    if (amount > .0) "%s %.2f" formatLocal(Locale.US, betType toString, amount)
     else betType.toString
 }
 

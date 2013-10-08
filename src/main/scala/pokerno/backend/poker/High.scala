@@ -1,5 +1,7 @@
 package pokerno.backend.poker
 
+import pokerno.backend.poker.Rank;
+
 trait HighHand {
   self: Hand.Cards ⇒
   def isStraightFlush: Option[Hand] = isFlush match {

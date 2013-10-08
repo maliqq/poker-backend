@@ -4,8 +4,8 @@ import scala.math.{ BigDecimal ⇒ Decimal }
 
 object Rates {
   final val Default: Map[Bet.Value, Decimal] = Map(
-    Bet.BringIn -> 0.125,
-    Bet.Ante -> 0.25,
+    Bet.Ante -> 0.125,
+    Bet.BringIn -> 0.25,
     Bet.SmallBlind -> 0.5,
     Bet.BigBlind -> 1.0,
     Bet.DoubleBet -> 2.0)

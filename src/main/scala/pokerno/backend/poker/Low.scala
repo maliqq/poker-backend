@@ -1,5 +1,8 @@
 package pokerno.backend.poker
 
+import pokerno.backend.poker.Hand;
+import pokerno.backend.poker.Rank;
+
 class Low {
   self: Hand.Cards ⇒
   def isLow: Option[Hand] = {

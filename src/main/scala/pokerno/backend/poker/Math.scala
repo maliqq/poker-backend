@@ -1,5 +1,7 @@
 package pokerno.backend.poker
 
+import pokerno.backend.poker.Deck;
+
 object Math {
   final val DefaultSamplesNum: Int = 1000
   final val FullBoardLen: Int = 5

@@ -3,9 +3,13 @@ package pokerno.backend.model
 import pokerno.backend.poker.{ Card, Deck }
 
 object Dealer {
-  trait DealType
+  trait DealType {
+    def isPrivate: Boolean = false
+  }
 
-  case object Hole extends DealType
+  case object Hole extends DealType {
+    override def isPrivate = true
+  }
   case object Door extends DealType
   case object Board extends DealType
 }

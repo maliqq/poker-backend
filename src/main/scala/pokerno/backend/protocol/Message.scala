@@ -22,6 +22,7 @@ object Message {
     call: Decimal,
     min: Decimal,
     max: Decimal) extends Value
+  case class Acting(pos: Int) extends Value
   case class AddBet(
     pos: Int,
     bet: Bet) extends Value
@@ -42,7 +43,7 @@ object Message {
   case class PlayStart(
     game: Game,
     stake: Stake) extends Value
-  case class PlayStop extends Value
+  case class PlayStop() extends Value
   case class StreetStart(
     name: String) extends Value
   case class ChangeGame(

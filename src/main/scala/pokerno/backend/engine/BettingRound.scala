@@ -38,7 +38,8 @@ class BettingRound(button: Tuple2[Seat, Int]) {
 
   def force(bet: Bet) {
     _require.call = bet.amount
-    add(bet)
+    
+    this += bet
   }
 
   def require(r: Range) = {
@@ -53,26 +54,23 @@ class BettingRound(button: Tuple2[Seat, Int]) {
 
   def called(seat: Seat): Boolean = seat.called(_require.call getOrElse (.0))
 
-  def add(bet: Bet) {
-    val (seat, pos) = current
-    try {
-      _require validate (bet, seat)
+  def +=(bet: Bet) = try {
+    _require validate (bet, seat)
 
-      val amount = bet.amount
-      val put = seat.bet(bet)
-      if (amount > 0) {
-        if (bet.betType != Bet.Call) {
-          _require.call = amount
-        }
-
-        if (bet.betType == Bet.Raise) {
-          _raiseCount += 1
-        }
-
-        pot add (seat.player get, put, seat.state == Seat.AllIn)
+    val amount = bet.amount
+    val put = seat.bet(bet)
+    if (amount > 0) {
+      if (bet.betType != Bet.Call) {
+        _require.call = amount
       }
-    } catch {
-      case e: Error ⇒ seat fold
+
+      if (bet.betType == Bet.Raise) {
+        _raiseCount += 1
+      }
+
+      pot add (seat.player get, put, seat.state == Seat.AllIn)
     }
+  } catch {
+    case e: Error ⇒ seat fold
   }
 }

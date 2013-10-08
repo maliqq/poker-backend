@@ -8,24 +8,39 @@ class GameplayActor(val gameplay: Gameplay) extends Actor with ActorLogging {
   private val streets = Streets.ByGameGroup(gameplay.game.options.group)
   private val streetsIterator = streets iterator
 
-  var betting: ActorRef = system deadLetters
   var currentStreet: ActorRef = system deadLetters
 
+  val stages: List[Stage] = List(
+      new Stage {
+        def name = "prepare-seats"
+        def run(context: Stage.Context) {
+          context.gameplay.prepareSeats
+        }
+      },
+      new Stage {
+        def name = "rotate-game"
+        def run(context: Stage.Context) {
+          context.gameplay.rotateGame
+        }
+      },
+      new Stage {
+        def name = "post-antes"
+        def run(context: Stage.Context) {
+          context.gameplay.postAntes
+        }
+      },
+      new Stage {
+        def name = "post-blinds"
+        def run(context: Stage.Context) {
+          context.gameplay.postBlinds
+        }
+      }
+  )
+  
   override def preStart = {
-    log.info("start gameplay")
-
-    log.info("prepare seats")
-    gameplay.prepareSeats
-
-    log.info("rotate game")
-    gameplay.rotateGame
-
-    log.info("post antes")
-    gameplay.postAntes
-
-    log.info("post blinds")
-    gameplay.postBlinds
-
+    for (stage <- stages) {
+      stage proceed(Stage.Context(gameplay = gameplay, street = self))
+    }
     self ! Street.Next
   }
 

@@ -23,7 +23,7 @@ class Gameplay(
   }
 
   var betting: BettingRound = new BettingRound(table.seatAtButton)
-
+  
   protected def moveButton {
     table.button.move
     broadcast all (Message.MoveButton(pos = table.button))
@@ -35,17 +35,25 @@ class Gameplay(
   }
 
   protected def requireBet {
-    val range = betting.range(game.limit, stake)
+    val range = betting range(game.limit, stake)
     val (call, min, max) = betting require (range)
+    
+    val player = betting.seat.player.get
+    
+    broadcast.except(player) {
+      Message.Acting(pos = betting pos)
+    }
 
-    broadcast all (Message.RequireBet(call = call, min = min, max = max, pos = betting.pos))
+    broadcast.one(player) {
+      Message.RequireBet(call = call, min = min, max = max, pos = betting pos)
+    }
   }
 
   protected def forceBet(betType: Bet.Value) {
     val bet = Bet force (betType, stake)
     betting force (bet)
 
-    broadcast all (Message.AddBet(pos = betting.pos, bet = bet))
+    broadcast all (Message.AddBet(pos = betting pos, bet = bet))
   }
 
   protected def completeBetting {

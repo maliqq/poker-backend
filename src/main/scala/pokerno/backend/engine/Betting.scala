@@ -10,7 +10,7 @@ trait Betting {
   def forceFold = {}
 
   def bettingRound(street: ActorRef) {
-    val (seat, pos) = betting.current
+    val (seat, pos) = betting current
 
     val round = table.seats from (pos)
 

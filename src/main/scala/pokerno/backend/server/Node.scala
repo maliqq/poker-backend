@@ -29,14 +29,21 @@ object Node {
 
   object Config {
     var name = "node_service"
-    var host: String = "localhost"
-    var port: Int = 8081
+    var host = "localhost"
+    var port = 8081
   }
 }
 
 class Node extends Runnable {
+  
   def run {
     val address = new InetSocketAddress(Node.Config.host, Node.Config.port)
-    val server: Server = ServerBuilder().codec(Http()).bindTo(address).name(Node.Config.name).build(Node.service)
+    val codec = Http()
+    val server: Server = ServerBuilder().
+        codec(codec).
+        bindTo(address).
+        name(Node.Config.name).
+        build(Node.service)
   }
+  
 }

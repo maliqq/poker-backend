@@ -21,6 +21,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" % "akka-actor_2.10" % "2.2.1",
   "com.typesafe.akka" % "akka-zeromq_2.10" % "2.2.1",
   "com.typesafe.akka" %% "akka-dataflow" % "2.2.1",
+  "org.webbitserver" % "webbit" % "0.4.15",
   "asia.stampy" % "stampy-core" % "1.0-RELEASE",
   "org.scalatest" % "scalatest_2.10" % "1.9.2" % "test",
   "com.github.scopt" %% "scopt" % "3.1.0"

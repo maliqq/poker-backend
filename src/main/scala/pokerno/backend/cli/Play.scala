@@ -9,14 +9,26 @@ import scala.math.{ BigDecimal ⇒ Decimal }
 import java.util.Scanner
 
 class Play(gameplay: Gameplay, instance: ActorRef) extends Actor {
+  override def preStart = {
+    Console println("starting play")
+  }
+  
   def receive = {
+    case join: Play.Join =>
+      val stack = 1500.0
+      (1 to join.tableSize) foreach { i =>
+        val player = new Player("player-%d".format(i))
+        join.deal ! Message.JoinTable(pos = i - 1, player = player, amount = stack)
+      }
+      
     case msg: Message.RequireBet =>
       Console printf("call=%.2f raise=%.2f..%.2f\n", msg.call, msg.min, msg.max)
       
       val seat = gameplay.table.seats(msg.pos)
+      Console printf("SEAT=%s", seat)
       var bet: Option[Bet] = None
       while (bet.isEmpty) {
-        bet = Some(Play.readBet(msg.call, msg.call - seat.put.get))
+        bet = Some(Play.readBet(msg.call, msg.call - seat.put.getOrElse(.0)))
       }
       instance ! Message.AddBet(pos = msg.pos, bet = bet.get)
       
@@ -31,9 +43,11 @@ class Play(gameplay: Gameplay, instance: ActorRef) extends Actor {
 
     case msg: Message.DealCards => msg._type match {
       case Dealer.Board =>
-        Console printf("Dealt %s %s\n", msg._type, msg.cards)
+        val cards: Cards = msg.cards
+        Console printf("Dealt %s %s\n", msg._type, cards toConsoleString)
       case _ =>
-        Console printf("Dealt %s %s to %d\n", msg._type, msg.cards, msg.pos)
+        val cards: Cards = msg.cards
+        Console printf("Dealt %s %s to %d\n", msg._type, cards toConsoleString, msg.pos.get)
     }
     
     case msg: Message.MoveButton =>
@@ -60,6 +74,8 @@ class Play(gameplay: Gameplay, instance: ActorRef) extends Actor {
 }
 
 object Play {
+  case class Join(tableSize: Int, deal: ActorRef)
+  
   val sc = new Scanner(System.in)
 
   def readBet(call: Decimal, toCall: Decimal): Bet = {

@@ -14,8 +14,6 @@ trait Dealing {
 
         Console printf ("dealing %s %d cards\n", _dealType, n)
 
-        Console printf ("%s\n", table.seats.toString)
-
         table.seats where (_ isActive) foreach {
           case (seat, pos) ⇒
             val message = Message.DealCards(

@@ -2,7 +2,8 @@ package pokerno.backend.cli
 
 import pokerno.backend.model._
 import pokerno.backend.engine._
-import akka.actor.{ ActorSystem, Props }
+import pokerno.backend.protocol._
+import akka.actor.{ ActorRef, ActorSystem, Props }
 import scala.math.{ BigDecimal ⇒ Decimal }
 
 case class Config(
@@ -20,13 +21,16 @@ object Main {
     opt[String]('g', "game") action { (value, c) ⇒ c.copy(limitedGame = value) } text ("Limited game")
   }
   
+  val config = Config()
+  
   val system = ActorSystem("poker-console")
 
   def main(args: Array[String]) {
-    parser.parse(args, Config()) map { config ⇒
+    parser.parse(args, config) map { config ⇒
       val gameplay = createGameplay(config)
       val deal = system.actorOf(Props(classOf[DealActor], gameplay), name = "deal-process")
       val play = system.actorOf(Props(classOf[Play], gameplay, deal), name = "play-process")
+      play ! Play.Join(config.tableSize, deal)
       deal ! Deal.Start
     }
   }
@@ -41,13 +45,6 @@ object Main {
     val table = new Table(config.tableSize)
     val stake = new Stake(config.betSize)
     val gameplay = new Gameplay(dealer, broadcast, variation, stake, table)
-    
-    val stack = 1500.0
-    (1 to config.tableSize) foreach { i =>
-      val player = new Player("player-%d".format(i))
-      table.addPlayer(player, i - 1, stack)
-      //broadcast.subscribe()
-    }
     
     gameplay
   }

@@ -20,7 +20,7 @@ object Poker {
     case class generateDeckRq()
     case class generateDeckResp(cards: String)
     def generateDeck(r: generateDeckRq) = {
-      Future.value(generateDeckResp(cards = Cards.wrap(Deck()).toString))
+      Future.value(generateDeckResp(cards = Cards(Deck())))
     }
 
     // evaluate hand

@@ -1,24 +1,46 @@
 package pokerno.backend.poker
 
 object Suit {
-  private final val _short = "shdc"
-  private final val _unicode = List("♠", "♥", "♦", "♣")
-  private final val _colors: List[String] = List(Console.YELLOW, Console.RED, Console.CYAN, Console.GREEN)
-
-  sealed class Value {
-    def toInt: Int = All indexOf (this)
-    def short: Char = _short(toInt)
-    def unicode: String = _unicode(toInt)
-    def color: String = _colors(toInt)
+  abstract class Value {
+    def short: Char
+    def unicode: String
+    def toInt: Int
+    def color: String
     override def toString: String = short toString
   }
-
-  implicit def int2Value(i: Int): Value = All(i)
-
-  case object Spade extends Value
-  case object Heart extends Value
-  case object Diamond extends Value
-  case object Club extends Value
+  case object Spade extends Value {
+    def toInt = 0
+    def short = 's'
+    def unicode = "♠"
+    def color = Console.YELLOW
+  }
+  case object Heart extends Value {
+    def toInt = 1
+    def short = 'h'
+    def unicode = "♥"
+    def color = Console.RED
+  }
+  case object Diamond extends Value {
+    def toInt = 2
+    def short = 'd'
+    def unicode = "♦"
+    def color = Console.CYAN
+  }
+  case object Club extends Value {
+    def toInt = 3
+    def short = 'c'
+    def unicode = "♣"
+    def color = Console.GREEN
+  }
+  
+  implicit def valueToInt(suit: Value): Int = suit.toInt
+  implicit def charToSuit(char: Char): Value = char match {
+    case 's' => Spade
+    case 'h' => Heart
+    case 'd' => Diamond
+    case 'c' => Club
+  }
+  implicit def intToSuit(i: Int): Value = All(i)
 
   final val All: List[Value] = List(Spade, Heart, Diamond, Club)
   final val Seq = List range (0, 3)

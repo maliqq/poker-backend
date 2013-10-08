@@ -3,7 +3,7 @@ package pokerno.backend.model
 import scala.math.{ BigDecimal ⇒ Decimal }
 import scala.collection._
 
-case class Player(val name: String)
+case class Player(val id: String)
 
 object Button {
   implicit def button2Int(button: Button): Int = button.current
@@ -11,7 +11,7 @@ object Button {
 
 class Button(val size: Int) extends Round(size)
 
-class Table(size: Int) {
+class Table(val size: Int) {
   val seats = new Seats(size)
   val button = new Button(size)
 

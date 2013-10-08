@@ -31,7 +31,11 @@ class DealActor(val gameplay: Gameplay) extends Actor {
     case Message.ComeBack    ⇒
     case Message.AddBet      ⇒
     case Message.ChatMessage ⇒
-    case Message.JoinTable   ⇒
+    case msg: Message.JoinTable   ⇒
+      log.info("got %s".format(msg))
+      gameplay.table.addPlayer(msg.player, msg.pos, msg.amount)
+      gameplay.broadcast.subscribe(sender, msg.player.id)
+      
     case Message.LeaveTable  ⇒
     case Message.KickPlayer  ⇒
 

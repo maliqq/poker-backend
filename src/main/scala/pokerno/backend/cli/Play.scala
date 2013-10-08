@@ -25,12 +25,8 @@ class Play(gameplay: Gameplay, instance: ActorRef) extends Actor {
       Console printf("call=%.2f raise=%.2f..%.2f\n", msg.call, msg.min, msg.max)
       
       val seat = gameplay.table.seats(msg.pos)
-      Console printf("SEAT=%s", seat)
-      var bet: Option[Bet] = None
-      while (bet.isEmpty) {
-        bet = Some(Play.readBet(msg.call, msg.call - seat.put.getOrElse(.0)))
-      }
-      instance ! Message.AddBet(pos = msg.pos, bet = bet.get)
+      var bet = Play.readBet(msg.call, msg.call - seat.put.getOrElse(.0))
+      instance ! Message.AddBet(pos = msg.pos, bet = bet)
       
     case msg: Message.RequireDiscard =>
       val seat = gameplay.table.seats(msg.pos)
@@ -82,6 +78,7 @@ object Play {
     var bet: Option[Bet] = None
     while (bet.isEmpty) {
       Console print (">>> ")
+      
       bet = parseBet(call, toCall, sc.nextLine)
     }
     bet.get
@@ -96,11 +93,15 @@ object Play {
     case "call"  ⇒ Some(Bet.call(toCall))
     case _ ⇒
       val parts = str.split(" ")
+      
       val amountStr: String = if (parts.size == 1) parts.head
       else if (parts.size == 2 && parts.head == "raise") parts.last
       else ""
-      if (amountStr == "") None
-      else {
+      
+      if (amountStr == "") {
+        Console printf("invalid input: %s", str)
+        None
+      } else {
         try {
           val amount = Decimal(amountStr)
           Some(Bet.raise(amount))

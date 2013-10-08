@@ -23,7 +23,7 @@ object Main {
   
   val config = Config()
   
-  val system = ActorSystem("poker-console")
+  val system = ActorSystem("poker-cli")
 
   def main(args: Array[String]) {
     parser.parse(args, config) map { config ⇒

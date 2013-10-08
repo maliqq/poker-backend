@@ -3,8 +3,6 @@ package pokerno.backend.poker
 import scala.collection.mutable.ListBuffer
 
 class Card(val kind: Kind.Value, val suit: Suit.Value) extends Ordered[Card] {
-  def colored = "%s%s %s%s" format (suit.color, kind.toString, suit.toString, Console.RESET)
-
   def toInt: Int = kind.toInt << 2 + suit.toInt
   def toByte: Byte = (toInt + 1) toByte
 

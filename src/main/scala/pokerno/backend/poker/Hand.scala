@@ -1,8 +1,5 @@
 package pokerno.backend.poker
 
-import pokerno.backend.poker.CardSet;
-import pokerno.backend.poker.Rank;
-
 object Hand {
   sealed trait Ranking {
     def apply(cards: List[Card]): Option[Hand]

@@ -1,8 +1,5 @@
 package pokerno.backend.poker
 
-import pokerno.backend.poker.Card;
-import pokerno.backend.poker.Cards;
-import pokerno.backend.poker.Kind;
 import scala.collection.mutable.ListBuffer
 
 class Card(val kind: Kind.Value, val suit: Suit.Value) extends Ordered[Card] {

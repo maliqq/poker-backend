@@ -46,4 +46,12 @@ class Broadcast extends ActorEventBus with ScanningClassification {
   def except(player: Player)(f: => Message.Value) = {
     publish(Notification(f, to = Except(List(player.id))))
   }
+  
+  def except(players: List[Player])(f: => Message.Value) = {
+    publish(Notification(f, to = Except(players.map(_ id))))
+  }
+  
+  def only(players: List[Player])(f: => Message.Value) = {
+    publish(Notification(f, to = Only(players.map(_ id))))
+  }
 }

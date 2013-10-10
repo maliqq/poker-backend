@@ -83,14 +83,18 @@ object Play {
     }
     bet.get
   }
+  
+  final val Fold = "fold"
+  final val Check = "check"
+  final val Call = "call"
 
   def parseBet(call: Decimal, toCall: Decimal, str: String): Option[Bet] = str match {
     case "" ⇒
       if (toCall == .0) Some(Bet.check)
       else Some(Bet.call(toCall))
-    case "fold"  ⇒ Some(Bet.fold)
-    case "check" ⇒ Some(Bet.check)
-    case "call"  ⇒ Some(Bet.call(toCall))
+    case Fold  ⇒ Some(Bet.fold)
+    case Check ⇒ Some(Bet.check)
+    case Call  ⇒ Some(Bet.call(toCall))
     case _ ⇒
       val parts = str.split(" ")
       

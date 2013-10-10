@@ -76,7 +76,7 @@ object Streets {
   val bigBets = new Stage {
     def name = "big-bets"
     def run(context: Stage.Context) = {
-      context.gameplay.betting.turnOnBigBets
+      context.gameplay.betting.bigBets = true
     }
   }
 

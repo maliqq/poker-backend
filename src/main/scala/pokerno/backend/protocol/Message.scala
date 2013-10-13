@@ -10,8 +10,8 @@ object Message {
   // dealing and discarding
   case class DealCards(
     _type: Dealer.DealType,
-    pos: Option[Int],
-    cards: List[Card]) extends Value
+    cards: List[Card],
+    pos: Option[Int]) extends Value
   case class RequireDiscard(pos: Int) extends Value
   case class Discarded(pos: Int, num: Int) extends Value
   case class DiscardCards(pos: Int, cards: List[Card]) extends Value

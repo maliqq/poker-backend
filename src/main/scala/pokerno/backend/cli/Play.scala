@@ -44,7 +44,7 @@ class Play(gameplay: Gameplay, instance: ActorRef) extends Actor {
       case Dealer.Board ⇒
         Console printf ("Dealt %s %s\n", _type, Cards(cards) toConsoleString)
       case _ ⇒
-        Console printf ("Dealt %s %s to %d\n", _type, Cards(cards) toConsoleString, pos.get)
+        Console printf ("Dealt %s %s to %d\n", _type, Cards(cards) toConsoleString, pos)
     }
 
     case Message.MoveButton(pos) ⇒

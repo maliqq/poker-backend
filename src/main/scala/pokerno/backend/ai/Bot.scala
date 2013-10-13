@@ -37,25 +37,25 @@ class Bot(room: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
       opponentsNum = 6
       stake = msg.stake
 
-    case msg: Message.StreetStart ⇒
-      street = msg.name
+    case Message.StreetStart(name) ⇒
+      street = name
 
-    case msg: Message.CollectPot ⇒
-      pot = msg.total
+    case Message.CollectPot(total) ⇒
+      pot = total
       bet = .0
 
-    case msg: Message.DealCards ⇒
-      msg._type match {
+    case Message.DealCards(_type, dealt, pos) ⇒
+      _type match {
         case Dealer.Board ⇒
-          board ++= msg.cards
+          board ++= dealt
         case Dealer.Hole ⇒
-          cards ++= msg.cards
+          cards ++= dealt
       }
 
-    case msg: Message.RequireBet ⇒
-      if (msg.pos == pos) {
+    case Message.RequireBet(_pos, call, range) ⇒
+      if (_pos == pos) {
         //<-time.After(1 * time.Second)
-        decide(msg)
+        decide(call, range)
       }
 
     case msg: Message.AddBet ⇒
@@ -85,7 +85,7 @@ class Bot(room: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
     addBet(Bet call (amount))
   }
 
-  def decide(msg: Message.RequireBet) {
+  def decide(call: Decimal, range: Range) {
     if (cards.size != 2) {
       Console printf ("*** can't decide with cards=%s", cards)
       doFold
@@ -95,11 +95,11 @@ class Bot(room: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
     val decision = if (board.size == 0) decidePreflop(cards)
     else decideBoard(cards, board)
 
-    invoke(decision, msg)
+    invoke(decision, call, range)
   }
 
-  def invoke(decision: Decision, msg: Message.RequireBet) {
-    val (call, minRaise, maxRaise) = (msg.call, msg.min, msg.max)
+  def invoke(decision: Decision, call: Decimal, range: Range) {
+    val (minRaise, maxRaise) = range.value
 
     Console printf ("decision=%#v call=%.2f minRaise=%.2f maxRaise=%.2f", decision, call, minRaise, maxRaise)
 

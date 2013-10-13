@@ -23,7 +23,7 @@ class Gameplay(
     case m: Mix  ⇒ m.games.head
   }
 
-  val betting: ActorRef
+  val betting: ActorRef // FIXME
   val round = new BettingRound(table)
 
   def moveButton {

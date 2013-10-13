@@ -6,7 +6,7 @@ import org.scalatest.matchers.ShouldMatchers._
 
 import pokerno.backend.model.{ Bet, Stake }
 
-class HighSpec extends FunSpec with ClassicMatchers {
+class BetSpec extends FunSpec with ClassicMatchers {
   describe("Bet") {
     it("amount") {
       Bet.check.amount should equal(.0)

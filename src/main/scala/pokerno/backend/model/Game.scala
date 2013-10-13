@@ -9,22 +9,22 @@ trait Variation {
 
 object Game {
   trait Limit {
-    def raise(stack: Decimal, bb: Decimal, potSize: Decimal, bigBets: Boolean = false): Range
+    def raise(stack: Decimal, bb: Decimal, potSize: Decimal, bigBets: Boolean = false): Tuple2[Decimal, Decimal]
   }
 
   case object NoLimit extends Limit {
-    def raise(stack: Decimal, bb: Decimal, potSize: Decimal, bigBets: Boolean = false) = Range(bb, stack)
+    def raise(stack: Decimal, bb: Decimal, potSize: Decimal, bigBets: Boolean = false) = (bb, stack)
   }
 
   case object FixedLimit extends Limit {
     def raise(stack: Decimal, bb: Decimal, potSize: Decimal, bigBets: Boolean = false) = if (bigBets)
-      Range(bb, bb)
+      (bb, bb)
     else
-      Range(bb * 2, bb * 2)
+      (bb * 2, bb * 2)
   }
 
   case object PotLimit extends Limit {
-    def raise(stack: Decimal, bb: Decimal, potSize: Decimal, bigBets: Boolean = false) = Range(bb, potSize)
+    def raise(stack: Decimal, bb: Decimal, potSize: Decimal, bigBets: Boolean = false) = (bb, potSize)
   }
 
   trait Limited
@@ -79,7 +79,7 @@ object Game {
 
   final val MaxTableSize = 10
 
-  class Options(
+  case class Options(
     val group: Group = Holdem,
     val hasBlinds: Boolean = false,
     val hasAnte: Boolean = false,
@@ -100,17 +100,17 @@ object Game {
     val defaultLimit: Limit = NoLimit)
 }
 
-class Game(val game: Game.Limited, var _limit: Option[Game.Limit] = None, var _tableSize: Option[Int] = None) extends Variation {
+case class Game(val game: Game.Limited, var Limit: Option[Game.Limit] = None, var TableSize: Option[Int] = None) extends Variation {
   val options = Games.Default(game)
-  val tableSize: Int = _tableSize match {
-    case None ⇒ Game.MaxTableSize
+  val tableSize: Int = TableSize match {
+    case None ⇒ options.maxTableSize
     case Some(size) ⇒
-      if (size > Game.MaxTableSize)
-        Game.MaxTableSize
+      if (size > options.maxTableSize)
+        options.maxTableSize
       else
         size
   }
-  val limit: Game.Limit = _limit match {
+  val limit: Game.Limit = Limit match {
     case None        ⇒ options.defaultLimit
     case Some(limit) ⇒ limit
   }
@@ -120,7 +120,7 @@ class Game(val game: Game.Limited, var _limit: Option[Game.Limit] = None, var _t
 object Games {
   final val Default: Map[Game.Limited, Game.Options] = Map(
 
-    Game.Texas -> new Game.Options(
+    Game.Texas -> Game.Options(
       group = Game.Holdem,
       hasBoard = true,
       hasBlinds = true,
@@ -129,7 +129,7 @@ object Games {
       pocketSize = 2,
       defaultLimit = Game.NoLimit),
 
-    Game.Omaha -> new Game.Options(
+    Game.Omaha -> Game.Options(
       group = Game.Holdem,
       hasBoard = true,
       hasBlinds = true,
@@ -138,7 +138,7 @@ object Games {
       hiRanking = Some(Hand.High),
       defaultLimit = Game.PotLimit),
 
-    Game.Omaha8 -> new Game.Options(
+    Game.Omaha8 -> Game.Options(
       group = Game.Holdem,
       hasBoard = true,
       hasBlinds = true,
@@ -148,7 +148,7 @@ object Games {
       loRanking = Some(Hand.AceFive8),
       defaultLimit = Game.PotLimit),
 
-    Game.Stud -> new Game.Options(
+    Game.Stud -> Game.Options(
       group = Game.SevenCard,
       hasAnte = true,
       hasBringIn = true,
@@ -158,7 +158,7 @@ object Games {
       hiRanking = Some(Hand.High),
       defaultLimit = Game.FixedLimit),
 
-    Game.Stud8 -> new Game.Options(
+    Game.Stud8 -> Game.Options(
       group = Game.SevenCard,
       hasAnte = true,
       hasBringIn = true,
@@ -169,7 +169,7 @@ object Games {
       loRanking = Some(Hand.AceFive8),
       defaultLimit = Game.FixedLimit),
 
-    Game.Razz -> new Game.Options(
+    Game.Razz -> Game.Options(
       group = Game.SevenCard,
       hasAnte = true,
       hasBringIn = true,
@@ -179,7 +179,7 @@ object Games {
       hiRanking = Some(Hand.AceFive),
       defaultLimit = Game.FixedLimit),
 
-    Game.London -> new Game.Options(
+    Game.London -> Game.Options(
       group = Game.SevenCard,
       hasAnte = true,
       hasBringIn = true,
@@ -189,7 +189,7 @@ object Games {
       hiRanking = Some(Hand.AceSix),
       defaultLimit = Game.FixedLimit),
 
-    Game.FiveCard -> new Game.Options(
+    Game.FiveCard -> Game.Options(
       group = Game.SingleDraw,
       hasBlinds = true,
       discards = true,
@@ -200,7 +200,7 @@ object Games {
       hiRanking = Some(Hand.High),
       defaultLimit = Game.FixedLimit),
 
-    Game.Single27 -> new Game.Options(
+    Game.Single27 -> Game.Options(
       group = Game.SingleDraw,
       hasBlinds = true,
       discards = true,
@@ -211,7 +211,7 @@ object Games {
       hiRanking = Some(Hand.DeuceSeven),
       defaultLimit = Game.FixedLimit),
 
-    Game.Triple27 -> new Game.Options(
+    Game.Triple27 -> Game.Options(
       group = Game.TripleDraw,
       hasBlinds = true,
       discards = true,
@@ -222,7 +222,7 @@ object Games {
       hiRanking = Some(Hand.DeuceSeven),
       defaultLimit = Game.FixedLimit),
 
-    Game.Badugi -> new Game.Options(
+    Game.Badugi -> Game.Options(
       group = Game.TripleDraw,
       hasBlinds = true,
       discards = true,

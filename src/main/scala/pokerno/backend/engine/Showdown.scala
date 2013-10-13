@@ -20,12 +20,12 @@ trait Showdown {
     }
   }
 
-  def declareWinner(box: Tuple2[Seat, Int]) = {
+  def declareWinner(pot: Pot, box: Tuple2[Seat, Int]) = {
     val (seat, pos) = box
-    betting.pot.sidePots foreach { side ⇒
+    pot.sidePots foreach { side ⇒
       val amount = side total
       val winner = seat.player.get
-      seat.net(amount)
+      seat wins (amount)
       val message = Message.Winner(pos = pos, winner = winner, amount = amount)
       broadcast all (message)
     }
@@ -63,7 +63,7 @@ trait Showdown {
         case (winner, amount) ⇒
           val pos = 0
           val seat = new Seat
-          seat net (amount)
+          seat wins (amount)
           val message = Message.Winner(pos = pos, winner = winner, amount = amount)
       }
     }
@@ -97,10 +97,10 @@ trait Showdown {
     hands
   }
 
-  def showdown = {
+  def showdown(pot: Pot) = {
     val stillInPot = table.seats where (_ inPot)
     if (stillInPot.size == 1) {
-      declareWinner(stillInPot head)
+      declareWinner(pot, stillInPot head)
     } else if (stillInPot.size > 1) {
       var hiHands: Option[Map[Player, Hand]] = None
       var loHands: Option[Map[Player, Hand]] = None
@@ -113,7 +113,7 @@ trait Showdown {
         case Some(ranking) ⇒ loHands = Some(showHands(ranking))
         case None          ⇒
       }
-      declareWinners(betting.pot, hiHands, loHands)
+      declareWinners(pot, hiHands, loHands)
     }
   }
 }

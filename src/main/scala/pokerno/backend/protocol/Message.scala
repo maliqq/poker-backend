@@ -20,8 +20,7 @@ object Message {
   case class RequireBet(
     pos: Int,
     call: Decimal,
-    min: Decimal,
-    max: Decimal) extends Value
+    range: Range) extends Value
   case class Acting(pos: Int) extends Value
   case class AddBet(
     pos: Int,

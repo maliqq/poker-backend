@@ -26,7 +26,10 @@ class Play(gameplay: Gameplay, instance: ActorRef) extends Actor {
       
       val seat = gameplay.table.seats(msg.pos)
       var bet = Play.readBet(msg.call, msg.call - seat.put.getOrElse(.0))
-      instance ! Message.AddBet(pos = msg.pos, bet = bet)
+      
+      val addBet = Message.AddBet(pos = msg.pos, bet = bet)
+      Console printf("sending %s\n", addBet)
+      instance ! addBet
       
     case msg: Message.RequireDiscard =>
       val seat = gameplay.table.seats(msg.pos)

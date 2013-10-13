@@ -18,3 +18,7 @@ class Round(size: Int) {
     _current %= size
   }
 }
+
+object Round {
+  implicit def current2Int(round: Round): Int = round.current
+}

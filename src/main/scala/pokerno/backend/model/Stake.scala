@@ -23,6 +23,7 @@ class Stake(
     case Bet.SmallBlind ⇒ smallBlind
     case Bet.BigBlind   ⇒ bigBlind
     case Bet.DoubleBet  ⇒ doubleBet
+    case _ => throw new Error("no amount for %s" format(t))
   }
 
   val smallBlind: Decimal = SmallBlind getOrElse (Bet.SmallBlind rateWith (bigBlind))

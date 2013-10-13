@@ -21,96 +21,79 @@ object Seat {
 class Seat {
   private var _state: Seat.State = Seat.Empty
   def state = _state
-  def state_=(value: Seat.State) {
-    if (value == Seat.Taken && _state != Seat.Empty)
-      throw Seat.IsTaken()
 
-    if (value == Seat.Ready && _state != Seat.Taken)
-      return
-
-    if (value == Seat.Bet && _amount.getOrElse(.0) == .0) {
-      _state = Seat.AllIn
-      return
-    }
-
-    _state = value
-  }
-
-  private var _amount: Option[Decimal] = None
+  private var _amount: Decimal = .0
   def amount = _amount
-  def amount_=(value: Decimal) {
-    _amount = Some(value)
-  }
 
-  private var _put: Option[Decimal] = None
+  private var _put: Decimal = .0
   def put = _put
   def put_=(amount: Decimal) {
-    net(-amount + _put.getOrElse(.0))
-    _put = Some(amount)
+    net(_put - amount)
+    _put = amount
   }
 
   private var _player: Option[Player] = None
   def player = _player
-  def player_=(value: Player) {
-    state = Seat.Taken
-    _player = Some(value)
+  def player_=(p: Player) {
+    if (_state != Seat.Empty)
+      throw new Seat.IsTaken()
+    
+    _state = Seat.Taken
+    _player = Some(p)
   }
 
   def clear {
-    state = Seat.Empty
+    _state = Seat.Empty
     _player = None
-    _amount = None
-    _put = None
+    _amount = .0
+    _put = .0
   }
 
   def play {
-    state = Seat.Play
-    _put = None
+    _state = Seat.Play
+    _put = .0
   }
 
-  def check = {
-    state = Seat.Play
-    .0
+  def check {
+    _state = Seat.Play
   }
 
-  def fold = {
-    state = Seat.Fold
-    _put = None
-    .0
+  def fold {
+    _state = Seat.Fold
+    _put = .0
   }
-
-  def force(amount: Decimal) = {
-    val d = List[Decimal](amount, _amount.get).min
-    put = d
-    state = Seat.Bet
-    d
-  }
-
-  def raise(amount: Decimal) = {
-    val d = amount - _put.getOrElse(.0)
+  
+  def force(amount: Decimal) {
     put = amount
-    state = Seat.Play
-    d
+    _state = Seat.Bet
   }
 
-  def bet(bet: Bet): Decimal = bet.betType match {
-    case Bet.Fold             ⇒ fold
-    case Bet.Check            ⇒ check
-    case Bet.Call | Bet.Raise ⇒ raise(bet.amount)
-    case _: Bet.ForcedBet     ⇒ force(bet.amount)
+  def raise(amount: Decimal) {
+    put = amount
+    _state = Seat.Play
   }
-
+  
   def buyIn(amount: Decimal) {
     net(amount)
-    state = Seat.Ready
+    _state = Seat.Ready
+  }
+  
+  def wins(amount: Decimal) {
+    net(amount)
   }
 
-  def net(amount: Decimal) {
-    _amount = Some(amount + _amount.getOrElse(.0))
+  def isCalled(amount: Decimal): Boolean = {
+    _state == Seat.AllIn || amount <= _put
   }
-
-  def called(amount: Decimal): Boolean = {
-    _state == Seat.AllIn || amount <= _put.getOrElse(.0)
+  
+  def post(bet: Bet) = bet.betType match {
+    case Bet.Fold => fold
+    case Bet.Call | Bet.Raise => raise(bet.amount)
+    case _: Bet.ForcedBet => force(bet.amount)
+  }
+  
+  private def net(amount: Decimal) {
+    _amount += amount
   }
 
   def isReady = state == Seat.Ready || state == Seat.Play || state == Seat.Fold
@@ -121,7 +104,7 @@ class Seat {
   def inPot = inPlay || state == Seat.AllIn
 
   override def toString = if (_player.isDefined)
-    "%s - %s (%.2f)".format(_player get, _state, _amount get)
+    "%s - %s (%.2f)".format(_player get, _state, _amount)
   else
     "(empty)"
 

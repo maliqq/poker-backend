@@ -76,14 +76,14 @@ object Streets {
   val bigBets = new Stage {
     def name = "big-bets"
     def run(context: Stage.Context) = {
-      context.gameplay.betting.bigBets = true
+      context.gameplay.betting ! Betting.BigBets
     }
   }
 
   val betting = new Skippable {
     def name = "betting"
     def run(context: Stage.Context) = {
-      context.gameplay.bettingRound(context.street)
+      context.gameplay.betting ! Betting.Start
     }
   }
 

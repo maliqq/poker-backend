@@ -81,14 +81,18 @@ class Pot {
     main = _main
   }
 
-  def add(member: Player, amount: Decimal, allIn: Boolean = false) {
-    val left = side.foldRight[Decimal](.0) {
-      case (p, acc) ⇒ p add (member, acc)
-    }
-    if (allIn)
-      split(member, left)
-    else
-      main add (member, left)
+  def add(member: Player, amount: Decimal, allIn: Boolean = false) = side.foldRight[Decimal](.0) {
+    case (p, acc) ⇒ p add (member, acc)
+  }
+  
+  def <<-(member: Player, amount: Decimal) {
+    val left = add(member, amount)
+    split(member, left)
+  }
+  
+  def <<(member: Player, amount: Decimal) {
+    val left = add(member, amount)
+    main add (member, left)
   }
 
   override def toString = {

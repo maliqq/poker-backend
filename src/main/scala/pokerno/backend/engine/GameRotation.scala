@@ -5,20 +5,17 @@ import pokerno.backend.protocol._
 
 trait GameRotation {
   g: Gameplay ⇒
-  def variation: Variation
+
+  def rotateGame = if (variation isMixed)
+    rotateNext { g ⇒
+      game = g
+      broadcast all (Message.ChangeGame(game = game))
+    }
 
   final val rotateEvery = 8
 
   private var _rotationIndex = 0
   private var _rotationCounter = 0
-
-  protected def rotateNext(f: Game ⇒ Unit) {
-    _rotationCounter += 1
-    if (_rotationCounter > rotateEvery) {
-      _rotationCounter = 0
-      f(nextGame)
-    }
-  }
 
   private def nextGame = {
     val mix = variation.asInstanceOf[Mix]
@@ -27,9 +24,11 @@ trait GameRotation {
     mix.games(_rotationIndex)
   }
 
-  def rotateGame = if (variation isMixed)
-    rotateNext { g ⇒
-      game = g
-      broadcast all (Message.ChangeGame(game = game))
+  private def rotateNext(f: Game ⇒ Unit) {
+    _rotationCounter += 1
+    if (_rotationCounter > rotateEvery) {
+      _rotationCounter = 0
+      f(nextGame)
     }
+  }
 }

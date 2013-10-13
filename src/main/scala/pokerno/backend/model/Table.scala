@@ -5,24 +5,14 @@ import scala.collection._
 
 case class Player(val id: String)
 
-object Button {
-  implicit def button2Int(button: Button): Int = button.current
-}
-
-class Button(val size: Int) extends Round(size)
-
 class Table(val size: Int) {
   val seats = new Seats(size)
-  val button = new Button(size)
-
-  def seatsFromButton = seats.from(button)
-
-  def seatAtButton: Tuple2[Seat, Int] = (seats(button), button)
+  val button = new Round(size)
 
   private var _seating: mutable.Map[Player, Int] = mutable.Map.empty
-  def addPlayer(player: Player, at: Int, amount: Decimal) {
+  def addPlayer(player: Player, at: Int, amount: Option[Decimal] = None) {
     seats(at) player = player
-    seats(at) buyIn (amount)
+    if (amount.isDefined) seats(at) buyIn (amount get)
     _seating(player) = at
   }
 

@@ -4,6 +4,7 @@ import pokerno.backend.model._
 import pokerno.backend.protocol._
 import akka.actor.{ Actor, Props, ActorLogging, ActorRef }
 import scala.concurrent.Future
+import scala.math.{BigDecimal => Decimal}
 
 object Gameplay {
   case object Start
@@ -15,54 +16,52 @@ class Gameplay(
     val broadcast: Broadcast,
     val variation: Variation,
     val stake: Stake,
-    val table: Table) extends GameRotation with Antes with Blinds with Dealing with BringIn with Betting with Showdown {
+    val table: Table) extends GameRotation with Antes with Blinds with Dealing with BringIn with Showdown {
 
   var game: Game = variation match {
     case g: Game ⇒ g
     case m: Mix  ⇒ m.games.head
   }
-
-  var betting: BettingRound = new BettingRound(table.seatAtButton)
   
-  protected def moveButton {
+  val betting: ActorRef
+  val round = new BettingRound(table)
+
+  def moveButton {
     table.button.move
+    round.current = table.button
     broadcast all (Message.MoveButton(pos = table.button))
   }
 
-  protected def setButton(pos: Int) {
+  def setButton(pos: Int) {
     table.button.current = pos
+    round.current = pos
     broadcast all (Message.MoveButton(pos = table.button))
   }
 
-  protected def requireBet {
-    val range = betting range(game.limit, stake)
-    val (call, min, max) = betting require (range)
-    
-    val player = betting.seat.player.get
-    
+  def requireBet(call: Decimal, range: Range) {
+    val player = round.acting._1.player.get
+
     broadcast.except(player) {
-      Message.Acting(pos = betting pos)
+      Message.Acting(pos = round current)
     }
 
     broadcast.one(player) {
-      Message.RequireBet(call = call, min = min, max = max, pos = betting pos)
+      Message.RequireBet(pos = round current, call = call, range = range)
     }
   }
 
-  protected def forceBet(betType: Bet.Value) {
+  def forceBet(acting: Tuple2[Seat, Int], betType: Bet.Value) {
     val bet = Bet force (betType, stake)
-    betting force (bet)
-
-    broadcast all (Message.AddBet(pos = betting pos, bet = bet))
+    
+    round.acting = acting
+    betting ! bet
+    broadcast all (Message.AddBet(pos = round current, bet = bet))
   }
 
-  protected def completeBetting {
-    betting clear
-
+  def bettingComplete(pot: Pot) {
     table.seats where (_ inPlay) map (_._1 play)
 
-    val total = betting.pot total
-    val message = Message.CollectPot(total = total)
+    val message = Message.CollectPot(total = pot total)
     broadcast all (message)
   }
 

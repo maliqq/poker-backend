@@ -4,16 +4,14 @@ import pokerno.backend.protocol._
 
 trait BringIn {
   g: Gameplay ⇒
+  
   def bringIn {
-    val active = table.seats where (_ isActive)
-    val (seat, pos) = active minBy {
-      case (seat, pos) ⇒
-        val pocketCards = dealer pocket (seat.player get)
-        pocketCards last
+    val (seat, pos) = round.seats where (_ isActive) minBy { case (seat, pos) ⇒
+      dealer pocket (seat.player get) last
     }
     setButton(pos)
-
-    betting current = active.head
-    requireBet
+    round.acting = (seat, pos)
+    
+    betting ! Betting.Require(stake.bringIn get, game.limit)
   }
 }

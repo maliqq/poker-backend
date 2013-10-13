@@ -7,7 +7,7 @@ import akka.actor.{ ActorRef, ActorSystem, Props }
 import scala.math.{ BigDecimal ⇒ Decimal }
 
 case class Config(
-  val betSize: Decimal = .0,
+  val betSize: Decimal = 10.0,
   val tableSize: Int = 6,
   val mixedGame: Option[Game.Mixed] = None,
   val limitedGame: Game.Limited = Game.Texas)

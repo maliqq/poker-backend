@@ -2,19 +2,13 @@ package pokerno.backend.engine
 
 import pokerno.backend.model._
 import pokerno.backend.protocol._
+import akka.actor.ActorRef
 
 trait Antes {
   g: Gameplay ⇒
+  
   def postAntes = if (game.options.hasAnte && stake.ante.isDefined) {
-    val round = table.seats where (_ isActive)
-
-    round foreach {
-      case (seat, pos) ⇒
-        betting current = (seat, pos)
-
-        forceBet(Bet.Ante)
-    }
-
-    completeBetting
+    round.seats where (_ isActive) foreach(forceBet(_, Bet.Ante))
+    betting ! Betting.Done
   }
 }

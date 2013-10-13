@@ -60,7 +60,6 @@ class GameplayActor(val gameplay: Gameplay) extends Actor with ActorLogging {
 
     case Street.Exit ⇒
       log.info("showdown")
-      gameplay.showdown
       stop(self)
   }
 

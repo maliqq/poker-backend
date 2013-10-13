@@ -35,15 +35,15 @@ object Node {
 }
 
 class Node extends Runnable {
-  
+
   def run {
     val address = new InetSocketAddress(Node.Config.host, Node.Config.port)
     val codec = Http()
     val server: Server = ServerBuilder().
-        codec(codec).
-        bindTo(address).
-        name(Node.Config.name).
-        build(Node.service)
+      codec(codec).
+      bindTo(address).
+      name(Node.Config.name).
+      build(Node.service)
   }
-  
+
 }

@@ -20,9 +20,9 @@ object Main {
     opt[String]("mix") action { (value, c) ⇒ c.copy(mixedGame = Some(value)) } text ("Mixed game")
     opt[String]('g', "game") action { (value, c) ⇒ c.copy(limitedGame = value) } text ("Limited game")
   }
-  
+
   val config = Config()
-  
+
   val system = ActorSystem("poker-cli")
 
   def main(args: Array[String]) {
@@ -34,7 +34,7 @@ object Main {
       deal ! Deal.Start
     }
   }
-  
+
   def createGameplay(config: Config): Gameplay = {
     val dealer = new Dealer
     val broadcast = new Broadcast
@@ -45,8 +45,8 @@ object Main {
     val table = new Table(config.tableSize)
     val stake = new Stake(config.betSize)
     val gameplay = new Gameplay(dealer, broadcast, variation, stake, table)
-    
+
     gameplay
   }
-  
+
 }

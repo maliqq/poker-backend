@@ -4,7 +4,7 @@ import pokerno.backend.model._
 import pokerno.backend.protocol._
 import akka.actor.{ Actor, Props, ActorLogging, ActorRef }
 import scala.concurrent.Future
-import scala.math.{BigDecimal => Decimal}
+import scala.math.{ BigDecimal ⇒ Decimal }
 
 object Gameplay {
   case object Start
@@ -22,7 +22,7 @@ class Gameplay(
     case g: Game ⇒ g
     case m: Mix  ⇒ m.games.head
   }
-  
+
   val betting: ActorRef
   val round = new BettingRound(table)
 
@@ -52,7 +52,7 @@ class Gameplay(
 
   def forceBet(acting: Tuple2[Seat, Int], betType: Bet.Value) {
     val bet = Bet force (betType, stake)
-    
+
     round.acting = acting
     betting ! bet
     broadcast all (Message.AddBet(pos = round current, bet = bet))

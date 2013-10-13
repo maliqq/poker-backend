@@ -27,19 +27,19 @@ class DealActor(val gameplay: Gameplay) extends Actor {
       log.info("deal start")
       running = actorOf(Props(classOf[GameplayActor], gameplay))
 
-    case Message.SitOut      ⇒
-    case Message.ComeBack    ⇒
-    case msg: Message.AddBet      ⇒
+    case Message.SitOut   ⇒
+    case Message.ComeBack ⇒
+    case msg: Message.AddBet ⇒
       gameplay.betting ! msg
 
     case Message.ChatMessage ⇒
-    case msg: Message.JoinTable   ⇒
+    case msg: Message.JoinTable ⇒
       log.info("got %s".format(msg))
       gameplay.table.addPlayer(msg.player, msg.pos, Some(msg.amount))
       gameplay.broadcast.subscribe(sender, msg.player.id)
-      
-    case Message.LeaveTable  ⇒
-    case Message.KickPlayer  ⇒
+
+    case Message.LeaveTable ⇒
+    case Message.KickPlayer ⇒
 
     case Deal.Done ⇒
       log.info("deal done - starting next deal in 5 seconds")

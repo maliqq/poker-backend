@@ -10,83 +10,81 @@ import java.util.Scanner
 
 class Play(gameplay: Gameplay, instance: ActorRef) extends Actor {
   override def preStart = {
-    Console println("starting play")
+    Console println ("starting play")
   }
-  
+
   def receive = {
-    case join: Play.Join =>
+    case join: Play.Join ⇒
       val stack = 1500.0
-      (1 to join.tableSize) foreach { i =>
+      (1 to join.tableSize) foreach { i ⇒
         val player = new Player("player-%d".format(i))
         join.deal ! Message.JoinTable(pos = i - 1, player = player, amount = stack)
       }
-      
-    case msg: Message.RequireBet =>
-      Console printf("call=%.2f raise=%.2f..%.2f\n", msg.call, msg.min, msg.max)
-      
-      val seat = gameplay.table.seats(msg.pos)
-      var bet = Play.readBet(msg.call, msg.call - seat.put.getOrElse(.0))
-      
-      val addBet = Message.AddBet(pos = msg.pos, bet = bet)
-      Console printf("sending %s\n", addBet)
+
+    case Message.RequireBet(pos, call, range) ⇒
+      Console printf ("call=%.2f raise=%.2f..%.2f\n", call, range.min, range.max)
+
+      val seat = gameplay.table.seats(pos)
+      var bet = Play.readBet(call, call - seat.put)
+
+      val addBet = Message.AddBet(pos = pos, bet = bet)
+      Console printf ("sending %s\n", addBet)
       instance ! addBet
-      
-    case msg: Message.RequireDiscard =>
-      val seat = gameplay.table.seats(msg.pos)
 
-      Console printf("your cards: [%s]\n", gameplay.dealer.pocket(seat.player.get))
-      
+    case Message.RequireDiscard(pos) ⇒
+      val seat = gameplay.table.seats(pos)
+
+      Console printf ("your cards: [%s]\n", gameplay.dealer.pocket(seat.player.get))
+
       val cards = Play.readCards
-      
-      instance ! Message.DiscardCards(pos = msg.pos, cards = cards)
 
-    case msg: Message.DealCards => msg._type match {
-      case Dealer.Board =>
-        val cards: Cards = msg.cards
-        Console printf("Dealt %s %s\n", msg._type, cards toConsoleString)
-      case _ =>
-        val cards: Cards = msg.cards
-        Console printf("Dealt %s %s to %d\n", msg._type, cards toConsoleString, msg.pos.get)
+      instance ! Message.DiscardCards(pos = pos, cards = cards)
+
+    case Message.DealCards(_type, pos, cards) ⇒ _type match {
+      case Dealer.Board ⇒
+        Console printf ("Dealt %s %s\n", _type, Cards(cards) toConsoleString)
+      case _ ⇒
+        Console printf ("Dealt %s %s to %d\n", _type, Cards(cards) toConsoleString, pos.get)
     }
-    
-    case msg: Message.MoveButton =>
-      Console printf("Button is %d\n", msg.pos + 1)
 
-    case msg: Message.AddBet =>
-      val seat = gameplay.table.seats(msg.pos)
+    case Message.MoveButton(pos) ⇒
+      Console printf ("Button is %d\n", pos + 1)
 
-      Console printf("Player %s: %s\n", seat.player.get, msg.bet)
+    case Message.AddBet(pos, bet) ⇒
+      val seat = gameplay.table.seats(pos)
 
-    case msg: Message.CollectPot =>
-      Console printf("Pot size: %.2f\nBoard: %s\n", msg.total, gameplay.dealer.board)
+      Console printf ("Player %s: %s\n", seat.player.get, bet)
 
-    case msg: Message.ShowHand =>
-      val seat = gameplay.table.seats(msg.pos)
-      
-      Console printf("Player %s has %s (%s)\n", seat.player.get, msg.cards, msg.hand)
+    case Message.CollectPot(total) ⇒
+      Console printf ("Pot size: %.2f\nBoard: %s\n", total, gameplay.dealer.board)
 
-    case msg: Message.Winner =>
-      val seat = gameplay.table.seats(msg.pos)
-      
-      Console printf("Player %s won %.2f\n", seat.player.get, msg.amount)
+    case Message.ShowHand(pos, cards, hand) ⇒
+      val seat = gameplay.table.seats(pos)
+
+      Console printf ("Player %s has %s (%s)\n", seat.player.get, cards, hand)
+
+    case Message.Winner(pos, winner, amount) ⇒
+      val seat = gameplay.table.seats(pos)
+
+      Console printf ("Player %s won %.2f\n", seat.player.get, amount)
   }
 }
 
 object Play {
   case class Join(tableSize: Int, deal: ActorRef)
-  
+
   val sc = new Scanner(System.in)
 
   def readBet(call: Decimal, toCall: Decimal): Bet = {
     var bet: Option[Bet] = None
     while (bet.isEmpty) {
       Console print (">>> ")
-      
+
       bet = parseBet(call, toCall, sc.nextLine)
     }
     bet.get
   }
-  
+
   final val Fold = "fold"
   final val Check = "check"
   final val Call = "call"
@@ -100,13 +98,13 @@ object Play {
     case Call  ⇒ Some(Bet.call(toCall))
     case _ ⇒
       val parts = str.split(" ")
-      
+
       val amountStr: String = if (parts.size == 1) parts.head
       else if (parts.size == 2 && parts.head == "raise") parts.last
       else ""
-      
+
       if (amountStr == "") {
-        Console printf("invalid input: %s", str)
+        Console printf ("invalid input: %s", str)
         None
       } else {
         try {
@@ -129,7 +127,7 @@ object Play {
         case _: Card.ParseError ⇒ cards = None
       }
     }
-    
+
     cards.get
   }
 }

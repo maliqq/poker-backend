@@ -54,12 +54,12 @@ object Cards {
   case class CardList(v: List[Card])
 
   def apply(value: Any): Cards = value match {
-    case s: String => parseString(s)
-    case Binary(b) => parseBinary(b)
-    case CardList(l) => l
-    case _ => throw new Error("Unknown cards: %s".format(value))
+    case s: String   ⇒ parseString(s)
+    case Binary(b)   ⇒ parseBinary(b)
+    case CardList(l) ⇒ l
+    case _           ⇒ throw new Error("Unknown cards: %s".format(value))
   }
-  
+
   def parseBinary(b: List[Int]): List[Card] = for { i ← b } yield (Card(i))
 
   def parseString(s: String): List[Card] = {
@@ -76,5 +76,5 @@ object Cards {
 
 class Cards(val value: List[Card]) {
   override def toString = value.map(_ toString) mkString ("")
-  def toConsoleString = value.map(_ toConsoleString) mkString("") 
+  def toConsoleString = value.map(_ toConsoleString) mkString ("")
 }

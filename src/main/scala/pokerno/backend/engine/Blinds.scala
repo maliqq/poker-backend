@@ -7,7 +7,7 @@ trait Blinds {
   g: Gameplay ⇒
   def postBlinds = if (game.options.hasBlinds) {
     moveButton
-    
+
     val seats = round seats
     val active = seats where (_ isActive)
     val waiting = seats where (_ isWaitingBB)
@@ -16,7 +16,7 @@ trait Blinds {
       //
     } else {
       val List(sb, bb, _*) = active
-      
+
       forceBet(sb, Bet.SmallBlind)
       forceBet(bb, Bet.BigBlind)
     }

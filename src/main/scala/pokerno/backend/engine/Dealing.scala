@@ -20,7 +20,7 @@ trait Dealing {
               _type = _dealType,
               pos = Some(pos),
               cards = dealer dealPocket (_dealType, n, seat.player.get))
-            
+
             if (_dealType.isPrivate) broadcast.one(seat.player.get) { message }
             else broadcast all (message)
         }

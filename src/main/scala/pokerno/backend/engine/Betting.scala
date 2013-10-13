@@ -10,7 +10,7 @@ object Betting {
   case object Start
   // require bet
   case class Require(amount: Decimal, limit: Game.Limit)
-  
+
   // go to next seat
   case object Next
   // stop current deal

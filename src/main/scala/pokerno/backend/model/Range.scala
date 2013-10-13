@@ -10,7 +10,7 @@ object Range {
     extends Error("amount=%.2f min=%.2f" format (amount, min))
 
   def apply(min: Decimal, max: Decimal): Range = new Range((min, max))
-  
+
   implicit def tuple2Range(t: Tuple2[Double, Double]) = new Range((t._1, t._2))
 }
 

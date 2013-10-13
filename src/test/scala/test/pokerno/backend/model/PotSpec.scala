@@ -4,7 +4,7 @@ import org.scalatest._
 import org.scalatest.matchers._
 import org.scalatest.matchers.ShouldMatchers._
 
-import pokerno.backend.model.{Pot, SidePot}
+import pokerno.backend.model.{ Pot, SidePot }
 
 class PotSpec extends FunSpec with ClassicMatchers {
   describe("Pot") {
@@ -12,10 +12,10 @@ class PotSpec extends FunSpec with ClassicMatchers {
       val pot = new Pot
       pot.total should equal(0)
     }
-    
+
     it("add") {
       val pot = new Pot
-      
+
     }
   }
 }

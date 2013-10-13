@@ -15,7 +15,7 @@ object Message {
   case class RequireDiscard(pos: Int) extends Value
   case class Discarded(pos: Int, num: Int) extends Value
   case class DiscardCards(pos: Int, cards: List[Card]) extends Value
-  
+
   // bets
   case class RequireBet(
     pos: Int,
@@ -30,14 +30,14 @@ object Message {
   // showdown
   case class ShowHand(
     pos: Int,
-    hand: Hand,
-    cards: List[Card]) extends Value
+    cards: List[Card],
+    hand: Hand) extends Value
   case class ShowCards(pos: Int, cards: List[Card], muck: Boolean = false)
   case class Winner(
+    pos: Int,
     winner: Player,
-    amount: Decimal,
-    pos: Int) extends Value
-    
+    amount: Decimal) extends Value
+
   // gameplay process
   case class PlayStart(
     game: Game,

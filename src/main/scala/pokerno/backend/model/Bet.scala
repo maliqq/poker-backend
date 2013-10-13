@@ -5,22 +5,22 @@ import java.util.Locale
 
 class Bet(val betType: Bet.Value, val amount: Decimal = .0) {
   override def toString =
-    if (amount > .0) "%s %.2f" formatLocal(Locale.US, betType toString, amount)
+    if (amount > .0) "%s %.2f" formatLocal (Locale.US, betType toString, amount)
     else betType toString
-  
+
   def isValid(available: Decimal, alreadyPut: Decimal, needToCall: Decimal, range: Range): Boolean = betType match {
     case Bet.Fold ⇒
       true
-    
+
     case Bet.Check ⇒
       needToCall == alreadyPut
 
     case Bet.Call | Bet.Raise ⇒
       (amount <= available &&
         ((betType == Bet.Call && Range(needToCall, needToCall).isValid(amount, available)) ||
-            (betType == Bet.Raise && range.isValid(amount, available)))
+          (betType == Bet.Raise && range.isValid(amount, available)))
       )
-      
+
     case _ ⇒ false
   }
 }
@@ -32,9 +32,9 @@ object Bet {
     v: Value ⇒
     def rateWith(amount: Decimal): Decimal = Rates.Default(this) * amount
   }
-  
+
   object DoubleBet extends Value with Rateable
-  
+
   abstract class ForcedBet extends Value
   case object SmallBlind extends ForcedBet with Rateable
   case object BigBlind extends ForcedBet with Rateable

@@ -37,7 +37,7 @@ class Seat {
   def player_=(p: Player) {
     if (_state != Seat.Empty)
       throw new Seat.IsTaken()
-    
+
     _state = Seat.Taken
     _player = Some(p)
   }
@@ -62,7 +62,7 @@ class Seat {
     _state = Seat.Fold
     _put = .0
   }
-  
+
   def force(amount: Decimal) {
     put = amount
     _state = Seat.Bet
@@ -72,12 +72,12 @@ class Seat {
     put = amount
     _state = Seat.Play
   }
-  
+
   def buyIn(amount: Decimal) {
     net(amount)
     _state = Seat.Ready
   }
-  
+
   def wins(amount: Decimal) {
     net(amount)
   }
@@ -85,13 +85,13 @@ class Seat {
   def isCalled(amount: Decimal): Boolean = {
     _state == Seat.AllIn || amount <= _put
   }
-  
+
   def post(bet: Bet) = bet.betType match {
-    case Bet.Fold => fold
-    case Bet.Call | Bet.Raise => raise(bet.amount)
-    case _: Bet.ForcedBet => force(bet.amount)
+    case Bet.Fold             ⇒ fold
+    case Bet.Call | Bet.Raise ⇒ raise(bet.amount)
+    case _: Bet.ForcedBet     ⇒ force(bet.amount)
   }
-  
+
   private def net(amount: Decimal) {
     _amount += amount
   }

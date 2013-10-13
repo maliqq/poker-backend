@@ -32,13 +32,13 @@ object Suit {
     def unicode = "♣"
     def color = Console.GREEN
   }
-  
+
   implicit def valueToInt(suit: Value): Int = suit.toInt
   implicit def charToSuit(char: Char): Value = char match {
-    case 's' => Spade
-    case 'h' => Heart
-    case 'd' => Diamond
-    case 'c' => Club
+    case 's' ⇒ Spade
+    case 'h' ⇒ Heart
+    case 'd' ⇒ Diamond
+    case 'c' ⇒ Club
   }
   implicit def intToSuit(i: Int): Value = All(i)
 

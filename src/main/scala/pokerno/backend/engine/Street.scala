@@ -3,12 +3,12 @@ package pokerno.backend.engine
 import pokerno.backend.model._
 import akka.actor.{ Actor, Props, ActorLogging, ActorRef }
 
-class StreetActor(val gameplay: Gameplay, val name: Street.Value, val stages: List[Stage]) extends Actor with ActorLogging {
+class StreetActor(val gameplay: Gameplay, val name: Street.Value, val stages: List[StreetStage]) extends Actor with ActorLogging {
   import context._
   val stagesIterator = stages.iterator
 
   override def preStart {
-    log.info("street %s START" format (name))
+    Console printf("%sstreet %s START%s\n", Console.YELLOW, name, Console.RESET)
   }
 
   def receive = {
@@ -16,7 +16,7 @@ class StreetActor(val gameplay: Gameplay, val name: Street.Value, val stages: Li
       if (stagesIterator hasNext) {
         log.info("stage start")
         val stage = stagesIterator.next
-        stage proceed (Stage.Context(gameplay = gameplay, street = self))
+        stage.run(self)
       } else
         parent ! Street.Next
 
@@ -25,7 +25,7 @@ class StreetActor(val gameplay: Gameplay, val name: Street.Value, val stages: Li
   }
 
   override def postStop {
-    log.info("street %s STOP" format (name))
+    Console printf("%sstreet %s STOP%s\n", Console.YELLOW, name, Console.RESET)
   }
 }
 
@@ -60,116 +60,103 @@ object Street {
 }
 
 object Streets {
-  val discarding = new Stage {
-    def name = "discarding"
-    def run(context: Stage.Context) = {
+  def build(gameplay: Gameplay, bettingRef: ActorRef): List[Street] = {
+    val discarding = DirectStreetStage("discarding") {}
+
+    val bringIn = DirectStreetStage("bring-in") {
+      gameplay.bringIn(bettingRef)
+    }
+
+    val bigBets = DirectStreetStage("big-bets") {
+      bettingRef ! Betting.BigBets
+    }
+
+    val betting = BlockingStreetStage("betting") {
+      bettingRef ! Betting.Start
+    }
+
+    def dealing(dealType: Dealer.DealType, cardsNum: Option[Int] = None): Stage = DirectStreetStage("dealing") {
+      gameplay.dealCards(dealType, cardsNum)
+    }
+
+    gameplay.game.options.group match {
+      case Game.Holdem => List(
+        Street.Preflop(
+          List(
+            dealing(Dealer.Hole),
+            betting)),
+        Street.Flop(
+          List(
+            dealing(Dealer.Board, Some(3)),
+            betting)),
+        Street.Turn(
+          List(
+            dealing(Dealer.Board, Some(1)),
+            bigBets,
+            betting)),
+        Street.River(
+          List(
+            dealing(Dealer.Board, Some(1)),
+            betting)))
+  
+      case Game.SevenCard => List(
+        Street.Second(
+          List(
+            dealing(Dealer.Hole, Some(2)))),
+        Street.Third(
+          List(
+            dealing(Dealer.Door, Some(1)),
+            bringIn,
+            betting)),
+        Street.Fourth(
+          List(
+            dealing(Dealer.Door, Some(1)),
+            betting)),
+        Street.Fifth(
+          List(
+            dealing(Dealer.Door, Some(1)),
+            bigBets,
+            betting)),
+        Street.Sixth(
+          List(
+            dealing(Dealer.Door, Some(1)),
+            betting)),
+        Street.Seventh(
+          List(
+            dealing(Dealer.Hole, Some(1)),
+            betting)))
+  
+      case Game.SingleDraw => List(
+        Street.Predraw(
+          List(
+            dealing(Dealer.Hole, Some(5)),
+            betting,
+            discarding)),
+        Street.Draw(
+          List(
+            bigBets,
+            betting,
+            discarding)))
+  
+      case Game.TripleDraw => List(
+        Street.Predraw(
+          List(
+            dealing(Dealer.Hole),
+            betting,
+            discarding)),
+        Street.FirstDraw(
+          List(
+            betting,
+            discarding)),
+        Street.SecondDraw(
+          List(
+            bigBets,
+            betting,
+            discarding)),
+        Street.ThirdDraw(
+          List(
+            betting,
+            discarding)))
     }
   }
-
-  val bringIn = new Stage {
-    def name = "bring-in"
-    def run(context: Stage.Context) = {
-      context.gameplay.bringIn
-    }
-  }
-
-  val bigBets = new Stage {
-    def name = "big-bets"
-    def run(context: Stage.Context) = {
-      context.gameplay.betting ! Betting.BigBets
-    }
-  }
-
-  val betting = new Skippable {
-    def name = "betting"
-    def run(context: Stage.Context) = {
-      context.gameplay.betting ! Betting.Start
-    }
-  }
-
-  def dealing(dealType: Dealer.DealType, cardsNum: Option[Int] = None): Stage = new Stage {
-    def name = "dealing"
-    def run(context: Stage.Context) = {
-      context.gameplay.dealCards(dealType, cardsNum)
-    }
-  }
-
-  final val ByGameGroup: Map[Game.Group, List[Street]] = Map(
-    Game.Holdem -> List(
-      Street.Preflop(
-        List(
-          dealing(Dealer.Hole),
-          betting)),
-      Street.Flop(
-        List(
-          dealing(Dealer.Board, Some(3)),
-          betting)),
-      Street.Turn(
-        List(
-          dealing(Dealer.Board, Some(1)),
-          bigBets,
-          betting)),
-      Street.River(
-        List(
-          dealing(Dealer.Board, Some(1)),
-          betting))),
-
-    Game.SevenCard -> List(
-      Street.Second(
-        List(
-          dealing(Dealer.Hole, Some(2)))),
-      Street.Third(
-        List(
-          dealing(Dealer.Door, Some(1)),
-          bringIn,
-          betting)),
-      Street.Fourth(
-        List(
-          dealing(Dealer.Door, Some(1)),
-          betting)),
-      Street.Fifth(
-        List(
-          dealing(Dealer.Door, Some(1)),
-          bigBets,
-          betting)),
-      Street.Sixth(
-        List(
-          dealing(Dealer.Door, Some(1)),
-          betting)),
-      Street.Seventh(
-        List(
-          dealing(Dealer.Hole, Some(1)),
-          betting))),
-
-    Game.SingleDraw -> List(
-      Street.Predraw(
-        List(
-          dealing(Dealer.Hole, Some(5)),
-          betting,
-          discarding)),
-      Street.Draw(
-        List(
-          bigBets,
-          betting,
-          discarding))),
-
-    Game.TripleDraw -> List(
-      Street.Predraw(
-        List(
-          dealing(Dealer.Hole),
-          betting,
-          discarding)),
-      Street.FirstDraw(
-        List(
-          betting,
-          discarding)),
-      Street.SecondDraw(
-        List(
-          bigBets,
-          betting,
-          discarding)),
-      Street.ThirdDraw(
-        List(
-          betting,
-          discarding))))
 }

@@ -1,55 +1,48 @@
 package pokerno.backend.engine
 
 import akka.actor.{ Actor, Props, ActorRef, ActorLogging }
+import pokerno.backend.protocol._
+import scala.concurrent._
 
 class GameplayActor(val gameplay: Gameplay) extends Actor with ActorLogging {
   import context._
 
-  private val streets = Streets.ByGameGroup(gameplay.game.options.group)
-  private val streetsIterator = streets iterator
+  def streets = Streets.build(gameplay, betting)
+  lazy val streetsIterator = streets iterator
 
+  var betting: ActorRef = system deadLetters
   var currentStreet: ActorRef = system deadLetters
 
-  val stages: List[Stage] = List(
-    new Stage {
-      def name = "prepare-seats"
-      def run(context: Stage.Context) {
-        context.gameplay.prepareSeats
-      }
+  val stages: List[RunStage] = List(
+    RunStage("prepare-seats") {
+      gameplay.prepareSeats
     },
-    new Stage {
-      def name = "rotate-game"
-      def run(context: Stage.Context) {
-        context.gameplay.rotateGame
-      }
+    RunStage("rotate-game") {
+      gameplay.rotateGame
     },
-    new Stage {
-      def name = "post-antes"
-      def run(context: Stage.Context) {
-        context.gameplay.postAntes
-      }
+    RunStage("post-antes") {
+      gameplay.postAntes(betting)
     },
-    new Stage {
-      def name = "post-blinds"
-      def run(context: Stage.Context) {
-        context.gameplay.postBlinds
-      }
+    RunStage("post-blinds") {
+      gameplay.postBlinds(betting)
     }
+    
   )
 
   override def preStart = {
+    betting = system.actorOf(Props(classOf[BettingActor], gameplay))
     for (stage ← stages) {
-      stage proceed (Stage.Context(gameplay = gameplay, street = self))
+      stage.run
     }
     self ! Street.Next
   }
 
   def receive = {
+    case msg: Message.AddBet ⇒
+      betting ! msg
+
     case Street.Next ⇒
       log.info("next street")
-
-      if (sender != self)
-        stop(currentStreet)
 
       if (streetsIterator hasNext) {
         val Street(name, stages) = streetsIterator.next

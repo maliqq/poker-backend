@@ -18,7 +18,7 @@ class BettingActor(gameplay: Gameplay) extends Actor with ActorLogging {
   private var _call: Decimal = .0
   private var _raise: Range = (.0, .0)
 
-  val round = new BettingRound(gameplay.table)
+  def round = gameplay.round
 
   def receive = {
     case Message.AddBet(pos, bet) ⇒
@@ -44,6 +44,7 @@ class BettingActor(gameplay: Gameplay) extends Actor with ActorLogging {
       raiseCount = 0
       _call = .0
       _raise = (.0, .0)
+      self ! Betting.Next
 
     case Betting.Require(amount, limit) ⇒
       val (seat, pos) = round acting
@@ -52,7 +53,7 @@ class BettingActor(gameplay: Gameplay) extends Actor with ActorLogging {
       if (stack < _call)
         _raise = (.0, .0)
       else {
-        var (min, max) = limit raise (stack, amount, pot total, bigBets)
+        var (min, max) = limit raise (stack, amount, pot total)
         min += _call
         max += _call
         _raise = Range(List(stack, min) min, List(stack, max) min)
@@ -76,12 +77,15 @@ class BettingActor(gameplay: Gameplay) extends Actor with ActorLogging {
           self ! Betting.Done
         else {
           round acting = active.head
-          self ! Betting.Require
+          val stake = gameplay.stake
+          val amount = if (bigBets) stake.bigBlind else stake.bigBlind * 2
+          self ! Betting.Require(amount, gameplay.game.limit)
         }
       }
 
     case Betting.Stop ⇒
       gameplay showdown (pot)
+      parent ! Street.Exit
       stop(self)
 
     case Betting.Timeout ⇒
@@ -91,6 +95,7 @@ class BettingActor(gameplay: Gameplay) extends Actor with ActorLogging {
 
     case Betting.Done ⇒
       gameplay bettingComplete (pot)
+      parent ! Street.Next
   }
 
 }

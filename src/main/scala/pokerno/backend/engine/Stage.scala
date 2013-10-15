@@ -9,23 +9,27 @@ object Stage {
   case class Context(val gameplay: Gameplay, val street: ActorRef)
 }
 
-abstract class Stage {
-  def proceed(context: Stage.Context) {
-    Console printf ("*** [%s] START...\n", name)
-    run(context)
-    Console printf ("*** [%s] DONE\n", name)
-    context.street ! Stage.Next
+abstract class Stage(val name: String)(_run: =>Unit) {
+  def run {
+    Console printf("%s*** START %s%s\n", Console.BLUE, name, Console.RESET)
+    _run
+    Console printf("%s*** DONE %s%s\n", Console.BLUE, name, Console.RESET)
   }
-
-  def name: String
-
-  def run(context: Stage.Context)
 }
 
-abstract class Skippable extends Stage {
-  override def proceed(context: Stage.Context) {
-    Console printf ("*** [%s] START...\n", name)
-    run(context)
-    Console printf ("*** [%s] DONE...\n", name)
+case class RunStage(_name: String)(_run: =>Unit) extends Stage(_name)(_run)
+
+abstract class StreetStage(_name: String)(_run: => Unit) extends Stage(_name)(_run) {
+  def run(street: ActorRef) = {
+    super.run
+  }
+}
+
+case class BlockingStreetStage(_name: String)(_run: => Unit) extends StreetStage(_name)(_run)
+
+case class DirectStreetStage(_name: String)(_run: => Unit) extends StreetStage(_name)(_run) {
+  override def run(street: ActorRef) {
+    super.run(street)
+    street ! Stage.Next
   }
 }

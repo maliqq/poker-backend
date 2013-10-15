@@ -9,22 +9,19 @@ trait Variation {
 
 object Game {
   trait Limit {
-    def raise(stack: Decimal, bb: Decimal, potSize: Decimal, bigBets: Boolean = false): Tuple2[Decimal, Decimal]
+    def raise(stack: Decimal, bb: Decimal, potSize: Decimal): Tuple2[Decimal, Decimal]
   }
 
   case object NoLimit extends Limit {
-    def raise(stack: Decimal, bb: Decimal, potSize: Decimal, bigBets: Boolean = false) = (bb, stack)
+    def raise(stack: Decimal, bb: Decimal, potSize: Decimal) = (bb, stack)
   }
 
   case object FixedLimit extends Limit {
-    def raise(stack: Decimal, bb: Decimal, potSize: Decimal, bigBets: Boolean = false) = if (bigBets)
-      (bb, bb)
-    else
-      (bb * 2, bb * 2)
+    def raise(stack: Decimal, bb: Decimal, potSize: Decimal) = (bb, bb)
   }
 
   case object PotLimit extends Limit {
-    def raise(stack: Decimal, bb: Decimal, potSize: Decimal, bigBets: Boolean = false) = (bb, potSize)
+    def raise(stack: Decimal, bb: Decimal, potSize: Decimal) = (bb, potSize)
   }
 
   trait Limited

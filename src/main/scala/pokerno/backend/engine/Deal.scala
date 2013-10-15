@@ -30,7 +30,7 @@ class DealActor(val gameplay: Gameplay) extends Actor {
     case Message.SitOut   ⇒
     case Message.ComeBack ⇒
     case msg: Message.AddBet ⇒
-      gameplay.betting ! msg
+      running ! msg
 
     case Message.ChatMessage ⇒
     case msg: Message.JoinTable ⇒

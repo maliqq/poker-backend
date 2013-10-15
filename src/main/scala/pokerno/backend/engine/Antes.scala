@@ -7,8 +7,8 @@ import akka.actor.ActorRef
 trait Antes {
   g: Gameplay ⇒
 
-  def postAntes = if (game.options.hasAnte && stake.ante.isDefined) {
-    round.seats where (_ isActive) foreach (forceBet(_, Bet.Ante))
+  def postAntes(betting: ActorRef) = if (game.options.hasAnte && stake.ante.isDefined) {
+    round.seats where (_ isActive) foreach (forceBet(betting, _, Bet.Ante))
     betting ! Betting.Done
   }
 }

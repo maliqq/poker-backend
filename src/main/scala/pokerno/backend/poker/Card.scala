@@ -52,15 +52,11 @@ object Cards {
 
   case class Binary(v: List[Int])
   case class CardList(v: List[Card])
-
-  def apply(value: Any): Cards = value match {
-    case s: String   ⇒ parseString(s)
-    case Binary(b)   ⇒ parseBinary(b)
-    case CardList(l) ⇒ l
-    case _           ⇒ throw new Error("Unknown cards: %s".format(value))
-  }
-
-  def parseBinary(b: List[Int]): List[Card] = for { i ← b } yield (Card(i))
+  
+  def apply(value: String) = parseString(value)
+  def apply(value: List[_]): Cards = parseList(value)
+  
+  def parseList(l: List[_]): List[Card] = l.map(Card(_))
 
   def parseString(s: String): List[Card] = {
     val regex = """(?i)([akqjt2-9]{1})([schd]{1})""".r

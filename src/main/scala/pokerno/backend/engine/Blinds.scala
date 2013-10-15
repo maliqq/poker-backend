@@ -2,10 +2,11 @@ package pokerno.backend.engine
 
 import pokerno.backend.model._
 import pokerno.backend.protocol._
+import akka.actor.ActorRef
 
 trait Blinds {
   g: Gameplay ⇒
-  def postBlinds = if (game.options.hasBlinds) {
+  def postBlinds(betting: ActorRef) = if (game.options.hasBlinds) {
     moveButton
 
     val seats = round seats
@@ -17,8 +18,8 @@ trait Blinds {
     } else {
       val List(sb, bb, _*) = active
 
-      forceBet(sb, Bet.SmallBlind)
-      forceBet(bb, Bet.BigBlind)
+      forceBet(betting, sb, Bet.SmallBlind)
+      forceBet(betting, bb, Bet.BigBlind)
     }
   }
 }

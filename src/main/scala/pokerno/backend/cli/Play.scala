@@ -40,11 +40,11 @@ class Play(gameplay: Gameplay, instance: ActorRef) extends Actor {
 
       instance ! Message.DiscardCards(pos = pos, cards = cards)
 
-    case Message.DealCards(_type, pos, cards) ⇒ _type match {
+    case Message.DealCards(_type, cards, pos) ⇒ _type match {
       case Dealer.Board ⇒
         Console printf ("Dealt %s %s\n", _type, Cards(cards) toConsoleString)
       case _ ⇒
-        Console printf ("Dealt %s %s to %d\n", _type, Cards(cards) toConsoleString, pos)
+        Console printf ("Dealt %s %s to %d\n", _type, Cards(cards) toConsoleString, pos get)
     }
 
     case Message.MoveButton(pos) ⇒

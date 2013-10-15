@@ -23,7 +23,6 @@ class Gameplay(
     case m: Mix  ⇒ m.games.head
   }
 
-  val betting: ActorRef // FIXME
   val round = new BettingRound(table)
 
   def moveButton {
@@ -50,7 +49,7 @@ class Gameplay(
     }
   }
 
-  def forceBet(acting: Tuple2[Seat, Int], betType: Bet.Value) {
+  def forceBet(betting: ActorRef, acting: Tuple2[Seat, Int], betType: Bet.Value) {
     val bet = Bet force (betType, stake)
 
     round.acting = acting

@@ -26,7 +26,7 @@ class GameplayActor(val gameplay: Gameplay) extends Actor with ActorLogging {
     RunStage("post-blinds") {
       gameplay.postBlinds(betting)
     }
-    
+
   )
 
   override def preStart = {

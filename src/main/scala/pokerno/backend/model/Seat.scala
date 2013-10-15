@@ -15,7 +15,7 @@ object Seat {
   case object WaitBB extends State
   case object PostBB extends State
 
-  case class IsTaken() extends Error("seat is taken")
+  case class IsTaken() extends Exception("seat is taken")
 }
 
 class Seat {
@@ -35,8 +35,7 @@ class Seat {
   private var _player: Option[Player] = None
   def player = _player
   def player_=(p: Player) {
-    if (_state != Seat.Empty)
-      throw new Seat.IsTaken()
+    if (_state != Seat.Empty) throw Seat.IsTaken()
 
     _state = Seat.Taken
     _player = Some(p)

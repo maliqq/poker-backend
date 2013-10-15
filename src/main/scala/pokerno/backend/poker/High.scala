@@ -71,9 +71,9 @@ trait HighHand {
 
   def isHighCard: Option[Hand] = new Hand(value = value sorted, _high = true, _kicker = true) ranked Rank.HighCard
 
+  @throws[Hand.InvalidCards]
   def isHigh: Option[Hand] = {
-    if (value.size < 5)
-      throw new Error("5 or more cards required to detect high hand")
+    if (value.size < 5) throw Hand.InvalidCards("5 or more cards required to detect high hand")
 
     isStraightFlush orElse isThreeKind orElse isTwoPair orElse isOnePair orElse isHighCard
   }

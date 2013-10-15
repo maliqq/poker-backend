@@ -12,9 +12,9 @@ class Card(val kind: Kind.Value, val suit: Suit.Value) extends Ordered[Card] {
 }
 
 object Card {
-  case class NotACard(value: Any) extends Error("not a card: %s" format (value))
-  case class InvalidCard(value: Any) extends Error("invalid card: %s" format (value))
-  case class ParseError(s: String) extends Error("can't parse card: %s" format (s))
+  case class NotACard(value: Any) extends Exception("not a card: %s" format (value))
+  case class InvalidCard(value: Any) extends Exception("invalid card: %s" format (value))
+  case class ParseError(s: String) extends Exception("can't parse card: %s" format (s))
 
   private var _all: ListBuffer[Card] = new ListBuffer
   private var _masks: ListBuffer[Int] = new ListBuffer
@@ -24,6 +24,7 @@ object Card {
   final val Masks: List[Int] = for { kind ← Kind.All; suit ← Suit.All } yield (kind.toInt << (1 << 4 * suit.toInt))
   final val Seq = List range (0, 51)
 
+  @throws[NotACard]
   def apply(value: Any): Card = value match {
     case i: Int    ⇒ parseInt(i)
     case s: String ⇒ parseString(s)
@@ -31,15 +32,15 @@ object Card {
     case _         ⇒ throw NotACard()
   }
 
+  @throws[InvalidCard]
   implicit def parseInt(i: Int): Card = {
-    if (i <= 0 || i > CardsNum)
-      throw InvalidCard(i)
+    if (i <= 0 || i > CardsNum) throw InvalidCard(i)
     new Card(i >> 2, i % 4)
   }
 
+  @throws[ParseError]
   implicit def parseString(s: String): Card = {
-    if (s.size != 2)
-      throw ParseError(s)
+    if (s.size != 2) throw ParseError(s)
     val List(kind, suit) = s.toList
     new Card(kind, suit)
   }
@@ -52,10 +53,10 @@ object Cards {
 
   case class Binary(v: List[Int])
   case class CardList(v: List[Card])
-  
+
   def apply(value: String) = parseString(value)
   def apply(value: List[_]): Cards = parseList(value)
-  
+
   def parseList(l: List[_]): List[Card] = l.map(Card(_))
 
   def parseString(s: String): List[Card] = {

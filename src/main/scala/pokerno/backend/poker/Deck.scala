@@ -6,7 +6,7 @@ object Deck {
   def shuffle(cards: List[Card] = Card.All) = Random.shuffle(cards)
   def apply() = shuffle()
 
-  case class NoCardsLeft() extends Error("No cards left in deck")
+  case class NoCardsLeft() extends Exception("No cards left in deck")
 }
 
 class Deck(private var _cards: List[Card] = Deck.shuffle()) {
@@ -43,11 +43,11 @@ class Deck(private var _cards: List[Card] = Deck.shuffle()) {
 
   def without(cards: List[Card]) = new Deck(_cards diff cards)
 
+  @throws[Deck.NoCardsLeft]
   def discard(old: List[Card]): List[Card] = {
     val n = old size
 
-    if (n > _cards.size + _burned.size)
-      throw Deck.NoCardsLeft()
+    if (n > _cards.size + _burned.size) throw Deck.NoCardsLeft()
 
     if (n > _cards.size)
       reshuffle

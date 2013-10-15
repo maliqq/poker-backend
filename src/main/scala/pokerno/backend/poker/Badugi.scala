@@ -99,9 +99,9 @@ trait BadugiHand {
     new Hand(value = List(a, b)) ranked Rank.BadugiTwo
   }
 
+  @throws[Hand.InvalidCards]
   def isBadugi: Option[Hand] = {
-    if (value.size != 4)
-      throw new Error("4 cards required to detect badugi hand")
+    if (value.size != 4) throw Hand.InvalidCards("4 cards required to detect badugi hand")
 
     isBadugiOne orElse isBadugiFour orElse isBadugiThree orElse isBadugiTwo
   }

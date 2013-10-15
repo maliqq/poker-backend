@@ -13,11 +13,11 @@ class ZeromqGateway extends Actor {
   import context._
 
   final val socketType = SocketType.Pub
-  
+
   val address = ZeromqGateway.Config.address
   val socket = ZeroMQExtension(system).newSocket(socketType, Bind(address))
-  
+
   def receive = {
-    case _ =>
+    case _ ⇒
   }
 }

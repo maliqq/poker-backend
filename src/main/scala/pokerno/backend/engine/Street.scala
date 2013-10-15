@@ -8,7 +8,7 @@ class StreetActor(val gameplay: Gameplay, val name: Street.Value, val stages: Li
   val stagesIterator = stages.iterator
 
   override def preStart {
-    Console printf("%sstreet %s START%s\n", Console.YELLOW, name, Console.RESET)
+    Console printf ("%sstreet %s START%s\n", Console.YELLOW, name, Console.RESET)
   }
 
   def receive = {
@@ -25,7 +25,7 @@ class StreetActor(val gameplay: Gameplay, val name: Street.Value, val stages: Li
   }
 
   override def postStop {
-    Console printf("%sstreet %s STOP%s\n", Console.YELLOW, name, Console.RESET)
+    Console printf ("%sstreet %s STOP%s\n", Console.YELLOW, name, Console.RESET)
   }
 }
 
@@ -80,7 +80,7 @@ object Streets {
     }
 
     gameplay.game.options.group match {
-      case Game.Holdem => List(
+      case Game.Holdem ⇒ List(
         Street.Preflop(
           List(
             dealing(Dealer.Hole),
@@ -98,8 +98,8 @@ object Streets {
           List(
             dealing(Dealer.Board, Some(1)),
             betting)))
-  
-      case Game.SevenCard => List(
+
+      case Game.SevenCard ⇒ List(
         Street.Second(
           List(
             dealing(Dealer.Hole, Some(2)))),
@@ -125,8 +125,8 @@ object Streets {
           List(
             dealing(Dealer.Hole, Some(1)),
             betting)))
-  
-      case Game.SingleDraw => List(
+
+      case Game.SingleDraw ⇒ List(
         Street.Predraw(
           List(
             dealing(Dealer.Hole, Some(5)),
@@ -137,8 +137,8 @@ object Streets {
             bigBets,
             betting,
             discarding)))
-  
-      case Game.TripleDraw => List(
+
+      case Game.TripleDraw ⇒ List(
         Street.Predraw(
           List(
             dealing(Dealer.Hole),

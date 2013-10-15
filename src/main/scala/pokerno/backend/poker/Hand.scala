@@ -1,6 +1,8 @@
 package pokerno.backend.poker
 
 object Hand {
+  case class InvalidCards(str: String) extends Exception(str)
+
   sealed trait Ranking {
     def apply(cards: List[Card]): Option[Hand]
   }

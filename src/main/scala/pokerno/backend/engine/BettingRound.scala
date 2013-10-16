@@ -37,17 +37,13 @@ class BettingRound(val gameplay: Gameplay) extends Round(gameplay.table.size) {
     current = gameplay.table.button
   }
   
-  override def current_=(newCurrent: Int) {
-    super.current_=(newCurrent)
-    Console printf("%scurrent=%s seats=%s%s", Console.RED, current, seats.value.map(_._2), Console.RESET)
-  }
-  
-  def forceBet(act: Tuple2[Seat, Int], amount: Decimal) {
+  def forceBet(act: Tuple2[Seat, Int], betType: Bet.Value) {
     acting = act
-    _call = amount
+    
+    _call = gameplay.stake amount(betType)
     
     val stack = seat amount
-    val bet = Bet.call(List(stack, amount) min)
+    val bet = new Bet(betType, List(stack, _call) min)
     
     addBet(bet)
     gameplay.broadcast.all(Message.AddBet(pos, bet))
@@ -58,7 +54,7 @@ class BettingRound(val gameplay: Gameplay) extends Round(gameplay.table.size) {
     val stake = gameplay.stake
     val limit = gameplay.game.limit
     
-    val bb = if (bigBets) stake.bigBlind else stake.bigBlind * 2
+    val bb = if (bigBets) stake.bigBlind * 2 else stake.bigBlind
     val stack = seat stack
 
     if (stack < _call)
@@ -94,7 +90,16 @@ class BettingRound(val gameplay: Gameplay) extends Round(gameplay.table.size) {
       if (seat.state == Seat.AllIn) pot <<- (seat.player.get, seat.put)
       else pot << (seat.player.get, seat.put)
       
-    } else seat fold
+      gameplay.broadcast.except(seat.player get) {
+        Message.AddBet(pos, bet)
+      }
+    } else {
+      seat fold
+      
+      gameplay.broadcast.except(seat.player get) {
+        Message.AddBet(pos, Bet.fold)
+      }
+    }
   }
   
   def complete {
@@ -104,5 +109,9 @@ class BettingRound(val gameplay: Gameplay) extends Round(gameplay.table.size) {
 
     val message = Message.CollectPot(total = pot total)
     gameplay.broadcast all (message)
+  }
+  
+  def stop {
+    gameplay.showdown
   }
 }

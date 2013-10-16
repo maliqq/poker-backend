@@ -30,7 +30,7 @@ class GameplayActor(val gameplay: Gameplay) extends Actor with ActorLogging {
   )
 
   override def preStart = {
-    betting = system.actorOf(Props(classOf[BettingActor], gameplay))
+    betting = system.actorOf(Props(classOf[BettingActor], gameplay.round))
     for (stage ← stages) {
       stage.run
     }

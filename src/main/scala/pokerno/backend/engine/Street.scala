@@ -72,7 +72,7 @@ object Streets {
     }
 
     val betting = BlockingStreetStage("betting") {
-      bettingRef ! Betting.Start
+      bettingRef ! Betting.Next
     }
 
     def dealing(dealType: Dealer.DealType, cardsNum: Option[Int] = None): Stage = DirectStreetStage("dealing") {

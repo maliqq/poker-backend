@@ -34,13 +34,12 @@ class PlayerActor(i: Int, gameplay: Gameplay, instance: ActorRef) extends Actor 
         }
         
         case Message.RequireBet(pos, call, range) ⇒
-          Console printf ("call=%.2f raise=%.2f..%.2f\n", call, range.min, range.max)
+          Console printf ("Seat %d: Call=%.2f Min=%.2f Max=%.2f\n", pos, call, range.min, range.max)
     
           val seat = gameplay.table.seats(pos)
           var bet = Play.readBet(call, call - seat.put)
     
           val addBet = Message.AddBet(pos = pos, bet = bet)
-          Console printf ("sending %s\n", addBet)
           instance ! addBet
     
         case Message.RequireDiscard(pos) ⇒
@@ -74,7 +73,7 @@ class Play(gameplay: Gameplay, instance: ActorRef, tableSize: Int) extends Actor
     }
 
     case Message.MoveButton(pos) ⇒
-      Console printf ("Button is %d\n", pos + 1)
+      Console printf ("Button is %d\n", pos)
 
     case Message.AddBet(pos, bet) ⇒
       val seat = gameplay.table.seats(pos)

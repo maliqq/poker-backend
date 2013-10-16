@@ -26,7 +26,7 @@ class Broadcast extends ActorEventBus with ScanningClassification {
   def matches(classifier: Classifier, event: Event): Boolean = event.to match {
     case All             ⇒ true
     case One(id)         ⇒ id == classifier
-    case Except(players) ⇒ players.find { id ⇒ id == classifier } != None // FIXME
+    case Except(players) ⇒ players.find { id ⇒ id == classifier } == None
     case _               ⇒ throw new Error("unknown route: %s".format(event.to))
   }
 

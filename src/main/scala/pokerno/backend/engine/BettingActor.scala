@@ -5,10 +5,8 @@ import pokerno.backend.protocol._
 import scala.math.{ BigDecimal ⇒ Decimal }
 import akka.actor.{ Actor, ActorRef, ActorLogging }
 
-class BettingActor(gameplay: Gameplay) extends Actor with ActorLogging {
+class BettingActor(val round: BettingRound) extends Actor with ActorLogging {
   import context._
-
-  def round = gameplay.round
 
   def receive = {
     case Message.AddBet(pos, bet) ⇒
@@ -30,6 +28,9 @@ class BettingActor(gameplay: Gameplay) extends Actor with ActorLogging {
         self ! Betting.Stop
       else {
         val active = round.seats where (_ isPlaying)
+        
+        Console printf("active=%s\n", round.seats.value.map(_._1.state))
+        
         if (active.size == 0)
           self ! Betting.Done
         else {
@@ -38,7 +39,7 @@ class BettingActor(gameplay: Gameplay) extends Actor with ActorLogging {
       }
 
     case Betting.Stop ⇒
-      gameplay.showdown
+      round.stop
       parent ! Street.Exit
       stop(self)
 

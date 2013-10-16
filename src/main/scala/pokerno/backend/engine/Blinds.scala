@@ -18,11 +18,9 @@ trait Blinds {
     } else {
       val List(sb, bb, _*) = active
       
-      Console printf("Blinds=%s\n", List(sb._2, bb._2))
-
-      round.forceBet(sb, stake amount(Bet.SmallBlind))
+      round.forceBet(sb, Bet.SmallBlind)
       
-      round.forceBet(bb, stake amount(Bet.BigBlind))
+      round.forceBet(bb, Bet.BigBlind)
     }
   }
 }

@@ -8,9 +8,8 @@ class Seats(size: Int) {
   implicit def seats2slice(v: List[Item]) = new Slice(v)
 
   def from(pos: Int): Slice = {
-    val (left, right) = value.zipWithIndex span (_._2 == pos)
-    val current = (value(pos), pos)
-    right ++ left ++ List(current)
+    val (left, right) = value.zipWithIndex span (_._2 != pos)
+    right ++ left
   }
 
   def where(f: (Seat ⇒ Boolean)) = {

@@ -29,12 +29,12 @@ class BetSpec extends FunSpec with ClassicMatchers {
       Bet.raise(2.0).toString should equal("Raise 2.00")
     }
 
-    it("force") {
-      val stake = new Stake(8.0, Ante = Right(true), BringIn = Right(true))
-      Bet.force(Bet.Ante, stake).amount should equal(1.0)
-      Bet.force(Bet.BringIn, stake).amount should equal(2.0)
-      Bet.force(Bet.SmallBlind, stake).amount should equal(4.0)
-      Bet.force(Bet.BigBlind, stake).amount should equal(8.0)
-    }
+//    it("force") {
+//      val stake = new Stake(8.0, Ante = Right(true), BringIn = Right(true))
+//      Bet.force(Bet.Ante, stake).amount should equal(1.0)
+//      Bet.force(Bet.BringIn, stake).amount should equal(2.0)
+//      Bet.force(Bet.SmallBlind, stake).amount should equal(4.0)
+//      Bet.force(Bet.BigBlind, stake).amount should equal(8.0)
+//    }
   }
 }

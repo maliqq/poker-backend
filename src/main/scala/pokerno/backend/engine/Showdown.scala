@@ -97,10 +97,10 @@ trait Showdown {
     hands
   }
 
-  def showdown(pot: Pot) = {
+  def showdown = {
     val stillInPot = table.seats where (_ inPot)
     if (stillInPot.size == 1) {
-      declareWinner(pot, stillInPot head)
+      declareWinner(round.pot, stillInPot head)
     } else if (stillInPot.size > 1) {
       var hiHands: Option[Map[Player, Hand]] = None
       var loHands: Option[Map[Player, Hand]] = None
@@ -113,7 +113,7 @@ trait Showdown {
         case Some(ranking) ⇒ loHands = Some(showHands(ranking))
         case None          ⇒
       }
-      declareWinners(pot, hiHands, loHands)
+      declareWinners(round.pot, hiHands, loHands)
     }
   }
 }

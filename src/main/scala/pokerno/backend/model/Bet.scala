@@ -65,8 +65,6 @@ object Bet {
   def call(amount: Decimal) = new Bet(Call, amount)
   def raise(amount: Decimal) = new Bet(Raise, amount)
 
-  def force(t: Bet.Value, stake: Stake): Bet = new Bet(t, stake amount (t))
-
   case class CantCheck(call: Decimal)
     extends Error("Can't check: need to call=%.2f" format (call))
 

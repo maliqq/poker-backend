@@ -82,81 +82,55 @@ object Streets {
     gameplay.game.options.group match {
       case Game.Holdem ⇒ List(
         Street.Preflop(
-          List(
-            dealing(Dealer.Hole),
-            betting)),
+          List(dealing(Dealer.Hole), betting)),
+          
         Street.Flop(
-          List(
-            dealing(Dealer.Board, Some(3)),
-            betting)),
+          List(dealing(Dealer.Board, Some(3)), betting)),
+          
         Street.Turn(
-          List(
-            dealing(Dealer.Board, Some(1)),
-            bigBets,
-            betting)),
+          List(dealing(Dealer.Board, Some(1)), bigBets, betting)),
+          
         Street.River(
-          List(
-            dealing(Dealer.Board, Some(1)),
-            betting)))
+          List(dealing(Dealer.Board, Some(1)),betting)))
 
       case Game.SevenCard ⇒ List(
         Street.Second(
-          List(
-            dealing(Dealer.Hole, Some(2)))),
+          List(dealing(Dealer.Hole, Some(2)))),
+        
         Street.Third(
-          List(
-            dealing(Dealer.Door, Some(1)),
-            bringIn,
-            betting)),
+          List(dealing(Dealer.Door, Some(1)), bringIn, betting)),
+        
         Street.Fourth(
-          List(
-            dealing(Dealer.Door, Some(1)),
-            betting)),
+          List(dealing(Dealer.Door, Some(1)), betting)),
+        
         Street.Fifth(
-          List(
-            dealing(Dealer.Door, Some(1)),
-            bigBets,
-            betting)),
+          List(dealing(Dealer.Door, Some(1)), bigBets, betting)),
+        
         Street.Sixth(
-          List(
-            dealing(Dealer.Door, Some(1)),
-            betting)),
+          List(dealing(Dealer.Door, Some(1)), betting)),
+        
         Street.Seventh(
-          List(
-            dealing(Dealer.Hole, Some(1)),
-            betting)))
+          List(dealing(Dealer.Hole, Some(1)), betting)))
 
       case Game.SingleDraw ⇒ List(
         Street.Predraw(
-          List(
-            dealing(Dealer.Hole, Some(5)),
-            betting,
-            discarding)),
+          List(dealing(Dealer.Hole, Some(5)), betting, discarding)),
+        
         Street.Draw(
-          List(
-            bigBets,
-            betting,
-            discarding)))
+          List(bigBets, betting, discarding)))
 
       case Game.TripleDraw ⇒ List(
         Street.Predraw(
-          List(
-            dealing(Dealer.Hole),
-            betting,
-            discarding)),
+          List(dealing(Dealer.Hole), betting, discarding)),
+        
         Street.FirstDraw(
-          List(
-            betting,
-            discarding)),
+          List(betting, discarding)),
+      
         Street.SecondDraw(
-          List(
-            bigBets,
-            betting,
-            discarding)),
+          List(bigBets, betting, discarding)),
+        
         Street.ThirdDraw(
-          List(
-            betting,
-            discarding)))
+          List(betting, discarding)))
     }
   }
 }

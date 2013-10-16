@@ -8,7 +8,7 @@ trait Blinds {
   g: Gameplay ⇒
   def postBlinds(betting: ActorRef) = if (game.options.hasBlinds) {
     moveButton
-
+    
     val seats = round seats
     val active = seats where (_ isActive)
     val waiting = seats where (_ isWaitingBB)
@@ -17,9 +17,12 @@ trait Blinds {
       //
     } else {
       val List(sb, bb, _*) = active
+      
+      Console printf("Blinds=%s\n", List(sb._2, bb._2))
 
-      forceBet(betting, sb, Bet.SmallBlind)
-      forceBet(betting, bb, Bet.BigBlind)
+      round.forceBet(sb, stake amount(Bet.SmallBlind))
+      
+      round.forceBet(bb, stake amount(Bet.BigBlind))
     }
   }
 }

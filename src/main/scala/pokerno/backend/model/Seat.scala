@@ -31,6 +31,8 @@ class Seat {
     net(_put - amount)
     _put = amount
   }
+  
+  def stack = _put + _amount
 
   private var _player: Option[Player] = None
   def player = _player

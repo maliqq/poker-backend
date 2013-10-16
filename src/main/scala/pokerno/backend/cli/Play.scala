@@ -28,6 +28,11 @@ class PlayerActor(i: Int, gameplay: Gameplay, instance: ActorRef) extends Actor 
     case PlayerActor.Start =>
       instance ! Message.JoinTable(pos = i - 1, player = player, amount = stack)
       become({
+        case Message.DealCards(_type, cards, pos) ⇒ _type match {
+          case Dealer.Door | Dealer.Hole ⇒ Console printf ("Dealt %s %s to %d\n", _type, Cards(cards) toConsoleString, pos get)
+          case _ =>
+        }
+        
         case Message.RequireBet(pos, call, range) ⇒
           Console printf ("call=%.2f raise=%.2f..%.2f\n", call, range.min, range.max)
     
@@ -64,10 +69,8 @@ class Play(gameplay: Gameplay, instance: ActorRef, tableSize: Int) extends Actor
 
   def receive = {
     case Message.DealCards(_type, cards, pos) ⇒ _type match {
-      case Dealer.Board ⇒
-        Console printf ("Dealt %s %s\n", _type, Cards(cards) toConsoleString)
+      case Dealer.Board ⇒ Console printf ("Dealt %s %s\n", _type, Cards(cards) toConsoleString)
       case _ ⇒
-        Console printf ("Dealt %s %s to %d\n", _type, Cards(cards) toConsoleString, pos get)
     }
 
     case Message.MoveButton(pos) ⇒

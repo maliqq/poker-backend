@@ -23,7 +23,7 @@ class Gameplay(
     case m: Mix  ⇒ m.games.head
   }
 
-  val round = new BettingRound(table)
+  val round = new BettingRound(this)
 
   def moveButton {
     table.button.move
@@ -35,35 +35,6 @@ class Gameplay(
     table.button.current = pos
     round.current = pos
     broadcast all (Message.MoveButton(pos = table.button))
-  }
-
-  def requireBet(call: Decimal, range: Range) {
-    val player = round.acting._1.player.get
-
-    broadcast.except(player) {
-      Message.Acting(pos = round current)
-    }
-
-    broadcast.one(player) {
-      Message.RequireBet(pos = round current, call = call, range = range)
-    }
-  }
-
-  def forceBet(betting: ActorRef, acting: Tuple2[Seat, Int], betType: Bet.Value) {
-    val bet = Bet force (betType, stake)
-    val msg = Message.AddBet(pos = round current, bet = bet)
-
-    round.acting = acting
-    
-    betting ! msg
-    broadcast all (msg)
-  }
-
-  def bettingComplete(pot: Pot) {
-    table.seats where (_ inPlay) map (_._1 play)
-
-    val message = Message.CollectPot(total = pot total)
-    broadcast all (message)
   }
 
   def prepareSeats {

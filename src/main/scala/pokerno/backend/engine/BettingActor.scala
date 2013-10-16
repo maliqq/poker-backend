@@ -8,68 +8,22 @@ import akka.actor.{ Actor, ActorRef, ActorLogging }
 class BettingActor(gameplay: Gameplay) extends Actor with ActorLogging {
   import context._
 
-  val pot = new Pot
-  var bigBets: Boolean = false
-
-  final val MaxRaiseCount = 8
-  private var raiseCount: Int = 0
-
-  private var _call: Decimal = .0
-  private var _raise: Range = (.0, .0)
-
   def round = gameplay.round
 
   def receive = {
     case Message.AddBet(pos, bet) ⇒
-      val (seat, pos) = round.acting
-
-      log debug("Bet: %s Call: %.2f Min: %.2f Max: %.2f" format(bet, _call, _raise.min, _raise.max))
-      if (bet.isValid(seat.amount, seat.put, _call, _raise)) {
-        log debug("Seat %d: posting %.2f" format(pos, seat.put))
-        seat post (bet)
-      } else {
-        log debug("Seat %d: folding" format(pos))
-        seat fold
-      }
-
-      if (bet.betType == Bet.Raise)
-        raiseCount += 1
-
-      if (bet.betType != Bet.Call && bet.amount > .0)
-        _call = bet.amount
-
-      if (seat.state == Seat.AllIn)
-        pot <<- (seat.player.get, seat.put)
-      else
-        pot << (seat.player.get, seat.put)
-      
+      round.addBet(bet)
       self ! Betting.Next
 
     case Betting.Start ⇒
-      reset
+      round.reset
       self ! Betting.Next
-
-    case Betting.Require(amount, limit) ⇒
-      val (seat, pos) = round acting
-      val stack = seat amount
-
-      if (stack < _call)
-        _raise = (.0, .0)
-      else {
-        var (min, max) = limit raise (stack, amount, pot total)
-        min += _call
-        max += _call
-        _raise = Range(List(stack, min) min, List(stack, max) min)
-      }
-
-      gameplay requireBet (_call, _raise)
-
+    
     case Betting.Next ⇒
       round.move
       round.seats where (_ inPlay) foreach {
         case (seat, pos) ⇒
-          if (!seat.isCalled(_call))
-            seat check
+          if (!seat.isCalled(round.call)) seat check
       }
 
       if (round.seats.where(_ inPot).size < 2)
@@ -79,33 +33,24 @@ class BettingActor(gameplay: Gameplay) extends Actor with ActorLogging {
         if (active.size == 0)
           self ! Betting.Done
         else {
-          round acting = active.head
-          val stake = gameplay.stake
-          val amount = if (bigBets) stake.bigBlind else stake.bigBlind * 2
-          self ! Betting.Require(amount, gameplay.game.limit)
+          round requireBet(active.head)
         }
       }
 
     case Betting.Stop ⇒
-      gameplay showdown (pot)
+      gameplay.showdown
       parent ! Street.Exit
       stop(self)
 
     case Betting.Timeout ⇒
       self ! Betting.Next
 
-    case Betting.BigBets ⇒ bigBets = true
+    case Betting.BigBets ⇒
+      round.bigBets = true
 
     case Betting.Done ⇒
-      reset 
-      gameplay bettingComplete (pot)
+      round.complete
       parent ! Street.Next
   }
   
-  private def reset = {
-    raiseCount = 0
-    _call = .0
-    _raise = (.0, .0)
-  }
-
 }

@@ -38,29 +38,25 @@ class GameSpec extends FunSpec with ClassicMatchers {
       val bb = 20
       val stack = 1000
       val pot = 350; {
-        val (min, max) = Game.NoLimit.raise(stack, bb, pot, false)
+        val (min, max) = Game.NoLimit.raise(stack, bb, pot)
         min should equal(bb)
         max should equal(stack)
       }; {
-        val (min, max) = Game.NoLimit.raise(stack, bb, pot, true)
+        val (min, max) = Game.NoLimit.raise(stack, bb, pot)
         min should equal(bb)
         max should equal(stack)
       }; {
-        val (min, max) = Game.PotLimit.raise(stack, bb, pot, false)
+        val (min, max) = Game.PotLimit.raise(stack, bb, pot)
         min should equal(bb)
         max should equal(pot)
       }; {
-        val (min, max) = Game.PotLimit.raise(stack, bb, pot, true)
+        val (min, max) = Game.PotLimit.raise(stack, bb, pot)
         min should equal(bb)
         max should equal(pot)
       }; {
-        val (min, max) = Game.FixedLimit.raise(stack, bb, pot, false)
+        val (min, max) = Game.FixedLimit.raise(stack, bb, pot)
         min should equal(bb)
         max should equal(bb)
-      }; {
-        val (min, max) = Game.FixedLimit.raise(stack, bb, pot, true)
-        min should equal(bb * 2)
-        max should equal(bb * 2)
       }
     }
   }

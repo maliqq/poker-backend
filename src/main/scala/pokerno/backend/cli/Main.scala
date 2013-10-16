@@ -29,9 +29,8 @@ object Main {
     parser.parse(args, config) map { config ⇒
       val gameplay = createGameplay(config)
       val deal = system.actorOf(Props(classOf[DealActor], gameplay), name = "deal-process")
-      val play = system.actorOf(Props(classOf[Play], gameplay, deal), name = "play-process")
-      play ! Play.Join(config.tableSize, deal)
-      deal ! Deal.Start
+      val play = system.actorOf(Props(classOf[Play], gameplay, deal, config.tableSize), name = "play-process")
+      deal ! Deal.Done
     }
   }
 
@@ -43,7 +42,7 @@ object Main {
     else
       new Game(config.limitedGame, Some(Game.NoLimit), Some(config.tableSize))
     val table = new Table(config.tableSize)
-    val stake = new Stake(config.betSize)
+    val stake = new Stake(config.betSize, Ante = Right(true))
     val gameplay = new Gameplay(dealer, broadcast, variation, stake, table)
 
     gameplay

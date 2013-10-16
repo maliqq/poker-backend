@@ -88,6 +88,7 @@ class Seat {
   def post(bet: Bet) = bet.betType match {
     case Bet.Fold             ⇒ fold
     case Bet.Call | Bet.Raise ⇒ raise(bet.amount)
+    case Bet.Check => check
     case _: Bet.ForcedBet     ⇒ force(bet.amount)
   }
 
@@ -102,9 +103,7 @@ class Seat {
   def inPlay = state == Seat.Play || state == Seat.Bet
   def inPot = inPlay || state == Seat.AllIn
 
-  override def toString = if (_player.isDefined)
-    "%s - %s (%.2f)".format(_player get, _state, _amount)
-  else
-    "(empty)"
+  override def toString = if (_player.isDefined) "%s - %s (%.2f)".format(_player get, _state, _amount)
+    else "(empty)"
 
 }

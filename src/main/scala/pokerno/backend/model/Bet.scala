@@ -20,6 +20,9 @@ class Bet(val betType: Bet.Value, val amount: Decimal = .0) {
         ((betType == Bet.Call && Range(needToCall, needToCall).isValid(amount, available)) ||
           (betType == Bet.Raise && range.isValid(amount, available)))
       )
+    
+    case _: Bet.ForcedBet =>
+      amount == needToCall || (amount < needToCall && amount == available)
 
     case _ ⇒ false
   }

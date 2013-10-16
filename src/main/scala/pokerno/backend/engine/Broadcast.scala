@@ -31,7 +31,7 @@ class Broadcast extends ActorEventBus with ScanningClassification {
   }
 
   def publish(event: Event, subscriber: Subscriber) = {
-    Console printf ("!!! [%s -> %s] %s\n" format (event.to, subscriber, event.message))
+    //Console printf ("%s%s -> %s %s%s\n" format (Console.CYAN, event.to, subscriber, event.message, Console.RESET))
     subscriber ! event.message
   }
 

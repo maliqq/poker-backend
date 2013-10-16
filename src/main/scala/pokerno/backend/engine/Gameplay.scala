@@ -51,10 +51,12 @@ class Gameplay(
 
   def forceBet(betting: ActorRef, acting: Tuple2[Seat, Int], betType: Bet.Value) {
     val bet = Bet force (betType, stake)
+    val msg = Message.AddBet(pos = round current, bet = bet)
 
     round.acting = acting
-    betting ! bet
-    broadcast all (Message.AddBet(pos = round current, bet = bet))
+    
+    betting ! msg
+    broadcast all (msg)
   }
 
   def bettingComplete(pot: Pot) {

@@ -1,45 +1,68 @@
 package pokerno.backend.cli
 
+import java.util.Scanner
+
+import scala.math.{ BigDecimal ⇒ Decimal }
+import scala.concurrent.duration._
+
 import pokerno.backend.model._
 import pokerno.backend.poker._
 import pokerno.backend.engine._
 import pokerno.backend.protocol._
-import akka.actor.{ Actor, ActorRef }
-import scala.math.{ BigDecimal ⇒ Decimal }
-import java.util.Scanner
 
-class Play(gameplay: Gameplay, instance: ActorRef) extends Actor {
+import akka.actor.{ Actor, ActorRef, Props }
+import akka.pattern.ask
+import akka.util.Timeout
+
+object PlayerActor {
+  case object Start
+}
+
+class PlayerActor(i: Int, gameplay: Gameplay, instance: ActorRef) extends Actor {
+  val stack = 1500.0
+  val player = new Player("player-%d".format(i))
+
+  import context._
+
+  def receive = {
+    case PlayerActor.Start =>
+      instance ! Message.JoinTable(pos = i - 1, player = player, amount = stack)
+      become({
+        case Message.RequireBet(pos, call, range) ⇒
+          Console printf ("call=%.2f raise=%.2f..%.2f\n", call, range.min, range.max)
+    
+          val seat = gameplay.table.seats(pos)
+          var bet = Play.readBet(call, call - seat.put)
+    
+          val addBet = Message.AddBet(pos = pos, bet = bet)
+          Console printf ("sending %s\n", addBet)
+          instance ! addBet
+    
+        case Message.RequireDiscard(pos) ⇒
+          val seat = gameplay.table.seats(pos)
+    
+          Console printf ("your cards: [%s]\n", gameplay.dealer.pocket(seat.player.get))
+    
+          val cards = Play.readCards
+    
+          instance ! Message.DiscardCards(pos = pos, cards = cards)
+      })
+  }
+}
+
+class Play(gameplay: Gameplay, instance: ActorRef, tableSize: Int) extends Actor {
+  import context._
+  
   override def preStart = {
     Console println ("starting play")
+    (1 to tableSize) foreach { i ⇒
+      val playerActor = system.actorOf(Props(classOf[PlayerActor], i, gameplay, instance))
+      playerActor ! PlayerActor.Start
+    }
+    gameplay.broadcast.subscribe(self, "play-observer")
   }
 
   def receive = {
-    case join: Play.Join ⇒
-      val stack = 1500.0
-      (1 to join.tableSize) foreach { i ⇒
-        val player = new Player("player-%d".format(i))
-        join.deal ! Message.JoinTable(pos = i - 1, player = player, amount = stack)
-      }
-
-    case Message.RequireBet(pos, call, range) ⇒
-      Console printf ("call=%.2f raise=%.2f..%.2f\n", call, range.min, range.max)
-
-      val seat = gameplay.table.seats(pos)
-      var bet = Play.readBet(call, call - seat.put)
-
-      val addBet = Message.AddBet(pos = pos, bet = bet)
-      Console printf ("sending %s\n", addBet)
-      instance ! addBet
-
-    case Message.RequireDiscard(pos) ⇒
-      val seat = gameplay.table.seats(pos)
-
-      Console printf ("your cards: [%s]\n", gameplay.dealer.pocket(seat.player.get))
-
-      val cards = Play.readCards
-
-      instance ! Message.DiscardCards(pos = pos, cards = cards)
-
     case Message.DealCards(_type, cards, pos) ⇒ _type match {
       case Dealer.Board ⇒
         Console printf ("Dealt %s %s\n", _type, Cards(cards) toConsoleString)
@@ -53,10 +76,10 @@ class Play(gameplay: Gameplay, instance: ActorRef) extends Actor {
     case Message.AddBet(pos, bet) ⇒
       val seat = gameplay.table.seats(pos)
 
-      Console printf ("Player %s: %s\n", seat.player.get, bet)
+      Console printf ("%s: %s\n", seat.player.get, bet)
 
     case Message.CollectPot(total) ⇒
-      Console printf ("Pot size: %.2f\nBoard: %s\n", total, gameplay.dealer.board)
+      Console printf ("Pot size: %.2f\nBoard: %s\n", total, Cards(gameplay.dealer.board) toConsoleString)
 
     case Message.ShowHand(pos, cards, hand) ⇒
       val seat = gameplay.table.seats(pos)

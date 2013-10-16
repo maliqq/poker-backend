@@ -9,7 +9,6 @@ class BettingActor(gameplay: Gameplay) extends Actor with ActorLogging {
   import context._
 
   val pot = new Pot
-
   var bigBets: Boolean = false
 
   final val MaxRaiseCount = 8
@@ -24,10 +23,14 @@ class BettingActor(gameplay: Gameplay) extends Actor with ActorLogging {
     case Message.AddBet(pos, bet) ⇒
       val (seat, pos) = round.acting
 
-      if (bet.isValid(seat.amount, seat.put, _call, _raise))
+      log debug("Bet: %s Call: %.2f Min: %.2f Max: %.2f" format(bet, _call, _raise.min, _raise.max))
+      if (bet.isValid(seat.amount, seat.put, _call, _raise)) {
+        log debug("Seat %d: posting %.2f" format(pos, seat.put))
         seat post (bet)
-      else
+      } else {
+        log debug("Seat %d: folding" format(pos))
         seat fold
+      }
 
       if (bet.betType == Bet.Raise)
         raiseCount += 1
@@ -39,11 +42,11 @@ class BettingActor(gameplay: Gameplay) extends Actor with ActorLogging {
         pot <<- (seat.player.get, seat.put)
       else
         pot << (seat.player.get, seat.put)
+      
+      self ! Betting.Next
 
     case Betting.Start ⇒
-      raiseCount = 0
-      _call = .0
-      _raise = (.0, .0)
+      reset
       self ! Betting.Next
 
     case Betting.Require(amount, limit) ⇒
@@ -94,8 +97,15 @@ class BettingActor(gameplay: Gameplay) extends Actor with ActorLogging {
     case Betting.BigBets ⇒ bigBets = true
 
     case Betting.Done ⇒
+      reset 
       gameplay bettingComplete (pot)
       parent ! Street.Next
+  }
+  
+  private def reset = {
+    raiseCount = 0
+    _call = .0
+    _raise = (.0, .0)
   }
 
 }

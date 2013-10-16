@@ -1,7 +1,7 @@
 package pokerno.backend.model
 
 import scala.math.{ BigDecimal ⇒ Decimal }
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable
 
 class SidePot(val cap: Option[Decimal] = None) {
   var members: Map[Player, Decimal] = Map.empty
@@ -52,9 +52,11 @@ class SidePot(val cap: Option[Decimal] = None) {
     val s = new StringBuilder
     members foreach {
       case (member, amount) ⇒
-        s ++= "%s: %.2f" format (member, amount)
+        s ++= "%s: %.2f\n" format (member, amount)
     }
-    s + "-- Total: %.2f Cap: %.2f" format (total, cap)
+    s ++= "-- Total: %.2f" format (total)
+    if (cap isDefined) s ++= " Cap: %.2f" format (cap get)
+    s toString
   }
 }
 
@@ -65,7 +67,7 @@ class Pot {
   def total: Decimal = sidePots map (_.total) sum
 
   def sidePots: List[SidePot] = {
-    val pots: ListBuffer[SidePot] = new ListBuffer
+    var pots = new mutable.ListBuffer[SidePot]
     if (main isActive)
       pots += main
     side foreach { side ⇒
@@ -81,7 +83,7 @@ class Pot {
     main = _main
   }
 
-  def add(member: Player, amount: Decimal, allIn: Boolean = false) = side.foldRight[Decimal](.0) {
+  def add(member: Player, amount: Decimal) = side.foldRight[Decimal](amount) {
     case (p, acc) ⇒ p add (member, acc)
   }
 
@@ -97,6 +99,7 @@ class Pot {
 
   override def toString = {
     val s = new StringBuilder
+    s ++= main.toString
     sidePots foreach { sidePot ⇒ s ++= sidePot.toString }
     s toString
   }

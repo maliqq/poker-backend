@@ -4,9 +4,12 @@ import org.webbitserver.{ WebServers, BaseWebSocketHandler, WebSocketConnection 
 
 object WebsocketServer {
 
+  final val DefaultWebsocketPort = 8080
+  final val DefaultWebsocketPath = "/_ws"
+  
   object Config {
-    val port = 8080
-    val path = "/_ws"
+    val port = DefaultWebsocketPort
+    val path = DefaultWebsocketPath
   }
 
 }

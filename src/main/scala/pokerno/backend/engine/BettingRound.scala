@@ -46,7 +46,6 @@ class BettingRound(val gameplay: Gameplay) extends Round(gameplay.table.size) {
     val bet = new Bet(betType, List(stack, _call) min)
     
     addBet(bet)
-    gameplay.broadcast.all(Message.AddBet(pos, bet))
   }
   
   def requireBet(act: Tuple2[Seat, Int]) {

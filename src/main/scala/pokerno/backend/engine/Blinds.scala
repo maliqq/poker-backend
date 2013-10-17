@@ -19,7 +19,6 @@ trait Blinds {
       val List(sb, bb, _*) = active
       
       round.forceBet(sb, Bet.SmallBlind)
-      
       round.forceBet(bb, Bet.BigBlind)
     }
   }

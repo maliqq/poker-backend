@@ -5,8 +5,6 @@ import akka.actor.actorRef2Scala
 
 object Stage {
   case object Next
-
-  case class Context(val gameplay: Gameplay, val street: ActorRef)
 }
 
 abstract class Stage(val name: String)(_run: ⇒ Unit) {

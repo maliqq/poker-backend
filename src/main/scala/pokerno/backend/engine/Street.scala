@@ -20,8 +20,11 @@ class StreetActor(val gameplay: Gameplay, val name: Street.Value, val stages: Li
       } else
         parent ! Street.Next
 
-    case Street.Next ⇒ parent ! Street.Next
-    case Street.Exit ⇒ parent ! Street.Exit
+    case Street.Next ⇒
+      parent ! Street.Next
+    
+    case Street.Exit ⇒
+      parent ! Street.Exit
   }
 
   override def postStop {

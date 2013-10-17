@@ -11,19 +11,19 @@ class SidePot(val cap: Option[Decimal] = None) {
   def isActive: Boolean = members.size > 0 && total > .0
 
   def add(member: Player, amount: Decimal): Decimal = {
-    if (amount == .0)
-      return .0
-
-    val value: Decimal = members getOrElse (member, .0)
+    if (amount == .0) return .0
+    
+    val value: Decimal = members.getOrElse(member, .0)
+    val newValue = value + amount
 
     if (!cap.isDefined) {
-      members += (member -> (value + amount))
+      members += (member -> newValue)
       return .0
     }
 
-    if (cap.get >= amount) {
+    if (amount >= cap.get) {
       members += (member -> cap.get)
-      return value + amount - cap.get
+      return newValue - cap.get
     }
 
     amount
@@ -85,16 +85,6 @@ class Pot {
 
   def add(member: Player, amount: Decimal) = side.foldRight[Decimal](amount) {
     case (p, acc) ⇒ p add (member, acc)
-  }
-
-  def <<-(member: Player, amount: Decimal) {
-    val left = add(member, amount)
-    split(member, left)
-  }
-
-  def <<(member: Player, amount: Decimal) {
-    val left = add(member, amount)
-    main add (member, left)
   }
 
   override def toString = {

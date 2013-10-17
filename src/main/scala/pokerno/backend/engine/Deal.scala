@@ -25,7 +25,7 @@ class DealActor(val gameplay: Gameplay) extends Actor {
   def receive = {
     case Deal.Start ⇒
       log.info("deal start")
-      running = actorOf(Props(classOf[GameplayActor], gameplay))
+      running = actorOf(Props(classOf[GameplayActor], gameplay), name = "gameplay-process")
 
     case Message.SitOut   ⇒
     case Message.ComeBack ⇒

@@ -21,7 +21,7 @@ class BettingActor(val round: BettingRound) extends Actor with ActorLogging {
       round.move
       round.seats where (_ inPlay) foreach {
         case (seat, pos) ⇒
-          if (!seat.isCalled(round.call)) seat check
+          if (!seat.isCalled(round.call)) seat playing
       }
 
       if (round.seats.where(_ inPot).size < 2)
@@ -29,7 +29,7 @@ class BettingActor(val round: BettingRound) extends Actor with ActorLogging {
       else {
         val active = round.seats where (_ isPlaying)
         
-        Console printf("active=%s\n", round.seats.value.map(_._1.state))
+        Console printf("%sACTIVE:\n%s%s\n", Console.GREEN, round.seats.value.map(_._1.toString).toList.mkString("\n"), Console.RESET)
         
         if (active.size == 0)
           self ! Betting.Done
@@ -39,7 +39,6 @@ class BettingActor(val round: BettingRound) extends Actor with ActorLogging {
       }
 
     case Betting.Stop ⇒
-      round.stop
       parent ! Street.Exit
       stop(self)
 

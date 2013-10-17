@@ -8,23 +8,23 @@ class Bet(val betType: Bet.Value, val amount: Decimal = .0) {
     if (amount > .0) "%s %.2f" formatLocal (Locale.US, betType toString, amount)
     else betType toString
 
-  def isValid(available: Decimal, alreadyPut: Decimal, needToCall: Decimal, range: Range): Boolean = betType match {
+  def isValid(left: Decimal, _put: Decimal, call: Decimal, _range: Range): Boolean = betType match {
     case Bet.Fold ⇒
       true
-
-    case Bet.Check ⇒
-      needToCall == alreadyPut
-
-    case Bet.Call | Bet.Raise ⇒
-      (amount <= available &&
-        ((betType == Bet.Call && Range(needToCall, needToCall).isValid(amount, available)) ||
-          (betType == Bet.Raise && range.isValid(amount, available)))
-      )
     
+    case Bet.Check ⇒
+      call == _put
+    
+    case Bet.Call | Bet.Raise ⇒
+      val stack = left + _put
+      val range = if (betType == Bet.Call) Range(call, call) else _range
+      amount <= stack && range.isValid(amount, stack)
+      
     case _: Bet.ForcedBet =>
-      amount == needToCall || (amount < needToCall && amount == available)
-
-    case _ ⇒ false
+      amount == call || (amount < call && amount == left)
+      
+    case _ ⇒
+      false
   }
 }
 

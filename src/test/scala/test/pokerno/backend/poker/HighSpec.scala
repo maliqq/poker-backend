@@ -5,6 +5,6 @@ import org.scalatest.matchers._
 
 class HighSpec extends FunSpec with ClassicMatchers {
   describe("High") {
-
+    
   }
 }

@@ -30,16 +30,19 @@ class GameplayActor(val gameplay: Gameplay) extends Actor with ActorLogging {
   )
 
   override def preStart = {
-    betting = system.actorOf(Props(classOf[BettingActor], gameplay.round))
-    for (stage ← stages) {
-      stage.run
-    }
-    self ! Street.Next
+    self ! Street.Start
   }
 
   def receive = {
     case msg: Message.AddBet ⇒
       betting ! msg
+
+    case Street.Start =>
+      betting = actorOf(Props(classOf[BettingActor], gameplay.round), name = "betting-process")
+      for (stage ← stages) {
+        stage.run
+      }
+      self ! Street.Next
 
     case Street.Next ⇒
       log.info("next street")
@@ -53,6 +56,7 @@ class GameplayActor(val gameplay: Gameplay) extends Actor with ActorLogging {
 
     case Street.Exit ⇒
       log.info("showdown")
+      gameplay.showdown
       stop(self)
   }
 

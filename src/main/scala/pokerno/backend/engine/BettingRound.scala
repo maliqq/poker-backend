@@ -79,6 +79,8 @@ class BettingRound(val gameplay: Gameplay) extends Round(gameplay.table.size) {
     val (seat, pos) = _acting
     
     if (bet.isValid(seat.amount, seat.put, _call, _raise)) {
+      val diff = bet.amount - seat.put
+      
       seat post (bet)
       
       if (bet.betType == Bet.Raise)
@@ -87,8 +89,12 @@ class BettingRound(val gameplay: Gameplay) extends Round(gameplay.table.size) {
       if (bet.betType != Bet.Call && bet.amount > _call)
         _call = bet.amount
 
-      if (seat.state == Seat.AllIn) pot <<- (seat.player.get, seat.put)
-      else pot << (seat.player.get, seat.put)
+      val player = seat.player get
+      val left = pot add(player, diff)
+      if (seat.state == Seat.AllIn)
+        pot split(player, left)
+      else
+        pot.main add(player, left)
       
       gameplay.broadcast.except(seat.player get) {
         Message.AddBet(pos, bet)
@@ -111,7 +117,4 @@ class BettingRound(val gameplay: Gameplay) extends Round(gameplay.table.size) {
     gameplay.broadcast all (message)
   }
   
-  def stop {
-    gameplay.showdown
-  }
 }

@@ -46,20 +46,19 @@ object Hand {
     lazy val suited = countGroups(groupSuit)
 
     private def countGroups(groups: Map[_ <: Any, List[Card]]): Map[Int, List[List[Card]]] = {
-      var result: Map[Int, List[List[Card]]] = Map.empty
+      var _counter: Map[Int, List[List[Card]]] = Map.empty
       groups foreach {
         case (k, v) ⇒
           val count = v size
-          val group = result getOrElse (count, List.empty)
-          result += (count -> (group ++ List(v)))
+          val group = _counter getOrElse (count, List.empty)
+          _counter += (count -> (group ++ List(v)))
       }
-      result
+      _counter
     }
-
-    private def groupByGaps: List[List[Card]] = {
-      var result: List[List[Card]] = List[List[Card]]()
-      val first = value.head
-      value.foldRight((first, List[Card]())) {
+    
+    private def groupByGaps: List[List[Card]] = { 
+      var _gaps = List[List[Card]]()
+      val (_, _buffer: List[Card]) = value.foldRight((value.head, List[Card]())) {
         case (card, (prev: Card, buffer: List[Card])) ⇒
           val d = card.toInt - prev.toInt
           if (d == 0)
@@ -67,11 +66,11 @@ object Hand {
           else if (d == 1 || d == -12)
             (prev, buffer ++ List(card))
           else {
-            result ::= buffer
+            _gaps ::= buffer
             (card, List[Card]())
           }
       }
-      result
+      _gaps ++ List(_buffer)
     }
 
     override def toString = "gaps=%s paired=%s suited=%s" format (gaps, paired, suited)
@@ -104,31 +103,31 @@ class Hand(
 
   def description: String = rank.get match {
     case Rank.HighCard ⇒
-      "high card %s" format (high head)
+      "high card %s" format (high.head.kind)
 
     case Rank.OnePair ⇒
-      "pair of %ss" format (high head)
+      "pair of %ss" format (high.head.kind)
 
     case Rank.TwoPair ⇒
-      "two pairs, %ss and %ss" format (high head, high(1))
+      "two pairs, %ss and %ss" format (high.head.kind, high(1).kind)
 
     case Rank.ThreeKind ⇒
-      "three of a kind, %ss" format (high head)
+      "three of a kind, %ss" format (high.head.kind)
 
     case Rank.Straight ⇒
-      "straight, %s to %s" format (value min, value max)
+      "straight, %s to %s" format (value.min.kind, value.max.kind)
 
     case Rank.Flush ⇒
-      "flush, %s high" format (high.head)
+      "flush, %s high" format (high.head.kind)
 
     case Rank.FullHouse ⇒
-      "full house, %ss full of %ss" format (high head, high(1))
+      "full house, %ss full of %ss" format (high.head.kind, high(1).kind)
 
     case Rank.FourKind ⇒
-      "four of a kind, %ss" format (high head)
+      "four of a kind, %ss" format (high.head.kind)
 
     case Rank.StraightFlush ⇒
-      "straight flush, %s to %s" format (value min, value max)
+      "straight flush, %s to %s" format (value.min.kind, value.max.kind)
 
     case Rank.BadugiOne ⇒
       "1-card badugi: %s" format (value head)

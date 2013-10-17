@@ -65,6 +65,7 @@ trait Showdown {
           val seat = new Seat
           seat wins (amount)
           val message = Message.Winner(pos = pos, winner = winner, amount = amount)
+          broadcast.all(message)
       }
     }
   }

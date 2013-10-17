@@ -54,24 +54,29 @@ class Seat {
     _state = Seat.Play
     _put = .0
   }
-
-  def check {
+  
+  def playing {
     _state = Seat.Play
   }
 
-  def fold {
+  def check {
+    _state = Seat.Bet
+  }
+
+  def fold = {
     _state = Seat.Fold
     _put = .0
+    .0
   }
 
   def force(amount: Decimal) {
     put = amount
-    _state = Seat.Bet
+    _state = Seat.Play
   }
 
   def raise(amount: Decimal) {
     put = amount
-    _state = Seat.Play
+    _state = Seat.Bet
   }
 
   def buyIn(amount: Decimal) {
@@ -83,9 +88,7 @@ class Seat {
     net(amount)
   }
 
-  def isCalled(amount: Decimal): Boolean = {
-    _state == Seat.AllIn || amount <= _put
-  }
+  def isCalled(amount: Decimal): Boolean = _state == Seat.AllIn || amount <= _put
 
   def post(bet: Bet) = bet.betType match {
     case Bet.Fold             ⇒ fold
@@ -105,7 +108,7 @@ class Seat {
   def inPlay = state == Seat.Play || state == Seat.Bet
   def inPot = inPlay || state == Seat.AllIn
 
-  override def toString = if (_player.isDefined) "%s - %s (%.2f)".format(_player get, _state, _amount)
+  override def toString = if (_player.isDefined) "%s - %s (%.2f - %.2f)".format(_player get, _state, _amount, _put)
     else "(empty)"
 
 }

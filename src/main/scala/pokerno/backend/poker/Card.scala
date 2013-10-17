@@ -8,7 +8,9 @@ class Card(val kind: Kind.Value, val suit: Suit.Value) extends Ordered[Card] {
 
   override def toString = kind.toString + suit.toString
   def toConsoleString = "%s%s%s%s".format(suit.color, kind.toString, suit.unicode, Console.RESET)
-  override def compare(other: Card): Int = 1
+  override def compare(other: Card): Int = {
+    kind.toInt compareTo other.kind.toInt
+  }
 }
 
 object Card {

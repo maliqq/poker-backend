@@ -37,7 +37,7 @@ class PlayerActor(i: Int, gameplay: Gameplay, instance: ActorRef) extends Actor 
           Console printf ("Seat %d: Call=%.2f Min=%.2f Max=%.2f\n", pos, call, range.min, range.max)
     
           val seat = gameplay.table.seats(pos)
-          var bet = Play.readBet(call, call - seat.put)
+          var bet = Play.readBet(call)
     
           val addBet = Message.AddBet(pos = pos, bet = bet)
           instance ! addBet
@@ -60,7 +60,7 @@ class Play(gameplay: Gameplay, instance: ActorRef, tableSize: Int) extends Actor
   override def preStart = {
     Console println ("starting play")
     (1 to tableSize) foreach { i ⇒
-      val playerActor = system.actorOf(Props(classOf[PlayerActor], i, gameplay, instance))
+      val playerActor = system.actorOf(Props(classOf[PlayerActor], i, gameplay, instance), name = "player-process-%d".format(i))
       playerActor ! PlayerActor.Start
     }
     gameplay.broadcast.subscribe(self, "play-observer")
@@ -86,12 +86,12 @@ class Play(gameplay: Gameplay, instance: ActorRef, tableSize: Int) extends Actor
     case Message.ShowHand(pos, cards, hand) ⇒
       val seat = gameplay.table.seats(pos)
 
-      Console printf ("Player %s has %s (%s)\n", seat.player.get, cards, hand)
+      Console printf ("%s has %s (%s)\n", seat.player.get, Cards(cards) toConsoleString, hand description)
 
     case Message.Winner(pos, winner, amount) ⇒
       val seat = gameplay.table.seats(pos)
 
-      Console printf ("Player %s won %.2f\n", seat.player.get, amount)
+      Console printf ("%s won %.2f\n", seat.player.get, amount)
   }
 }
 
@@ -100,12 +100,12 @@ object Play {
 
   val sc = new Scanner(System.in)
 
-  def readBet(call: Decimal, toCall: Decimal): Bet = {
+  def readBet(call: Decimal): Bet = {
     var bet: Option[Bet] = None
     while (bet.isEmpty) {
       Console print (">>> ")
 
-      bet = parseBet(call, toCall, sc.nextLine)
+      bet = parseBet(call, sc.nextLine)
     }
     bet.get
   }
@@ -114,13 +114,13 @@ object Play {
   final val Check = "check"
   final val Call = "call"
 
-  def parseBet(call: Decimal, toCall: Decimal, str: String): Option[Bet] = str match {
+  def parseBet(call: Decimal, str: String): Option[Bet] = str match {
     case "" ⇒
-      if (toCall == .0) Some(Bet.check)
-      else Some(Bet.call(toCall))
+      if (call == .0) Some(Bet.check)
+      else Some(Bet.call(call))
     case Fold  ⇒ Some(Bet.fold)
     case Check ⇒ Some(Bet.check)
-    case Call  ⇒ Some(Bet.call(toCall))
+    case Call  ⇒ Some(Bet.call(call))
     case _ ⇒
       val parts = str.split(" ")
 

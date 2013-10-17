@@ -51,20 +51,22 @@ trait HighHand {
   }
 
   def isThreeKind: Option[Hand] = paired get (3) match {
-    case Some(sets) ⇒
+    case Some(sets) if sets.size == 1 ⇒
       new Hand(value = sets head, _high = true, _kicker = true) ranked Rank.ThreeKind
     case None ⇒ None
+    case _ => None
   }
 
   def isTwoPair: Option[Hand] = paired get (2) match {
-    case Some(pairs) ⇒
+    case Some(pairs) if pairs.size >= 2 ⇒
       val List(major, minor, _*) = pairs sorted (Cards.OrderingByMax)
       new Hand(value = major ++ minor, high = List(major head, minor head), _kicker = true) ranked Rank.TwoPair
     case None ⇒ None
+    case _ => None
   }
 
   def isOnePair: Option[Hand] = paired get (2) match {
-    case Some(pairs) ⇒
+    case Some(pairs) if pairs.size == 1 ⇒
       new Hand(value = pairs head, _high = true, _kicker = true) ranked Rank.OnePair
     case None ⇒ None
   }

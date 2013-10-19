@@ -29,7 +29,7 @@ class BettingActor(val round: BettingRound) extends Actor with ActorLogging {
       else {
         val active = round.seats where (_ isPlaying)
         
-        Console printf("%sACTIVE:\n%s%s\n", Console.GREEN, round.seats.value.map(_._1.toString).toList.mkString("\n"), Console.RESET)
+        //Console printf("%sACTIVE:\n%s%s\n", Console.GREEN, round.seats.value.map(_._1.toString).toList.mkString("\n"), Console.RESET)
         
         if (active.size == 0)
           self ! Betting.Done

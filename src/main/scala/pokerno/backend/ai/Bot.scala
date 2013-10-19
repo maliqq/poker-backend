@@ -19,14 +19,12 @@ trait Context {
   var board: List[Card] = List.empty
 }
 
-class Bot(room: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var stake: Stake)
+class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var stake: Stake)
     extends Actor with Context with Simple {
   var id: String = java.util.UUID.randomUUID().toString
 
-  def join {
-    Console printf ("joining table...")
-
-    room ! Message.JoinTable(pos = pos, amount = stack, player = new Player(id))
+  override def preStart {
+    deal ! Message.JoinTable(pos = pos, amount = stack, player = new Player(id))
   }
 
   def receive = {
@@ -37,6 +35,9 @@ class Bot(room: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
       opponentsNum = 6
       stake = msg.stake
 
+    case Message.Winner(_pos, winner, amount) =>
+      if (pos == _pos) stack += amount
+      
     case Message.StreetStart(name) ⇒
       street = name
 
@@ -54,7 +55,6 @@ class Bot(room: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
 
     case Message.RequireBet(_pos, call, range) ⇒
       if (_pos == pos) {
-        //<-time.After(1 * time.Second)
         decide(call, range)
       }
 
@@ -64,7 +64,8 @@ class Bot(room: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
   }
 
   def addBet(b: Bet) {
-    Console printf ("=== %s", b)
+    Console printf ("== BOT #%d: %s\n", pos, b)
+    deal ! Message.AddBet(pos, b)
   }
 
   def doCheck = addBet(Bet.check)
@@ -85,23 +86,22 @@ class Bot(room: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
     addBet(Bet call (amount))
   }
 
-  def decide(call: Decimal, range: Range) {
+  def decide(call: Decimal, range: Range) =
     if (cards.size != 2) {
-      Console printf ("*** can't decide with cards=%s", cards)
+      Console printf ("*** can't decide with cards=%s\n", Cards(cards) toConsoleString)
       doFold
-      return
+    } else {
+
+      val decision = if (board.size == 0) decidePreflop(cards)
+      else decideBoard(cards, board)
+  
+      invoke(decision, call, range)
     }
-
-    val decision = if (board.size == 0) decidePreflop(cards)
-    else decideBoard(cards, board)
-
-    invoke(decision, call, range)
-  }
 
   def invoke(decision: Decision, call: Decimal, range: Range) {
     val (minRaise, maxRaise) = range.value
 
-    Console printf ("decision=%#v call=%.2f minRaise=%.2f maxRaise=%.2f", decision, call, minRaise, maxRaise)
+    Console printf ("decision=%s call=%.2f minRaise=%.2f maxRaise=%.2f\n", decision, call, minRaise, maxRaise)
 
     val min = if (call > stack + bet) stack + bet else call
     val max = decision.maxBet

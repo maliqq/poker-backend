@@ -23,12 +23,9 @@ object Math {
 
       total += 1
       h1.get.compare(h2.get) match {
-        case -1 ⇒
-          _loses += 1
-        case 1 ⇒
-          _wins += 1
-        case 0 ⇒
-          _ties += 1
+        case -1 ⇒ _loses += 1
+        case 1 ⇒ _wins += 1
+        case 0 ⇒ _ties += 1
       }
     }
   }

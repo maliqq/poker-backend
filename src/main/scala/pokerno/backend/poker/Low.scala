@@ -9,17 +9,14 @@ class Low {
       return None
 
     var hand = new Hand(value = lowCards, high = List(lowCards max))
-    if (lowCards.size == 5)
-      hand ranked Rank.CompleteLow
-    else
-      hand ranked Rank.IncompleteLow
+    val rankType = if (lowCards.size == 5) Rank.CompleteLow else Rank.IncompleteLow
+    
+    hand ranked rankType
   }
 
   def isGapLow: Option[Hand] = {
     val hand = (new Hand.Cards(value) with HighHand).isHigh
-    if (hand.get.rank == Rank.HighCard)
-      isLow
-    else
-      hand
+    if (hand.get.rank == Rank.HighCard) isLow
+    else hand
   }
 }

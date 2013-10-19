@@ -9,7 +9,11 @@ case class Decision(
   val minBet: Decimal = .0,
   val maxBet: Decimal = .0,
   val raiseChance: Double = .0,
-  val allInChance: Double = .0)
+  val allInChance: Double = .0) {
+  
+  override def toString = "Bet min=%.2f max=%.2f Raise chance=%.2f%% All in chance=%.2f%%".format(minBet, maxBet, raiseChance * 100, allInChance * 100)
+  
+}
 
 trait Simple {
   def stake: Stake
@@ -20,7 +24,7 @@ trait Simple {
     val group = Tables sklanskyMalmuthGroup (cards.head, cards.last)
     val bb = stake.bigBlind
 
-    Console printf ("group=%d", group)
+    Console printf ("group=%d\n", group)
 
     group match {
       case 9     ⇒ Decision(maxBet = .0)
@@ -48,7 +52,7 @@ trait Simple {
   def decideBoard(cards: List[Card], board: List[Card]): Decision = {
     val chances = Against(opponentsNum) withBoard (cards, board)
 
-    Console.printf("chances=%s", chances)
+    Console.printf("chances=%s\n", chances)
 
     val tightness = 0.7
     if (chances.wins > tightness)

@@ -6,7 +6,7 @@ trait HighHand {
     case None ⇒ isFourKind orElse isFullHouse orElse isStraight
     case Some(flush) ⇒
       Hand.High(flush.value) match {
-        case Some(hand) ⇒ hand ranked Rank.StraightFlush
+        case Some(hand) ⇒ hand ranked Rank.High.StraightFlush
         case None       ⇒ isFourKind orElse isFullHouse orElse Some(flush)
       }
   }
@@ -14,7 +14,7 @@ trait HighHand {
   def isFourKind: Option[Hand] = paired get (4) match {
     case Some(quads) ⇒
       val cards = quads.head
-      new Hand(value = cards, high = cards, _kicker = true) ranked Rank.FourKind
+      new Hand(value = cards, high = cards, _kicker = true) ranked Rank.High.FourKind
     case None ⇒ None
   }
 
@@ -32,27 +32,27 @@ trait HighHand {
             (major, minor)
         }
       }
-      new Hand(value = major ++ minor, high = List(major head, minor head)) ranked Rank.FullHouse
+      new Hand(value = major ++ minor, high = List(major head, minor head)) ranked Rank.High.FullHouse
     case None ⇒ None
   }
 
   def isFlush: Option[Hand] = suited.find { case (count, group) ⇒ count >= 5 } match {
     case Some(group) ⇒
       val cards = group._2.head.sorted
-      new Hand(value = value.take(5), high = value.take(1)) ranked Rank.Flush
+      new Hand(value = value.take(5), high = value.take(1)) ranked Rank.High.Flush
     case None ⇒ None
   }
 
   def isStraight: Option[Hand] = gaps find { group ⇒ group.size > 5 } match {
     case Some(group) ⇒
       val cards = group.sorted
-      new Hand(value = value take (5), high = value take (1)) ranked Rank.Straight
+      new Hand(value = value take (5), high = value take (1)) ranked Rank.High.Straight
     case None ⇒ None
   }
 
   def isThreeKind: Option[Hand] = paired get (3) match {
     case Some(sets) if sets.size == 1 ⇒
-      new Hand(value = sets head, _high = true, _kicker = true) ranked Rank.ThreeKind
+      new Hand(value = sets head, _high = true, _kicker = true) ranked Rank.High.ThreeKind
     case None ⇒ None
     case _ => None
   }
@@ -60,18 +60,18 @@ trait HighHand {
   def isTwoPair: Option[Hand] = paired get (2) match {
     case Some(pairs) if pairs.size >= 2 ⇒
       val List(major, minor, _*) = pairs sorted (Cards.OrderingByMax)
-      new Hand(value = major ++ minor, high = List(major head, minor head), _kicker = true) ranked Rank.TwoPair
+      new Hand(value = major ++ minor, high = List(major head, minor head), _kicker = true) ranked Rank.High.TwoPair
     case None ⇒ None
     case _ => None
   }
 
   def isOnePair: Option[Hand] = paired get (2) match {
     case Some(pairs) if pairs.size == 1 ⇒
-      new Hand(value = pairs head, _high = true, _kicker = true) ranked Rank.OnePair
+      new Hand(value = pairs head, _high = true, _kicker = true) ranked Rank.High.OnePair
     case None ⇒ None
   }
 
-  def isHighCard: Option[Hand] = new Hand(value = value sorted, _high = true, _kicker = true) ranked Rank.HighCard
+  def isHighCard: Option[Hand] = new Hand(value = value sorted, _high = true, _kicker = true) ranked Rank.High.HighCard
 
   @throws[Hand.InvalidCards]
   def isHigh: Option[Hand] = {

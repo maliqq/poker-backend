@@ -26,7 +26,7 @@ class SeatSpec extends FunSpec with ClassicMatchers {
 
       seat.play
       seat.check
-      seat.state should equal(Seat.Play)
+      seat.state should equal(Seat.Bet)
 
       seat.play
       seat.raise(100)

@@ -4,7 +4,7 @@ import org.scalatest._
 import org.scalatest.matchers._
 import org.scalatest.matchers.ShouldMatchers._
 
-import pokerno.backend.model.{ Bet, Stake }
+import pokerno.backend.model.{ Bet, Stake, Range }
 
 class BetSpec extends FunSpec with ClassicMatchers {
   describe("Bet") {
@@ -31,24 +31,31 @@ class BetSpec extends FunSpec with ClassicMatchers {
     
     describe("isValid") {
       it("fold") {
+        Bet.fold.isValid(1000, 10, 10, (10.0, 10.0)) should be(true)
       }
       
       it("check") { 
+        Bet.check.isValid(1000, 10, 10, (.0, .0)) should be(true)
+        Bet.check.isValid(1000, 10, 100, (.0, .0)) should be(false)
       }
       
       it("call") {
+        val range: Range = (.0, .0)
+        val stack = 1000
+        val put = 10
+        Bet.call(100).isValid(stack, put, 100, range) should be(true)
+        Bet.call(2000).isValid(stack, put, 100, range) should be(false)
+        Bet.call(100).isValid(stack, put, 200, range) should be(false)
       }
       
       it("raise") {
+        val range: Range = (100.0, 200.0)
+        val stack = 1000
+        val put = 50
+        Bet.raise(100).isValid(stack, put, 100, range) should be(true)
+        Bet.raise(300).isValid(stack, put, 100, range) should be(false)
+        Bet.raise(50).isValid(stack, put, 200, range) should be(false)
       }
     }
-
-//    it("force") {
-//      val stake = new Stake(8.0, Ante = Right(true), BringIn = Right(true))
-//      Bet.force(Bet.Ante, stake).amount should equal(1.0)
-//      Bet.force(Bet.BringIn, stake).amount should equal(2.0)
-//      Bet.force(Bet.SmallBlind, stake).amount should equal(4.0)
-//      Bet.force(Bet.BigBlind, stake).amount should equal(8.0)
-//    }
   }
 }

@@ -27,7 +27,7 @@ trait Showdown {
       val winner = seat.player.get
       seat wins (amount)
       val message = Message.Winner(pos = pos, winner = winner, amount = amount)
-      broadcast all (message)
+      broadcast (message)
     }
   }
 
@@ -65,7 +65,7 @@ trait Showdown {
           val seat = new Seat
           seat wins (amount)
           val message = Message.Winner(pos = pos, winner = winner, amount = amount)
-          broadcast.all(message)
+          broadcast(message)
       }
     }
   }
@@ -93,7 +93,7 @@ trait Showdown {
         val (pocket, hand) = rank(seat.player get, ranking)
         hands += (seat.player.get -> hand)
         val message = Message.ShowHand(pos = pos, cards = pocket, hand = hand)
-        broadcast all (message)
+        broadcast (message)
     }
     hands
   }

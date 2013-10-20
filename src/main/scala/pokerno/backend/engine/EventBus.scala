@@ -5,10 +5,9 @@ import pokerno.backend.protocol._
 import akka.actor.ActorRef
 import akka.event.{ ActorEventBus, ScanningClassification }
 
-class Broadcast extends ActorEventBus with ScanningClassification {
-
+class EventBus extends ActorEventBus with ScanningClassification {
   type Classifier = String
-
+  
   trait Route
   case object NoOne extends Route
   case class One(endpoint: Classifier) extends Route
@@ -16,7 +15,7 @@ class Broadcast extends ActorEventBus with ScanningClassification {
   case class Where[Classifier](f: (Classifier) ⇒ Boolean) extends Route
   case class Only(endpoints: List[Classifier]) extends Route
   case class Except(endpoints: List[Classifier]) extends Route
-
+  
   case class Notification(message: Message.Value, from: Route = NoOne, to: Route = All)
   type Event = Notification
 
@@ -34,24 +33,8 @@ class Broadcast extends ActorEventBus with ScanningClassification {
     //Console printf ("%s%s -> %s %s%s\n" format (Console.CYAN, event.to, subscriber, event.message, Console.RESET))
     subscriber ! event.message
   }
-
-  def all(message: Message.Value) {
-    publish(Notification(message, to = All))
-  }
-
-  def one(player: Player)(f: ⇒ Message.Value) = {
-    publish(Notification(f, to = One(player.id)))
-  }
-
-  def except(player: Player)(f: ⇒ Message.Value) = {
-    publish(Notification(f, to = Except(List(player.id))))
-  }
-
-  def except(players: List[Player])(f: ⇒ Message.Value) = {
-    publish(Notification(f, to = Except(players.map(_ id))))
-  }
-
-  def only(players: List[Player])(f: ⇒ Message.Value) = {
-    publish(Notification(f, to = Only(players.map(_ id))))
+  
+  def publish(message: Message.Value, route: Route = All) {
+    publish(Notification(message, to = route))
   }
 }

@@ -9,27 +9,30 @@ import pokerno.backend.poker.{ Rank }
 class RankSpec extends FunSpec with ClassicMatchers {
   describe("Rank.High") {
     it("ordered") {
-      for (rank1 <- Rank.high; rank2 <- Rank.high) {
-        rank1.compare(rank2) should equal (Rank.high.indexOf(rank1).compare(Rank.high.indexOf(rank2)))
+      for (rank1 <- Rank.High.values; rank2 <- Rank.High.values) {
+        rank1.compare(rank2) should equal (Rank.High.values.toList.indexOf(rank1).compare(Rank.High.values.toList.indexOf(rank2)))
       }
     }
     
     it("sorted") {
-      Rank.high.max should equal(Rank.StraightFlush)
-      Rank.high.min should equal(Rank.HighCard)
+      Rank.High.values.max should equal(Rank.High.StraightFlush)
+      Rank.High.values.min should equal(Rank.High.HighCard)
+    }
+    
+    it("enum") {
     }
   }
   
   describe("Rank.Badugi") {
     it("ordered") {
-      for (rank1 <- Rank.badugi; rank2 <- Rank.badugi) {
-        rank1.compare(rank2) should equal (Rank.badugi.indexOf(rank1).compare(Rank.badugi.indexOf(rank2)))
+      for (rank1 <- Rank.Badugi.values; rank2 <- Rank.Badugi.values) {
+        rank1.compare(rank2) should equal (Rank.Badugi.values.toList.indexOf(rank1).compare(Rank.Badugi.values.toList.indexOf(rank2)))
       }
     }
     
     it("sorted") {
-      Rank.high.max should equal(Rank.BadugiFour)
-      Rank.high.min should equal(Rank.BadugiOne)
+      Rank.Badugi.values.max should equal(Rank.Badugi.BadugiFour)
+      Rank.Badugi.values.min should equal(Rank.Badugi.BadugiOne)
     }
   }
 }

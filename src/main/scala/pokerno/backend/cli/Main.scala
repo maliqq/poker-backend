@@ -36,7 +36,7 @@ object Main {
 
   def createGameplay(config: Config): Gameplay = {
     val dealer = new Dealer
-    val broadcast = new Broadcast
+    val broadcast = new EventBus
     val variation = if (config.mixedGame.isDefined)
       new Mix(config.mixedGame.get, config.tableSize)
     else

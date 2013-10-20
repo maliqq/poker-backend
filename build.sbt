@@ -24,5 +24,7 @@ libraryDependencies ++= Seq(
   "org.webbitserver" % "webbit" % "0.4.15",
   "asia.stampy" % "stampy-core" % "1.0-RELEASE",
   "org.scalatest" % "scalatest_2.10" % "1.9.2" % "test",
-  "com.github.scopt" %% "scopt" % "3.1.0"
+  "com.github.scopt" %% "scopt" % "3.1.0",
+  //"com.twitter" % "ostrich" % "2.3.0"
+  "com.codahale.metrics" % "metrics-core" % "3.0.1"
 )

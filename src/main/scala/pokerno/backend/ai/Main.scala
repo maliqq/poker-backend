@@ -15,7 +15,7 @@ object Main {
   val stake = new Stake(10)
   val table = new Table(game.tableSize)
   val dealer = new Dealer
-  val broadcast = new Broadcast
+  val broadcast = new EventBus
   val gameplay = new Gameplay(dealer, broadcast, game, stake, table)
   
   val system = ActorSystem("poker-cli")

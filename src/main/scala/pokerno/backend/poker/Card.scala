@@ -2,7 +2,7 @@ package pokerno.backend.poker
 
 import scala.collection.mutable.ListBuffer
 
-class Card(val kind: Kind.Value, val suit: Suit.Value) extends Ordered[Card] {
+class Card(val kind: Kind.Value.Kind, val suit: Suit.Value) extends Ordered[Card] {
   def toInt: Int = kind.toInt << 2 + suit.toInt
   def toByte: Byte = (toInt + 1) toByte
 
@@ -33,10 +33,10 @@ object Card {
     case c: Card   ⇒ c
     case _         ⇒ throw NotACard()
   }
-
+  
   @throws[InvalidCard]
   implicit def parseInt(i: Int): Card = {
-    if (i <= 0 || i > CardsNum) throw InvalidCard(i)
+    if (i < 0 || i >= CardsNum) throw InvalidCard(i)
     new Card(i >> 2, i % 4)
   }
 
@@ -53,16 +53,13 @@ object Cards {
   implicit def cards2List(c: Cards): List[Card] = c.value
   implicit def cards2String(c: Cards): String = c
 
-  case class Binary(v: List[Int])
-  case class CardList(v: List[Card])
-
   def apply(value: String) = parseString(value)
   def apply(value: List[_]): Cards = parseList(value)
 
   def parseList(l: List[_]): List[Card] = l.map(Card(_))
 
   def parseString(s: String): List[Card] = {
-    val regex = """(?i)([akqjt2-9]{1})([schd]{1})""".r
+    val regex = """(?i)([akqjt2-9]{1})([shdc]{1})""".r
     val matching = for {
       regex(kind, suit) ← regex findAllIn s
     } yield new Card(kind(0), suit(0))

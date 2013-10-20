@@ -71,12 +71,12 @@ class Seat {
 
   def force(amount: Decimal) {
     put = amount
-    _state = Seat.Play
+    _state = if (_amount == 0) Seat.AllIn else Seat.Play
   }
 
   def raise(amount: Decimal) {
     put = amount
-    _state = Seat.Bet
+    _state = if (_amount == 0) Seat.AllIn else Seat.Bet
   }
 
   def buyIn(amount: Decimal) {

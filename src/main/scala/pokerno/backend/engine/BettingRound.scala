@@ -69,7 +69,7 @@ class BettingRound(val gameplay: Gameplay) extends Round(gameplay.table.size) {
       Message.Acting(pos = current)
     }
 
-    gameplay.broadcast.one(player) {
+    gameplay.unicast(player) {
       Message.RequireBet(pos = current, call = _call, raise = _raise)
     }
   }
@@ -95,13 +95,13 @@ class BettingRound(val gameplay: Gameplay) extends Round(gameplay.table.size) {
       else
         pot.main add(player, left)
       
-      gameplay.broadcast.except(seat.player get) {
+      gameplay.broadcast.except(seat.player.get) {
         Message.AddBet(pos, bet)
       }
     } else {
       seat fold
       
-      gameplay.broadcast.except(seat.player get) {
+      gameplay.broadcast.except(seat.player.get) {
         Message.AddBet(pos, Bet.fold)
       }
     }
@@ -111,9 +111,7 @@ class BettingRound(val gameplay: Gameplay) extends Round(gameplay.table.size) {
     clear
     
     gameplay.table.seats where (_ inPlay) map (_._1 play)
-
-    val message = Message.CollectPot(total = pot total)
-    gameplay.broadcast all (message)
+    gameplay.broadcast (Message.CollectPot(total = pot total))
   }
   
 }

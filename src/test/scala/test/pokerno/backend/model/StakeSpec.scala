@@ -10,11 +10,11 @@ class StakeSpec extends FunSpec with ClassicMatchers {
 
   describe("Rates") {
     it("rates") {
-      Rates.Default(Bet.Ante) should equal(0.125)
-      Rates.Default(Bet.BringIn) should equal(0.25)
-      Rates.Default(Bet.SmallBlind) should equal(0.5)
-      Rates.Default(Bet.BigBlind) should equal(1.0)
-      Rates.Default(Bet.DoubleBet) should equal(2.0)
+      Rates.Default(Bet.Ante).toDouble should equal(0.1)
+      Rates.Default(Bet.BringIn).toDouble should equal(0.25)
+      Rates.Default(Bet.SmallBlind).toDouble should equal(0.5)
+      Rates.Default(Bet.BigBlind).toDouble should equal(1.0)
+      Rates.Default(Bet.DoubleBet).toDouble should equal(2.0)
     }
   }
 

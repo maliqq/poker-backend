@@ -1,32 +1,37 @@
 package pokerno.backend.poker
 
 object Kind {
-  private final val _short = "23456789TJQKA".toList
-  private final val _full: List[String] = List("deuce", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "jack", "queen", "king", "ace")
-
-  sealed class Value {
-    def toInt: Int = All indexOf (this)
-    def short: Char = _short(toInt)
-    def full: String = _full(toInt)
-    override def toString: String = short toString
+  object Value extends Enumeration {
+    class Kind(i: Int, name: String) extends Val(i, name) {
+      def toInt: Int = id
+      def short: Char = _short(id)
+      override def toString: String = short toString
+    }
+    
+    private def Kind(name: String) = new Kind(nextId, name)
+    
+    val Deuce = Kind("ace")
+    val Three = Kind("three")
+    val Four = Kind("four")
+    val Five = Kind("five")
+    val Six = Kind("six")
+    val Seven = Kind("seven")
+    val Eight = Kind("eight")
+    val Nine = Kind("nine")
+    val Ten = Kind("ten")
+    val Jack = Kind("jack")
+    val Queen = Kind("queen")
+    val King = Kind("king")
+    val Ace = Kind("ace")
   }
+  import Value._
 
-  implicit def int2Value(i: Int): Value = All(i)
-
-  case object Deuce extends Value
-  case object Three extends Value
-  case object Four extends Value
-  case object Five extends Value
-  case object Six extends Value
-  case object Seven extends Value
-  case object Eight extends Value
-  case object Nine extends Value
-  case object Ten extends Value
-  case object Jack extends Value
-  case object Queen extends Value
-  case object King extends Value
-  case object Ace extends Value
-
-  final val All: List[Value] = List(Deuce, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King, Ace)
+  private final val _short = "23456789TJQKA".toList
+  
+  final val All: List[Value.Kind] = Value.values.toList.asInstanceOf[List[Value.Kind]]
   final val Seq = List range (0, 12)
+  
+  implicit def char2Kind(c: Char): Value.Kind = All(_short.indexOf(c))
+  implicit def byte2Kind(b: Byte): Value.Kind = All(b)
+  implicit def int2Kind(i: Int): Value.Kind = All(i)
 }

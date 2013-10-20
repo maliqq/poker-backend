@@ -3,11 +3,11 @@ package pokerno.backend.poker
 class CardSet(
     var cards: List[Card],
     val ordering: Ordering[Card] = AceHigh,
-    qualifier: Option[Kind.Value] = None) {
+    qualifier: Option[Kind.Value.Kind] = None) {
   if (qualifier.isDefined)
     cards = qualify(qualifier get)
 
-  def qualify(q: Kind.Value): List[Card] = {
+  def qualify(q: Kind.Value.Kind): List[Card] = {
     cards filter { card ⇒ card.kind.toInt <= q.toInt }
   }
 

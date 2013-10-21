@@ -64,6 +64,7 @@ object Bet {
   def fold = new Bet(Fold)
   def call(amount: Decimal) = new Bet(Call, amount)
   def raise(amount: Decimal) = new Bet(Raise, amount)
+  def forced(t: ForcedBet, amount: Decimal) = new Bet(t, amount)
 
   case class CantCheck(call: Decimal)
     extends Error("Can't check: need to call=%.2f" format (call))

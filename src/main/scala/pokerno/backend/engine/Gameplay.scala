@@ -12,12 +12,13 @@ object Gameplay {
 }
 
 class Gameplay(
-    val dealer: Dealer,
     val events: EventBus,
     val variation: Variation,
     val stake: Stake,
     val table: Table) extends GameRotation with Antes with Blinds with Dealing with BringIn with Showdown {
-
+  
+  val dealer: Dealer = new Dealer
+  
   var game: Game = variation match {
     case g: Game ⇒ g
     case m: Mix  ⇒ m.games.head
@@ -53,7 +54,7 @@ class Gameplay(
   def broadcast = new BroadcastChain(events)
   
   def unicast(player: Player)(message: Message.Value) {
-    events.publish(message, events.Only(List(player.id)))
+    events.publish(message, events.One(player.id))
   }
   
 }

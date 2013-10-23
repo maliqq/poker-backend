@@ -5,6 +5,7 @@ import scala.math.{ BigDecimal ⇒ Decimal }
 
 trait Variation {
   def isMixed: Boolean = this.isInstanceOf[Mix]
+  def tableSize: Int
 }
 
 object Game {

@@ -21,15 +21,15 @@ object Math {
       total += 1
       result match {
         case -1 ⇒ _loses += 1
-        case 1 ⇒ _wins += 1
-        case 0 ⇒ _ties += 1
+        case 1  ⇒ _wins += 1
+        case 0  ⇒ _ties += 1
       }
     }
-    
+
     def compare(c1: List[Card], c2: List[Card]) {
       val h1 = Hand.High(c1)
       val h2 = Hand.High(c2)
-      
+
       mark(h1.get.compare(h2.get))
     }
   }

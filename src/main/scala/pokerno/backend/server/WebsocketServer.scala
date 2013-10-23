@@ -6,7 +6,7 @@ object WebsocketServer {
 
   final val DefaultWebsocketPort = 8080
   final val DefaultWebsocketPath = "/_ws"
-  
+
   object Config {
     val port = DefaultWebsocketPort
     val path = DefaultWebsocketPath

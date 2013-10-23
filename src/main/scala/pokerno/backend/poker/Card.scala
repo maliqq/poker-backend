@@ -33,7 +33,7 @@ object Card {
     case c: Card   ⇒ c
     case _         ⇒ throw NotACard()
   }
-  
+
   @throws[InvalidCard]
   implicit def parseInt(i: Int): Card = {
     if (i < 0 || i >= CardsNum) throw InvalidCard(i)
@@ -46,7 +46,7 @@ object Card {
     val List(kind, suit) = s.toList
     wrap(kind, suit)
   }
-  
+
   def wrap(i: Int) = All(i)
   def wrap(kind: Kind.Value.Kind, suit: Suit.Value) = All((kind.toInt << 2) + suit.toInt)
 }

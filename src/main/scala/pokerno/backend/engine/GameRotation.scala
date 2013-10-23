@@ -9,7 +9,7 @@ trait GameRotation {
   def rotateGame = if (variation isMixed)
     rotateNext { g ⇒
       game = g
-      broadcast (Message.ChangeGame(game = game))
+      broadcast(Message.ChangeGame(game = game))
     }
 
   final val rotateEvery = 8

@@ -11,18 +11,18 @@ class Bet(val betType: Bet.Value, val amount: Decimal = .0) {
   def isValid(left: Decimal, _put: Decimal, call: Decimal, _range: Range): Boolean = betType match {
     case Bet.Fold ⇒
       true
-    
+
     case Bet.Check ⇒
       call == _put
-    
+
     case Bet.Call | Bet.Raise ⇒
       val stack = left + _put
       val range = if (betType == Bet.Call) Range(call, call) else _range
       amount <= stack && range.isValid(amount, stack)
-      
-    case _: Bet.ForcedBet =>
+
+    case _: Bet.ForcedBet ⇒
       amount == call || (amount < call && amount == left)
-      
+
     case _ ⇒
       false
   }

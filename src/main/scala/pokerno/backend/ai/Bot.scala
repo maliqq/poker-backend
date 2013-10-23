@@ -35,9 +35,9 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
       opponentsNum = 6
       stake = msg.stake
 
-    case Message.Winner(_pos, winner, amount) =>
+    case Message.Winner(_pos, winner, amount) ⇒
       if (pos == _pos) stack += amount
-      
+
     case Message.StreetStart(name) ⇒
       street = name
 
@@ -94,7 +94,7 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
 
       val decision = if (board.size == 0) decidePreflop(cards)
       else decideBoard(cards, board)
-  
+
       invoke(decision, call, range)
     }
 

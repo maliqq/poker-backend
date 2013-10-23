@@ -7,7 +7,7 @@ import akka.event.{ ActorEventBus, ScanningClassification }
 
 class EventBus extends ActorEventBus with ScanningClassification {
   type Classifier = String
-  
+
   trait Route
   case object NoOne extends Route
   case class One(endpoint: Classifier) extends Route
@@ -15,7 +15,7 @@ class EventBus extends ActorEventBus with ScanningClassification {
   case class Where[Classifier](f: (Classifier) ⇒ Boolean) extends Route
   case class Only(endpoints: List[Classifier]) extends Route
   case class Except(endpoints: List[Classifier]) extends Route
-  
+
   case class Notification(message: Message.Value, from: Route = NoOne, to: Route = All)
   type Event = Notification
 
@@ -33,7 +33,7 @@ class EventBus extends ActorEventBus with ScanningClassification {
     //Console printf ("%s%s -> %s %s%s\n" format (Console.CYAN, event.to, subscriber, event.message, Console.RESET))
     subscriber ! event.message
   }
-  
+
   def publish(message: Message.Value, route: Route = All) {
     publish(Notification(message, to = route))
   }

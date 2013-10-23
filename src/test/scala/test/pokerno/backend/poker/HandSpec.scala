@@ -8,9 +8,9 @@ import pokerno.backend.poker.{ Hand, Cards, AceHigh, Card }
 
 class HandSpec extends FunSpec with ClassicMatchers {
   describe("Hand") {
-    
+
   }
-  
+
   describe("Hand.Cards") {
     it("has gaps") {
       val cards = Cards.parseString("AsKsQs7s8s9s").sorted(AceHigh)

@@ -55,8 +55,8 @@ object Hand {
       }
       _counter
     }
-    
-    private def groupByGaps: List[List[Card]] = { 
+
+    private def groupByGaps: List[List[Card]] = {
       var _gaps = List[List[Card]]()
       val cards = value.filter(_.kind == Kind.Value.Ace) ++ value.sorted(AceHigh)
       val (_, _buffer: List[Card]) = cards.foldLeft((cards.head, List[Card]())) {
@@ -89,10 +89,10 @@ class Hand(
     _kicker: Boolean = false) extends Ordered[Hand] {
 
   if (_kicker && kicker.isEmpty) // FIXME
-    kicker = cards.value.diff(value) sorted(cards.ordering) take(5 - value.size)
+    kicker = cards.value.diff(value) sorted (cards.ordering) take (5 - value.size)
 
   if (_high && high.isEmpty) // FIXME
-    high = value sorted(cards.ordering) take (1)
+    high = value sorted (cards.ordering) take (1)
 
   def ranked(r: Rank.Type) = {
     rank = Some(r)

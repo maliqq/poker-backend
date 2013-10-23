@@ -15,7 +15,7 @@ class MathSpec extends FunSpec with ClassicMatchers {
       sample.mark(-1)
       sample.mark(0)
       sample.mark(1)
-      
+
       sample.loses should equal(.5)
       sample.ties should equal(.25)
       sample.wins should equal(.25)

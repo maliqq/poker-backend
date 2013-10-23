@@ -22,14 +22,14 @@ trait Dealing {
               cards = dealer dealPocket (_dealType, n, seat.player.get))
 
             if (_dealType.isPrivate) unicast(seat.player.get) { message }
-            else broadcast (message)
+            else broadcast(message)
         }
 
       case Dealer.Board ⇒
 
         Console printf ("dealing board %d cards\n", cardsNum.get)
 
-        broadcast (Message.DealCards(
+        broadcast(Message.DealCards(
           _type = _dealType,
           pos = None,
           cards = dealer dealBoard (cardsNum.get)))

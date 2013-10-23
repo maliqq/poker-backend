@@ -10,7 +10,7 @@ class GameplayActor(val gameplay: Gameplay) extends Actor with ActorLogging {
 
   def streets = Streets.build(gameplay, betting)
   lazy val streetsIterator = streets iterator
-  
+
   var betting: ActorRef = system deadLetters
   var currentStreet: ActorRef = system deadLetters
 
@@ -40,7 +40,7 @@ class GameplayActor(val gameplay: Gameplay) extends Actor with ActorLogging {
     case msg: Message.AddBet ⇒
       betting ! msg
 
-    case Street.Start =>
+    case Street.Start ⇒
       betting = actorOf(Props(classOf[BettingActor], gameplay.round), name = "betting-process")
       for (stage ← stages) {
         stage.run

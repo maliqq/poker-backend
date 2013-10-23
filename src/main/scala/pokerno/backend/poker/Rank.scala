@@ -2,12 +2,12 @@ package pokerno.backend.poker
 
 object Rank {
   trait Type
-  
+
   object High extends Enumeration {
     class High(i: Int, name: String) extends Val(i, name) with Type
-    
+
     private def High(name: String) = new High(nextId, name)
-    
+
     val HighCard = High("high-card")
     val OnePair = High("one-pair")
     val TwoPair = High("two-pair")
@@ -18,24 +18,24 @@ object Rank {
     val FourKind = High("four-kind")
     val StraightFlush = High("straight-flush")
   }
-  
+
   import High._
-  
+
   object Badugi extends Enumeration {
     class Badugi(i: Int, name: String) extends Val(i, name) with Type
-    
+
     private def Badugi(name: String): Badugi = new Badugi(nextId, name)
-    
+
     val BadugiOne = Badugi("badugi-one")
     val BadugiTwo = Badugi("badugi-two")
     val BadugiThree = Badugi("badugi-three")
     val BadugiFour = Badugi("badugi-four")
   }
   import Badugi._
-  
+
   object Low extends Enumeration {
     class Low(i: Int, name: String) extends Val(i, name) with Type
-    
+
     private def Low(name: String): Low = new Low(nextId, name)
 
     val Complete = Low("complete-low")

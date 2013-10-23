@@ -31,7 +31,7 @@ class Seat {
     net(_put - amount)
     _put = amount
   }
-  
+
   def stack = _put + _amount
 
   private var _player: Option[Player] = None
@@ -54,7 +54,7 @@ class Seat {
     _state = Seat.Play
     _put = .0
   }
-  
+
   def playing {
     _state = Seat.Play
   }
@@ -93,7 +93,7 @@ class Seat {
   def post(bet: Bet) = bet.betType match {
     case Bet.Fold             ⇒ fold
     case Bet.Call | Bet.Raise ⇒ raise(bet.amount)
-    case Bet.Check => check
+    case Bet.Check            ⇒ check
     case _: Bet.ForcedBet     ⇒ force(bet.amount)
   }
 
@@ -109,6 +109,6 @@ class Seat {
   def inPot = inPlay || state == Seat.AllIn
 
   override def toString = if (_player.isDefined) "%s - %s (%.2f - %.2f)".format(_player get, _state, _amount, _put)
-    else "(empty)"
+  else "(empty)"
 
 }

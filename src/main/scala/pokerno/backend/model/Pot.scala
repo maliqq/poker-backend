@@ -12,7 +12,7 @@ class SidePot(val cap: Option[Decimal] = None) {
 
   def add(member: Player, amount: Decimal): Decimal = {
     if (amount == .0) return .0
-    
+
     val value: Decimal = members.getOrElse(member, .0)
     val newValue = value + amount
 

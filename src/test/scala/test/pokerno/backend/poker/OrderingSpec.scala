@@ -15,7 +15,7 @@ class OrderingSpec extends FunSpec with ClassicMatchers {
       cards.max(AceHigh) should equal(ace)
       cards.min(AceHigh) should equal(deuce)
     }
-    
+
     it("ace low") {
       val ace: Card = Card(51)
       val deuce: Card = Card(0)

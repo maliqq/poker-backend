@@ -8,7 +8,7 @@ trait Antes {
   g: Gameplay ⇒
 
   def postAntes(betting: ActorRef) = if (stake.ante.isDefined) {
-    round.seats where (_ isActive) foreach(round.forceBet(_, Bet.Ante))
+    round.seats where (_ isActive) foreach (round.forceBet(_, Bet.Ante))
     round.complete
   }
 }

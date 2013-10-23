@@ -25,30 +25,30 @@ class PlayerActor(i: Int, gameplay: Gameplay, instance: ActorRef) extends Actor 
   import context._
 
   def receive = {
-    case PlayerActor.Start =>
+    case PlayerActor.Start ⇒
       instance ! Message.JoinTable(pos = i - 1, player = player, amount = stack)
       become({
         case Message.DealCards(_type, cards, pos) ⇒ _type match {
           case Dealer.Door | Dealer.Hole ⇒ Console printf ("Dealt %s %s to %d\n", _type, Cards(cards) toConsoleString, pos get)
-          case _ =>
+          case _                         ⇒
         }
-        
+
         case Message.RequireBet(pos, call, range) ⇒
           Console printf ("Seat %d: Call=%.2f Min=%.2f Max=%.2f\n", pos, call, range.min, range.max)
-    
+
           val seat = gameplay.table.seats(pos)
           var bet = Play.readBet(call)
-    
+
           val addBet = Message.AddBet(pos = pos, bet = bet)
           instance ! addBet
-    
+
         case Message.RequireDiscard(pos) ⇒
           val seat = gameplay.table.seats(pos)
-    
+
           Console printf ("your cards: [%s]\n", gameplay.dealer.pocket(seat.player.get))
-    
+
           val cards = Play.readCards
-    
+
           instance ! Message.DiscardCards(pos = pos, cards = cards)
       })
   }
@@ -56,7 +56,7 @@ class PlayerActor(i: Int, gameplay: Gameplay, instance: ActorRef) extends Actor 
 
 class Play(gameplay: Gameplay, instance: ActorRef, tableSize: Int) extends Actor {
   import context._
-  
+
   override def preStart = {
     Console println ("starting play")
     (1 to tableSize) foreach { i ⇒
@@ -69,7 +69,7 @@ class Play(gameplay: Gameplay, instance: ActorRef, tableSize: Int) extends Actor
   def receive = {
     case Message.DealCards(_type, cards, pos) ⇒ _type match {
       case Dealer.Board ⇒ Console printf ("Dealt %s %s\n", _type, Cards(cards) toConsoleString)
-      case _ ⇒
+      case _            ⇒
     }
 
     case Message.MoveButton(pos) ⇒

@@ -13,15 +13,15 @@ class CardSpec extends FunSpec with ClassicMatchers {
       Card.All.size should equal(Card.CardsNum)
     }
 
-    it("parse int") {
-      ;{
+    describe("parse int") {
+      it("deuce") {
         val card = Card.parseInt(0)
         card.toInt should equal(0)
         card.kind should equal(Kind.Value.Deuce)
         card.suit should equal(Suit.Spade)
       }
       
-      ;{
+      it("ace") {
         val card = Card.parseInt(51)
         card.toInt should equal(51)
         card.kind should equal(Kind.Value.Ace)
@@ -34,6 +34,11 @@ class CardSpec extends FunSpec with ClassicMatchers {
       card.kind should equal(Kind.Value.Eight)
       card.suit should equal(Suit.Club)
     }
+    
+    it("comparing") {
+      Card.parseInt(0) should equal(Card.parseInt(0))
+      Card.parseString("As") should equal(Card.parseString("As"))
+    }
   }
   
   describe("Cards") {
@@ -42,7 +47,8 @@ class CardSpec extends FunSpec with ClassicMatchers {
     }
     
     it("parse List[Int]") {
-      Cards(List(1,2,3,4,5)).map(_.toInt) should equal(List(1, 2, 3, 4, 5))
+      val l = List(1, 2, 3, 4, 5)
+      Cards(l).map(_.toInt) should equal(l)
     }
   }
 }

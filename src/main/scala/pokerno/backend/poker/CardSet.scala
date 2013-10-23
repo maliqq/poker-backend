@@ -12,6 +12,6 @@ class CardSet(
   }
 
   def kick(_cards: List[Card]): List[Card] = {
-    cards.diff(_cards).sorted take (5 - _cards.size)
+    cards.diff(_cards).sorted(ordering) take (5 - _cards.size)
   }
 }

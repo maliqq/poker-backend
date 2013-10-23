@@ -10,7 +10,7 @@ object Hand {
   abstract class HighRanking extends Ranking
   case object High extends HighRanking {
     def apply(cards: List[Card]): Option[Hand] = {
-      (new Cards(cards) with HighHand) isHigh
+      (new Cards(cards, AceHigh) with HighHand) isHigh
     }
   }
 
@@ -38,7 +38,7 @@ object Hand {
     }
   }
 
-  class Cards(val value: List[Card]) {
+  class Cards(val value: List[Card], val ordering: Ordering[Card] = AceHigh) {
     lazy val gaps = groupByGaps
     lazy val groupKind: Map[Kind.Value.Kind, List[Card]] = value.groupBy(_.kind)
     lazy val groupSuit: Map[Suit.Value, List[Card]] = value.groupBy(_.suit)
@@ -58,7 +58,7 @@ object Hand {
     
     private def groupByGaps: List[List[Card]] = { 
       var _gaps = List[List[Card]]()
-      val cards = value.filter(_.kind == Kind.Value.Ace) ++ value
+      val cards = value.filter(_.kind == Kind.Value.Ace) ++ value.sorted(AceHigh)
       val (_, _buffer: List[Card]) = cards.foldLeft((cards.head, List[Card]())) {
         case ((prev: Card, buffer: List[Card]), card) ⇒
           lazy val d = card.kind.toInt - prev.kind.toInt
@@ -88,11 +88,11 @@ class Hand(
     _high: Boolean = false,
     _kicker: Boolean = false) extends Ordered[Hand] {
 
-  if (_kicker && kicker.isEmpty)
-    kicker = new CardSet(cards.value) kick (value)
+  if (_kicker && kicker.isEmpty) // FIXME
+    kicker = cards.value.diff(value) sorted(cards.ordering) take(5 - value.size)
 
-  if (_high && high.isEmpty)
-    high = value take (1)
+  if (_high && high.isEmpty) // FIXME
+    high = value sorted(cards.ordering) take (1)
 
   def ranked(r: Rank.Type) = {
     rank = Some(r)

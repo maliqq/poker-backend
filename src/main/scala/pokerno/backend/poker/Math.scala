@@ -7,26 +7,30 @@ object Math {
   class Sample {
     var total: Int = 0
 
-    var _wins: Int = 0
-    var _ties: Int = 0
-    var _loses: Int = 0
+    private var _wins: Int = 0
+    private var _ties: Int = 0
+    private var _loses: Int = 0
 
-    def wins: Double = _wins / total
-    def ties: Double = _ties / total
-    def loses: Double = _loses / total
+    def wins: Double = _wins / total.toDouble
+    def ties: Double = _ties / total.toDouble
+    def loses: Double = _loses / total.toDouble
 
     override def toString = "wins=%.2f ties=%.2f loses=%.2f" format (wins, ties, loses)
 
-    def compare(c1: List[Card], c2: List[Card]) {
-      val h1 = Hand.High(c1)
-      val h2 = Hand.High(c2)
-
+    def mark(result: Int) = {
       total += 1
-      h1.get.compare(h2.get) match {
+      result match {
         case -1 ⇒ _loses += 1
         case 1 ⇒ _wins += 1
         case 0 ⇒ _ties += 1
       }
+    }
+    
+    def compare(c1: List[Card], c2: List[Card]) {
+      val h1 = Hand.High(c1)
+      val h2 = Hand.High(c2)
+      
+      mark(h1.get.compare(h2.get))
     }
   }
 
@@ -171,15 +175,12 @@ object Math {
 
     def index(index1: Int, index2: Int, suited: Boolean): Int = {
       if (suited) {
-        if (index1 > index2)
-          return 13 * index2 + index1
-        return 13 * index1 + index2
+        if (index1 > index2) 13 * index2 + index1
+        else 13 * index1 + index2
+      } else {
+        if (index1 > index2) 13 * index1 + index2
+        else 13 * index2 + index1
       }
-
-      if (index1 > index2) {
-        return 13 * index1 + index2
-      }
-      return 13 * index2 + index1
     }
   }
 }

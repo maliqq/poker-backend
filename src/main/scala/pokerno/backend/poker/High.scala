@@ -5,8 +5,9 @@ trait HighHand {
   def isStraightFlush: Option[Hand] = isFlush match {
     case None ⇒ isFourKind orElse isFullHouse orElse isStraight
     case Some(flush) ⇒
-      Hand.High(flush.value) match {
-        case Some(hand) ⇒ hand ranked Rank.High.StraightFlush
+      val cards = (new Hand.Cards(flush.value) with HighHand)
+      cards.isStraight match {
+        case Some(hand) ⇒ flush ranked Rank.High.StraightFlush
         case None       ⇒ isFourKind orElse isFullHouse orElse Some(flush)
       }
   }
@@ -43,7 +44,7 @@ trait HighHand {
     case None ⇒ None
   }
 
-  def isStraight: Option[Hand] = gaps find { group ⇒ group.size > 5 } match {
+  def isStraight: Option[Hand] = gaps find { group ⇒ group.size >= 5 } match {
     case Some(group) ⇒
       val cards = group.sorted
       new Hand(value = value take (5), high = value take (1)) ranked Rank.High.Straight

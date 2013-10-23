@@ -28,14 +28,13 @@ object Main {
   def main(args: Array[String]) {
     parser.parse(args, config) map { config ⇒
       val gameplay = createGameplay(config)
-      val deal = system.actorOf(Props(classOf[DealActor], gameplay), name = "deal-process")
-      val play = system.actorOf(Props(classOf[Play], gameplay, deal, config.tableSize), name = "play-process")
-      deal ! Deal.Done
+      val instance = system.actorOf(Props(classOf[Instance], gameplay), name = "deal-process")
+      val play = system.actorOf(Props(classOf[Play], gameplay, instance, config.tableSize), name = "play-process")
+      instance ! Instance.Start
     }
   }
 
   def createGameplay(config: Config): Gameplay = {
-    val dealer = new Dealer
     val broadcast = new EventBus
     val variation = if (config.mixedGame.isDefined)
       new Mix(config.mixedGame.get, config.tableSize)
@@ -43,7 +42,7 @@ object Main {
       new Game(config.limitedGame, Some(Game.NoLimit), Some(config.tableSize))
     val table = new Table(config.tableSize)
     val stake = new Stake(config.betSize, Ante = Right(true))
-    val gameplay = new Gameplay(dealer, broadcast, variation, stake, table)
+    val gameplay = new Gameplay(broadcast, variation, stake, table)
 
     gameplay
   }

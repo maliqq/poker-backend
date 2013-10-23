@@ -2,7 +2,7 @@ package pokerno.backend.poker
 
 import scala.collection.mutable.ListBuffer
 
-class Card(val kind: Kind.Value.Kind, val suit: Suit.Value) extends Ordered[Card] {
+protected class Card(val kind: Kind.Value.Kind, val suit: Suit.Value) extends Ordered[Card] {
   def toInt: Int = (kind.toInt << 2) + suit.toInt
   def toByte: Byte = (toInt + 1) toByte
 
@@ -37,15 +37,18 @@ object Card {
   @throws[InvalidCard]
   implicit def parseInt(i: Int): Card = {
     if (i < 0 || i >= CardsNum) throw InvalidCard(i)
-    new Card(i >> 2, i % 4)
+    wrap(i)
   }
 
   @throws[ParseError]
   implicit def parseString(s: String): Card = {
     if (s.size != 2) throw ParseError(s)
     val List(kind, suit) = s.toList
-    new Card(kind, suit)
+    wrap(kind, suit)
   }
+  
+  def wrap(i: Int) = All(i)
+  def wrap(kind: Kind.Value.Kind, suit: Suit.Value) = All((kind.toInt << 2) + suit.toInt)
 }
 
 object Cards {
@@ -62,7 +65,7 @@ object Cards {
     val regex = """(?i)([akqjt2-9]{1})([shdc]{1})""".r
     val matching = for {
       regex(kind, suit) ← regex findAllIn s
-    } yield new Card(kind(0), suit(0))
+    } yield Card.wrap(kind(0), suit(0))
     matching.toList
   }
 

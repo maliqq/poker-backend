@@ -12,12 +12,10 @@ object Deal {
   case object Done
 }
 
-class DealActor(val gameplay: Gameplay) extends Actor {
+class DealActor(val gameplay: Gameplay) extends Actor with ActorLogging {
   import context.dispatcher
   import context._
-
-  var log = Logging(system, this)
-
+  
   var running: ActorRef = system deadLetters
   override def preStart {
   }

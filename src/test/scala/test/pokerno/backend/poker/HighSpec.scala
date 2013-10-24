@@ -36,6 +36,7 @@ class HighSpec extends FunSpec with ClassicMatchers {
           val hand: Option[Hand] = Hand.High(cards)
           assert(hand.isDefined)
           val h = hand.get
+          assert(h.rank.isDefined)
           h.rank.get should equal(Rank.High.Straight)
           h.value.size should equal(5)
           h.high.head should equal(cards max (AceHigh))
@@ -43,25 +44,29 @@ class HighSpec extends FunSpec with ClassicMatchers {
       }
     }
 
+    def isFlush(hand: Option[Hand]) = {
+      assert(hand.isDefined)
+
+      val h = hand.get
+      assert(h.rank.isDefined)
+      h.rank.get should equal(Rank.High.Flush)
+      h.value.size should equal(5)
+      h.high.head should equal(h.cards.value.max(AceHigh))
+      h.kicker.size should equal(0)
+    }
+
     it("flush") {
       for (suit ← Suit.All) {
         val deck: List[Card] = (for { kind ← Kind.All } yield Card.wrap(kind, suit)).toList
         (0 to 6) foreach {
           case i ⇒
-            val deckSet = deck.toSet
-            val cardsSet = deck.slice(i, i + 7).toSet
-            val cards: List[Card] = (cardsSet - cardsSet.toList(3) + (deckSet -- cardsSet).head).toList
-            val hand: Option[Hand] = Hand.High(cards)
-            assert(hand.isDefined)
-
-            if (hand.get.rank == Rank.High.StraightFlush)
-              cards should equal(List())
-
-            val h = hand.get
-            h.rank.get should equal(Rank.High.Flush)
-            h.value.size should equal(5)
-            h.high.head should equal(cards.max(AceHigh))
-            h.kicker.size should equal(0)
+            val cards = deck.slice(i, i + 7)
+            val hc = new Hand.Cards(cards) with HighHand
+            val hand: Option[Hand] = hc.isFlush
+            isFlush(hand)          
+            if (hc.isStraight.isEmpty) {
+              isFlush(Hand.High(cards))
+            }
         }
       }
     }
@@ -75,7 +80,7 @@ class HighSpec extends FunSpec with ClassicMatchers {
         val hand: Option[Hand] = Hand.High(value)
         assert(hand.isDefined)
         val h: Hand = hand.get
-
+        assert(h.rank.isDefined)
         h.rank.get should equal(Rank.High.FullHouse)
         h.value should equal(value)
         h.high.map(_.kind) should equal(List(set.head.kind, pair.head.kind))
@@ -91,7 +96,7 @@ class HighSpec extends FunSpec with ClassicMatchers {
         val hand: Option[Hand] = Hand.High(value)
         assert(hand.isDefined)
         val h = hand.get
-
+        assert(h.rank.isDefined)
         h.rank.get should equal(Rank.High.FourKind)
         h.value should equal(quad)
         h.high.head.kind should equal(kind)
@@ -113,6 +118,7 @@ class HighSpec extends FunSpec with ClassicMatchers {
             val hand: Option[Hand] = Hand.High(cards)
             assert(hand.isDefined)
             val h = hand.get
+            assert(h.rank.isDefined)
             h.rank.get should equal(Rank.High.StraightFlush)
         }
       }

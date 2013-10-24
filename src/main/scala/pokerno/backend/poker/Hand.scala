@@ -85,7 +85,7 @@ object Hand {
 class Hand(
     val cards: Hand.Cards,
     val value: List[Card] = List.empty,
-    var rank: Option[Rank.Type] = None,
+    var rank: Option[Rank] = None,
     High: Either[List[Card], Boolean] = Right(false),
     Kicker: Either[List[Card], Boolean] = Right(false)
     ) extends Ordered[Hand] {
@@ -102,14 +102,18 @@ class Hand(
     case Right(false) => List.empty
   }
   
-  def ranked(r: Rank.Type) = {
+  def ranked(r: Rank) = {
     rank = Some(r)
     Some(this)
   }
+  
+  def compare(other: Hand): Int = Ranking.compare(this, other)
+  
+  def equals(other: Hand): Boolean = rank.get == other.rank.get &&
+      high == other.high &&
+      value == other.value &&
+      kicker == other.kicker
 
-  override def compare(other: Hand): Int = {
-    1 
-  }
   override def toString = "rank=%s high=%s value=%s kicker=%s" format (rank, high, value, kicker)
 
   def description: String = rank.get match {

@@ -14,6 +14,10 @@ protected class Card(val kind: Kind.Value.Kind, val suit: Suit.Value) extends Or
 }
 
 object Card {
+//  implicit def int2Card(i: Int): Card = Card(i)
+//  implicit def str2Card(s: String): Card = Card(s)
+  implicit def symbol2Card(s: Symbol): Card = Card(s.name replace("_", ""))
+
   case class NotACard(value: Any) extends Exception("not a card: %s" format (value))
   case class InvalidCard(value: Any) extends Exception("invalid card: %s" format (value))
   case class ParseError(s: String) extends Exception("can't parse card: %s" format (s))

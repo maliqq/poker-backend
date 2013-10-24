@@ -14,21 +14,13 @@ case object AceLow extends Ordering[Card] {
 }
 
 case object Ranking extends Ordering[Hand] {
-  val comparers = List(
+this: Hand =>
+  private val comparers = List(
     ((a: Hand, b: Hand) => a.rank.get compare b.rank.get),
     ((a: Hand, b: Hand) => compareCards(a.high, b.high)),
     ((a: Hand, b: Hand) => compareCards(a.value, b.value)),
     ((a: Hand, b: Hand) => compareCards(a.kicker, b.kicker))
   )
-  
-  def compare(a: Hand, b: Hand): Int = {
-    var result = 0
-    comparers takeWhile { cmp =>
-      result = cmp(a, b)
-      result == 0
-    }
-    result
-  }
   
   def compareCards(a: List[Card], b: List[Card]): Int = if (a.size == b.size) {
     var result = 0
@@ -40,6 +32,15 @@ case object Ranking extends Ordering[Hand] {
   } else {
     val l = List(a.size, b.size).min
     compareCards(a.take(l), b.take(l))
+  }
+  
+  def compare(a: Hand, b: Hand): Int = {
+    var result = 0
+    comparers takeWhile { cmp =>
+      result = cmp(a, b)
+      result == 0
+    }
+    result
   }
   
 }

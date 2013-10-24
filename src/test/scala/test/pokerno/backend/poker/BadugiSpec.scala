@@ -18,6 +18,7 @@ class BadugiSpec extends FunSpec with ClassicMatchers {
               val hand = Hand.Badugi(value)
               assert(hand.isDefined)
               val h = hand.get
+              assert(h.rank.isDefined)
               h.rank.get should equal(Rank.Badugi.BadugiFour)
           }
       }
@@ -38,6 +39,7 @@ class BadugiSpec extends FunSpec with ClassicMatchers {
           val hand = Hand.Badugi(value)
           assert(hand.isDefined)
           val h = hand.get
+          assert(h.rank.isDefined)
           h.rank.get should equal(Rank.Badugi.BadugiOne)
         }
       }
@@ -48,6 +50,7 @@ class BadugiSpec extends FunSpec with ClassicMatchers {
           val hand = Hand.Badugi(value)
           assert(hand.isDefined)
           val h = hand.get
+          withClue("groupKind.size=%d".format(h.cards.groupKind.size)) { assert(h.rank.isDefined) }
           h.rank.get should equal(Rank.Badugi.BadugiOne)
         }
       }

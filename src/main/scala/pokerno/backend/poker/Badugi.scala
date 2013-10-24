@@ -4,9 +4,9 @@ trait BadugiHand {
   self: Hand.Cards ⇒
   def isBadugiOne: Option[Hand] =
     if (groupKind.size == 1) {
-      Some(new Hand(self, value = value take (1)))
+      new Hand(self, value = value take (1)) ranked Rank.Badugi.BadugiOne
     } else if (groupSuit.size == 1) {
-      val card = groupSuit(0) min
+      val card = groupSuit.values.head min
 
       new Hand(self, value = List(card)) ranked Rank.Badugi.BadugiOne
     } else
@@ -82,7 +82,7 @@ trait BadugiHand {
 
     } else if (groupSuit.size > 0) {
 
-      val value = groupSuit(0)
+      val value = groupSuit.values.head
       val diff = value diff (value)
       val _a = value min
 

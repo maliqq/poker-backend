@@ -19,13 +19,13 @@ class SuitSpec extends FunSpec with ClassicMatchers {
       d should equal(Suit.Diamond)
       
       val c: Suit.Value = 3
-      d should equal(Suit.Club)
+      c should equal(Suit.Club)
 
       Suit.Seq should equal(List(0, 1, 2, 3))
       Suit.All should equal(List[Suit.Value](0, 1, 2, 3))
       
       Suit.All.map(_ toString) mkString("") should equal("shdc")
-      Suit.All.map(_ unicode) mkString("") should equal("shdc")
+      Suit.All.map(_ unicode) mkString("") should equal("♠♥♦♣")
     }
   }
 }

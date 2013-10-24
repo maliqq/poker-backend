@@ -1,12 +1,16 @@
 package pokerno.backend.poker
 
-object Rank {
-  trait Type {
-    def compare(other: Type): Int
-  }
+trait Rank {
+  def compare(other: Rank): Int
+  def equals(other: Rank): Boolean
+}
 
+object Rank {
   object High extends Enumeration {
-    class High(i: Int, name: String) extends Val(i, name) with Type
+    class High(i: Int, name: String) extends Val(i, name) with Rank {
+      def compare(other: Rank): Int = super.compare(other.asInstanceOf[Value])
+      def equals(other: Rank): Boolean = equals(other.asInstanceOf[Value])
+    }
 
     private def High(name: String) = new High(nextId, name)
 
@@ -24,7 +28,10 @@ object Rank {
   import High._
 
   object Badugi extends Enumeration {
-    class Badugi(i: Int, name: String) extends Val(i, name) with Type
+    class Badugi(i: Int, name: String) extends Val(i, name) with Rank {
+      def compare(other: Rank): Int = compare(other.asInstanceOf[Value])
+      def equals(other: Rank): Boolean = equals(other.asInstanceOf[Value])
+    }
 
     private def Badugi(name: String): Badugi = new Badugi(nextId, name)
 
@@ -36,7 +43,10 @@ object Rank {
   import Badugi._
 
   object Low extends Enumeration {
-    class Low(i: Int, name: String) extends Val(i, name) with Type
+    class Low(i: Int, name: String) extends Val(i, name) with Rank {
+      def compare(other: Rank): Int = compare(other.asInstanceOf[Value])
+      def equals(other: Rank): Boolean = equals(other.asInstanceOf[Value])
+    }
 
     private def Low(name: String): Low = new Low(nextId, name)
 

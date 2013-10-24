@@ -22,41 +22,42 @@ trait BadugiHand {
     val _paired = paired get (2)
     val _suited = suited get (2)
 
-    if (_paired.isEmpty && _suited.isEmpty)
+    if (_paired.isEmpty && _suited.isEmpty ||
+        _suited.isDefined && _suited.get.size != 1 ||
+        _paired.isDefined && _paired.get.size != 1)
       return None
 
-    val (a: Card, b: Card, c: Card) = if (_paired.size == 1 && _suited.isDefined && _suited.get.size != 2) {
+    val (a: Card, b: Card, c: Card) = if (_paired.isDefined) {
 
-      val value = _paired.get head
-      val diff = value diff (value)
+      val v = _paired.get head
+      val d = value diff (v)
 
-      var _a = value head
-      val List(_b, _c, _*) = diff.filter { card ⇒ _a.kind != card.kind }
+      var _a = v head
+      val List(_b, _c, _*) = d.filter { card ⇒ _a.kind != card.kind }
       if (_b.suit == _c.suit)
         return None
 
       if (_a.suit == _b.suit || _a.suit == _c.suit)
-        _a = value head
+        _a = v(1)
 
       (_a, _b, _c)
 
-    } else if (_paired.isEmpty && _suited.isDefined && _suited.get.size == 1) {
+    } else {
 
-      val value = _suited.get head
-      val diff = value diff (value)
+      val v = _suited.get head
+      val d = value diff (v)
 
-      val _a = value min
+      val _a = v min
 
-      val List(_b, _c, _*) = diff.filter { card ⇒ _a.suit != card.suit }
+      val List(_b, _c, _*) = d.filter { card ⇒ _a.suit != card.suit }
 
       if (_b.kind == _c.kind)
         return None
 
       (_a, _b, _c)
 
-    } else
-      return None
-
+    }
+    
     new Hand(self, value = List(a, b, c)) ranked Rank.Badugi.BadugiThree
   }
 
@@ -64,37 +65,37 @@ trait BadugiHand {
     val sets = paired get (3)
 
     val (a: Card, b: Card) = if (sets.isDefined) {
-      val value = sets.get head
-      val diff = value diff (value)
-      val _a = diff head
-
-      (_a, value.filter { card ⇒ _a.suit != card.suit } head)
+      val v = sets.get head
+      val d = value diff (v)
+      val _a = d head
+      
+      (_a, v.filter { card ⇒ _a.suit != card.suit } head)
 
     } else if (suited contains (3)) {
 
       val _suited = suited(3)
 
-      val value = _suited head
-      val diff = value diff (value)
-      val _a = diff head
+      val v = _suited head
+      val d = value diff (v)
+      val _a = d head
 
-      (_a, value.filter { card ⇒ _a.kind != card.kind } min)
+      (_a, v.filter { card ⇒ _a.kind != card.kind } min)
 
     } else if (groupSuit.size > 0) {
 
-      val value = groupSuit.values.head
-      val diff = value diff (value)
-      val _a = value min
+      val v = groupSuit.values.head
+      val d = value diff (v)
+      val _a = v min
 
-      (_a, diff.filter { card ⇒ _a.suit != card.suit && _a.kind != card.kind } min)
+      (_a, d.filter { card ⇒ _a.suit != card.suit && _a.kind != card.kind } min)
 
     } else {
 
-      val value = groupKind(0)
-      val diff = value diff (value)
-      val _a = value head
+      val v = groupKind(0)
+      val d = value diff (v)
+      val _a = v head
 
-      (_a, diff.filter { card ⇒ _a.kind != card.kind } min)
+      (_a, d.filter { card ⇒ _a.kind != card.kind } min)
     }
     new Hand(self, value = List(a, b)) ranked Rank.Badugi.BadugiTwo
   }

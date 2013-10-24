@@ -44,15 +44,18 @@ class HighSpec extends FunSpec with ClassicMatchers {
       }
     }
 
-    def isFlush(hand: Option[Hand]) = {
-      assert(hand.isDefined)
+    val beFlush = new Matcher[Option[Hand]] {
+      def apply(value: Option[Hand]): MatchResult = {
+        assert(value.isDefined)
+  
+        val h = value.get
+        assert(h.rank.isDefined)
+        h.value.size should equal(5)
+        h.high.head should equal(h.cards.value.max(AceHigh))
+        h.kicker.size should equal(0)
 
-      val h = hand.get
-      assert(h.rank.isDefined)
-      h.rank.get should equal(Rank.High.Flush)
-      h.value.size should equal(5)
-      h.high.head should equal(h.cards.value.max(AceHigh))
-      h.kicker.size should equal(0)
+        MatchResult(h.rank.get == Rank.High.Flush, "%s should be flush".format(value), "%s should not be flush".format(value))
+      }
     }
 
     it("flush") {
@@ -63,9 +66,9 @@ class HighSpec extends FunSpec with ClassicMatchers {
             val cards = deck.slice(i, i + 7)
             val hc = new Hand.Cards(cards) with HighHand
             val hand: Option[Hand] = hc.isFlush
-            isFlush(hand)          
+            hand should beFlush
             if (hc.isStraight.isEmpty) {
-              isFlush(Hand.High(cards))
+              Hand.High(cards) should beFlush
             }
         }
       }

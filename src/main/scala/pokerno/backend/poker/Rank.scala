@@ -1,7 +1,9 @@
 package pokerno.backend.poker
 
 object Rank {
-  trait Type
+  trait Type {
+    def compare(other: Type): Int
+  }
 
   object High extends Enumeration {
     class High(i: Int, name: String) extends Val(i, name) with Type

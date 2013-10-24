@@ -4,17 +4,17 @@ trait BadugiHand {
   self: Hand.Cards ⇒
   def isBadugiOne: Option[Hand] =
     if (groupKind.size == 1) {
-      Some(new Hand(value = value take (1)))
+      Some(new Hand(self, value = value take (1)))
     } else if (groupSuit.size == 1) {
       val card = groupSuit(0) min
 
-      new Hand(value = List(card)) ranked Rank.Badugi.BadugiOne
+      new Hand(self, value = List(card)) ranked Rank.Badugi.BadugiOne
     } else
       None
 
   def isBadugiFour: Option[Hand] =
     if (groupKind.size == 4 && groupSuit.size == 4)
-      new Hand(value = value) ranked Rank.Badugi.BadugiFour
+      new Hand(self, value = value) ranked Rank.Badugi.BadugiFour
     else
       None
 
@@ -57,7 +57,7 @@ trait BadugiHand {
     } else
       return None
 
-    new Hand(value = List(a, b, c)) ranked Rank.Badugi.BadugiThree
+    new Hand(self, value = List(a, b, c)) ranked Rank.Badugi.BadugiThree
   }
 
   def isBadugiTwo: Option[Hand] = {
@@ -96,7 +96,7 @@ trait BadugiHand {
 
       (_a, diff.filter { card ⇒ _a.kind != card.kind } min)
     }
-    new Hand(value = List(a, b)) ranked Rank.Badugi.BadugiTwo
+    new Hand(self, value = List(a, b)) ranked Rank.Badugi.BadugiTwo
   }
 
   @throws[Hand.InvalidCards]

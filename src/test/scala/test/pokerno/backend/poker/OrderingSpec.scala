@@ -4,7 +4,7 @@ import org.scalatest._
 import org.scalatest.matchers._
 import org.scalatest.matchers.ShouldMatchers._
 
-import pokerno.backend.poker.{ AceHigh, AceLow, Card }
+import pokerno.backend.poker.{ AceHigh, AceLow, Card, Hand, Rank, Ranking }
 
 class OrderingSpec extends FunSpec with ClassicMatchers {
   describe("Ordering") {
@@ -23,6 +23,61 @@ class OrderingSpec extends FunSpec with ClassicMatchers {
       val cards: List[Card] = List(deuce, Card(2), king, ace)
       cards.max(AceLow) should equal(king)
       cards.min(AceLow) should equal(ace)
+    }
+  }
+  
+  describe("Ranking") {
+    it("by rank") {
+      val cards = new Hand.Cards(List.empty)
+      
+      val h1 = new Hand(cards, rank = Some(Rank.High.Flush))
+      val h2 = new Hand(cards, rank = Some(Rank.High.StraightFlush))
+      
+      val hands = List[Hand](h1, h2)
+      
+      hands max(Ranking) should equal(h2)
+    }
+    
+    it("by high") {
+      val cards = new Hand.Cards(List.empty)
+      
+      val h1 = new Hand(cards, rank = Some(Rank.High.Flush), High = Left(List(1)))
+      val h2 = new Hand(cards, rank = Some(Rank.High.Flush), High = Left(List(2)))
+      
+      val hands = List[Hand](h1, h2)
+      
+      hands max(Ranking) should equal(h2)
+    }
+    
+    it("by value") {
+      val cards = new Hand.Cards(List.empty)
+      
+      val h1 = new Hand(cards, rank = Some(Rank.High.Flush), High = Left(List(1)), value = List(1, 2, 3))
+      val h2 = new Hand(cards, rank = Some(Rank.High.Flush), High = Left(List(1)), value = List(1, 2, 4))
+      
+      val hands = List[Hand](h1, h2)
+      
+      hands max(Ranking) should equal(h2)
+    }
+    
+    it("by kicker") {
+      val cards = new Hand.Cards(List.empty)
+      
+      val h1 = new Hand(cards, rank = Some(Rank.High.Flush), High = Left(List(1)), value = List(1, 2, 3), Kicker = Left(List(1)))
+      val h2 = new Hand(cards, rank = Some(Rank.High.Flush), High = Left(List(1)), value = List(1, 2, 3), Kicker = Left(List(2)))
+      
+      val hands = List[Hand](h1, h2)
+      
+      hands max(Ranking) should equal(h2)
+    }
+    
+    it("same hands") {
+      val cards = new Hand.Cards(List.empty)
+      
+      val h1 = new Hand(cards, rank = Some(Rank.High.Flush), High = Left(List(1)), value = List(1, 2, 3), Kicker = Left(List(1)))
+      val h2 = new Hand(cards, rank = Some(Rank.High.Flush), High = Left(List(1)), value = List(1, 2, 3), Kicker = Left(List(1)))
+      
+      (h1 == h2) should be(true)
     }
   }
 }

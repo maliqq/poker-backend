@@ -8,7 +8,7 @@ class Low {
     if (lowCards.size == 0)
       return None
 
-    var hand = new Hand(value = lowCards, high = List(lowCards max))
+    var hand = new Hand(self, value = lowCards, High = Left(List(lowCards max)))
     val rankType = if (lowCards.size == 5) Rank.Low.Complete else Rank.Low.Incomplete
 
     hand ranked rankType

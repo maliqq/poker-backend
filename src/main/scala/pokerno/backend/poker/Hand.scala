@@ -73,33 +73,43 @@ object Hand {
       }
       _gaps ++ List(_buffer)
     }
+    
+    def hand() {
+      
+    }
 
     override def toString = "gaps=%s paired=%s suited=%s" format (gaps, paired, suited)
   }
 }
 
 class Hand(
-    val cards: Hand.Cards = new Hand.Cards(List empty),
+    val cards: Hand.Cards,
     val value: List[Card] = List.empty,
     var rank: Option[Rank.Type] = None,
-    var high: List[Card] = List.empty,
-    var kicker: List[Card] = List.empty,
-    _rank: Boolean = false,
-    _high: Boolean = false,
-    _kicker: Boolean = false) extends Ordered[Hand] {
+    High: Either[List[Card], Boolean] = Right(false),
+    Kicker: Either[List[Card], Boolean] = Right(false)
+    ) extends Ordered[Hand] {
 
-  if (_kicker && kicker.isEmpty) // FIXME
-    kicker = cards.value.diff(value) sorted (cards.ordering) take (5 - value.size)
-
-  if (_high && high.isEmpty) // FIXME
-    high = value sorted (cards.ordering) take (1)
-
+  val kicker: List[Card] = Kicker match {
+    case Left(cards) => cards
+    case Right(true) => cards.value.diff(value) sorted (cards.ordering).reverse take (5 - value.size)
+    case Right(false) => List.empty
+  }
+  
+  val high: List[Card] = High match {
+    case Left(cards) => cards
+    case Right(true) => value sorted (cards.ordering).reverse take (1)
+    case Right(false) => List.empty
+  }
+  
   def ranked(r: Rank.Type) = {
     rank = Some(r)
     Some(this)
   }
 
-  override def compare(other: Hand) = 1 compare 2
+  override def compare(other: Hand): Int = {
+    1 
+  }
   override def toString = "rank=%s high=%s value=%s kicker=%s" format (rank, high, value, kicker)
 
   def description: String = rank.get match {

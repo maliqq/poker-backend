@@ -13,7 +13,7 @@ object Main {
 
   val system = ActorSystem("poker-cli")
 
-  val game = new Game(Game.Texas)
+  val game = new Game(Game.Texas, Some(Game.FixedLimit))
   val stake = new Stake(10)
 
   val instance = system.actorOf(Props(classOf[Instance], game, stake), name = "poker-instance")

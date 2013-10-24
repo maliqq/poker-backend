@@ -7,6 +7,7 @@ import pokerno.backend.poker._
 
 trait Showdown {
   gameplay: Gameplay ⇒
+  // FIXME: equal hands
   def best(pot: SidePot, hands: Map[Player, Hand]): Tuple2[Player, Hand] = {
     var winner: Option[Player] = None
     var best: Option[Hand] = None
@@ -82,7 +83,7 @@ trait Showdown {
       board ← dealer.board combinations (3)
     } yield (ranking(pair ++ board) get)
 
-    (pocket, hands.toList max)
+    (pocket, hands.toList max(Ranking))
   }
 
   def showHands(ranking: Hand.Ranking): Map[Player, Hand] = {

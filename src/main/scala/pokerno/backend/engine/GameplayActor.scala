@@ -32,7 +32,7 @@ class GameplayActor(val gameplay: Gameplay) extends Actor with ActorLogging {
 
   override def preStart = {
     log.info("start gameplay")
-    gameplay.broadcast(Message.PlayStart(gameplay.game, gameplay.stake))
+    gameplay.events.publish(Message.PlayStart(gameplay.game, gameplay.stake))
     self ! Street.Start
   }
 
@@ -52,7 +52,7 @@ class GameplayActor(val gameplay: Gameplay) extends Actor with ActorLogging {
 
       if (streetsIterator hasNext) {
         val Street(name, stages) = streetsIterator.next
-        gameplay.broadcast(Message.StreetStart(name toString))
+        gameplay.events.publish(Message.StreetStart(name toString))
         currentStreet = actorOf(Props(classOf[StreetActor], gameplay, name, stages), name = "street-%s" format (name))
         currentStreet ! Stage.Next
       } else
@@ -66,7 +66,7 @@ class GameplayActor(val gameplay: Gameplay) extends Actor with ActorLogging {
 
   override def postStop {
     log.info("stop gameplay")
-    gameplay.broadcast(Message.PlayStop())
+    gameplay.events.publish(Message.PlayStop())
     parent ! Deal.Done
   }
 }

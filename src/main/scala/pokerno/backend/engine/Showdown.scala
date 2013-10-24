@@ -6,7 +6,7 @@ import pokerno.backend.model._
 import pokerno.backend.poker._
 
 trait Showdown {
-  gameplay: Gameplay ⇒
+  gameplay: GameplayLike ⇒
   // FIXME: equal hands
   def best(pot: SidePot, hands: Map[Player, Hand]): Tuple2[Player, Hand] = {
     var winner: Option[Player] = None
@@ -28,7 +28,7 @@ trait Showdown {
       val winner = seat.player.get
       seat wins (amount)
       val message = Message.Winner(pos = pos, winner = winner, amount = amount)
-      broadcast(message)
+      events.publish(message)
     }
   }
 
@@ -66,7 +66,7 @@ trait Showdown {
           val seat = new Seat
           seat wins (amount)
           val message = Message.Winner(pos = pos, winner = winner, amount = amount)
-          broadcast(message)
+          events.publish(message)
       }
     }
   }
@@ -94,7 +94,7 @@ trait Showdown {
         val (pocket, hand) = rank(seat.player get, ranking)
         hands += (seat.player.get -> hand)
         val message = Message.ShowHand(pos = pos, cards = pocket, hand = hand)
-        broadcast(message)
+        events.publish(message)
     }
     hands
   }

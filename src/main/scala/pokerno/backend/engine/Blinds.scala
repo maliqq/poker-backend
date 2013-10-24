@@ -5,7 +5,7 @@ import pokerno.backend.protocol._
 import akka.actor.ActorRef
 
 trait Blinds {
-  g: Gameplay ⇒
+  g: GameplayLike ⇒
   def postBlinds(betting: ActorRef) = if (game.options.hasBlinds) {
     moveButton
 
@@ -21,5 +21,11 @@ trait Blinds {
       round.forceBet(sb, Bet.SmallBlind)
       round.forceBet(bb, Bet.BigBlind)
     }
+  }
+  
+  def moveButton {
+    table.button.move
+    round.current = table.button
+    events.publish(Message.MoveButton(pos = table.button))
   }
 }

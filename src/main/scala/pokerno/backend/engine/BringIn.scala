@@ -4,7 +4,7 @@ import pokerno.backend.protocol._
 import akka.actor.ActorRef
 
 trait BringIn {
-  g: Gameplay ⇒
+  g: GameplayLike ⇒
 
   def bringIn(betting: ActorRef) {
     val (seat, pos) = round.seats where (_ isActive) minBy {
@@ -16,4 +16,11 @@ trait BringIn {
 
     betting ! Betting.Require(stake.bringIn get, game.limit)
   }
+  
+  private def setButton(pos: Int) {
+    table.button.current = pos
+    round.current = pos
+    events.publish(Message.MoveButton(pos = table.button))
+  }
+
 }

@@ -4,12 +4,12 @@ import pokerno.backend.model._
 import pokerno.backend.protocol._
 
 trait GameRotation {
-  g: Gameplay ⇒
+  g: GameplayLike ⇒
 
   def rotateGame = if (variation isMixed)
     rotateNext { g ⇒
       game = g
-      broadcast(Message.ChangeGame(game = game))
+      events.publish(Message.ChangeGame(game = game))
     }
 
   final val rotateEvery = 8

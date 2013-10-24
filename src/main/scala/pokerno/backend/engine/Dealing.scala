@@ -4,7 +4,7 @@ import pokerno.backend.protocol._
 import pokerno.backend.model._
 
 trait Dealing {
-  g: Gameplay ⇒
+  g: GameplayLike ⇒
   def dealCards(_dealType: Dealer.DealType, cardsNum: Option[Int] = None) {
     _dealType match {
       case Dealer.Hole | Dealer.Door ⇒
@@ -21,15 +21,15 @@ trait Dealing {
               pos = Some(pos),
               cards = dealer dealPocket (_dealType, n, seat.player.get))
 
-            if (_dealType.isPrivate) unicast(seat.player.get) { message }
-            else broadcast(message)
+            if (_dealType.isPrivate) events.publish(message, events.One(seat.player.get.id))
+            else events.publish(message)
         }
 
       case Dealer.Board ⇒
 
         Console printf ("dealing board %d cards\n", cardsNum.get)
 
-        broadcast(Message.DealCards(
+        events.publish(Message.DealCards(
           _type = _dealType,
           pos = None,
           cards = dealer dealBoard (cardsNum.get)))

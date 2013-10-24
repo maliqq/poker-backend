@@ -36,7 +36,8 @@ class BettingRound(val gameplay: Gameplay) extends Round(gameplay.table.size) {
     _raise = (.0, .0)
     current = gameplay.table.button
   }
-
+  
+  val e = gameplay.events
   def forceBet(act: Tuple2[Seat, Int], betType: Bet.ForcedBet) {
     acting = act
 
@@ -65,18 +66,14 @@ class BettingRound(val gameplay: Gameplay) extends Round(gameplay.table.size) {
 
     val player = seat.player get
 
-    gameplay.broadcast.except(player) {
-      Message.Acting(pos = current)
-    }
-
-    gameplay.unicast(player) {
-      Message.RequireBet(pos = current, call = _call, raise = _raise)
-    }
+    e.publish(Message.Acting(pos = current), e.Except(List(player.id)))
+    e.publish(Message.RequireBet(pos = current, call = _call, raise = _raise), e.One(player.id))
   }
 
   def addBet(bet: Bet) {
     val (seat, pos) = _acting
-
+    val player = seat.player get
+    
     if (bet.isValid(seat.amount, seat.put, _call, _raise)) {
       val diff = bet.amount - seat.put
 
@@ -88,22 +85,17 @@ class BettingRound(val gameplay: Gameplay) extends Round(gameplay.table.size) {
       if (bet.betType != Bet.Call && bet.amount > _call)
         _call = bet.amount
 
-      val player = seat.player get
       val left = pot add (player, diff)
       if (seat.state == Seat.AllIn)
         pot split (player, left)
       else
         pot.main add (player, left)
 
-      gameplay.broadcast.except(seat.player.get) {
-        Message.AddBet(pos, bet)
-      }
+      e.publish(Message.AddBet(pos, bet), e.Except(List(player.id)))
     } else {
       seat fold
 
-      gameplay.broadcast.except(seat.player.get) {
-        Message.AddBet(pos, Bet.fold)
-      }
+      e.publish(Message.AddBet(pos, Bet.fold), e.Except(List(player.id)))
     }
   }
 
@@ -111,7 +103,7 @@ class BettingRound(val gameplay: Gameplay) extends Round(gameplay.table.size) {
     clear
 
     gameplay.table.seats where (_ inPlay) map (_._1 play)
-    gameplay.broadcast(Message.CollectPot(total = pot total))
+    e.publish(Message.CollectPot(total = pot total))
   }
 
 }

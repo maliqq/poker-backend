@@ -8,20 +8,93 @@ import pokerno.backend.poker._
 
 class HighSpec extends FunSpec with ClassicMatchers {
   describe("High") {
+    
+    def rainbow(kinds: List[Kind.Value.Kind]): List[Card] = {
+      var cycle = Suit.All.iterator
+      def nextSuit = if (cycle.hasNext) cycle.next else {
+        cycle = Suit.All.iterator
+        cycle.next
+      }
+      
+      for {
+        kind <- kinds
+      } yield(Card.wrap(kind, nextSuit))
+    }
+    
     it("high card") {
       
+      Kind.All.foreach { case kind =>
+        val tail = (Kind.All.toSet - kind).toList.zipWithIndex.filter {
+          case (v, i) => i % 2 == 0
+        }.take(6).map(_._1)
+        
+        val cards = rainbow((kind :: tail))
+        
+        val hand = Hand.High(cards)
+        assert(hand.isDefined)
+        val h = hand.get
+        assert(h.rank.isDefined)
+        h.rank.get should equal(Rank.High.HighCard)
+        h.value.size should equal(1)
+        h.high.size should equal(1)
+        h.high.head should equal(cards.max(AceHigh))
+        h.kicker.size should equal(4)
+      }
     }
     
     it("one pair") {
-      
+      Kind.All.foreach { case kind =>
+        val tail = (Kind.All.toSet - kind).toList.zipWithIndex.filter {
+          case (v, i) => i % 2 == 0
+        }.take(5).map(_._1)
+        
+        val kinds = (kind :: kind :: tail)
+        val cards = rainbow(kinds)
+        
+        val hand = Hand.High(cards)
+        assert(hand.isDefined)
+        val h = hand.get
+        assert(h.rank.isDefined)
+        h.rank.get should equal(Rank.High.OnePair)
+        h.value.size should equal(2)
+        h.high.size should equal(1)
+        h.high.head.kind should equal(kind)
+        h.kicker.size should equal(3)
+      }
     }
     
     it("two pair") {
-      
+      Kind.All.combinations(2) foreach { case comb =>
+        val List(a, b, _*) = comb
+        val kinds = List(a, a, b, b, (Kind.All.toSet -- comb).head)
+        val cards = rainbow(kinds)
+        val hand = Hand.High(cards)
+        assert(hand.isDefined)
+        val h = hand.get
+        assert(h.rank.isDefined)
+        h.rank.get should equal(Rank.High.TwoPair)
+        h.value.size should equal(4)
+        h.high.size should equal(2)
+        h.high.head should equal(h.high.max(AceHigh))
+        h.high.last should equal(h.high.min(AceHigh))
+        h.kicker.size should equal(1)
+      }
     }
 
     it("three kind") {
-      
+      for (kind <- Kind.All) {
+        val kinds = List(kind, kind, kind) ++ (Kind.All.toSet - kind).take(4).toList
+        val cards = rainbow(kinds)
+        val hand = Hand.High(cards)
+        assert(hand.isDefined)
+        val h = hand.get
+        assert(h.rank.isDefined)
+        h.rank.get should equal(Rank.High.ThreeKind)
+        h.value.size should equal(3)
+        h.high.size should equal(1)
+        h.high.head.kind should equal(kind)
+        h.kicker.size should equal(2)
+      }
     }
     
     it("straight") {

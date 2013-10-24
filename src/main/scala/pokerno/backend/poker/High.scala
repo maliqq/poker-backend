@@ -72,11 +72,14 @@ trait HighHand {
     case None ⇒ None
   }
 
-  def isHighCard: Option[Hand] = new Hand(self, value = value sorted(ordering).reverse, High = Right(true), Kicker = Right(true)) ranked Rank.High.HighCard
+  def isHighCard: Option[Hand] = {
+    val highest = value max(ordering)
+    new Hand(self, value = List(highest), High = Right(true), Kicker = Right(true)) ranked Rank.High.HighCard
+  }
 
   @throws[Hand.InvalidCards]
   def isHigh: Option[Hand] = {
-    if (value.size < 5) throw Hand.InvalidCards("5 or more cards required to detect high hand")
+    if (value.size < 5 || value.size > 7) throw Hand.InvalidCards("5, 6 or 7 cards required to detect high hand")
 
     isStraightFlush orElse isThreeKind orElse isTwoPair orElse isOnePair orElse isHighCard
   }

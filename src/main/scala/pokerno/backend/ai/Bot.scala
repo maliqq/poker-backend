@@ -41,8 +41,8 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
       opponentsNum = 6
       stake = msg.stake
 
-    case Message.Winner(_pos, winner, amount) ⇒
-      if (pos == _pos) stack += amount
+    case Message.Winner(_pos, winner, amount) if (_pos == pos) ⇒
+      stack += amount
 
     case Message.StreetStart(name) ⇒
       street = name
@@ -55,21 +55,16 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
       _type match {
         case Dealer.Board ⇒
           board ++= dealt
-        case Dealer.Hole ⇒
-          if (_pos.get == pos) {
-            cards ++= dealt
-            Console printf("*** BOT #%d: %s\n", pos, Cards(cards) toConsoleString)
-          }
+        case Dealer.Hole if (_pos.get == pos) ⇒
+          cards ++= dealt
+          Console printf("*** BOT #%d: %s\n", pos, Cards(cards) toConsoleString)
       }
 
-    case Message.RequireBet(_pos, call, range) ⇒
-      if (_pos == pos) {
-        benchmark("decision") { decide(call, range) }
-      }
+    case Message.RequireBet(_pos, call, range) if (_pos == pos) ⇒
+       benchmark("decision") { decide(call, range) }
 
-    case msg: Message.AddBet ⇒
-      if (msg.pos == pos)
-        bet = msg.bet.amount
+    case Message.AddBet(_pos, _bet) if (_pos == pos) ⇒
+      bet = _bet.amount
   }
 
   def addBet(b: Bet) {

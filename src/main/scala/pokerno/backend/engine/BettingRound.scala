@@ -57,7 +57,7 @@ class BettingRound(val gameplay: Gameplay) extends Round(gameplay.table.size) {
     val bb = if (bigBets) stake.bigBlind * 2 else stake.bigBlind
     val stack = seat stack
 
-    if (stack < _call)
+    if (stack < _call || raiseCount >= MaxRaiseCount)
       _raise = (.0, .0)
     else {
       var (min, max) = limit raise (stack, bb + _call, pot total)

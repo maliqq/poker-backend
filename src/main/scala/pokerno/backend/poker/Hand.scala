@@ -74,10 +74,6 @@ object Hand {
       _gaps ++ List(_buffer)
     }
     
-    def hand() {
-      
-    }
-
     override def toString = "gaps=%s paired=%s suited=%s" format (gaps, paired, suited)
   }
 }

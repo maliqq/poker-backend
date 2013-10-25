@@ -1,7 +1,7 @@
 package pokerno.backend.poker
 
 object Math {
-  final val DefaultSamplesNum: Int = 1000
+  final val DefaultSamplesNum: Int = 10000
   final val FullBoardLen: Int = 5
 
   class Sample {

@@ -22,7 +22,6 @@ class HighSpec extends FunSpec with ClassicMatchers {
     }
     
     it("high card") {
-      
       Kind.All.foreach { case kind =>
         val tail = (Kind.All.toSet - kind).toList.zipWithIndex.filter {
           case (v, i) => i % 2 == 0
@@ -176,10 +175,6 @@ class HighSpec extends FunSpec with ClassicMatchers {
         h.rank.get should equal(Rank.High.FourKind)
         h.value should equal(quad)
         h.high.head.kind should equal(kind)
-
-        //        val kickers = new CardSet(value) kick(h.value)
-        //        kickers.size should equal(1)
-
         h.kicker.size should equal(1)
         h.kicker.head should equal(other3 max (AceHigh))
       }

@@ -1,9 +1,9 @@
 package de.pokerno.backend.server
 
-import de.pokerno.backend.engine._
-import de.pokerno.backend.model._
-
+import de.pokerno.backend._
+import de.pokerno.model._
 import akka.actor.{ ActorSystem, Props }
+import de.pokerno.backend.Instance
 
 object Main {
   val system = ActorSystem("poker-server")

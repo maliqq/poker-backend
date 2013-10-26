@@ -2,7 +2,9 @@ package de.pokerno.backend.protocol
 
 import org.scalatest.FunSpec
 
-@org.msgpack.annotation.Message
+import org.msgpack.annotation.{ Message => MsgPack }
+
+@MsgPack
 class TestMsg {
   var i: Int = 0
 }

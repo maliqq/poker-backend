@@ -1,13 +1,10 @@
 package de.pokerno.backend.protocol
 
 import scala.math.{ BigDecimal ⇒ Decimal }
-import de.pokerno.backend.poker.{ Card, Hand }
-import de.pokerno.backend.model._
+import de.pokerno.poker.{ Card, Hand }
+import de.pokerno.model._
 
-import org.msgpack.annotation.{ Message => MsgPack }
-
-abstract class Message extends Serializable {
-}
+abstract class Message extends Serializable {}
 
 object Message {
   // dealing and discarding

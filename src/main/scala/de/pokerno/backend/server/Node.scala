@@ -8,7 +8,7 @@ import org.jboss.netty.handler.codec.http._
 import java.net.InetSocketAddress
 import java.util.UUID
 
-import de.pokerno.backend.model._
+import de.pokerno.model._
 
 object Node {
   class Service extends finagle.Service[HttpRequest, HttpResponse] {

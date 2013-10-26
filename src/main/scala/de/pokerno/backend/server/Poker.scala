@@ -7,8 +7,8 @@ import com.twitter.finagle.http.Http
 import org.jboss.netty.handler.codec.http._
 import java.net.InetSocketAddress
 
-import de.pokerno.backend.poker._
-import de.pokerno.backend.poker.{ Math ⇒ PokerMath }
+import de.pokerno.poker._
+import de.pokerno.poker.{ Math ⇒ PokerMath }
 
 object Poker {
   class Service extends finagle.Service[HttpRequest, HttpResponse] {

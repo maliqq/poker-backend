@@ -17,54 +17,47 @@ object Message {
   /**
    * Action event
    * */
-  object AddBet extends ActionEvent {
-    def apply(pos: Int, player: Player, bet: Bet) = {
-      new proto.ActionEvent(proto.ActionEvent.ActionEventType.AddBet)
-    }
+  case class AddBet(pos: Int, player: Player, bet: Bet) {
+    val schema = new proto.ActionEvent(proto.ActionEvent.ActionEventType.AddBet)
   }
   
-  object DiscardCards extends ActionEvent {
-    def apply(pos: Int, player: Player, cards: List[Card]) = {
-    }
+  case class DiscardCards(pos: Int, player: Player, cards: List[Card]) {
   }
   
   /**
    * Table event
    * */
-  object ButtonChange {
-    def apply(i: Int) = {
-      new proto.TableEvent(proto.TableEvent.TableEventType.ButtonChange)
-    }
-    
+  case class ButtonChange(i: Int) {
+    val schema = new proto.TableEvent(proto.TableEvent.TableEventType.ButtonChange)
   }
   /**
    * Gameplay event
    * */
-  object GameChange {
-    def apply(game: Game) = new proto.GameplayEvent(proto.GameplayEvent.GameplayEventType.GameChange)
+  case class GameChange(game: Game) {
+    val schema = new proto.GameplayEvent(proto.GameplayEvent.GameplayEventType.GameChange)
   }
   
-  object StakeChange {
-    def apply(stake: Game) = new proto.GameplayEvent(proto.GameplayEvent.GameplayEventType.StakeChange)
+  case class StakeChange(stake: Game) {
+    val schema = new proto.GameplayEvent(proto.GameplayEvent.GameplayEventType.StakeChange)
   }
   
   /**
    * Stage event
    * */
-  object PlayStart {
-    def apply(game: Game, stake: Stake) = new proto.StageEvent(
+  case class PlayStart(game: Game, stake: Stake) {
+    val schema = new proto.StageEvent(
         proto.StageEvent.StageEventType.Start,
         proto.StageEvent.StageType.Play)
   }
 
-  object PlayStop {
-    def apply() = new proto.StageEvent(
+  case class PlayStop() {
+    val schema = new proto.StageEvent(
         proto.StageEvent.StageEventType.Stop,
         proto.StageEvent.StageType.Play)
   }
   
-  object StreetStart {
-    def apply(name: String) = new proto.StageEvent(
+  case class StreetStart(name: String) {
+    val schema = new proto.StageEvent(
         proto.StageEvent.StageEventType.Start,
         proto.StageEvent.StageType.Street)
   }
@@ -72,47 +65,33 @@ object Message {
   /**
    * Deal event
    * */
-  object DealCards {
-    def apply(_type: Dealer.DealType, cards: List[Card] = List.empty, pos: Option[Int] = None, player: Option[Player] = None, cardsNum: Option[Int] = None) = {
-      new proto.DealEvent
-    }
+  case class DealCards(_type: Dealer.DealType, cards: List[Card] = List.empty, pos: Option[Int] = None, player: Option[Player] = None, cardsNum: Option[Int] = None) {
+    val schema = new proto.DealEvent
   }
 
-  object RequireBet {
-    def apply(pos: Int, player: Player, call: Decimal, raise: Range) = {
-      new proto.DealEvent
-    }
+  case class RequireBet(pos: Int, player: Player, call: Decimal, raise: Range) {
+    val schema = new proto.DealEvent
   }
   
-  object RequireDiscard {
-    def apply(pos: Int, player: Player) = {
-      new proto.DealEvent
-    }
+  case class RequireDiscard(pos: Int, player: Player) {
+    val schema = new proto.DealEvent
   }
   
-  object DeclarePot {
-    def apply(pot: Decimal, rake: Option[Decimal] = None) = {
-      new proto.DealEvent
-    }
+  case class DeclarePot(pot: Decimal, rake: Option[Decimal] = None) {
+    val schema = new proto.DealEvent
   }
   
-  object DeclareHand {
-    def apply(pos: Int, player: Player, cards: List[Card], hand: Hand) = {
-      new proto.DealEvent
-    }
+  case class DeclareHand(pos: Int, player: Player, cards: List[Card], hand: Hand) {
+    val schema = new proto.DealEvent
   }
   
-  object DeclareWinner {
-    def apply(pos: Int, player: Player, amount: Decimal) = {
-      new proto.DealEvent
-    }
+  case class DeclareWinner(pos: Int, player: Player, amount: Decimal) {
+    val schema = new proto.DealEvent
   }
   /**
    * Command
    * */
-  object JoinTable {
-    def apply(pos: Int, amount: Decimal, player: Player) = {
-      new de.pokerno.proto.JoinTable(pos, amount.toDouble)
-    }
+  case class JoinTable(pos: Int, amount: Decimal, player: Player) {
+    val schema = new de.pokerno.proto.JoinTable(pos, amount.toDouble)
   }
 }

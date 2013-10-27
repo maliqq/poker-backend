@@ -17,7 +17,7 @@ class DealerSpec extends FunSpec with ClassicMatchers {
     it("deal pocket") {
       val dealer = new Dealer
       val player = new Player("1")
-      val cards = dealer.dealPocket(Dealer.Hole, 2, player)
+      val cards = dealer.dealPocket(2, player)
       cards.size should equal(2)
       dealer.pocket(player) should equal(cards)
 

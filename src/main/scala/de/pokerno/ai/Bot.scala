@@ -21,56 +21,51 @@ trait Context {
 
 class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var stake: Stake)
     extends Actor with Context with Simple {
-  var id: String = java.util.UUID.randomUUID().toString
+  val id: String = java.util.UUID.randomUUID().toString
+  val player = new Player(id)
 
   override def preStart {
-    deal ! Message.JoinTable(pos = pos, amount = stack, player = new Player(id))
+    deal ! Message.JoinTable(pos = pos, amount = stack, player = player)
   }
   
-  def benchmark(name: String)(u: => Unit) {
-    val start = System.currentTimeMillis
-    u
-    Console printf("- %s done in %.2fs\n", name, (System.currentTimeMillis - start) / 1000.0)
-  }
-
   def receive = {
-    case msg: Message.PlayStart ⇒
+    case Message.PlayStart(_game, _stake) ⇒
       cards = List[Card]()
       board = List[Card]()
       pot = .0
       opponentsNum = 6
-      stake = msg.stake
+      game = _game
+      stake = _stake
 
-    case Message.Winner(_pos, winner, amount) if (_pos == pos) ⇒
+    case Message.DeclareWinner(_pos, winner, amount) if (_pos == pos) ⇒
       stack += amount
 
     case Message.StreetStart(name) ⇒
       street = name
 
-    case Message.CollectPot(total) ⇒
+    case Message.DeclarePot(total, _rake) ⇒
       pot = total
       bet = .0
 
-    case Message.DealCards(_type, dealt, _pos) ⇒
-      _type match {
-        case Dealer.Board ⇒
-          board ++= dealt
-        case Dealer.Hole if (_pos.get == pos) ⇒
-          cards ++= dealt
-          Console printf("*** BOT #%d: %s\n", pos, Cards(cards) toConsoleString)
-      }
-
-    case Message.RequireBet(_pos, call, range) if (_pos == pos) ⇒
-       benchmark("decision") { decide(call, range) }
-
-    case Message.AddBet(_pos, _bet) if (_pos == pos) ⇒
+    case Message.DealCards(_type, _cards, _pos, _player, _cardsNum) ⇒ _type match {
+      case Dealer.Board =>
+        board ++= _cards
+      case Dealer.Hole | Dealer.Door if (_pos.get == pos) =>
+        cards ++= _cards
+        Console printf("*** BOT #%d: %s\n", pos, Cards(cards) toConsoleString)
+    }
+    
+    case Message.RequireBet(_pos, _, call, raise) if (_pos == pos) ⇒
+       decide(call, raise)
+       
+    case Message.AddBet(_pos, _player, _bet) if (_pos == pos) ⇒
       bet = _bet.amount
   }
 
   def addBet(b: Bet) {
     Console printf ("%s*** BOT #%d: %s%s\n", Console.CYAN, pos, b, Console.RESET)
     
-    deal ! Message.AddBet(pos, b)
+    deal ! Message.AddBet(pos, player, b)
   }
 
   def doCheck = addBet(Bet.check)

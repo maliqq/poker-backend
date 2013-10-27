@@ -1,7 +1,7 @@
 package de.pokerno.backend
 import akka.actor.{Actor, ActorLogging, ActorRef, Props, FSM}
 import de.pokerno.model._
-import de.pokerno.backend.protocol._
+
 import scala.concurrent.duration._
 
 object Instance {
@@ -47,7 +47,7 @@ class Instance(val variation: Variation, val stake: Stake) extends Actor with Ac
   }
 
   when(Instance.Waiting) {
-    case Event(join: Message.JoinTable, _) ⇒
+    case Event(join: protocol.Message.JoinTable, _) ⇒
       stay // TODO
   }
 
@@ -79,7 +79,7 @@ class Instance(val variation: Variation, val stake: Stake) extends Actor with Ac
   }
 
   whenUnhandled {
-    case Event(join: Message.JoinTable, _) ⇒
+    case Event(join: protocol.Message.JoinTable, _) ⇒
       table.addPlayer(join.player, join.pos, Some(join.amount))
 
       events.publish(join)
@@ -87,11 +87,11 @@ class Instance(val variation: Variation, val stake: Stake) extends Actor with Ac
 
       stay
 
-    case Event(msg: Message.AddBet, Instance.Run(running)) ⇒
+    case Event(msg: protocol.Message.AddBet, Instance.Run(running)) ⇒
       running ! msg
       stay
 
-    case Event(msg: Message.ChatMessage, _) ⇒
+    case Event(msg: protocol.Msg.Chat, _) ⇒
       events.publish(msg)
       stay
   }

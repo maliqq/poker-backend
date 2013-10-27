@@ -26,28 +26,31 @@ class PlayerActor(i: Int, gameplay: Gameplay, instance: ActorRef) extends Actor 
     case PlayerActor.Start ⇒
       instance ! Message.JoinTable(pos = i - 1, player = player, amount = stack)
       become({
-        case Message.DealCards(_type, cards, pos) ⇒ _type match {
-          case Dealer.Door | Dealer.Hole ⇒ Console printf ("Dealt %s %s to %d\n", _type, Cards(cards) toConsoleString, pos get)
+        case Message.DealCards(_type, cards, pos, player, cardsNum) ⇒ _type match {
+          case Dealer.Hole | Dealer.Door =>
+            Console printf ("Dealt %s %s to %d\n", _type, Cards(cards) toConsoleString, pos get)
+          case Dealer.Board =>
+            Console printf ("Dealt %s %s\n", _type, Cards(cards) toConsoleString)
           case _                         ⇒
         }
 
-        case Message.RequireBet(pos, call, range) ⇒
+        case Message.RequireBet(pos, player, call, range) ⇒
           Console printf ("Seat %d: Call=%.2f Min=%.2f Max=%.2f\n", pos, call, range.min, range.max)
 
           val seat = gameplay.table.seats(pos)
           var bet = Play.readBet(call)
 
-          val addBet = Message.AddBet(pos = pos, bet = bet)
+          val addBet = Message.AddBet(pos = pos, player = seat.player.get, bet = bet)
           instance ! addBet
 
-        case Message.RequireDiscard(pos) ⇒
+        case Message.RequireDiscard(pos, player) ⇒
           val seat = gameplay.table.seats(pos)
 
           Console printf ("your cards: [%s]\n", gameplay.dealer.pocket(seat.player.get))
 
           val cards = Play.readCards
 
-          instance ! Message.DiscardCards(pos = pos, cards = cards)
+          instance ! Message.DiscardCards(pos = pos, player = seat.player.get, cards = cards)
       })
   }
 }
@@ -65,28 +68,28 @@ class Play(gameplay: Gameplay, instance: ActorRef, tableSize: Int) extends Actor
   }
 
   def receive = {
-    case Message.DealCards(_type, cards, pos) ⇒ _type match {
+    case Message.DealCards(_type, cards, pos, player, cardsNum) ⇒ _type match {
       case Dealer.Board ⇒ Console printf ("Dealt %s %s\n", _type, Cards(cards) toConsoleString)
       case _            ⇒
     }
 
-    case Message.MoveButton(pos) ⇒
+    case Message.ButtonChange(pos) ⇒
       Console printf ("Button is %d\n", pos)
 
-    case Message.AddBet(pos, bet) ⇒
+    case Message.AddBet(pos, player, bet) ⇒
       val seat = gameplay.table.seats(pos)
 
       Console printf ("%s: %s\n", seat.player.get, bet)
 
-    case Message.CollectPot(total) ⇒
+    case Message.DeclarePot(total, rake) ⇒
       Console printf ("Pot size: %.2f\nBoard: %s\n", total, Cards(gameplay.dealer.board) toConsoleString)
 
-    case Message.ShowHand(pos, cards, hand) ⇒
+    case Message.DeclareHand(pos, player, cards, hand) ⇒
       val seat = gameplay.table.seats(pos)
 
       Console printf ("%s has %s (%s)\n", seat.player.get, Cards(cards) toConsoleString, hand description)
 
-    case Message.Winner(pos, winner, amount) ⇒
+    case Message.DeclareWinner(pos, player, amount) ⇒
       val seat = gameplay.table.seats(pos)
 
       Console printf ("%s won %.2f\n", seat.player.get, amount)

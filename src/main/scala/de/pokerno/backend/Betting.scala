@@ -2,7 +2,7 @@ package de.pokerno.backend
 
 import scala.math.{ BigDecimal ⇒ Decimal }
 import de.pokerno.model._
-import de.pokerno.backend.protocol._
+
 import scala.math.{BigDecimal => Decimal}
 
 object Betting {

@@ -3,108 +3,116 @@ package de.pokerno.backend.protocol
 import scala.math.{ BigDecimal ⇒ Decimal }
 import de.pokerno.poker.{ Card, Hand }
 import de.pokerno.model._
+import de.pokerno.proto
 
-abstract class Message extends Serializable {}
+trait Message
+
+class ActionEvent extends Message
+class GameplayEvent extends Message
+class StageEvent extends Message
+class DealEvent extends Message
+class Command extends Message
 
 object Message {
-  // dealing and discarding
-  case class DealCards(
-      _type: Dealer.DealType,
-      cards: List[Card],
-      pos: Option[Int]) extends Message
-
-
-  case class RequireDiscard(pos: Int) extends Message
-
-
-  case class Discarded(pos: Int, num: Int) extends Message
-
-
-  case class DiscardCards(pos: Int, cards: List[Card]) extends Message
-
-  // bets
-
-  case class RequireBet(
-      pos: Int,
-      call: Decimal,
-      raise: Range) extends Message
-
-
-  case class Acting(pos: Int) extends Message
-
-
-  case class AddBet(
-      pos: Int,
-      bet: Bet) extends Message
-
-
-  case class CollectPot(total: Decimal) extends Message
-
-  // showdown
-
-  case class ShowHand(
-      pos: Int,
-      cards: List[Card],
-      hand: Hand) extends Message
-
-
-  case class ShowCards(pos: Int, cards: List[Card], muck: Boolean = false) extends Message
-
-
-  case class Winner(
-      pos: Int,
-      winner: Player,
-      amount: Decimal) extends Message
-
-  // gameplay process
-
-  case class PlayStart(
-      game: Game,
-      stake: Stake) extends Message
-
-
-  case class PlayStop() extends Message
-
-
-  case class StreetStart(
-      name: String) extends Message
-
-
-  case class ChangeGame(
-      game: Game) extends Message
-
+  /**
+   * Action event
+   * */
+  object AddBet extends ActionEvent {
+    def apply(pos: Int, player: Player, bet: Bet) = {
+      new proto.ActionEvent(proto.ActionEvent.ActionEventType.AddBet)
+    }
+  }
   
-  case class MoveButton(
-      pos: Int) extends Message
+  object DiscardCards extends ActionEvent {
+    def apply(pos: Int, player: Player, cards: List[Card]) = {
+    }
+  }
+  
+  /**
+   * Table event
+   * */
+  object ButtonChange {
+    def apply(i: Int) = {
+      new proto.TableEvent(proto.TableEvent.TableEventType.ButtonChange)
+    }
+    
+  }
+  /**
+   * Gameplay event
+   * */
+  object GameChange {
+    def apply(game: Game) = new proto.GameplayEvent(proto.GameplayEvent.GameplayEventType.GameChange)
+  }
+  
+  object StakeChange {
+    def apply(stake: Game) = new proto.GameplayEvent(proto.GameplayEvent.GameplayEventType.StakeChange)
+  }
+  
+  /**
+   * Stage event
+   * */
+  object PlayStart {
+    def apply(game: Game, stake: Stake) = new proto.StageEvent(
+        proto.StageEvent.StageEventType.Start,
+        proto.StageEvent.StageType.Play)
+  }
 
+  object PlayStop {
+    def apply() = new proto.StageEvent(
+        proto.StageEvent.StageEventType.Stop,
+        proto.StageEvent.StageType.Play)
+  }
+  
+  object StreetStart {
+    def apply(name: String) = new proto.StageEvent(
+        proto.StageEvent.StageEventType.Start,
+        proto.StageEvent.StageType.Street)
+  }
 
-  case class SitOut() extends Message
+  /**
+   * Deal event
+   * */
+  object DealCards {
+    def apply(_type: Dealer.DealType, cards: List[Card] = List.empty, pos: Option[Int] = None, player: Option[Player] = None, cardsNum: Option[Int] = None) = {
+      new proto.DealEvent
+    }
+  }
 
-
-  case class ComeBack() extends Message
-
-
-  case class JoinTable(
-      pos: Int,
-      player: Player,
-      amount: Decimal) extends Message
-
-
-  case class LeaveTable() extends Message
-
-
-  case class KickPlayer() extends Message
-
-
-  case class SeatStateChange(pos: Int, state: Seat.State) extends Message
-
-  // text messages
-
-  case class ChatMessage() extends Message
-
-
-  case class ErrorMessage() extends Message
-
-
-  case class DealerMessage() extends Message
+  object RequireBet {
+    def apply(pos: Int, player: Player, call: Decimal, raise: Range) = {
+      new proto.DealEvent
+    }
+  }
+  
+  object RequireDiscard {
+    def apply(pos: Int, player: Player) = {
+      new proto.DealEvent
+    }
+  }
+  
+  object DeclarePot {
+    def apply(pot: Decimal, rake: Option[Decimal] = None) = {
+      new proto.DealEvent
+    }
+  }
+  
+  object DeclareHand {
+    def apply(pos: Int, player: Player, cards: List[Card], hand: Hand) = {
+      new proto.DealEvent
+    }
+  }
+  
+  object DeclareWinner {
+    def apply(pos: Int, player: Player, amount: Decimal) = {
+      new proto.DealEvent
+    }
+  }
+  /**
+   * Command
+   * */
+  object JoinTable {
+    def apply(pos: Int, amount: Decimal, player: Player) = {
+      new de.pokerno.proto.JoinTable(pos, amount.toDouble)
+    }
+  }
 }

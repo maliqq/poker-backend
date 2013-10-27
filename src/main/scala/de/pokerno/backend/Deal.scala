@@ -1,6 +1,6 @@
 package de.pokerno.backend
 import de.pokerno.model._
-import de.pokerno.backend.protocol._
+
 import scala.concurrent.duration._
 
 object Deal {

@@ -1,7 +1,6 @@
 package de.pokerno.backend
 
 import de.pokerno.model._
-import de.pokerno.backend.protocol._
 import scala.math.{ BigDecimal ⇒ Decimal }
 
 class BettingRound(val gameplay: Gameplay) extends Round(gameplay.table.size) {
@@ -62,11 +61,11 @@ class BettingRound(val gameplay: Gameplay) extends Round(gameplay.table.size) {
       var (min, max) = limit raise (stack, bb + _call, pot total)
       _raise = Range(List(stack, min) min, List(stack, max) min)
     }
+    val player = seat.player.get
 
-    val player = seat.player get
-
-    e.publish(Message.Acting(pos = current), e.Except(List(player.id)))
-    e.publish(Message.RequireBet(pos = current, call = _call, raise = _raise), e.One(player.id))
+    e.publish(
+        protocol.Message.RequireBet(pos = current, player = player, call = _call, raise = _raise)
+      )
   }
 
   def addBet(bet: Bet) {
@@ -90,11 +89,15 @@ class BettingRound(val gameplay: Gameplay) extends Round(gameplay.table.size) {
       else
         pot.main add (player, left)
 
-      e.publish(Message.AddBet(pos, bet), e.Except(List(player.id)))
+      e.publish(
+          protocol.Message.AddBet(pos, player, bet),
+        e.Except(List(player.id)))
     } else {
       seat fold
 
-      e.publish(Message.AddBet(pos, Bet.fold), e.Except(List(player.id)))
+      e.publish(
+          protocol.Message.AddBet(pos, player, Bet.fold),
+        e.Except(List(player.id)))
     }
   }
 
@@ -102,7 +105,7 @@ class BettingRound(val gameplay: Gameplay) extends Round(gameplay.table.size) {
     clear
 
     gameplay.table.seats where (_ inPlay) map (_._1 play)
-    e.publish(Message.CollectPot(total = pot total))
+    e.publish(protocol.Message.DeclarePot(pot total))
   }
 
 }

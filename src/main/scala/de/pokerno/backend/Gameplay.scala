@@ -1,7 +1,7 @@
 package de.pokerno.backend
 
 import de.pokerno.model._
-import de.pokerno.backend.protocol._
+
 
 object Gameplay {
   case object Start

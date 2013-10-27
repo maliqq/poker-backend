@@ -1,20 +1,32 @@
 package de.pokerno.backend.protocol
 
 import org.scalatest.FunSpec
+import org.scalatest.matchers._
+import org.scalatest.matchers.ShouldMatchers._
 
-import org.msgpack.annotation.{ Message => MsgPack }
+import de.pokerno.model.{ Player, Bet }
 
-@MsgPack
-class TestMsg {
-  var i: Int = 0
-}
-
-class CodecSpec extends FunSpec {
+class CodecSpec extends FunSpec with ClassicMatchers {
   describe("Codec") {
     describe("MsgPack") {
       it("pack") {
-        val msgpack = new org.msgpack.MessagePack
-        msgpack.write(new TestMsg)
+      }
+    }
+
+    describe("Protobuf") {
+      import com.dyuproject.protostuff._
+      it("pack") {
+        val e = new ActionEvent
+        e.setAmount(100.0)
+        e.setPos(1)
+        val w = new java.io.StringWriter
+        JsonIOUtil.writeTo(w, e, ActionEvent.getSchema, false)
+        w.toString should equal("")
+      }
+    }
+    
+    describe("Json") {
+      it("pack") {
       }
     }
   }

@@ -2,6 +2,7 @@ package de.pokerno.model
 
 import de.pokerno.poker.{ Card, Deck }
 
+// FIXME move it to protocol
 object Dealer {
   trait DealType {
     def isPrivate: Boolean = false
@@ -21,7 +22,7 @@ class Dealer(private var _deck: Deck = new Deck) {
   private var _pockets: Map[Player, List[Card]] = Map.empty
   def pocket(p: Player): List[Card] = _pockets(p)
 
-  def dealPocket(t: Dealer.DealType, n: Int, p: Player): List[Card] = {
+  def dealPocket(n: Int, p: Player): List[Card] = {
     val cards = _deck share (n)
     val pocket = _pockets getOrElse (p, List.empty)
     _pockets += (p -> (pocket ++ cards))

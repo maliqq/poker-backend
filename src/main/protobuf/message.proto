@@ -14,24 +14,23 @@ message Msg {
 }
 
 // Seat event
+enum SeatState {
+  Empty = 0;
+  Taken = 1;
+  Ready = 2;
+
+  WaitBB = 3;
+  PostBB = 4;
+
+  Playing = 5;
+  AllIn = 7;
+  Auto = 9;
+
+  Idle = 10;
+  Away = 11;
+}
+
 message Seat {
-  
-  enum SeatState {
-    Empty = 0;
-    Taken = 1;
-    Ready = 2;
-
-    WaitBB = 3;
-    PostBB = 4;
-
-    Playing = 5;
-    AllIn = 7;
-    Auto = 9;
-
-    Idle = 10;
-    Away = 11;
-  }
-
   optional SeatState State = 1;
   optional string Player = 2;
   optional double StackAmount = 3;
@@ -63,37 +62,38 @@ message Range {
   required double Max = 2;
 }
 
+enum BetType {
+  Ante = 1;
+  BringIn = 2;
+  SmallBlind = 3;
+  BigBlind = 4;
+  GuestBlind = 5;
+  Straddle = 6;
+
+  Raise = 7;
+  Call = 8;
+  Check = 9;
+  Fold = 10;
+
+  Discard = 11;
+  StandPat = 12;
+
+  Show = 13;
+  Muck = 14;
+}
+
 message Bet {
-  enum BetType {
-    Ante = 1;
-    BringIn = 2;
-    SmallBlind = 3;
-    BigBlind = 4;
-    GuestBlind = 5;
-    Straddle = 6;
-
-    Raise = 7;
-    Call = 8;
-    Check = 9;
-    Fold = 10;
-
-    Discard = 11;
-    StandPat = 12;
-
-    Show = 13;
-    Muck = 14;
-  }
-
   required BetType Type = 1;
   optional double Amount = 2;
 }
 
+enum ActionEventType {
+  DiscardCards = 2;
+  ShowCards = 3;
+  AddBet = 4;
+}
+
 message ActionEvent {
-  enum ActionEventType {
-    DiscardCards = 2;
-    ShowCards = 3;
-    AddBet = 4;
-  }
   required ActionEventType Type = 1;
 
   optional int32 Pos = 2;
@@ -107,44 +107,46 @@ message ActionEvent {
 }
 
 // Table event
+enum TableEventType {
+  ButtonChange = 1;
+  TableStateChange = 2;
+}
+
+enum TableState {
+  Active = 1;
+}
+
 message TableEvent {
-  enum TableEventType {
-    ButtonChange = 1;
-    TableStateChange = 2;
-  }
-  enum TableState {
-    Active = 1;
-  }
   required TableEventType Type = 1;
   optional int32 Button = 2;
   optional TableState State = 3;
 }
 
 // Gameplay event
+enum GameType {
+  Texas = 0;
+  Omaha = 1;
+  Omaha8 = 2;
+
+  Stud = 3;
+  Stud8 = 4;
+  Razz = 9;
+  London = 10;
+
+  FiveCard = 11;
+  Single27 = 12;
+  Triple27 = 13;
+
+  Badugi = 14;
+}
+
+enum GameLimit {
+  NoLimit = 0;
+  PotLimit = 1;
+  FixedLimit = 2;
+}
 
 message Game {
-  enum GameType {
-    Texas = 0;
-    Omaha = 1;
-    Omaha8 = 2;
-
-    Stud = 3;
-    Stud8 = 4;
-    Razz = 9;
-    London = 10;
-
-    FiveCard = 11;
-    Single27 = 12;
-    Triple27 = 13;
-
-    Badugi = 14;
-  }
-
-  enum GameLimit {
-    NoLimit = 0;
-    PotLimit = 1;
-    FixedLimit = 2;
-  }
   required GameType Type = 1;
   required GameLimit Limit = 2;
   required int32 TableSize = 3;
@@ -168,28 +170,29 @@ message GameplayEvent {
 }
 
 // Stage event
-message StageEvent {
-  enum StageEventType {
-    Start = 1;
-    Stop = 2;
-  }
+enum StageEventType {
+  Start = 1;
+  Stop = 2;
+}
 
-  enum StageType { // stages hierarchy
-    Play = 1;
-    Street = 2;
-  }
+enum StageType { // stages hierarchy
+  Play = 1;
+  Street = 2;
+}
+
+message StageEvent {
   required StageEventType Type = 1;
   required StageType Stage = 2;
 }
 
 // Deal event
-message DealCards {
-  enum DealType {
-    Board = 1;
-    Hole = 2;
-    Door = 3;
-  }
+enum DealType {
+  Board = 1;
+  Hole = 2;
+  Door = 3;
+}
 
+message DealCards {
   required DealType Type = 1;
   optional int32 Pos = 2;
   optional string Player = 3;
@@ -220,26 +223,27 @@ message DeclareWinner {
   required double Amount = 3; 
 }
 
+enum RankType {
+  StraightFlush = 0;
+  FourKind = 1;
+  FullHouse = 2;
+  Flush = 3;
+  Straight = 4;
+  ThreeKind = 5;
+  TwoPair = 6;
+  OnePair = 7;
+  HighCard = 8;
+
+  BadugiFour = 9;
+  BadugiThree = 10;
+  BadugiTwo = 11;
+  BadugiOne = 12;
+
+  CompleteLow = 13;
+  IncompleteLow = 14;
+}
+
 message Hand {
-  enum RankType {
-    StraightFlush = 0;
-    FourKind = 1;
-    FullHouse = 2;
-    Flush = 3;
-    Straight = 4;
-    ThreeKind = 5;
-    TwoPair = 6;
-    OnePair = 7;
-    HighCard = 8;
-
-    BadugiFour = 9;
-    BadugiThree = 10;
-    BadugiTwo = 11;
-    BadugiOne = 12;
-
-    CompleteLow = 13;
-    IncompleteLow = 14;
-  }
   required RankType Rank = 1;
   required bytes Value = 2;
   optional bytes High = 3;
@@ -253,14 +257,15 @@ message DeclareHand {
   required Hand Hand = 3;
 }
 
+enum DealEventType {
+  AskBet = 1;
+  AskDiscard = 2;
+  ShowPot = 3;
+  ShowWinner = 4;
+  ShowHand = 5;
+}
+
 message DealEvent {
-  enum DealEventType {
-    AskBet = 1;
-    AskDiscard = 2;
-    ShowPot = 3;
-    ShowWinner = 4;
-    ShowHand = 5;
-  }
   required DealEventType Type = 1;
   optional RequireBet RequireBet = 2;
   optional RequireDiscard RequireDiscard = 3;

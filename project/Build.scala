@@ -33,9 +33,7 @@ object PokernoBuild extends Build {
     //"org.msgpack" % "msgpack" % "0.6.8",
     "com.dyuproject.protostuff" % "protostuff-core" % "1.0.7",
     "com.dyuproject.protostuff" % "protostuff-json" % "1.0.7",
-    "com.dyuproject.protostuff" % "protostuff-api" % "1.0.7",
-    "com.dyuproject.protostuff" % "protostuff-runtime" % "1.0.7",
-    "com.dyuproject.protostuff" % "protostuff-compiler" % "1.0.7"
+    "com.dyuproject.protostuff" % "protostuff-runtime" % "1.0.7"
   )
   
   lazy val testDeps = Seq(

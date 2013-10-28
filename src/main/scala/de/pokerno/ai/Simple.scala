@@ -1,10 +1,10 @@
-package pokerno.backend.ai
+package de.pokerno.ai
 
 import pokerno.backend.model._
 import pokerno.backend.poker._
 import pokerno.backend.poker.Math._
-
 import scala.math.{ BigDecimal ⇒ Decimal }
+import scala.math.{BigDecimal => Decimal}
 
 trait Simple {
   def stake: Stake

@@ -17,8 +17,8 @@ case class AddBet(
     var player: model.Player,
     var bet: model.Bet) extends ActionEventBase with HasPlayer {
   def this() = this(0, null, null)
-  def getBet: Bet = new Bet()
-  def setBet(v: Bet) = {}
+  override def getBet: Bet = new Bet()
+  override def setBet(v: Bet) = {}
   @BeanProperty var eType = ActionEventType.AddBet
 }
 

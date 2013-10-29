@@ -106,7 +106,7 @@ abstract class SeatEventBase extends Message {
 }
 
 class SeatEvent(_type: SeatEventType) extends SeatEventBase {
-  eType = _type
+  @BeanProperty var eType = _type
   
   def this() = this(null)
 }

@@ -9,19 +9,19 @@ import de.pokerno.model
 class CodecSpec extends FunSpec with ClassicMatchers {
   describe("Codec") {
     describe("MsgPack") {
-      describe("pack/unpack") {
-        it("ButtonChange") {
-          val msg = ButtonChange(6)
-          val data = Codec.MsgPack.encode(msg)
-          val recover = Codec.MsgPack.decode[ButtonChange](data)
-          recover.button should equal(msg.button)
-        }
+      it("ButtonChange") {
+        val msg = ButtonChange(6)
+        val data = Codec.MsgPack.encode(msg)
+        val recover = Codec.MsgPack.decode[ButtonChange](data)
+        recover.button should equal(msg.button)
       }
     }
 
     describe("Protobuf") {
-      import com.dyuproject.protostuff._
-      it("pack") {
+      it("ButtonChange") {
+        val msg = ButtonChange(6)
+        val data = Codec.Protobuf.encode(msg)
+        throw new Exception("got: %s".format(data))
       }
     }
     

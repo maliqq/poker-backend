@@ -6,7 +6,8 @@ import de.pokerno.model
 import scala.reflect._
 import org.msgpack.annotation.{ Message => MsgPack }
 
-trait Message
+trait Message {
+}
 
 /**
  * Action event

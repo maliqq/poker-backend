@@ -75,8 +75,6 @@ trait ActionEventBase extends Message {
   
   def getBet: Bet = null
   def setBet(b: Bet) = {}
-  
-  lazy val schema = new ActionEventSchema
 }
 
 @MsgPack
@@ -97,7 +95,6 @@ class ActionEvent extends ActionEventBase {
 }
 
 trait GameplayEventBase extends Message {
-  lazy val schema = new GameplayEventSchema
   def `type`: GameplayEventType
 }
 
@@ -109,7 +106,6 @@ class GameplayEvent extends GameplayEventBase {
 }
 
 trait StageEventBase extends Message {
-  lazy val schema = new StageEventSchema
   def `type`: StageEventType
   def stage: StageType
 }
@@ -121,7 +117,6 @@ class StageEvent extends StageEventBase {
 }
 
 trait TableEventBase extends Message {
-  lazy val schema = new TableEventSchema
   def `type`: TableEventType
 }
 
@@ -133,7 +128,6 @@ class TableEvent extends TableEventBase {
 }
 
 trait SeatEventBase extends Message {
-  lazy val schema = new SeatEventSchema
   def `type`: SeatEventType
   @BeanProperty var pos: Integer = null
   @BeanProperty var seat: Seat = null
@@ -147,7 +141,6 @@ class SeatEvent(_type: SeatEventType) extends SeatEventBase {
 }
 
 trait DealEventBase extends Message {
-  lazy val schema = new DealEventSchema
   def `type`: DealEventType
 }
 
@@ -161,7 +154,6 @@ class DealEvent extends DealEventBase {
 }
 
 trait MsgBase extends Message {
-  lazy val schema = new MsgSchema
   def `type`: MsgType
 }
 
@@ -172,7 +164,6 @@ class Msg extends MsgBase {
 }
 
 trait CmdBase extends Message {
-  lazy val schema = new CmdSchema
   def `type`: CmdType
 }
 

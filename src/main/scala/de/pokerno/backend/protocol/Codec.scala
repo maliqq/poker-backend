@@ -3,6 +3,7 @@ package de.pokerno.backend.protocol
 import scala.collection.mutable.{ Map => MMap }
 import org.msgpack.annotation.{ Message => MsgPack }
 import org.msgpack.ScalaMessagePack
+import org.omg.CORBA_2_3.portable.OutputStream
 
 abstract class Codec {
 //  def encode[T <: Message](msg: T)(implicit manifest: Manifest[T]): Array[Byte]
@@ -28,6 +29,13 @@ object Codec {
   object Json extends Codec {
   }
   
-  class Protobuf extends Codec {
+  object Protobuf extends Codec {
+    import com.dyuproject.protostuff
+
+    def encode[T <: Message](msg: T) = {
+      val schema: protostuff.Schema[T] = protostuff.runtime.RuntimeSchema.getSchema(msg.getClass.asInstanceOf[Class[T]])
+      val buf = protostuff.LinkedBuffer.allocate(protostuff.LinkedBuffer.DEFAULT_BUFFER_SIZE)
+      protostuff.ProtostuffIOUtil.toByteArray(msg, schema, buf)
+    }
   }
 }

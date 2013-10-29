@@ -3,9 +3,9 @@ package de.pokerno.backend.protocol;
 option java_schema_field_accessors = true;
 
 enum MsgType {
-  Error = 1;
-  Chat = 2;
-  Dealer = 3;
+  ERROR = 1;
+  CHAT = 2;
+  DEALER = 3;
 }
 
 message Msg {
@@ -15,19 +15,19 @@ message Msg {
 
 // Seat event
 enum SeatState {
-  Empty = 0;
-  Taken = 1;
-  Ready = 2;
+  EMPTY = 0;
+  TAKEN = 1;
+  READY = 2;
 
-  WaitBB = 3;
-  PostBB = 4;
+  WAIT_BB = 3;
+  POST_BB = 4;
 
-  Playing = 5;
-  AllIn = 7;
-  Auto = 9;
+  PLAY = 5;
+  ALL_IN = 7;
+  AUTO = 9;
 
-  Idle = 10;
-  Away = 11;
+  IDLE = 10;
+  AWAY = 11;
 }
 
 message Seat {
@@ -44,10 +44,10 @@ message Table {
 }
 
 enum SeatEventType {
-  PlayerChange = 1;
-  StateChange = 2;
-  StackAmountChange = 3;
-  PutAmountChange = 4;
+  PLAYER = 1;
+  STATE = 2;
+  STACK_AMOUNT = 3;
+  PUT_AMOUNT = 4;
 }
 
 message SeatEvent {
@@ -64,23 +64,23 @@ message Range {
 }
 
 enum BetType {
-  Ante = 1;
-  BringIn = 2;
-  SmallBlind = 3;
-  BigBlind = 4;
-  GuestBlind = 5;
-  Straddle = 6;
+  ANTE = 1;
+  BRING_IN = 2;
+  SB = 3;
+  BB = 4;
+  GUEST_BLIND = 5;
+  STRADDLE = 6;
 
-  Raise = 7;
-  Call = 8;
-  Check = 9;
-  Fold = 10;
+  RAISE = 7;
+  CALL = 8;
+  CHECK = 9;
+  FOLD = 10;
 
-  Discard = 11;
-  StandPat = 12;
+  DISCARD = 11;
+  STAND_PAT = 12;
 
-  Show = 13;
-  Muck = 14;
+  SHOW = 13;
+  MUCK = 14;
 }
 
 message Bet {
@@ -89,14 +89,12 @@ message Bet {
 }
 
 enum ActionEventType {
-  DiscardCards = 2;
-  ShowCards = 3;
-  AddBet = 4;
+  DISCARD_CARDS = 2;
+  SHOW_CARDS = 3;
+  ADD_BET = 4;
 }
 
 message ActionEvent {
-  option java_schema_field_accessors=false;
-
   required ActionEventType EType = 1;
 
   optional int32 Pos = 2;
@@ -111,12 +109,12 @@ message ActionEvent {
 
 // Table event
 enum TableEventType {
-  ButtonChange = 1;
-  TableStateChange = 2;
+  BUTTON = 1;
+  STATE = 2;
 }
 
 enum TableState {
-  Active = 1;
+  ACTIVE = 1;
 }
 
 message TableEvent {
@@ -127,26 +125,26 @@ message TableEvent {
 
 // Gameplay event
 enum GameType {
-  Texas = 0;
-  Omaha = 1;
-  Omaha8 = 2;
+  TEXAS = 0;
+  OMAHA = 1;
+  OMAHA_8 = 2;
 
-  Stud = 3;
-  Stud8 = 4;
-  Razz = 9;
-  London = 10;
+  STUD = 3;
+  STUD_8 = 4;
+  RAZZ = 9;
+  LONDON = 10;
 
-  FiveCard = 11;
-  Single27 = 12;
-  Triple27 = 13;
+  FIVE_CARD = 11;
+  SINGLE_27 = 12;
+  TRIPLE_27 = 13;
 
-  Badugi = 14;
+  BADUGI = 14;
 }
 
 enum GameLimit {
-  NoLimit = 0;
-  PotLimit = 1;
-  FixedLimit = 2;
+  NL = 0;
+  PL = 1;
+  FL = 2;
 }
 
 message Game {
@@ -163,8 +161,8 @@ message Stake {
 }
 
 enum GameplayEventType {
-  GameChange = 1;
-  StakeChange = 2;
+  GAME = 1;
+  STAKE = 2;
 }
 
 message GameplayEvent {
@@ -175,13 +173,13 @@ message GameplayEvent {
 
 // Stage event
 enum StageEventType {
-  Start = 1;
-  Stop = 2;
+  START = 1;
+  STOP = 2;
 }
 
 enum StageType { // stages hierarchy
-  Play = 1;
-  Street = 2;
+  PLAY = 1;
+  STREET = 2;
 }
 
 message StageEvent {
@@ -191,9 +189,9 @@ message StageEvent {
 
 // Deal event
 enum DealType {
-  Board = 1;
-  Hole = 2;
-  Door = 3;
+  BOARD = 1;
+  HOLE = 2;
+  DOOR = 3;
 }
 
 message DealCards {
@@ -228,23 +226,23 @@ message DeclareWinner {
 }
 
 enum RankType {
-  StraightFlush = 0;
-  FourKind = 1;
-  FullHouse = 2;
-  Flush = 3;
-  Straight = 4;
-  ThreeKind = 5;
-  TwoPair = 6;
-  OnePair = 7;
-  HighCard = 8;
+  STRAIGHT_FLUSH = 0;
+  FOUR_KIND = 1;
+  FULL_HOUSE = 2;
+  FLUSH = 3;
+  STRAIGHT = 4;
+  THREE_KIND = 5;
+  TWO_PAIR = 6;
+  ONE_PAIR = 7;
+  HIGH_CARD = 8;
 
-  BadugiFour = 9;
-  BadugiThree = 10;
-  BadugiTwo = 11;
-  BadugiOne = 12;
+  BADUGI4 = 9;
+  BADUGI3 = 10;
+  BADUGI2 = 11;
+  BADUGI1 = 12;
 
-  CompleteLow = 13;
-  IncompleteLow = 14;
+  LOW = 13;
+  NOT_LOW = 14;
 }
 
 message Hand {
@@ -262,20 +260,20 @@ message DeclareHand {
 }
 
 enum DealEventType {
-  Deal = 1;
-  AskBet = 2;
-  AskDiscard = 3;
-  ShowPot = 4;
-  ShowWinner = 5;
-  ShowHand = 6;
+  DEAL_CARDS = 1;
+  REQUIRE_BET = 2;
+  REQUIRE_DISCARD = 3;
+  DECLARE_POT = 4;
+  DECLARE_WINNER = 5;
+  DECLARE_HAND = 6;
 }
 
 message DealEvent {
   required DealEventType EType = 1;
   optional RequireBet RequireBet = 2;
   optional RequireDiscard RequireDiscard = 3;
-  optional DeclarePot Pot = 4;
-  optional DeclareWinner Winner = 5;
+  optional DeclarePot DeclarePot = 4;
+  optional DeclareWinner DeclareWinner = 5;
 }
 
 message JoinTable {
@@ -284,23 +282,32 @@ message JoinTable {
 }
 
 enum CmdType {
-  Join = 1;
-  Leave = 2;
-  SitOut = 3;
-  ComeBack = 4;
-  Act = 5;
+  JOIN_TABLE = 1;
+  LEAVE_TABLE = 2;
+  SIT_OUT = 3;
+  COME_BACK = 4;
+  ACTION = 5;
 }
 
 message Cmd {
   required CmdType CType = 1;
-  optional JoinTable Join = 2;
-  optional ActionEvent Act = 3;
+  optional JoinTable JoinTable = 2;
+  optional ActionEvent ActionEvent = 3;
+}
+
+enum EventType {
+  SEAT = 1;
+  ACTION = 2;
+  TABLE = 3;
+  GAMEPLAY = 4;
+  STAGE = 5;
 }
 
 message Event {
-  optional SeatEvent SeatEvent = 1;
-  optional ActionEvent ActionEvent = 2;
-  optional TableEvent TableEvent = 3;
-  optional GameplayEvent GameplayEvent = 4;
-  optional StageEvent StageEvent = 5;
+  required EventType EType = 1;
+  optional SeatEvent SeatEvent = 2;
+  optional ActionEvent ActionEvent = 3;
+  optional TableEvent TableEvent = 4;
+  optional GameplayEvent GameplayEvent = 5;
+  optional StageEvent StageEvent = 6;
 }

@@ -26,7 +26,21 @@ object Codec {
     }
   }
   
-  abstract class Json extends Codec {
+  class Json extends Codec {
+    import com.dyuproject.protostuff
+    
+    def encode[T <: Message](msg: T) = {
+      val schema: protostuff.Schema[T] = protostuff.runtime.RuntimeSchema.getSchema(msg.getClass.asInstanceOf[Class[T]])
+      val buf = protostuff.LinkedBuffer.allocate(protostuff.LinkedBuffer.DEFAULT_BUFFER_SIZE)
+      protostuff.JsonIOUtil.toByteArray(msg, schema, false)
+    }
+    
+    def decode[T <: Message](data: Array[Byte])(implicit manifest: Manifest[T]): T = {
+      val schema: protostuff.Schema[T] = protostuff.runtime.RuntimeSchema.getSchema(manifest.erasure.asInstanceOf[Class[T]])
+      val v: T = schema.newMessage
+      protostuff.JsonIOUtil.mergeFrom(data, v, schema, false)
+      v
+    }
   }
   
   object Protobuf extends Codec {

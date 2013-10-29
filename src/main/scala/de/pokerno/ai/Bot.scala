@@ -50,7 +50,7 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
     case message.DealCards(_type, _cards, _pos, _player, _cardsNum) ⇒ _type match {
       case Dealer.Board =>
         board ++= _cards
-      case Dealer.Hole | Dealer.Door if (_pos.get == pos) =>
+      case Dealer.Hole | Dealer.Door if (_pos == pos) =>
         cards ++= _cards
         Console printf("*** BOT #%d: %s\n", pos, Cards(cards) toConsoleString)
     }

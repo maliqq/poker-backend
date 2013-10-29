@@ -28,7 +28,7 @@ class PlayerActor(i: Int, gameplay: Gameplay, instance: ActorRef) extends Actor 
       become({
         case message.DealCards(_type, cards, pos, player, cardsNum) ⇒ _type match {
           case Dealer.Hole | Dealer.Door =>
-            Console printf ("Dealt %s %s to %d\n", _type, Cards(cards) toConsoleString, pos get)
+            Console printf ("Dealt %s %s to %d\n", _type, Cards(cards) toConsoleString, pos)
           case Dealer.Board =>
             Console printf ("Dealt %s %s\n", _type, Cards(cards) toConsoleString)
           case _                         ⇒

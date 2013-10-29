@@ -2,10 +2,13 @@ package de.pokerno.backend.protocol
 
 import de.pokerno.model
 import de.pokerno.poker
+
 import scala.reflect._
 import scala.math.{BigDecimal => Decimal}
 import com.dyuproject.protostuff.ByteString;
+import org.msgpack.annotation.{ Message => MsgPack }
 
+@MsgPack
 case class Bet(
   @BeanProperty var bType: BetType,
   @BeanProperty var amount: java.lang.Double
@@ -13,20 +16,23 @@ case class Bet(
   def this() = this(null, .0)
 }
 
+@MsgPack
 class Game {
   @BeanProperty var gType: GameType = null
   @BeanProperty var limit: GameLimit = null
   @BeanProperty var tableSize: Int = 0
 }
 
+@MsgPack
 class Hand {
   @BeanProperty var rank: RankType = null
-  @BeanProperty var value: List[Byte] = null
-  @BeanProperty var high: List[Byte] = null
-  @BeanProperty var kicker: List[Byte] = null
+  @BeanProperty var value: ByteString = null
+  @BeanProperty var high: ByteString = null
+  @BeanProperty var kicker: ByteString = null
   @BeanProperty var string: String = ""
 }
 
+@MsgPack
 case class Range(
   @BeanProperty var min: Double,
   @BeanProperty var max: Double
@@ -34,6 +40,7 @@ case class Range(
   def this() = this(.0, .0)
 }
 
+@MsgPack
 class Seat {
   @BeanProperty var state: SeatState = null
   @BeanProperty var player: String = null
@@ -41,6 +48,7 @@ class Seat {
   @BeanProperty var putAmount: java.lang.Double = null
 }
 
+@MsgPack
 class Stake {
   @BeanProperty var bigBlind: java.lang.Double = null
   @BeanProperty var smallBlind: java.lang.Double = null
@@ -48,10 +56,11 @@ class Stake {
   @BeanProperty var bringIn: java.lang.Double = null
 }
 
+@MsgPack
 class Table {
   @BeanProperty var size: Int = 0
   @BeanProperty var button: Int = 0
-  @BeanProperty var seats: List[Seat] = null
+  @BeanProperty var seats: java.util.ArrayList[Seat] = null
 }
 
 trait ActionEventBase extends Message {
@@ -61,24 +70,29 @@ trait ActionEventBase extends Message {
   
   @BeanProperty var cardsNum: Integer = null
   
-  def amount: Any
   def getAmount: java.lang.Double = null
   def setAmount(v: java.lang.Double) = {}
   
-  def bet: Any
   def getBet: Bet = null
   def setBet(b: Bet) = {}
   
   lazy val schema = new ActionEventSchema
 }
 
-class ActionEvent extends ActionEventBase with HasPlayer with HasCards {
+@MsgPack
+class ActionEvent extends ActionEventBase {
   @BeanProperty override var eType: ActionEventType = null
   @BeanProperty override var pos: Integer = null
-  @BeanProperty override var amount: java.lang.Double = null
-  @BeanProperty override var bet: Bet = null
+  
+  var amount: java.lang.Double = null
+  override def getAmount: java.lang.Double = amount
+  override def setAmount(v: java.lang.Double) = amount = v
+  
+  var bet: Bet = null
+  override def getBet: Bet = bet
+  override def setBet(v: Bet) = bet = v
+  
   @BeanProperty var cards: ByteString = null
-  @BeanProperty var cardsNum: Integer = null
   @BeanProperty var player: String = null
 }
 
@@ -87,6 +101,7 @@ trait GameplayEventBase extends Message {
   def eType: GameplayEventType
 }
 
+@MsgPack
 class GameplayEvent extends GameplayEventBase {
   @BeanProperty var eType: GameplayEventType = null
   @BeanProperty var game: Game = null
@@ -99,6 +114,7 @@ trait StageEventBase extends Message {
   def stage: StageType
 }
 
+@MsgPack
 class StageEvent extends StageEventBase {
   @BeanProperty var eType: StageEventType = null
   @BeanProperty var stage: StageType = null
@@ -109,8 +125,25 @@ trait TableEventBase extends Message {
   def eType: TableEventType
 }
 
+@MsgPack
 class TableEvent extends TableEventBase {
   @BeanProperty var eType: TableEventType = null
+  @BeanProperty var button: Integer = null
+  @BeanProperty var state: TableState = null
+}
+
+trait SeatEventBase extends Message {
+  lazy val schema = new SeatEventSchema
+  def eType: SeatEventType
+  @BeanProperty var pos: Integer = null
+  @BeanProperty var seat: Seat = null
+}
+
+@MsgPack
+class SeatEvent(_type: SeatEventType) extends SeatEventBase {
+  @BeanProperty var eType = _type
+  
+  def this() = this(null)
 }
 
 trait DealEventBase extends Message {
@@ -118,13 +151,13 @@ trait DealEventBase extends Message {
   def eType: DealEventType
 }
 
+@MsgPack
 class DealEvent extends DealEventBase {
   @BeanProperty var eType: DealEventType = null
   @BeanProperty var requireBet: RequireBet = null
   @BeanProperty var requireDiscard: RequireDiscard = null
   @BeanProperty var declarePot: DeclarePot = null
   @BeanProperty var declareWinner: DeclareWinner = null
-
 }
 
 trait MsgBase extends Message {
@@ -132,6 +165,7 @@ trait MsgBase extends Message {
   def mType: MsgType
 }
 
+@MsgPack
 class Msg extends MsgBase {
   @BeanProperty var mType: MsgType = null
   @BeanProperty var body: String = null
@@ -142,25 +176,14 @@ trait CmdBase extends Message {
   def cType: CmdType
 }
 
+@MsgPack
 class Cmd extends CmdBase {
   @BeanProperty var cType: CmdType = null
   @BeanProperty var joinTable: JoinTable = null
   @BeanProperty var actionEvent: ActionEvent = null
 }
 
-trait SeatEventBase extends Message {
-  lazy val schema = new SeatEventSchema
-  def eType: SeatEventType
-  @BeanProperty var pos: Integer = null
-  @BeanProperty var seat: Seat = null
-}
-
-class SeatEvent(_type: SeatEventType) extends SeatEventBase {
-  @BeanProperty var eType = _type
-  
-  def this() = this(null)
-}
-
+@MsgPack
 class Event extends Message {
   @BeanProperty var eType: EventType = null
   @BeanProperty var seatEvent: SeatEvent = null

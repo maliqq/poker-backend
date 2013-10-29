@@ -12,6 +12,9 @@ abstract class Codec {
 object Codec {
   object MsgPack extends Codec {
     import org.msgpack.ScalaMessagePack._
+
+    val msgpack = org.msgpack.ScalaMessagePack.messagePack
+    msgpack.register(classOf[TableEventType])
     
     def encode(msg: Message): Array[Byte] = {
       pack(msg)

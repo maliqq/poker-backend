@@ -23,7 +23,7 @@ trait Dealing {
                   message.DealCards(_type, cards, pos = pos),
                 events.One(seat.player.get.id))
               events.publish(
-                  message.DealCards(_type, pos = pos, cardsNum = Some(n))
+                  message.DealCards(_type, pos = pos, cardsNum = n)
                 )
             } else events.publish(message.DealCards(_type, cards, pos = pos))
         }

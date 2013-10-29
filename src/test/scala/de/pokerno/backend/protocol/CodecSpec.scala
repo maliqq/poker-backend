@@ -4,15 +4,15 @@ import org.scalatest.FunSpec
 import org.scalatest.matchers._
 import org.scalatest.matchers.ShouldMatchers._
 
-import de.pokerno.model.{ Player, Bet }
+import de.pokerno.model
 
 class CodecSpec extends FunSpec with ClassicMatchers {
   describe("Codec") {
     describe("MsgPack") {
       it("pack") {
-        val msg = Message.ButtonChange(6)
+        val msg = ButtonChange(6)
         val data = Codec.MsgPack.encode(msg)
-        val recover = Codec.MsgPack.decode[Message.ButtonChange](data)
+        val recover = Codec.MsgPack.decode[ButtonChange](data)
         recover.button should equal(msg.button)
       }
     }

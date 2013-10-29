@@ -12,8 +12,8 @@ trait Message
  * Action event
  * */
 @MsgPack
-case class AddBet(
-    @BeanProperty var pos: Int,
+sealed case class AddBet(
+    @BeanProperty var pos: Integer,
     var player: model.Player,
     var bet: model.Bet) extends ActionEventBase with HasPlayer {
   def this() = this(0, null, null)
@@ -23,7 +23,7 @@ case class AddBet(
 }
 
 @MsgPack
-case class DiscardCards(
+sealed case class DiscardCards(
     @BeanProperty var pos: Integer,
     var player: model.Player,
     var cards: List[poker.Card]) extends ActionEventBase with HasPlayer with HasCards {
@@ -35,8 +35,8 @@ case class DiscardCards(
  * Table event
  * */
 @MsgPack
-case class ButtonChange(
-    @BeanProperty button: Int) extends TableEventBase {
+sealed case class ButtonChange(
+    @BeanProperty var button: Int) extends TableEventBase {
   def this() = this(0)
   @BeanProperty var eType = TableEventType.BUTTON
 }
@@ -44,14 +44,14 @@ case class ButtonChange(
  * Gameplay event
  * */
 @MsgPack
-case class GameChange(
+sealed case class GameChange(
     game: model.Game) extends GameplayEventBase {
   def this() = this(null)
   @BeanProperty var eType = GameplayEventType.GAME
 }
 
 @MsgPack
-case class StakeChange(
+sealed case class StakeChange(
     stake: model.Game) extends GameplayEventBase {
   def this() = this(null)
   @BeanProperty var eType = GameplayEventType.STAKE
@@ -61,7 +61,7 @@ case class StakeChange(
  * Stage event
  * */
 @MsgPack
-case class PlayStart(
+sealed case class PlayStart(
     game: model.Game,
     stake: model.Stake) extends StageEventBase {
   def this() = this(null, null)
@@ -70,14 +70,14 @@ case class PlayStart(
 }
 
 @MsgPack
-case class PlayStop() extends StageEventBase {
+sealed case class PlayStop() extends StageEventBase {
   @BeanProperty var stage = StageType.PLAY
   @BeanProperty var eType = StageEventType.STOP
   //def this() = this()
 }
 
 @MsgPack
-case class StreetStart(name: String) extends StageEventBase {
+sealed case class StreetStart(name: String) extends StageEventBase {
   @BeanProperty var stage = StageType.STREET
   @BeanProperty var eType = StageEventType.START
   def this() = this("")
@@ -87,18 +87,21 @@ case class StreetStart(name: String) extends StageEventBase {
  * Deal event
  * */
 @MsgPack
-case class DealCards(
-    _type: model.Dealer.DealType,
+sealed case class DealCards(
+    dType: model.Dealer.DealType,
     var cards: List[poker.Card] = List.empty,
-    @BeanProperty pos: Integer = null,
+    @BeanProperty var pos: Integer = null,
     var player: model.Player = null,
-    @BeanProperty cardsNum: Option[Int] = None) extends DealEventBase with HasPlayer with HasCards {
+    @BeanProperty var cardsNum: Integer = null) extends DealEventBase with HasPlayer with HasCards {
   def this() = this(null)
   @BeanProperty var eType = DealEventType.DEAL_CARDS
+  
+  def getDType: DealType = null // FIXME
+  def setDType(v: DealType) = {} // FIXME
 }
 
 @MsgPack
-case class RequireBet(
+sealed case class RequireBet(
     @BeanProperty var pos: Integer,
     var player: model.Player,
     var call: Decimal,
@@ -113,7 +116,7 @@ case class RequireBet(
 }
 
 @MsgPack
-case class RequireDiscard(
+sealed case class RequireDiscard(
     @BeanProperty var pos: Int,
     var player: model.Player) extends DealEventBase with HasPlayer {
   def this() = this(0, null)
@@ -121,22 +124,26 @@ case class RequireDiscard(
 }
 
 @MsgPack
-case class DeclarePot(
+sealed case class DeclarePot(
     var pot: Decimal,
     var rake: Option[Decimal] = None) extends DealEventBase {
   def this() = this(.0)
   
   @BeanProperty var eType = DealEventType.DECLARE_POT
   
-  def getPot: Double = pot.toDouble
-  def setPot(v: Double) = pot = v
+  def getPot: java.lang.Double = pot.toDouble
+  def setPot(v: java.lang.Double) = pot = v.toDouble
   
-  def getRake: Double = rake.map(_.toDouble).getOrElse(.0)
-  def setRake(v: Double) = rake = Some(v)
+  def getRake: java.lang.Double = rake match {
+    case Some(v) => v.toDouble
+    case _ => null
+  }
+  
+  def setRake(v: java.lang.Double) = rake = Some(v.toDouble)
 }
 
 @MsgPack
-case class DeclareHand(
+sealed case class DeclareHand(
     @BeanProperty var pos: Int,
     var player: model.Player,
     var cards: List[poker.Card],
@@ -148,7 +155,7 @@ case class DeclareHand(
 }
 
 @MsgPack
-case class DeclareWinner(
+sealed case class DeclareWinner(
     @BeanProperty var pos: Int,
     var player: model.Player,
     var amount: Decimal) extends DealEventBase with HasPlayer with HasAmount {
@@ -160,7 +167,7 @@ case class DeclareWinner(
  * Command
  * */
 @MsgPack
-case class JoinTable(
+sealed case class JoinTable(
     @BeanProperty var pos: Integer,
     var amount: Decimal,
     var player: model.Player) extends CmdBase with HasPlayer with HasAmount {
@@ -170,19 +177,19 @@ case class JoinTable(
 /**
  * Msg
  * */
-case class Chat(
+sealed case class Chat(
     @BeanProperty var body: String) extends MsgBase {
   def this() = this("")
   @BeanProperty var mType: MsgType = MsgType.CHAT
 }
 
-case class Dealer(
+sealed case class Dealer(
     @BeanProperty var body: String) extends MsgBase {
   def this() = this("")
   @BeanProperty var mType: MsgType = MsgType.DEALER
 }
 
-case class Error(
+sealed case class Error(
     @BeanProperty var body: String) extends MsgBase {
   def this() = this("")
   @BeanProperty var mType: MsgType = MsgType.ERROR

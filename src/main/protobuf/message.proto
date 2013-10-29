@@ -196,9 +196,9 @@ enum DealType {
 
 message DealCards {
   required DealType DType = 1;
-  optional int32 Pos = 2;
-  optional string Player = 3;
-  repeated bytes Cards = 4;
+  optional bytes Cards = 2;
+  optional int32 Pos = 3;
+  optional string Player = 4;
   optional int32 CardsNum = 5;
 }
 

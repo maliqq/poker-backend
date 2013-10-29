@@ -9,7 +9,7 @@ enum MsgType {
 }
 
 message Msg {
-  required MsgType MType = 1;
+  required MsgType Type = 1;
   required string Body = 2;
 }
 
@@ -51,7 +51,7 @@ enum SeatEventType {
 }
 
 message SeatEvent {
-  required SeatEventType EType = 1;
+  required SeatEventType Type = 1;
   required int32 Pos = 2;
   required Seat Seat = 3;
 }
@@ -84,7 +84,7 @@ enum BetType {
 }
 
 message Bet {
-  required BetType BType = 1;
+  required BetType Type = 1;
   optional double Amount = 2;
 }
 
@@ -95,7 +95,7 @@ enum ActionEventType {
 }
 
 message ActionEvent {
-  required ActionEventType EType = 1;
+  required ActionEventType Type = 1;
 
   optional int32 Pos = 2;
   optional string Player = 3;
@@ -118,7 +118,7 @@ enum TableState {
 }
 
 message TableEvent {
-  required TableEventType EType = 1;
+  required TableEventType Type = 1;
   optional int32 Button = 2;
   optional TableState State = 3;
 }
@@ -148,7 +148,7 @@ enum GameLimit {
 }
 
 message Game {
-  required GameType GType = 1;
+  required GameType Type = 1;
   required GameLimit Limit = 2;
   required int32 TableSize = 3;
 }
@@ -166,7 +166,7 @@ enum GameplayEventType {
 }
 
 message GameplayEvent {
-  required GameplayEventType EType = 1;
+  required GameplayEventType Type = 1;
   optional Game Game = 2;
   optional Stake Stake = 3;
 }
@@ -183,19 +183,19 @@ enum StageType { // stages hierarchy
 }
 
 message StageEvent {
-  required StageEventType EType = 1;
+  required StageEventType Type = 1;
   required StageType Stage = 2;
 }
 
 // Deal event
-enum DealType {
+enum DealerDealType {
   BOARD = 1;
   HOLE = 2;
   DOOR = 3;
 }
 
 message DealCards {
-  required DealType DType = 1;
+  required DealerDealType DealType = 1;
   optional bytes Cards = 2;
   optional int32 Pos = 3;
   optional string Player = 4;
@@ -269,7 +269,7 @@ enum DealEventType {
 }
 
 message DealEvent {
-  required DealEventType EType = 1;
+  required DealEventType Type = 1;
   optional RequireBet RequireBet = 2;
   optional RequireDiscard RequireDiscard = 3;
   optional DeclarePot DeclarePot = 4;
@@ -290,7 +290,7 @@ enum CmdType {
 }
 
 message Cmd {
-  required CmdType CType = 1;
+  required CmdType Type = 1;
   optional JoinTable JoinTable = 2;
   optional ActionEvent ActionEvent = 3;
 }
@@ -304,7 +304,7 @@ enum EventType {
 }
 
 message Event {
-  required EventType EType = 1;
+  required EventType Type = 1;
   optional SeatEvent SeatEvent = 2;
   optional ActionEvent ActionEvent = 3;
   optional TableEvent TableEvent = 4;

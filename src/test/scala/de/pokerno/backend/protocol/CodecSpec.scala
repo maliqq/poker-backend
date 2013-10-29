@@ -9,11 +9,13 @@ import de.pokerno.model
 class CodecSpec extends FunSpec with ClassicMatchers {
   describe("Codec") {
     describe("MsgPack") {
-      it("pack") {
-        val msg = ButtonChange(6)
-        val data = Codec.MsgPack.encode(msg)
-        val recover = Codec.MsgPack.decode[ButtonChange](data)
-        recover.button should equal(msg.button)
+      describe("pack/unpack") {
+        it("ButtonChange") {
+          val msg = ButtonChange(6)
+          val data = Codec.MsgPack.encode(msg)
+          val recover = Codec.MsgPack.decode[ButtonChange](data)
+          recover.button should equal(msg.button)
+        }
       }
     }
 

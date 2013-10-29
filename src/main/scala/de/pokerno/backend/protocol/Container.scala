@@ -10,7 +10,7 @@ import org.msgpack.annotation.{ Message => MsgPack }
 
 @MsgPack
 case class Bet(
-  @BeanProperty var bType: BetType,
+  @BeanProperty var `type`: BetType,
   @BeanProperty var amount: java.lang.Double
 ) {
   def this() = this(null, .0)
@@ -18,7 +18,7 @@ case class Bet(
 
 @MsgPack
 class Game {
-  @BeanProperty var gType: GameType = null
+  @BeanProperty var `type`: GameType = null
   @BeanProperty var limit: GameLimit = null
   @BeanProperty var tableSize: Int = 0
 }
@@ -64,7 +64,7 @@ class Table {
 }
 
 trait ActionEventBase extends Message {
-  @BeanProperty var eType: ActionEventType
+  @BeanProperty var `type`: ActionEventType
   
   @BeanProperty var pos: Integer
   
@@ -81,7 +81,7 @@ trait ActionEventBase extends Message {
 
 @MsgPack
 class ActionEvent extends ActionEventBase {
-  @BeanProperty override var eType: ActionEventType = null
+  @BeanProperty override var `type`: ActionEventType = null
   @BeanProperty override var pos: Integer = null
   
   var amount: java.lang.Double = null
@@ -98,62 +98,62 @@ class ActionEvent extends ActionEventBase {
 
 trait GameplayEventBase extends Message {
   lazy val schema = new GameplayEventSchema
-  def eType: GameplayEventType
+  def `type`: GameplayEventType
 }
 
 @MsgPack
 class GameplayEvent extends GameplayEventBase {
-  @BeanProperty var eType: GameplayEventType = null
+  @BeanProperty var `type`: GameplayEventType = null
   @BeanProperty var game: Game = null
   @BeanProperty var stake: Stake = null
 }
 
 trait StageEventBase extends Message {
   lazy val schema = new StageEventSchema
-  def eType: StageEventType
+  def `type`: StageEventType
   def stage: StageType
 }
 
 @MsgPack
 class StageEvent extends StageEventBase {
-  @BeanProperty var eType: StageEventType = null
+  @BeanProperty var `type`: StageEventType = null
   @BeanProperty var stage: StageType = null
 }
 
 trait TableEventBase extends Message {
   lazy val schema = new TableEventSchema
-  def eType: TableEventType
+  def `type`: TableEventType
 }
 
 @MsgPack
 class TableEvent extends TableEventBase {
-  @BeanProperty var eType: TableEventType = null
+  @BeanProperty var `type`: TableEventType = null
   @BeanProperty var button: Integer = null
   @BeanProperty var state: TableState = null
 }
 
 trait SeatEventBase extends Message {
   lazy val schema = new SeatEventSchema
-  def eType: SeatEventType
+  def `type`: SeatEventType
   @BeanProperty var pos: Integer = null
   @BeanProperty var seat: Seat = null
 }
 
 @MsgPack
 class SeatEvent(_type: SeatEventType) extends SeatEventBase {
-  @BeanProperty var eType = _type
+  @BeanProperty var `type` = _type
   
   def this() = this(null)
 }
 
 trait DealEventBase extends Message {
   lazy val schema = new DealEventSchema
-  def eType: DealEventType
+  def `type`: DealEventType
 }
 
 @MsgPack
 class DealEvent extends DealEventBase {
-  @BeanProperty var eType: DealEventType = null
+  @BeanProperty var `type`: DealEventType = null
   @BeanProperty var requireBet: RequireBet = null
   @BeanProperty var requireDiscard: RequireDiscard = null
   @BeanProperty var declarePot: DeclarePot = null
@@ -162,30 +162,30 @@ class DealEvent extends DealEventBase {
 
 trait MsgBase extends Message {
   lazy val schema = new MsgSchema
-  def mType: MsgType
+  def `type`: MsgType
 }
 
 @MsgPack
 class Msg extends MsgBase {
-  @BeanProperty var mType: MsgType = null
+  @BeanProperty var `type`: MsgType = null
   @BeanProperty var body: String = null
 }
 
 trait CmdBase extends Message {
   lazy val schema = new CmdSchema
-  def cType: CmdType
+  def `type`: CmdType
 }
 
 @MsgPack
 class Cmd extends CmdBase {
-  @BeanProperty var cType: CmdType = null
+  @BeanProperty var `type`: CmdType = null
   @BeanProperty var joinTable: JoinTable = null
   @BeanProperty var actionEvent: ActionEvent = null
 }
 
 @MsgPack
 class Event extends Message {
-  @BeanProperty var eType: EventType = null
+  @BeanProperty var `type`: EventType = null
   @BeanProperty var seatEvent: SeatEvent = null
   @BeanProperty var actionEvent: ActionEvent = null
   @BeanProperty var stageEvent: StageEvent = null

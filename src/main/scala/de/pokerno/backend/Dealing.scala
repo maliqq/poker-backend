@@ -1,7 +1,7 @@
 package de.pokerno.backend
 
-
 import de.pokerno.model._
+import de.pokerno.backend.{protocol => message}
 
 trait Dealing {
   g: GameplayLike ⇒
@@ -20,12 +20,12 @@ trait Dealing {
             
             if (_type.isPrivate) {
               events.publish(
-                  protocol.Message.DealCards(_type, cards, pos = Some(pos)),
+                  message.DealCards(_type, cards, pos = Some(pos)),
                 events.One(seat.player.get.id))
               events.publish(
-                  protocol.Message.DealCards(_type, pos = Some(pos), cardsNum = Some(n))
+                  message.DealCards(_type, pos = Some(pos), cardsNum = Some(n))
                 )
-            } else events.publish(protocol.Message.DealCards(_type, cards, pos = Some(pos)))
+            } else events.publish(message.DealCards(_type, cards, pos = Some(pos)))
         }
 
       case Dealer.Board ⇒
@@ -34,7 +34,7 @@ trait Dealing {
 
         val cards = dealer dealBoard (cardsNum.get)
         events.publish(
-            protocol.Message.DealCards(_type, cards)
+            message.DealCards(_type, cards)
           )
     }
   }

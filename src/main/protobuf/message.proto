@@ -1,6 +1,6 @@
-package de.pokerno.proto;
+package de.pokerno.backend.protocol;
 
-option optimize_for = SPEED;
+option java_schema_field_accessors = true;
 
 enum MsgType {
   Error = 1;
@@ -9,7 +9,7 @@ enum MsgType {
 }
 
 message Msg {
-  required MsgType Type = 1;
+  required MsgType MType = 1;
   required string Body = 2;
 }
 
@@ -43,14 +43,15 @@ message Table {
   repeated Seat Seats = 4;
 }
 
+enum SeatEventType {
+  PlayerChange = 1;
+  StateChange = 2;
+  StackAmountChange = 3;
+  PutAmountChange = 4;
+}
+
 message SeatEvent {
-  enum SeatEventType {
-    PlayerChange = 1;
-    StateChange = 2;
-    StackAmountChange = 3;
-    PutAmountChange = 4;
-  }
-  required SeatEventType Type = 1;
+  required SeatEventType EType = 1;
   required int32 Pos = 2;
   required Seat Seat = 3;
 }
@@ -83,7 +84,7 @@ enum BetType {
 }
 
 message Bet {
-  required BetType Type = 1;
+  required BetType BType = 1;
   optional double Amount = 2;
 }
 
@@ -94,7 +95,9 @@ enum ActionEventType {
 }
 
 message ActionEvent {
-  required ActionEventType Type = 1;
+  option java_schema_field_accessors=false;
+
+  required ActionEventType EType = 1;
 
   optional int32 Pos = 2;
   optional string Player = 3;
@@ -117,7 +120,7 @@ enum TableState {
 }
 
 message TableEvent {
-  required TableEventType Type = 1;
+  required TableEventType EType = 1;
   optional int32 Button = 2;
   optional TableState State = 3;
 }
@@ -147,7 +150,7 @@ enum GameLimit {
 }
 
 message Game {
-  required GameType Type = 1;
+  required GameType GType = 1;
   required GameLimit Limit = 2;
   required int32 TableSize = 3;
 }
@@ -159,12 +162,13 @@ message Stake {
   optional double BringIn = 4;
 }
 
+enum GameplayEventType {
+  GameChange = 1;
+  StakeChange = 2;
+}
+
 message GameplayEvent {
-  enum GameplayEventType {
-    GameChange = 1;
-    StakeChange = 2;
-  }
-  required GameplayEventType Type = 1;
+  required GameplayEventType EType = 1;
   optional Game Game = 2;
   optional Stake Stake = 3;
 }
@@ -181,7 +185,7 @@ enum StageType { // stages hierarchy
 }
 
 message StageEvent {
-  required StageEventType Type = 1;
+  required StageEventType EType = 1;
   required StageType Stage = 2;
 }
 
@@ -193,7 +197,7 @@ enum DealType {
 }
 
 message DealCards {
-  required DealType Type = 1;
+  required DealType DType = 1;
   optional int32 Pos = 2;
   optional string Player = 3;
   repeated bytes Cards = 4;
@@ -258,15 +262,16 @@ message DeclareHand {
 }
 
 enum DealEventType {
-  AskBet = 1;
-  AskDiscard = 2;
-  ShowPot = 3;
-  ShowWinner = 4;
-  ShowHand = 5;
+  Deal = 1;
+  AskBet = 2;
+  AskDiscard = 3;
+  ShowPot = 4;
+  ShowWinner = 5;
+  ShowHand = 6;
 }
 
 message DealEvent {
-  required DealEventType Type = 1;
+  required DealEventType EType = 1;
   optional RequireBet RequireBet = 2;
   optional RequireDiscard RequireDiscard = 3;
   optional DeclarePot Pot = 4;
@@ -287,7 +292,7 @@ enum CmdType {
 }
 
 message Cmd {
-  required CmdType Type = 1;
+  required CmdType CType = 1;
   optional JoinTable Join = 2;
   optional ActionEvent Act = 3;
 }

@@ -12,6 +12,14 @@ abstract class Codec {
 object Codec {
   object MsgPack extends Codec {
     import org.msgpack.ScalaMessagePack._
+    
+    def encode(msg: Message): Array[Byte] = {
+      pack(msg)
+    }
+    
+    def decode[T <: Message](data: Array[Byte])(implicit manifest: Manifest[T]): T = {
+      unpack[T](data)
+    }
   }
   
   object Json extends Codec {

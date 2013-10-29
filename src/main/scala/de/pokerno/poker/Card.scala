@@ -2,7 +2,7 @@ package de.pokerno.poker
 
 import scala.collection.mutable.ListBuffer
 
-protected class Card(val kind: Kind.Value.Kind, val suit: Suit.Value) extends Ordered[Card] {
+class Card(val kind: Kind.Value.Kind, val suit: Suit.Value) extends Ordered[Card] {
   def toInt: Int = (kind.toInt << 2) + suit.toInt
   def toByte: Byte = (toInt + 1) toByte
 

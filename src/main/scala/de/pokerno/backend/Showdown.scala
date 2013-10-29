@@ -2,8 +2,8 @@ package de.pokerno.backend
 
 import scala.math.{ BigDecimal ⇒ Decimal }
 import de.pokerno.model._
-
 import de.pokerno.poker._
+import de.pokerno.backend.{protocol => message}
 
 trait Showdown {
   gameplay: GameplayLike ⇒
@@ -27,8 +27,8 @@ trait Showdown {
       val amount = side total
       val winner = seat.player.get
       seat wins (amount)
-      val message = protocol.Message.DeclareWinner(pos = pos, player = winner, amount = amount)
-      events.publish(message)
+      val msg = message.DeclareWinner(pos = pos, player = winner, amount = amount)
+      events.publish(msg)
     }
   }
 
@@ -65,8 +65,8 @@ trait Showdown {
           val pos = 0
           val seat = new Seat
           seat wins (amount)
-          val message = protocol.Message.DeclareWinner(pos = pos, player = winner, amount = amount)
-          events.publish(message)
+          val msg = message.DeclareWinner(pos = pos, player = winner, amount = amount)
+          events.publish(msg)
       }
     }
   }
@@ -94,8 +94,8 @@ trait Showdown {
         val (pocket, hand) = rank(seat.player get, ranking)
         val player = seat.player.get
         hands += (player -> hand)
-        val message = protocol.Message.DeclareHand(pos = pos, player = player, cards = pocket, hand = hand)
-        events.publish(message)
+        val msg = message.DeclareHand(pos = pos, player = player, cards = pocket, hand = hand)
+        events.publish(msg)
     }
     hands
   }

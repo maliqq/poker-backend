@@ -1,6 +1,7 @@
 package de.pokerno.backend
 
 import de.pokerno.model._
+import de.pokerno.backend.{protocol => message}
 
 import akka.actor.ActorRef
 
@@ -27,7 +28,7 @@ trait Blinds {
     table.button.move
     round.current = table.button
     events.publish(
-        protocol.Message.ButtonChange(button = table.button)
+        message.ButtonChange(button = table.button)
       )
   }
 }

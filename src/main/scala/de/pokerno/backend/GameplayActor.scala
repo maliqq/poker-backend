@@ -4,6 +4,7 @@ import akka.actor.{ Actor, Props, ActorRef, ActorLogging }
 
 import de.pokerno.model._
 import scala.concurrent._
+import de.pokerno.backend.{protocol => message}
 
 class GameplayActor(val gameplay: Gameplay) extends Actor with ActorLogging {
   import context._
@@ -32,12 +33,12 @@ class GameplayActor(val gameplay: Gameplay) extends Actor with ActorLogging {
 
   override def preStart = {
     log.info("start gameplay")
-    gameplay.events.publish(protocol.Message.PlayStart(gameplay.game, gameplay.stake))
+    gameplay.events.publish(message.PlayStart(gameplay.game, gameplay.stake))
     self ! Street.Start
   }
 
   def receive = {
-    case msg: protocol.Message.AddBet ⇒
+    case msg: message.AddBet ⇒
       betting ! msg
 
     case Street.Start ⇒
@@ -52,7 +53,7 @@ class GameplayActor(val gameplay: Gameplay) extends Actor with ActorLogging {
 
       if (streetsIterator hasNext) {
         val Street(name, stages) = streetsIterator.next
-        gameplay.events.publish(protocol.Message.StreetStart(name toString))
+        gameplay.events.publish(message.StreetStart(name toString))
         currentStreet = actorOf(Props(classOf[StreetActor], gameplay, name, stages), name = "street-%s" format (name))
         currentStreet ! Stage.Next
       } else
@@ -66,7 +67,7 @@ class GameplayActor(val gameplay: Gameplay) extends Actor with ActorLogging {
 
   override def postStop {
     log.info("stop gameplay")
-    gameplay.events.publish(protocol.Message.PlayStop())
+    gameplay.events.publish(message.PlayStop())
     parent ! Deal.Done
   }
 }

@@ -1,7 +1,7 @@
 package de.pokerno.backend
 
 import de.pokerno.model._
-
+import de.pokerno.backend.{protocol => message}
 
 trait GameRotation {
   g: GameplayLike ⇒
@@ -9,7 +9,7 @@ trait GameRotation {
   def rotateGame = if (variation isMixed)
     rotateNext { g ⇒
       game = g
-      events.publish(protocol.Message.GameChange(game = game))
+      events.publish(message.GameChange(game = game))
     }
 
   final val rotateEvery = 8

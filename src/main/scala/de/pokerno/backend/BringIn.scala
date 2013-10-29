@@ -1,5 +1,6 @@
 package de.pokerno.backend
 
+import de.pokerno.backend.{protocol => message}
 
 import akka.actor.ActorRef
 
@@ -20,7 +21,7 @@ trait BringIn {
   private def setButton(pos: Int) {
     table.button.current = pos
     round.current = pos
-    events.publish(protocol.Message.ButtonChange(button = table.button))
+    events.publish(message.ButtonChange(button = table.button))
   }
 
 }

@@ -1,125 +1,170 @@
 package de.pokerno.backend.protocol
 
 import scala.math.{ BigDecimal ⇒ Decimal }
-import de.pokerno.poker.{ Card, Hand }
-import de.pokerno.model._
-import de.pokerno.proto
+import de.pokerno.poker
+import de.pokerno.model
 import scala.reflect._
+import org.msgpack.annotation.{ Message => MsgPack }
+
 trait Message
 
-class ActionEvent extends Message
-class GameplayEvent extends Message
-class StageEvent extends Message
-class DealEvent extends Message
-class Command extends Message
+/**
+ * Action event
+ * */
+@MsgPack
+case class AddBet(
+    @BeanProperty var pos: Int,
+    var player: model.Player,
+    var bet: model.Bet) extends ActionEventBase with HasPlayer {
+  def this() = this(0, null, null)
+  def getBet: Bet = new Bet()
+  def setBet(v: Bet) = {}
+  @BeanProperty var eType = ActionEventType.AddBet
+}
 
-object Message {
-  /**
-   * Action event
-   * */
-  case class AddBet(
-      pos: Int,
-      player: Player,
-      bet: Bet) {
-    val schema = new proto.ActionEventSchema
-  }
-  
-  case class DiscardCards(
-      pos: Int, player: Player,
-      cards: List[Card]) {
-  }
-  
-  /**
-   * Table event
-   * */
-  case class ButtonChange(
-      i: Int) {
-    val schema = new proto.TableEventSchema
-  }
-  /**
-   * Gameplay event
-   * */
-  case class GameChange(
-      game: Game) {
-    val schema = new proto.GameplayEventSchema
-  }
-  
-  case class StakeChange(
-      stake: Game) {
-    val schema = new proto.GameplayEventSchema
-  }
-  
-  /**
-   * Stage event
-   * */
-  case class PlayStart(
-      game: Game,
-      stake: Stake) {
-    val schema = new proto.StageEventSchema
-  }
+@MsgPack
+case class DiscardCards(
+    @BeanProperty var pos: Int,
+    var player: model.Player,
+    var cards: List[poker.Card]) extends ActionEventBase with HasPlayer with HasCards {
+  def this() = this(0, null, null)
+  @BeanProperty var eType = ActionEventType.DiscardCards
+}
 
-  case class PlayStop() {
-    val schema = new proto.StageEventSchema
-  }
-  
-  case class StreetStart(name: String) {
-    val schema = new proto.StageEventSchema
-  }
+/**
+ * Table event
+ * */
+@MsgPack
+case class ButtonChange(
+    @BeanProperty button: Int) extends TableEvent {
+  def this() = this(0)
+  @BeanProperty var eType = TableEventType.ButtonChange
+}
+/**
+ * Gameplay event
+ * */
+@MsgPack
+case class GameChange(
+    game: model.Game) extends GameplayEvent {
+  def this() = this(null)
+  @BeanProperty var eType = GameplayEventType.GameChange
+}
 
-  /**
-   * Deal event
-   * */
-  case class DealCards(
-      _type: Dealer.DealType,
-      cards: List[Card] = List.empty,
-      pos: Option[Int] = None,
-      player: Option[Player] = None,
-      cardsNum: Option[Int] = None) {
-    val schema = new proto.DealEventSchema
-  }
+@MsgPack
+case class StakeChange(
+    stake: model.Game) extends GameplayEvent {
+  def this() = this(null)
+  @BeanProperty var eType = GameplayEventType.StakeChange
+}
 
-  case class RequireBet(
-      pos: Int,
-      player:Player,
-      call: Decimal,
-      raise: Range) {
-    val schema = new proto.DealEventSchema
-  }
+/**
+ * Stage event
+ * */
+@MsgPack
+case class PlayStart(
+    game: model.Game,
+    stake: model.Stake) extends StageEvent {
+  def this() = this(null, null)
+  @BeanProperty var stage = StageType.Play
+  @BeanProperty var eType = StageEventType.Start
+}
+
+@MsgPack
+case class PlayStop() extends StageEvent {
+  @BeanProperty var stage = StageType.Play
+  @BeanProperty var eType = StageEventType.Start
+  //def this() = this()
+}
+
+@MsgPack
+case class StreetStart(name: String) extends StageEvent {
+  @BeanProperty var stage = StageType.Street
+  @BeanProperty var eType = StageEventType.Start
+  def this() = this("")
+}
+
+/**
+ * Deal event
+ * */
+@MsgPack
+case class DealCards(
+    _type: model.Dealer.DealType,
+    var cards: List[poker.Card] = List.empty,
+    @BeanProperty pos: Option[Int] = None,
+    var player: Option[model.Player] = None,
+    @BeanProperty cardsNum: Option[Int] = None) extends DealEvent with HasPlayer with HasCards {
+  def this() = this(null)
+  @BeanProperty var eType = DealEventType.Deal
+}
+
+@MsgPack
+case class RequireBet(
+    @BeanProperty var pos: Int,
+    var player: model.Player,
+    call: Decimal,
+    raise: model.Range) extends DealEvent with HasPlayer {
+  def this() = this(0, null, .0, model.Range(.0, .0))
+  @BeanProperty var eType = DealEventType.AskBet
+}
+
+@MsgPack
+case class RequireDiscard(
+    @BeanProperty var pos: Int,
+    var player: model.Player) extends DealEvent with HasPlayer {
+  def this() = this(0, null)
+  @BeanProperty var eType = DealEventType.AskDiscard
+}
+
+@MsgPack
+case class DeclarePot(
+    var pot: Decimal,
+    var rake: Option[Decimal] = None) extends DealEvent {
+  def this() = this(.0)
   
-  case class RequireDiscard(
-      pos: Int,
-      player: Player) {
-    val schema = new proto.DealEventSchema
-  }
+  @BeanProperty var eType = DealEventType.ShowPot
   
-  case class DeclarePot(
-      pot: Decimal,
-      rake: Option[Decimal] = None) {
-    val schema = new proto.DealEventSchema
-  }
+  def getPot: Double = pot.toDouble
+  def setPot(v: Double) = pot = v
   
-  case class DeclareHand(
-      pos: Int,
-      player: Player,
-      cards: List[Card],
-      hand: Hand) {
-    val schema = new proto.DealEventSchema
-  }
-  
-  case class DeclareWinner(
-      pos: Int,
-      player: Player,
-      amount: Decimal) {
-    val schema = new proto.DealEventSchema
-  }
-  
-  /**
-   * Command
-   * */
-  case class JoinTable(
-      pos: Int,
-      amount: Decimal,
-      player: Player) {
-    val schema = new de.pokerno.proto.JoinTableSchema
-  }
+  def getRake: Double = rake.map(_.toDouble).getOrElse(.0)
+  def setRake(v: Double) = rake = Some(v)
+}
+
+@MsgPack
+case class DeclareHand(
+    @BeanProperty var pos: Int,
+    var player: model.Player,
+    var cards: List[poker.Card],
+    hand: poker.Hand) extends DealEvent with HasPlayer with HasCards {
+  def this() = this(0, null, List.empty, null)
+  @BeanProperty var eType = DealEventType.ShowHand
+}
+
+@MsgPack
+case class DeclareWinner(
+    @BeanProperty pos: Int,
+    var player: model.Player,
+    var amount: Decimal) extends DealEvent with HasPlayer with HasAmount {
+  def this() = this(0, null, .0)
+  @BeanProperty var eType = DealEventType.ShowWinner
+}
+
+/**
+ * Command
+ * */
+@MsgPack
+case class JoinTable(
+    @BeanProperty var pos: Int,
+    var amount: Decimal,
+    var player: model.Player) extends Cmd with HasPlayer with HasAmount {
+  def this() = this(0, .0, null)
+  @BeanProperty var cType = CmdType.Join
+}
+/**
+ * Msg
+ * */
+case class Chat(
+    @BeanProperty var body: String) extends Msg {
+  def this() = this("")
+  @BeanProperty var mType: MsgType = MsgType.Chat
 }

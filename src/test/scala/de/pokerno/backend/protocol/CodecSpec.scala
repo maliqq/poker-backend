@@ -10,6 +10,10 @@ class CodecSpec extends FunSpec with ClassicMatchers {
   describe("Codec") {
     describe("MsgPack") {
       it("pack") {
+        val msg = Message.ButtonChange(6)
+        val data = Codec.MsgPack.encode(msg)
+        val recover = Codec.MsgPack.decode[Message.ButtonChange](data)
+        recover.button should equal(msg.button)
       }
     }
 

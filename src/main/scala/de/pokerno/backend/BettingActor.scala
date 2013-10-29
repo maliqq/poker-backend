@@ -1,7 +1,7 @@
 package de.pokerno.backend
 
 import de.pokerno.model._
-
+import de.pokerno.backend.{protocol => message}
 import scala.math.{ BigDecimal ⇒ Decimal }
 import akka.actor.{ Actor, ActorRef, ActorLogging }
 
@@ -9,7 +9,7 @@ class BettingActor(val round: BettingRound) extends Actor with ActorLogging {
   import context._
 
   def receive = {
-    case protocol.Message.AddBet(pos, player, bet) ⇒
+    case message.AddBet(pos, player, bet) ⇒
       round.addBet(bet)
       self ! Betting.Next
 

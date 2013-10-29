@@ -1,6 +1,8 @@
 package de.pokerno.backend
 
 import de.pokerno.model._
+import de.pokerno.backend.{protocol => message}
+
 import scala.math.{ BigDecimal ⇒ Decimal }
 
 class BettingRound(val gameplay: Gameplay) extends Round(gameplay.table.size) {
@@ -64,7 +66,7 @@ class BettingRound(val gameplay: Gameplay) extends Round(gameplay.table.size) {
     val player = seat.player.get
 
     e.publish(
-        protocol.Message.RequireBet(pos = current, player = player, call = _call, raise = _raise)
+        message.RequireBet(pos = current, player = player, call = _call, raise = _raise)
       )
   }
 
@@ -90,13 +92,13 @@ class BettingRound(val gameplay: Gameplay) extends Round(gameplay.table.size) {
         pot.main add (player, left)
 
       e.publish(
-          protocol.Message.AddBet(pos, player, bet),
+          message.AddBet(pos, player, bet),
         e.Except(List(player.id)))
     } else {
       seat fold
 
       e.publish(
-          protocol.Message.AddBet(pos, player, Bet.fold),
+          message.AddBet(pos, player, Bet.fold),
         e.Except(List(player.id)))
     }
   }
@@ -105,7 +107,7 @@ class BettingRound(val gameplay: Gameplay) extends Round(gameplay.table.size) {
     clear
 
     gameplay.table.seats where (_ inPlay) map (_._1 play)
-    e.publish(protocol.Message.DeclarePot(pot total))
+    e.publish(message.DeclarePot(pot total))
   }
 
 }

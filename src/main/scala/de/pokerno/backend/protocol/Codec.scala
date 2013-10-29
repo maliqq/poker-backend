@@ -6,8 +6,8 @@ import org.msgpack.ScalaMessagePack
 import org.omg.CORBA_2_3.portable.OutputStream
 
 abstract class Codec {
-//  def encode[T <: Message](msg: T)(implicit manifest: Manifest[T]): Array[Byte]
-//  def decode[T <: Message](data: Array[Byte])(implicit manifest: Manifest[T]): T
+  def encode[T <: Message](msg: T): Array[Byte]
+  def decode[T <: Message](data: Array[Byte])(implicit manifest: Manifest[T]): T
 }
 
 object Codec {
@@ -17,7 +17,7 @@ object Codec {
     val msgpack = org.msgpack.ScalaMessagePack.messagePack
     msgpack.register(classOf[TableEventType])
     
-    def encode(msg: Message): Array[Byte] = {
+    def encode[T <: Message](msg: T): Array[Byte] = {
       pack(msg)
     }
     
@@ -26,7 +26,7 @@ object Codec {
     }
   }
   
-  object Json extends Codec {
+  abstract class Json extends Codec {
   }
   
   object Protobuf extends Codec {
@@ -36,6 +36,13 @@ object Codec {
       val schema: protostuff.Schema[T] = protostuff.runtime.RuntimeSchema.getSchema(msg.getClass.asInstanceOf[Class[T]])
       val buf = protostuff.LinkedBuffer.allocate(protostuff.LinkedBuffer.DEFAULT_BUFFER_SIZE)
       protostuff.ProtostuffIOUtil.toByteArray(msg, schema, buf)
+    }
+    
+    def decode[T <: Message](data: Array[Byte])(implicit manifest: Manifest[T]): T = {
+      val schema: protostuff.Schema[T] = protostuff.runtime.RuntimeSchema.getSchema(manifest.erasure.asInstanceOf[Class[T]])
+      val v: T = schema.newMessage
+      protostuff.ProtobufIOUtil.mergeFrom(data, v, schema)
+      v
     }
   }
 }

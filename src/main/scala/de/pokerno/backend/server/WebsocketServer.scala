@@ -1,6 +1,7 @@
 package de.pokerno.backend.server
 
 import org.webbitserver.{ WebServers, BaseWebSocketHandler, WebSocketConnection }
+import akka.actor.ActorSystem
 
 object WebsocketServer {
 
@@ -14,7 +15,7 @@ object WebsocketServer {
 
 }
 
-class WebsocketHandler extends BaseWebSocketHandler {
+class WebsocketHandler(val system: ActorSystem) extends BaseWebSocketHandler {
   override def onOpen(conn: WebSocketConnection) {
   }
 
@@ -25,11 +26,11 @@ class WebsocketHandler extends BaseWebSocketHandler {
   }
 }
 
-class WebsocketServer extends Runnable {
+class WebsocketServer(system: ActorSystem) extends Runnable {
 
   def run {
     val server = WebServers.createWebServer(WebsocketServer.Config.port).
-      add(WebsocketServer.Config.path, new WebsocketHandler).
+      add(WebsocketServer.Config.path, new WebsocketHandler(system)).
       start.
       get
   }

@@ -21,12 +21,17 @@ class CodecSpec extends FunSpec with ClassicMatchers {
       it("ButtonChange") {
         val msg = ButtonChange(6)
         val data = Codec.Protobuf.encode(msg)
-        throw new Exception("got: %s".format(data))
+        val recover = Codec.Protobuf.decode[ButtonChange](data)
+        recover.button should equal(msg.button)
       }
     }
     
     describe("Json") {
-      it("pack") {
+      it("ButtonChange") {
+        val msg = ButtonChange(6)
+        val data = Codec.Json.encode(msg)
+        val recover = Codec.Json.decode[ButtonChange](data)
+        recover.button should equal(msg.button)
       }
     }
   }

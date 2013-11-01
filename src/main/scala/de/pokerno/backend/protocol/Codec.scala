@@ -26,10 +26,10 @@ object Codec {
     }
   }
   
-  class Json extends Codec {
+  object Json extends Codec {
     import com.dyuproject.protostuff
     
-    def encode[T <: Message](msg: T) = {
+    def encode[T <: Message](msg: T): Array[Byte] = {
       val schema: protostuff.Schema[T] = protostuff.runtime.RuntimeSchema.getSchema(msg.getClass.asInstanceOf[Class[T]])
       val buf = protostuff.LinkedBuffer.allocate(protostuff.LinkedBuffer.DEFAULT_BUFFER_SIZE)
       protostuff.JsonIOUtil.toByteArray(msg, schema, false)
@@ -46,7 +46,7 @@ object Codec {
   object Protobuf extends Codec {
     import com.dyuproject.protostuff
 
-    def encode[T <: Message](msg: T) = {
+    def encode[T <: Message](msg: T): Array[Byte] = {
       val schema: protostuff.Schema[T] = protostuff.runtime.RuntimeSchema.getSchema(msg.getClass.asInstanceOf[Class[T]])
       val buf = protostuff.LinkedBuffer.allocate(protostuff.LinkedBuffer.DEFAULT_BUFFER_SIZE)
       protostuff.ProtostuffIOUtil.toByteArray(msg, schema, buf)

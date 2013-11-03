@@ -32,9 +32,12 @@ class WebsocketHandler(val system: ActorSystem) extends BaseWebSocketHandler {
 
 class Websocket(system: ActorSystem) extends Runnable {
 
+  val port = Websocket.Config.port
+  val path = Websocket.Config.path
+  
   def run {
-    val server = WebServers.createWebServer(Websocket.Config.port).
-      add(Websocket.Config.path, new WebsocketHandler(system)).
+    val server = WebServers.createWebServer(port).
+      add(path, new WebsocketHandler(system)).
       start.
       get
   }

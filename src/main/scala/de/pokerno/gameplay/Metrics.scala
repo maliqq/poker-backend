@@ -1,4 +1,4 @@
-package de.pokerno.backend
+package de.pokerno.gameplay
 import akka.actor.{ Actor }
 import com.codahale.metrics._
 

@@ -5,12 +5,11 @@ import scala.math.{ BigDecimal ⇒ Decimal }
 import scala.concurrent.duration._
 import de.pokerno.model._
 import de.pokerno.poker._
-import de.pokerno.backend._
+import de.pokerno.gameplay._
 import de.pokerno.backend.{ protocol => message}
 import akka.actor.{ Actor, ActorRef, Props }
 import akka.pattern.ask
 import akka.util.Timeout
-import de.pokerno.backend.Gameplay
 
 object PlayerActor {
   case object Start

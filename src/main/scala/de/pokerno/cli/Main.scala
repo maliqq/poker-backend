@@ -1,12 +1,9 @@
 package de.pokerno.cli
 
 import de.pokerno.model._
-import de.pokerno.backend._
+import de.pokerno.gameplay._
 import akka.actor.{ ActorRef, ActorSystem, Props }
 import scala.math.{ BigDecimal ⇒ Decimal }
-import de.pokerno.backend.EventBus
-import de.pokerno.backend.Instance
-import de.pokerno.backend.Gameplay
 
 case class Config(
   val betSize: Decimal = 100.0,

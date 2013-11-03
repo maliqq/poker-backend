@@ -1,20 +1,19 @@
-package de.pokerno.backend.server
-
-import akka.actor.{ Actor, ActorSystem }
+package de.pokerno.backend.gateway
+import akka.actor.Actor
 import akka.zeromq._
 
-object ZeromqGateway {
+object Zeromq {
   case object Config {
     val address = "tcp://0.0.0.0:5555"
   }
 }
 
-class ZeromqGateway extends Actor {
+class Zeromq extends Actor {
   import context._
 
   final val socketType = SocketType.Pub
 
-  val address = ZeromqGateway.Config.address
+  val address = Zeromq.Config.address
   val socket = ZeroMQExtension(system).newSocket(socketType, Bind(address))
 
   def receive = {

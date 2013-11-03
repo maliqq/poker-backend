@@ -1,4 +1,4 @@
-package de.pokerno.backend
+package de.pokerno.gameplay
 
 import akka.actor.ActorRef
 import akka.actor.actorRef2Scala

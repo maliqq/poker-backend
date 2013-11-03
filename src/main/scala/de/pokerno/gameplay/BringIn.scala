@@ -1,4 +1,4 @@
-package de.pokerno.backend
+package de.pokerno.gameplay
 
 import de.pokerno.backend.{protocol => message}
 

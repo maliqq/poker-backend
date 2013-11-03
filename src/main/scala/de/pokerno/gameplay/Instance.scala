@@ -1,4 +1,4 @@
-package de.pokerno.backend
+package de.pokerno.gameplay
 import akka.actor.{Actor, ActorLogging, ActorRef, Props, FSM}
 import de.pokerno.model._
 import de.pokerno.backend.{protocol => message}

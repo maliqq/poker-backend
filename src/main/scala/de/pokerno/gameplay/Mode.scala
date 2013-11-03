@@ -1,4 +1,4 @@
-package de.pokerno.backend
+package de.pokerno.gameplay
 
 object Mode {
   case object Cash

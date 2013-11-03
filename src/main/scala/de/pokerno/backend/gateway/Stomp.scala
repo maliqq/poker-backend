@@ -1,6 +1,4 @@
-package de.pokerno.backend.server
-
-import asia.stampy
+package de.pokerno.backend.gateway
 import scala.concurrent.duration._
 
 object Stomp {

@@ -1,4 +1,4 @@
-package de.pokerno.backend
+package de.pokerno.gameplay
 import de.pokerno.model._
 
 import scala.concurrent.duration._

@@ -1,4 +1,4 @@
-package de.pokerno.backend
+package de.pokerno.gameplay
 
 import scala.math.{ BigDecimal ⇒ Decimal }
 import de.pokerno.model._

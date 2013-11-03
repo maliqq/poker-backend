@@ -1,9 +1,9 @@
-package de.pokerno.backend.server
+package de.pokerno.backend.gateway
 
 import org.webbitserver.{ WebServers, BaseWebSocketHandler, WebSocketConnection }
 import akka.actor.ActorSystem
 
-object WebsocketServer {
+object Websocket {
 
   final val DefaultWebsocketPort = 8080
   final val DefaultWebsocketPath = "/_ws"
@@ -17,20 +17,24 @@ object WebsocketServer {
 
 class WebsocketHandler(val system: ActorSystem) extends BaseWebSocketHandler {
   override def onOpen(conn: WebSocketConnection) {
+    Console printf("Opened!\n")
   }
 
   override def onClose(conn: WebSocketConnection) {
+    Console printf("Closed!\n")
   }
 
   override def onMessage(conn: WebSocketConnection, message: String) {
+    Console printf("Got %s\n", message)
+    conn.send(message)
   }
 }
 
-class WebsocketServer(system: ActorSystem) extends Runnable {
+class Websocket(system: ActorSystem) extends Runnable {
 
   def run {
-    val server = WebServers.createWebServer(WebsocketServer.Config.port).
-      add(WebsocketServer.Config.path, new WebsocketHandler(system)).
+    val server = WebServers.createWebServer(Websocket.Config.port).
+      add(Websocket.Config.path, new WebsocketHandler(system)).
       start.
       get
   }

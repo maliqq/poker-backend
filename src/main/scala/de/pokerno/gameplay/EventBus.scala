@@ -1,7 +1,7 @@
-package de.pokerno.backend
+package de.pokerno.gameplay
 
 import de.pokerno.model._
-import de.pokerno.backend.{protocol => message}
+import de.pokerno.backend.protocol
 
 import akka.event.{ ActorEventBus, ScanningClassification }
 import akka.actor.actorRef2Scala

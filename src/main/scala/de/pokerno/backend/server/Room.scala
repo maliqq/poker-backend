@@ -14,5 +14,4 @@ object Room {
 }
 
 class Room {
-
 }

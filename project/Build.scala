@@ -24,6 +24,7 @@ object PokernoBuild extends Build {
     "org.webbitserver" % "webbit" % "0.4.15",
     
     "asia.stampy" % "stampy-core" % "1.0-RELEASE",
+    "asia.stampy" % "stampy-NETTY-client-server-RI" % "1.0-RELEASE",
     
     "com.github.scopt" %% "scopt" % "3.1.0",
     //"com.twitter" % "ostrich" % "2.3.0"

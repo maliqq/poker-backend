@@ -28,7 +28,7 @@ trait Blinds {
     table.button.move
     round.current = table.button
     events.publish(
-        message.ButtonChange(button = table.button)
+        message.ButtonChange(_button = table.button)
       )
   }
 }

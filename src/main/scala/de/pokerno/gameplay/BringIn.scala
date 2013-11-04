@@ -21,7 +21,7 @@ trait BringIn {
   private def setButton(pos: Int) {
     table.button.current = pos
     round.current = pos
-    events.publish(message.ButtonChange(button = table.button))
+    events.publish(message.ButtonChange(_button = table.button))
   }
 
 }

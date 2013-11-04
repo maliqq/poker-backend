@@ -22,6 +22,8 @@ object Instance {
   case object Pause
   case object Resume
   case object Start
+  
+  case class Subscribe(ref: ActorRef, name: String)
 }
 
 class Instance(val variation: Variation, val stake: Stake) extends Actor with ActorLogging with FSM[Instance.State, Instance.Data] {
@@ -90,6 +92,10 @@ class Instance(val variation: Variation, val stake: Stake) extends Actor with Ac
 
     case Event(msg: message.AddBet, Instance.Run(running)) ⇒
       running ! msg
+      stay
+    
+    case Event(Instance.Subscribe(ref, name), _) =>
+      events.subscribe(ref, name)
       stay
 
     case Event(msg: message.Chat, _) ⇒

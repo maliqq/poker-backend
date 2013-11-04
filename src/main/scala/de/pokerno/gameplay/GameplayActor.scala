@@ -33,7 +33,8 @@ class GameplayActor(val gameplay: Gameplay) extends Actor with ActorLogging {
 
   override def preStart = {
     log.info("start gameplay")
-    gameplay.events.publish(message.PlayStart(gameplay.game, gameplay.stake))
+    // FKXME
+    gameplay.events.publish(message.PlayStart())
     self ! Street.Start
   }
 

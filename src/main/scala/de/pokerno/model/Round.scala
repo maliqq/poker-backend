@@ -21,4 +21,5 @@ class Round(size: Int) {
 
 object Round {
   implicit def current2Int(round: Round): Int = round.current
+  implicit def current2Integer(round: Round): Integer = round.current
 }

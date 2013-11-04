@@ -19,7 +19,7 @@ object EventSource {
     var connections = new java.util.ArrayList[webbit.EventSourceConnection]()
   
     override def preStart {
-      log info("starting %s at :%d\n", path, port)
+      log info("starting %s at :%d\n".format(path, port))
       val instance = webbit.WebServers.createWebServer(port).
         add(new CrossOriginHandler).
         add(path, new Handler(self)).
@@ -30,7 +30,13 @@ object EventSource {
     }
     
     implicit def msg2EventSourceMessage(msg: protocol.Message): webbit.EventSourceMessage = {
-      new webbit.EventSourceMessage(protocol.Codec.Json.encode(msg).toString)
+      try {
+        val data = protocol.Codec.Json.encode(msg)
+        new webbit.EventSourceMessage(new String(data.map(_.toChar)))
+      } catch {
+        case e: Exception =>
+          new webbit.EventSourceMessage("error handling %s: %s".format(msg, e.getMessage))
+      }
     }
     
     def receive = {

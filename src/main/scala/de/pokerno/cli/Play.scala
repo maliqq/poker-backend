@@ -39,7 +39,7 @@ class PlayerActor(i: Int, gameplay: Gameplay, instance: ActorRef) extends Actor 
           val seat = gameplay.table.seats(pos)
           var bet = Play.readBet(call)
 
-          val addBet = message.AddBet(pos = pos, player = seat.player.get, bet = bet)
+          val addBet = message.AddBet(_pos = pos, _player = seat.player.get, _bet = bet)
           instance ! addBet
 
         case message.RequireDiscard(pos, player) ⇒
@@ -49,7 +49,7 @@ class PlayerActor(i: Int, gameplay: Gameplay, instance: ActorRef) extends Actor 
 
           val cards = Play.readCards
 
-          instance ! message.DiscardCards(pos = pos, player = seat.player.get, cards = cards)
+          instance ! message.DiscardCards(_pos = pos, _player = seat.player.get, _cards = cards)
       })
   }
 }

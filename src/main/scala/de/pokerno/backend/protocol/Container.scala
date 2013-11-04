@@ -63,89 +63,47 @@ class Table {
   @BeanProperty var seats: java.util.ArrayList[Seat] = null
 }
 
-trait ActionEventBase extends Message {
-  @BeanProperty var `type`: ActionEventSchema.EventType
-  
-  @BeanProperty var pos: Integer
-  
-  @BeanProperty var cardsNum: Integer = null
-  
-  def getAmount: java.lang.Double = null
-  def setAmount(v: java.lang.Double) = {}
-  
-  def getBet: Bet = null
-  def setBet(b: Bet) = {}
-}
-
 @MsgPack
-class ActionEvent extends ActionEventBase {
-  @BeanProperty override var `type`: ActionEventSchema.EventType = null
-  @BeanProperty override var pos: Integer = null
-  
-  var amount: java.lang.Double = null
-  override def getAmount: java.lang.Double = amount
-  override def setAmount(v: java.lang.Double) = amount = v
-  
-  var bet: Bet = null
-  override def getBet: Bet = bet
-  override def setBet(v: Bet) = bet = v
-  
+class ActionEvent extends Message {
+  @BeanProperty var `type`: ActionEventSchema.EventType = null
+  @BeanProperty var pos: Integer = null
+  @BeanProperty var cardsNum: Integer = null
+  @BeanProperty var amount: java.lang.Double = null
+  @BeanProperty var bet: Bet = null
   @BeanProperty var cards: ByteString = null
   @BeanProperty var player: String = null
 }
 
-trait GameplayEventBase extends Message {
-  def `type`: GameplayEventSchema.EventType
-}
-
 @MsgPack
-class GameplayEvent extends GameplayEventBase {
+class GameplayEvent extends Message {
   @BeanProperty var `type`: GameplayEventSchema.EventType = null
   @BeanProperty var game: Game = null
   @BeanProperty var stake: Stake = null
 }
 
-trait StageEventBase extends Message {
-  def `type`: StageEventSchema.EventType
-  def stage: StageEventSchema.StageType
-}
-
 @MsgPack
-class StageEvent extends StageEventBase {
+class StageEvent extends Message {
   @BeanProperty var `type`: StageEventSchema.EventType = null
   @BeanProperty var stage: StageEventSchema.StageType = null
 }
 
-trait TableEventBase extends Message {
-  def `type`: TableEventSchema.EventType
-}
-
 @MsgPack
-class TableEvent extends TableEventBase {
+class TableEvent extends Message {
   @BeanProperty var `type`: TableEventSchema.EventType = null
   @BeanProperty var button: Integer = null
   @BeanProperty var state: TableEventSchema.TableState = null
 }
 
-trait SeatEventBase extends Message {
-  def `type`: SeatEventSchema.EventType
+@MsgPack
+class SeatEvent(_type: SeatEventSchema.EventType) extends Message {
+  @BeanProperty var `type` = _type
   @BeanProperty var pos: Integer = null
   @BeanProperty var seat: Seat = null
-}
-
-@MsgPack
-class SeatEvent(_type: SeatEventSchema.EventType) extends SeatEventBase {
-  @BeanProperty var `type` = _type
-  
   def this() = this(null)
 }
 
-trait DealEventBase extends Message {
-  def `type`: DealEventSchema.EventType
-}
-
 @MsgPack
-class DealEvent extends DealEventBase {
+class DealEvent extends Message {
   @BeanProperty var `type`: DealEventSchema.EventType = null
   @BeanProperty var requireBet: RequireBet = null
   @BeanProperty var requireDiscard: RequireDiscard = null
@@ -153,22 +111,14 @@ class DealEvent extends DealEventBase {
   @BeanProperty var declareWinner: DeclareWinner = null
 }
 
-trait MsgBase extends Message {
-  def `type`: MsgSchema.MsgType
-}
-
 @MsgPack
-class Msg extends MsgBase {
+class Msg extends Message {
   @BeanProperty var `type`: MsgSchema.MsgType = null
   @BeanProperty var body: String = null
 }
 
-trait CmdBase extends Message {
-  def `type`: CmdSchema.CmdType
-}
-
 @MsgPack
-class Cmd extends CmdBase {
+class Cmd extends Message {
   @BeanProperty var `type`: CmdSchema.CmdType = null
   @BeanProperty var joinTable: JoinTable = null
   @BeanProperty var actionEvent: ActionEvent = null

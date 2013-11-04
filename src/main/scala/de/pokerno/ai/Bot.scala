@@ -29,13 +29,15 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
   }
   
   def receive = {
-    case message.PlayStart(_game, _stake) ⇒
+    case message.PlayStart() ⇒
       cards = List[Card]()
       board = List[Card]()
       pot = .0
       opponentsNum = 6
-      game = _game
-      stake = _stake
+    
+    //case message.GameplayEvent(game: _game, stake: _stake)
+    //  game = _game
+    //  stake = _stake
 
     case message.DeclareWinner(_pos, winner, amount) if (_pos == pos) ⇒
       stack += amount
@@ -53,6 +55,7 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
       case Dealer.Hole | Dealer.Door if (_pos == pos) =>
         cards ++= _cards
         Console printf("*** BOT #%d: %s\n", pos, Cards(cards) toConsoleString)
+      case _ =>
     }
     
     case message.RequireBet(_pos, _, call, raise) if (_pos == pos) ⇒
@@ -60,6 +63,8 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
        
     case message.AddBet(_pos, _player, _bet) if (_pos == pos) ⇒
       bet = _bet.amount
+    
+    case _ =>
   }
 
   def addBet(b: Bet) {

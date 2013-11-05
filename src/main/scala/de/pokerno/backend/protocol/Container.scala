@@ -24,12 +24,14 @@ class Game {
 }
 
 @MsgPack
-class Hand {
-  @BeanProperty var rank: HandSchema.RankType = null
-  @BeanProperty var value: ByteString = null
-  @BeanProperty var high: ByteString = null
-  @BeanProperty var kicker: ByteString = null
+case class Hand(
+  @BeanProperty var rank: HandSchema.RankType,
+  @BeanProperty var value: ByteString,
+  @BeanProperty var high: ByteString,
+  @BeanProperty var kicker: ByteString,
   @BeanProperty var string: String = ""
+) {
+  def this() = this(null, null, null, null, "")
 }
 
 @MsgPack
@@ -65,17 +67,16 @@ class Table {
 
 @MsgPack
 class ActionEvent extends Message {
+  def schema = ActionEventSchema.SCHEMA
   @BeanProperty var `type`: ActionEventSchema.EventType = null
-  @BeanProperty var pos: Integer = null
-  @BeanProperty var cardsNum: Integer = null
-  @BeanProperty var amount: java.lang.Double = null
-  @BeanProperty var bet: Bet = null
-  @BeanProperty var cards: ByteString = null
-  @BeanProperty var player: String = null
+  @BeanProperty var discardCards: DiscardCards = null
+  @BeanProperty var showCards: ShowCards = null
+  @BeanProperty var addBet: AddBet = null
 }
 
 @MsgPack
 class GameplayEvent extends Message {
+  def schema = GameplayEventSchema.SCHEMA
   @BeanProperty var `type`: GameplayEventSchema.EventType = null
   @BeanProperty var game: Game = null
   @BeanProperty var stake: Stake = null
@@ -83,12 +84,14 @@ class GameplayEvent extends Message {
 
 @MsgPack
 class StageEvent extends Message {
+  def schema = StageEventSchema.SCHEMA
   @BeanProperty var `type`: StageEventSchema.EventType = null
   @BeanProperty var stage: StageEventSchema.StageType = null
 }
 
 @MsgPack
 class TableEvent extends Message {
+  def schema = TableEventSchema.SCHEMA
   @BeanProperty var `type`: TableEventSchema.EventType = null
   @BeanProperty var button: Integer = null
   @BeanProperty var state: TableEventSchema.TableState = null
@@ -96,6 +99,7 @@ class TableEvent extends Message {
 
 @MsgPack
 class SeatEvent(_type: SeatEventSchema.EventType) extends Message {
+  def schema = SeatEventSchema.SCHEMA
   @BeanProperty var `type` = _type
   @BeanProperty var pos: Integer = null
   @BeanProperty var seat: Seat = null
@@ -104,6 +108,7 @@ class SeatEvent(_type: SeatEventSchema.EventType) extends Message {
 
 @MsgPack
 class DealEvent extends Message {
+  def schema = DealEventSchema.SCHEMA
   @BeanProperty var `type`: DealEventSchema.EventType = null
   @BeanProperty var requireBet: RequireBet = null
   @BeanProperty var requireDiscard: RequireDiscard = null
@@ -113,12 +118,14 @@ class DealEvent extends Message {
 
 @MsgPack
 class Msg extends Message {
+  def schema = MsgSchema.SCHEMA
   @BeanProperty var `type`: MsgSchema.MsgType = null
   @BeanProperty var body: String = null
 }
 
 @MsgPack
 class Cmd extends Message {
+  def schema = CmdSchema.SCHEMA
   @BeanProperty var `type`: CmdSchema.CmdType = null
   @BeanProperty var joinTable: JoinTable = null
   @BeanProperty var actionEvent: ActionEvent = null
@@ -126,6 +133,7 @@ class Cmd extends Message {
 
 @MsgPack
 class Event extends Message {
+  def schema = EventSchema.SCHEMA
   @BeanProperty var `type`: EventSchema.EventType = null
   @BeanProperty var seatEvent: SeatEvent = null
   @BeanProperty var actionEvent: ActionEvent = null
@@ -137,21 +145,26 @@ class Event extends Message {
 
 trait HasPlayer {
   def player: model.Player
-  def player_=(p: model.Player)
-  def getPlayer: String = player.toString
+  def player_=(v: model.Player)
+  
+  def getPlayer: String = if (player != null) player.id else null
   def setPlayer(v: String) = player = new model.Player(v)
 }
 
 trait HasAmount {
   def amount: Decimal
   def amount_=(v: Decimal)
-  def getAmount: Double = amount.toDouble
-  def setAmount(v: Double) = amount = v
+  
+  def getAmount: java.lang.Double = if (amount != null) amount.toDouble else null
+  def setAmount(v: java.lang.Double) = amount = v.toDouble
 }
 
 trait HasCards {
+  import Implicits._
+  
   def cards: List[poker.Card]
   def cards_=(v: List[poker.Card])
-  def getCards: ByteString = cards.map(_.toByte).asInstanceOf[ByteString]
-  def setCards(v: ByteString) = {}// FIXME: cards = v.map(poker.Card.wrap(_))
+  
+  def getCards: ByteString = cards
+  def setCards(v: ByteString) = cards = v
 }

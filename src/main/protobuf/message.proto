@@ -75,16 +75,46 @@ message Bet {
     CALL = 8;
     CHECK = 9;
     FOLD = 10;
-
-    DISCARD = 11;
-    STAND_PAT = 12;
-
-    SHOW = 13;
-    MUCK = 14;
   }
 
   required BetType Type = 1;
   optional double Amount = 2;
+}
+
+message DiscardCards {
+  enum DiscardType {
+    DISCARD = 1;
+    STAND_PAT = 2;
+  }
+
+  required DiscardType Type = 1;
+
+  required int32 Pos = 2;
+  required string Player = 3;
+
+  optional bytes Cards = 4;
+  optional int32 CardsNum = 5;
+}
+
+message ShowCards {
+  enum ShowType {
+    SHOW = 1;
+    MUCK = 2;
+  }
+
+  required ShowType Type = 1;
+
+  required int32 Pos = 2;
+  required string Player = 3;
+
+  optional bytes Cards = 4;
+}
+
+message AddBet {
+  required int32 Pos = 2;
+  required string Player = 3;
+
+  required Bet Bet = 6;
 }
 
 message ActionEvent {
@@ -96,14 +126,9 @@ message ActionEvent {
 
   required EventType Type = 1;
 
-  optional int32 Pos = 2;
-  optional string Player = 3;
-
-  optional bytes Cards = 4;
-  optional int32 CardsNum = 5;
-
-  optional Bet Bet = 6;
-  optional double Amount = 7;
+  optional DiscardCards DiscardCards = 2;
+  optional ShowCards ShowCards = 3;
+  optional AddBet AddBet = 4;
 }
 
 // Table event

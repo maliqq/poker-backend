@@ -20,6 +20,7 @@ object EventSource {
   
     override def preStart {
       log info("starting %s at :%d\n".format(path, port))
+      // FIXME
       val instance = webbit.WebServers.createWebServer(port).
         add(new CrossOriginHandler).
         add(path, new Handler(self)).
@@ -35,7 +36,7 @@ object EventSource {
         new webbit.EventSourceMessage(new String(data.map(_.toChar)))
       } catch {
         case e: Exception =>
-          new webbit.EventSourceMessage("error handling %s: %s".format(msg, e.getMessage))
+          new webbit.EventSourceMessage("error handling %s: %s %s".format(msg, e, e.getStackTraceString))
       }
     }
     

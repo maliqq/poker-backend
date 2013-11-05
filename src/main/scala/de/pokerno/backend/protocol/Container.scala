@@ -68,6 +68,7 @@ class Table {
 @MsgPack
 class ActionEvent extends Message {
   def schema = ActionEventSchema.SCHEMA
+  //def pipeSchema = ActionEventSchema.PIPE_SCHEMA
   @BeanProperty var `type`: ActionEventSchema.EventType = null
   @BeanProperty var discardCards: DiscardCards = null
   @BeanProperty var showCards: ShowCards = null
@@ -77,6 +78,7 @@ class ActionEvent extends Message {
 @MsgPack
 class GameplayEvent extends Message {
   def schema = GameplayEventSchema.SCHEMA
+  //def pipeSchema = GameplayEventSchema.PIPE_SCHEMA
   @BeanProperty var `type`: GameplayEventSchema.EventType = null
   @BeanProperty var game: Game = null
   @BeanProperty var stake: Stake = null
@@ -85,6 +87,7 @@ class GameplayEvent extends Message {
 @MsgPack
 class StageEvent extends Message {
   def schema = StageEventSchema.SCHEMA
+  //def pipeSchema = StageEventSchema.PIPE_SCHEMA
   @BeanProperty var `type`: StageEventSchema.EventType = null
   @BeanProperty var stage: StageEventSchema.StageType = null
 }
@@ -92,6 +95,7 @@ class StageEvent extends Message {
 @MsgPack
 class TableEvent extends Message {
   def schema = TableEventSchema.SCHEMA
+  //def pipeSchema = TableEventSchema.PIPE_SCHEMA
   @BeanProperty var `type`: TableEventSchema.EventType = null
   @BeanProperty var button: Integer = null
   @BeanProperty var state: TableEventSchema.TableState = null
@@ -100,6 +104,7 @@ class TableEvent extends Message {
 @MsgPack
 class SeatEvent(_type: SeatEventSchema.EventType) extends Message {
   def schema = SeatEventSchema.SCHEMA
+  //def pipeSchema = SeatEventSchema.PIPE_SCHEMA
   @BeanProperty var `type` = _type
   @BeanProperty var pos: Integer = null
   @BeanProperty var seat: Seat = null
@@ -109,6 +114,7 @@ class SeatEvent(_type: SeatEventSchema.EventType) extends Message {
 @MsgPack
 class DealEvent extends Message {
   def schema = DealEventSchema.SCHEMA
+  //def pipeSchema = DealEventSchema.PIPE_SCHEMA
   @BeanProperty var `type`: DealEventSchema.EventType = null
   @BeanProperty var requireBet: RequireBet = null
   @BeanProperty var requireDiscard: RequireDiscard = null
@@ -119,6 +125,7 @@ class DealEvent extends Message {
 @MsgPack
 class Msg extends Message {
   def schema = MsgSchema.SCHEMA
+  //def pipeSchema = MsgSchema.PIPE_SCHEMA
   @BeanProperty var `type`: MsgSchema.MsgType = null
   @BeanProperty var body: String = null
 }
@@ -126,6 +133,7 @@ class Msg extends Message {
 @MsgPack
 class Cmd extends Message {
   def schema = CmdSchema.SCHEMA
+  //def pipeSchema = CmdSchema.PIPE_SCHEMA
   @BeanProperty var `type`: CmdSchema.CmdType = null
   @BeanProperty var joinTable: JoinTable = null
   @BeanProperty var actionEvent: ActionEvent = null
@@ -134,6 +142,7 @@ class Cmd extends Message {
 @MsgPack
 class Event extends Message {
   def schema = EventSchema.SCHEMA
+  //def pipeSchema = EventSchema.PIPE_SCHEMA
   @BeanProperty var `type`: EventSchema.EventType = null
   @BeanProperty var seatEvent: SeatEvent = null
   @BeanProperty var actionEvent: ActionEvent = null

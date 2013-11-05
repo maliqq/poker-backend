@@ -27,10 +27,27 @@ object Codec {
   }
   
   object Json extends Codec {
+    final val TypeField = "$type"
+    final val ObjectField = "$object"
+    
     def encode[T <: Message](msg: T): Array[Byte] = {
       val schema: protostuff.Schema[T] = msg.schema.asInstanceOf[protostuff.Schema[T]]
-      val buf = protostuff.LinkedBuffer.allocate(protostuff.LinkedBuffer.DEFAULT_BUFFER_SIZE)
-      protostuff.JsonIOUtil.toByteArray(msg, schema, false)
+      
+      val out = new java.io.ByteArrayOutputStream
+      val context = new org.codehaus.jackson.io.IOContext(protostuff.JsonIOUtil.DEFAULT_JSON_FACTORY._getBufferRecycler(), out, false);
+      val gen = protostuff.JsonIOUtil.newJsonGenerator(out, context.allocWriteEncodingBuffer)
+      
+      try {
+        gen.writeStartObject
+        gen.writeStringField(TypeField, schema.messageName)
+        gen.writeFieldName(ObjectField)
+        protostuff.JsonIOUtil.writeTo(gen, msg, schema, false)
+      } finally {
+        gen.writeEndObject
+        gen.close
+      }
+      
+      out.toByteArray
     }
     
     def decode[T <: Message](data: Array[Byte])(implicit manifest: Manifest[T]): T = {

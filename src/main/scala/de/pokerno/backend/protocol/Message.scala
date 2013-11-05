@@ -9,6 +9,10 @@ import com.dyuproject.protostuff
 
 trait Message {
   def schema: protostuff.Schema[_]
+  //def pipeSchema: protostuff.Pipe.Schema[_]
+  
+  def getSchema = schema
+  //def getPipeSchema = pipeSchema
 }
 
 /**
@@ -20,6 +24,7 @@ sealed case class AddBet(
     var player: model.Player,
     _bet: model.Bet) extends Message with HasPlayer {
   def schema = AddBetSchema.SCHEMA
+  //def pipeSchema = AddBetSchema.PIPE_SCHEMA
   def this() = this(0, null, null)
 
   import Implicits._
@@ -33,6 +38,7 @@ sealed case class DiscardCards(
     var player: model.Player,
     var cards: List[poker.Card]) extends Message with HasPlayer with HasCards {
   def schema = DiscardCardsSchema.SCHEMA
+  //def pipeSchema = DiscardCardsSchema.PIPE_SCHEMA
   @BeanProperty var cardsNum: Integer = null
   @BeanProperty var `type`: DiscardCardsSchema.DiscardType = null
   def this() = this(null, null, null)
@@ -44,6 +50,7 @@ sealed case class ShowCards(
     var player: model.Player,
     var cards: List[poker.Card]) extends Message with HasPlayer with HasCards {
   def schema = ShowCardsSchema.SCHEMA
+  //def pipeSchema = ShowCardsSchema.PIPE_SCHEMA
   @BeanProperty var `type`: ShowCardsSchema.ShowType = null
   def this() = this(null, null, null)
 }
@@ -117,6 +124,7 @@ sealed case class DealCards(
   def this() = this(null)
   
   def schema = DealCardsSchema.SCHEMA
+  //def pipeSchema = DealCardsSchema.PIPE_SCHEMA
   
   def getDealType: DealerDealType = dealType match {
     case model.Dealer.Board => DealerDealType.BOARD
@@ -138,6 +146,8 @@ sealed case class RequireBet(
     var call: Decimal,
     var raise: model.Range) extends Message with HasPlayer{
   def schema = RequireBetSchema.SCHEMA
+  //def pipeSchema = RequireBetSchema.PIPE_SCHEMA
+  
   def this() = this(null, null, .0, model.Range(.0, .0))
   @BeanProperty var `type` = DealEventSchema.EventType.REQUIRE_BET
   def getCall: Double = call.toDouble
@@ -152,6 +162,7 @@ sealed case class RequireDiscard(
     @BeanProperty var pos: Int,
     var player: model.Player) extends Message {
   def schema = RequireDiscardSchema.SCHEMA
+  //def pipeSchema = RequireDiscardSchema.PIPE_SCHEMA
   def this() = this(0, null)
   
   def getPlayer: String = player.toString
@@ -163,6 +174,7 @@ sealed case class DeclarePot(
     var pot: Decimal,
     var rake: Option[Decimal] = None) extends Message {
   def schema = DeclarePotSchema.SCHEMA
+  //def pipeSchema = DeclarePotSchema.PIPE_SCHEMA
   def this() = this(.0)
   
   def getPot: java.lang.Double = pot.toDouble
@@ -183,6 +195,7 @@ sealed case class DeclareHand(
     var cards: List[poker.Card],
     var hand: poker.Hand) extends Message with HasPlayer with HasCards {
   def schema = DeclareHandSchema.SCHEMA
+  //def pipeSchema = DeclareHandSchema.PIPE_SCHEMA
   def this() = this(0, null, List.empty, null)
   
   import Implicits._
@@ -211,6 +224,7 @@ sealed case class DeclareWinner(
     var player: model.Player,
     var amount: Decimal) extends Message with HasAmount {
   def schema = DeclareWinnerSchema.SCHEMA
+  //def pipeSchema = DeclareWinnerSchema.PIPE_SCHEMA
   def this() = this(0, null, .0)
   
   def getPlayer: String = player.toString
@@ -226,6 +240,7 @@ sealed case class JoinTable(
     var amount: Decimal,
     var player: model.Player) extends Message with HasAmount {
   def schema = JoinTableSchema.SCHEMA
+  //def pipeSchema = JoinTableSchema.PIPE_SCHEMA
   def this() = this(null, .0, null)
   
   def getPlayer: String = player.toString

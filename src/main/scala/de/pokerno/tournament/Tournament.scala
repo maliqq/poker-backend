@@ -61,16 +61,12 @@ class Tournament(val game: Game, val buyIn: Tournament.BuyIn, val format: Tourna
   case class Rebuy(player: Player)
   case class Addon(player: Player)
   case class Knockout(winner: Player, looser: Player)
+  case class Eliminate(player: Player)
   
-  def bucketize(total: Int, perBucket: Int): List[List[Int]] = {
-    val n = Math.ceil(total.toDouble / perBucket).toInt
-    
-    val result = List.range(0, total).zipWithIndex.map { case (_, i) =>
-        Math.floor(n.toDouble / i)
-      }
-    
-    List()
-  }
+  def bucketize(total: Int, perBucket: Int) = List.range(0, total).
+    zipWithIndex.
+    groupBy { x => Math.floor(x._2 / total.toDouble * perBucket) }.
+    map { case (k, v) => (k, v.map(_._1)) }
   
   def initialSeating {
     val buckets = bucketize(entries.size, game.tableSize)
@@ -96,5 +92,7 @@ class Tournament(val game: Game, val buyIn: Tournament.BuyIn, val format: Tourna
     case Knockout(winner, looser) =>
       val entry = entries(winner)
       entry.knockoutsCount += 1
+
+    case Eliminate(player) =>
   }
 }

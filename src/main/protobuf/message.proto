@@ -208,8 +208,28 @@ message StageEvent {
     STREET = 2;
   }
 
+  enum StreetType {
+    PREFLOP = 1;
+    FLOP = 2;
+    TURN = 3;
+    RIVER = 4;
+
+    THIRD = 5;
+    FOURTH = 6;
+    FIFTH = 7;
+    SIXTH = 8;
+    SEVENTH = 9;
+
+    PREDRAW = 10;
+    DRAW = 11;
+    FIRST_DRAW = 12;
+    SECOND_DRAW = 13;
+    THIRD_DRAW = 14;
+  }
+
   required EventType Type = 1;
   required StageType Stage = 2;
+  optional StreetType Street = 3;
 }
 
 // Deal event
@@ -272,16 +292,18 @@ message Hand {
   }
 
   required RankType Rank = 1;
-  required bytes Value = 2;
-  optional bytes High = 3;
-  optional bytes Kicker = 4;
-  optional string String = 5;
+  required bytes Cards = 2;
+  required bytes Value = 3;
+  optional bytes High = 4;
+  optional bytes Kicker = 5;
+  optional string String = 6;
 }
 
 message DeclareHand {
   required int32 Pos = 1;
   required string Player = 2;
   required Hand Hand = 3;
+  optional bytes Cards = 4;
 }
 
 message DealEvent {

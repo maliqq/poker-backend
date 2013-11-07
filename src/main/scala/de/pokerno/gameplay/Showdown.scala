@@ -94,8 +94,8 @@ trait Showdown {
         val (pocket, hand) = rank(seat.player get, ranking)
         val player = seat.player.get
         hands += (player -> hand)
-        val msg = message.DeclareHand(pos = pos, player = player, cards = pocket, hand = hand)
-        events.publish(msg)
+        //events.publish(message.ShowCards(pos = pos, player = player, cards = pocket))
+        events.publish(message.DeclareHand(pos = pos, player = player, cards = pocket, hand = hand))
     }
     hands
   }

@@ -6,6 +6,7 @@ import de.pokerno.backend.{ protocol => message }
 import scala.math.{ BigDecimal ⇒ Decimal }
 import akka.actor.{ Actor, ActorRef }
 import scala.util.Random
+import scala.concurrent.duration._
 
 trait Context {
   var game: Game
@@ -23,6 +24,8 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
     extends Actor with Context with Simple {
   val id: String = java.util.UUID.randomUUID().toString
   val player = new Player(id)
+  
+  import context._
 
   override def preStart {
     deal ! message.JoinTable(pos = pos, amount = stack, player = player)
@@ -43,7 +46,7 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
       stack += amount
 
     case message.StreetStart(name) ⇒
-      street = name
+      street = name toString
 
     case message.DeclarePot(total, _rake) ⇒
       pot = total
@@ -59,8 +62,10 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
     }
     
     case message.RequireBet(_pos, _, call, raise) if (_pos == pos) ⇒
-       decide(call, raise)
-       
+      system.scheduler.scheduleOnce(1 second) {
+        decide(call, raise)
+      }
+    
     case message.AddBet(_pos, _player, _bet) if (_pos == pos) ⇒
       bet = _bet.amount
     

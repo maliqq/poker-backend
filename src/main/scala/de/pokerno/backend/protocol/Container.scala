@@ -5,7 +5,7 @@ import de.pokerno.poker
 
 import scala.reflect._
 import scala.math.{BigDecimal => Decimal}
-import com.dyuproject.protostuff.ByteString;
+import com.dyuproject.protostuff
 import org.msgpack.annotation.{ Message => MsgPack }
 
 @MsgPack
@@ -25,13 +25,14 @@ class Game {
 
 @MsgPack
 case class Hand(
+  @BeanProperty var cards: protostuff.ByteString,
   @BeanProperty var rank: HandSchema.RankType,
-  @BeanProperty var value: ByteString,
-  @BeanProperty var high: ByteString,
-  @BeanProperty var kicker: ByteString,
+  @BeanProperty var value: protostuff.ByteString,
+  @BeanProperty var high: protostuff.ByteString,
+  @BeanProperty var kicker: protostuff.ByteString,
   @BeanProperty var string: String = ""
 ) {
-  def this() = this(null, null, null, null, "")
+  def this() = this(null, null, null, null, null, "")
 }
 
 @MsgPack
@@ -90,6 +91,7 @@ class StageEvent extends Message {
   //def pipeSchema = StageEventSchema.PIPE_SCHEMA
   @BeanProperty var `type`: StageEventSchema.EventType = null
   @BeanProperty var stage: StageEventSchema.StageType = null
+  @BeanProperty var street: StageEventSchema.StreetType = null
 }
 
 @MsgPack
@@ -174,6 +176,6 @@ trait HasCards {
   def cards: List[poker.Card]
   def cards_=(v: List[poker.Card])
   
-  def getCards: ByteString = cards
-  def setCards(v: ByteString) = cards = v
+  def getCards: protostuff.ByteString = cards
+  def setCards(v: protostuff.ByteString) = cards = v
 }

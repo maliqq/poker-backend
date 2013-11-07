@@ -3,6 +3,7 @@ package de.pokerno.backend.protocol
 import scala.math.{ BigDecimal ⇒ Decimal }
 import de.pokerno.poker
 import de.pokerno.model
+import de.pokerno.gameplay
 import scala.reflect._
 import org.msgpack.annotation.{ Message => MsgPack }
 import com.dyuproject.protostuff
@@ -103,10 +104,12 @@ sealed case class PlayStop() extends StageEvent {
 }
 
 @MsgPack
-sealed case class StreetStart(name: String) extends StageEvent {
+sealed case class StreetStart(streetName: gameplay.Street.Value) extends StageEvent {
+  import Implicits._
   stage = StageEventSchema.StageType.STREET
   `type` = StageEventSchema.EventType.START
-  def this() = this("")
+  street = streetName
+  def this() = this(null)
 }
 
 /**
@@ -201,15 +204,17 @@ sealed case class DeclareHand(
   import Implicits._
   
   def getHand: Hand = new Hand(
+      cards = hand.cards.value,
       rank = hand.rank.get,
       high = hand.high,
       value = hand.value,
-      kicker = hand.kicker
+      kicker = hand.kicker,
+      string = hand.description
   )
   
   def setHand(h: Hand) {
     hand = new poker.Hand(
-      cards = new poker.Hand.Cards(List.empty),
+      cards = new poker.Hand.Cards(h.cards),
       rank = Some(h.rank),
       value = h.value,
       High = Left(h.high),
@@ -222,13 +227,10 @@ sealed case class DeclareHand(
 sealed case class DeclareWinner(
     @BeanProperty var pos: Int,
     var player: model.Player,
-    var amount: Decimal) extends Message with HasAmount {
+    var amount: Decimal) extends Message with HasPlayer with HasAmount {
   def schema = DeclareWinnerSchema.SCHEMA
   //def pipeSchema = DeclareWinnerSchema.PIPE_SCHEMA
   def this() = this(0, null, .0)
-  
-  def getPlayer: String = player.toString
-  def setPlayer(v: String) = player = new model.Player(v)
 }
 
 /**

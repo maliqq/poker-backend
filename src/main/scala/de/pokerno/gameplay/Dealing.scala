@@ -19,11 +19,13 @@ trait Dealing {
             val cards = dealer dealPocket (n, seat.player.get)  
             
             if (_type.isPrivate) {
+//              events.publish(
+//                  message.DealCards(_type, cards, pos = pos),
+//                events.One(seat.player.get.id))
               events.publish(
-                  message.DealCards(_type, cards, pos = pos),
-                events.One(seat.player.get.id))
-              events.publish(
-                  message.DealCards(_type, pos = pos, cardsNum = n)
+                  message.DealCards(_type, pos = pos, cardsNum = n,
+                      cards = cards // FIXME hide later
+                      )
                 )
             } else events.publish(message.DealCards(_type, cards, pos = pos))
         }

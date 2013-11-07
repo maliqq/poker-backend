@@ -2,10 +2,12 @@ package de.pokerno.backend.protocol
 
 import de.pokerno.poker
 import de.pokerno.model
+import de.pokerno.gameplay
 import com.dyuproject.protostuff
 
 object Implicits {
   
+import de.pokerno.poker
   implicit def modelBetType2BetType(v: model.Bet.Value): BetSchema.BetType = v match {
     case model.Bet.Call => BetSchema.BetType.CALL
     case model.Bet.Raise => BetSchema.BetType.RAISE
@@ -76,6 +78,25 @@ object Implicits {
     
     case HandSchema.RankType.LOW => poker.Rank.Low.Complete
     case HandSchema.RankType.NOT_LOW => poker.Rank.Low.Incomplete
+  }
+  
+  implicit def street2StreetType(s: gameplay.Street.Value): StageEventSchema.StreetType = s match {
+    case gameplay.Street.Preflop => StageEventSchema.StreetType.PREFLOP
+    case gameplay.Street.Flop => StageEventSchema.StreetType.FLOP
+    case gameplay.Street.Turn => StageEventSchema.StreetType.TURN
+    case gameplay.Street.River => StageEventSchema.StreetType.RIVER
+    
+    case gameplay.Street.Third => StageEventSchema.StreetType.THIRD
+    case gameplay.Street.Fourth => StageEventSchema.StreetType.FOURTH
+    case gameplay.Street.Fifth => StageEventSchema.StreetType.FIFTH
+    case gameplay.Street.Sixth => StageEventSchema.StreetType.SIXTH
+    case gameplay.Street.Seventh => StageEventSchema.StreetType.SEVENTH
+    
+    case gameplay.Street.Predraw => StageEventSchema.StreetType.PREDRAW
+    case gameplay.Street.Draw => StageEventSchema.StreetType.DRAW
+    case gameplay.Street.FirstDraw => StageEventSchema.StreetType.FIRST_DRAW
+    case gameplay.Street.SecondDraw => StageEventSchema.StreetType.SECOND_DRAW
+    case gameplay.Street.ThirdDraw => StageEventSchema.StreetType.THIRD_DRAW
   }
 
 }

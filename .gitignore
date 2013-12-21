@@ -4,3 +4,5 @@
 .project
 .cache
 target
+*Schema.java
+

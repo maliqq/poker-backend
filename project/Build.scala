@@ -1,6 +1,9 @@
 import sbt._
 import Keys._
 import Process._
+// sbt-assembly
+import sbtassembly.Plugin._ 
+import AssemblyKeys._
 
 object PokernoBuild extends Build {
   val pokernoVersion = "0.0.1"
@@ -47,6 +50,6 @@ object PokernoBuild extends Build {
     settings = Project.defaultSettings ++ Seq(
       libraryDependencies ++= deps,
       libraryDependencies ++= testDeps
-    )
+    ) ++ assemblySettings
   )
 }

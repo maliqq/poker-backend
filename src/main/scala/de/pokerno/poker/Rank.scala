@@ -1,57 +1,36 @@
 package de.pokerno.poker
 
-trait Rank {
-  def compare(other: Rank): Int
-  def equals(other: Rank): Boolean
-}
+import de.pokerno.backend.{protocol => proto}
 
 object Rank {
-  object High extends Enumeration {
-    class High(i: Int, name: String) extends Val(i, name) with Rank {
-      def compare(other: Rank): Int = super.compare(other.asInstanceOf[Value])
-      def equals(other: Rank): Boolean = equals(other.asInstanceOf[Value])
-    }
-
-    private def High(name: String) = new High(nextId, name)
-
-    val HighCard =        High("high-card")
-    val OnePair =         High("one-pair")
-    val TwoPair =         High("two-pair")
-    val ThreeKind =       High("three-kind")
-    val Straight =        High("straight")
-    val Flush =           High("flush")
-    val FullHouse =       High("full-house")
-    val FourKind =        High("four-kind")
-    val StraightFlush =   High("straight-flush")
+  type Value = proto.HandSchema.RankType
+  
+  object High {
+    val HighCard: Value =        proto.HandSchema.RankType.HIGH_CARD
+    val OnePair: Value =         proto.HandSchema.RankType.ONE_PAIR
+    val TwoPair: Value =         proto.HandSchema.RankType.TWO_PAIR
+    val ThreeKind: Value =       proto.HandSchema.RankType.THREE_KIND
+    val Straight: Value =        proto.HandSchema.RankType.STRAIGHT
+    val Flush: Value =           proto.HandSchema.RankType.FLUSH
+    val FullHouse: Value =       proto.HandSchema.RankType.FULL_HOUSE
+    val FourKind: Value =        proto.HandSchema.RankType.FOUR_KIND
+    val StraightFlush: Value =   proto.HandSchema.RankType.STRAIGHT_FLUSH
+    
+    def values = List(HighCard, OnePair, TwoPair, ThreeKind, Straight, Flush, FullHouse, FourKind, StraightFlush)
   }
 
-  import High._
-
-  object Badugi extends Enumeration {
-    class Badugi(i: Int, name: String) extends Val(i, name) with Rank {
-      def compare(other: Rank): Int = compare(other.asInstanceOf[Value])
-      def equals(other: Rank): Boolean = equals(other.asInstanceOf[Value])
-    }
-
-    private def Badugi(name: String): Badugi = new Badugi(nextId, name)
-
-    val BadugiOne =       Badugi("badugi-one")
-    val BadugiTwo =       Badugi("badugi-two")
-    val BadugiThree =     Badugi("badugi-three")
-    val BadugiFour =      Badugi("badugi-four")
+  object Badugi {
+    val BadugiOne: Value =       proto.HandSchema.RankType.BADUGI1
+    val BadugiTwo: Value =       proto.HandSchema.RankType.BADUGI2
+    val BadugiThree: Value =     proto.HandSchema.RankType.BADUGI3
+    val BadugiFour: Value =      proto.HandSchema.RankType.BADUGI4
+    
+    def values = List(BadugiOne, BadugiTwo, BadugiThree, BadugiFour)
   }
-  import Badugi._
-
-  object Low extends Enumeration {
-    class Low(i: Int, name: String) extends Val(i, name) with Rank {
-      def compare(other: Rank): Int = compare(other.asInstanceOf[Value])
-      def equals(other: Rank): Boolean = equals(other.asInstanceOf[Value])
-    }
-
-    private def Low(name: String): Low = new Low(nextId, name)
-
-    val Complete =        Low("complete-low")
-    val Incomplete =      Low("incomplete-low")
+  
+  object Low {
+    val Complete: Value =        proto.HandSchema.RankType.LOW
+    val Incomplete: Value =      proto.HandSchema.RankType.NOT_LOW
   }
-  import Low._
+  
 }

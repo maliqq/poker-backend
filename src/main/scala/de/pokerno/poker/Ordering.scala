@@ -16,11 +16,13 @@ case object AceLow extends Ordering[Card] {
 case object Ranking extends Ordering[Hand] {
 this: Hand =>
   private val comparers = List(
-    ((a: Hand, b: Hand) => a.rank.get compare b.rank.get),
+    ((a: Hand, b: Hand) => compareRanks(a.rank.get, b.rank.get)),
     ((a: Hand, b: Hand) => compareCards(a.high, b.high)),
     ((a: Hand, b: Hand) => compareCards(a.value, b.value)),
     ((a: Hand, b: Hand) => compareCards(a.kicker, b.kicker))
   )
+  
+  def compareRanks(rank1: Rank.Value, rank2: Rank.Value): Int = rank1.ordinal compare rank2.ordinal
   
   def compareCards(a: List[Card], b: List[Card]): Int = if (a.size == b.size) {
     var result = 0

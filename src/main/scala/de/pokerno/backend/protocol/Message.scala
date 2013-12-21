@@ -28,7 +28,6 @@ sealed case class AddBet(
   //def pipeSchema = AddBetSchema.PIPE_SCHEMA
   def this() = this(0, null, null)
 
-  import Implicits._
   def getBet: Bet = Bet(_bet.betType, _bet.amount.toDouble)
   def setBet(v: Bet) = new model.Bet(v.getType, v.getAmount.toDouble)
 }
@@ -105,7 +104,6 @@ sealed case class PlayStop() extends StageEvent {
 
 @MsgPack
 sealed case class StreetStart(streetName: gameplay.Street.Value) extends StageEvent {
-  import Implicits._
   stage = StageEventSchema.StageType.STREET
   `type` = StageEventSchema.EventType.START
   street = streetName
@@ -200,8 +198,6 @@ sealed case class DeclareHand(
   def schema = DeclareHandSchema.SCHEMA
   //def pipeSchema = DeclareHandSchema.PIPE_SCHEMA
   def this() = this(0, null, List.empty, null)
-  
-  import Implicits._
   
   def getHand: Hand = new Hand(
       cards = hand.cards.value,

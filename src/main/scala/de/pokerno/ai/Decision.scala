@@ -8,6 +8,12 @@ case class Decision(
     val raiseChance: Double = .0,
     val allInChance: Double = .0) {
 
-  override def toString = "Bet min=%.2f max=%.2f Raise chance=%.2f%% All in chance=%.2f%%".format(minBet, maxBet, raiseChance * 100, allInChance * 100)
-
+  override def toString = {
+    var s = new StringBuilder
+    s.append("Bet min=%.2f max=%.2f" format(minBet, maxBet))
+    s.append("Raise chance=%.2f%%" format(raiseChance * 100))
+    s.append("All-in chance=%.2f%%" format(allInChance * 100))
+    s.toString
+  }
+  
 }

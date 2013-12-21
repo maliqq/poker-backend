@@ -20,6 +20,14 @@ trait Context {
   var board: List[Card] = List.empty
 }
 
+object Action {
+  object AllIn
+  object Fold
+  object CheckCall
+  object CheckFold
+  object Raise
+}
+
 class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var stake: Stake)
     extends Actor with Context with Simple {
   val id: String = java.util.UUID.randomUUID().toString
@@ -115,19 +123,35 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
     val min = if (call > stack + bet) stack + bet else call
     val max = decision.maxBet
 
-    var action = if (minRaise == .0 && maxRaise == .0) 'checkCall
-    else if (min > max) 'checkFold
+    var action = if (minRaise == .0 && maxRaise == .0)
+      Action.CheckCall
+    else if (min > max)
+      Action.CheckFold
     else {
-      if (Random.nextDouble < decision.raiseChance) 'raise
-      else if (Random.nextDouble < decision.allInChance) 'allIn
-      else 'checkCall
+      if (Random.nextDouble < decision.raiseChance)
+        Action.Raise
+      else if (Random.nextDouble < decision.allInChance)
+        Action.AllIn
+      else
+        Action.CheckCall
     }
 
     action match {
-      case 'fold      ⇒ doFold
-      case 'checkFold ⇒ if (call == bet) doCheck else doFold
-      case 'checkCall ⇒ if (call == bet || call == .0) doCheck else if (call > .0) doCall(call)
-      case 'raise ⇒
+      case Action.Fold      ⇒ doFold
+      
+      case Action.CheckFold ⇒
+        if (call == bet)
+          doCheck
+        else
+          doFold
+      
+      case Action.CheckCall ⇒
+        if (call == bet || call == .0)
+          doCheck
+        else if (call > .0)
+          doCall(call)
+      
+      case Action.Raise ⇒
         if (minRaise == maxRaise)
           doRaise(maxRaise)
         else {
@@ -137,7 +161,7 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
           doRaise(amount)
         }
 
-      case 'allIn ⇒
+      case Action.AllIn ⇒
         if (minRaise == maxRaise)
           doRaise(maxRaise)
         else

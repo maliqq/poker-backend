@@ -38,7 +38,7 @@ class BettingRound(val gameplay: Gameplay) extends Round(gameplay.table.size) {
   }
   
   val e = gameplay.events
-  def forceBet(act: Tuple2[Seat, Int], betType: Bet.ForcedBet) {
+  def forceBet(act: Tuple2[Seat, Int], betType: Bet.Value) {
     acting = act
 
     _call = gameplay.stake amount (betType)

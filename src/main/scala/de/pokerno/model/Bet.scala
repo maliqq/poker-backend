@@ -2,6 +2,7 @@ package de.pokerno.model
 
 import scala.math.{ BigDecimal ⇒ Decimal }
 import java.util.Locale
+import de.pokerno.backend.{protocol => proto}
 
 class Bet(val betType: Bet.Value, val amount: Decimal = .0) {
   override def toString =
@@ -20,41 +21,35 @@ class Bet(val betType: Bet.Value, val amount: Decimal = .0) {
       val range = if (betType == Bet.Call) Range(call, call) else _range
       amount <= stack && range.isValid(amount, stack)
 
-    case _: Bet.ForcedBet ⇒
-      amount == call || (amount < call && amount == left)
-
     case _ ⇒
-      false
+      if (isForced)
+        amount == call || (amount < call && amount == left)
+      else
+        false
+  }
+  
+  def isForced: Boolean = betType match {
+    case Bet.Ante | Bet.BringIn | Bet.SmallBlind | Bet.BigBlind | Bet.GuestBlind | Bet.Straddle =>
+      true
+    case _ => false
   }
 }
 
 object Bet {
-  trait Value
+  type Value = proto.BetSchema.BetType
+  
+  final val Call: Value = proto.BetSchema.BetType.CALL
+  final val Raise: Value = proto.BetSchema.BetType.RAISE
+  final val Check: Value = proto.BetSchema.BetType.CHECK
+  final val Fold: Value = proto.BetSchema.BetType.FOLD
+  final val Ante: Value = proto.BetSchema.BetType.ANTE
+  final val BringIn: Value = proto.BetSchema.BetType.BRING_IN
+  final val SmallBlind: Value = proto.BetSchema.BetType.SB
+  final val BigBlind: Value = proto.BetSchema.BetType.BB
+  final val GuestBlind: Value = proto.BetSchema.BetType.GUEST_BLIND
+  final val Straddle: Value = proto.BetSchema.BetType.STRADDLE
 
-  trait Rateable {
-    v: Value ⇒
-    def rateWith(amount: Decimal): Decimal = Rates.Default(this) * amount
-  }
-
-  object DoubleBet extends Value with Rateable
-
-  abstract class ForcedBet extends Value
-  case object SmallBlind extends ForcedBet with Rateable
-  case object BigBlind extends ForcedBet with Rateable
-  case object Ante extends ForcedBet with Rateable
-  case object BringIn extends ForcedBet with Rateable
-  case object GuestBlind extends ForcedBet
-  case object Straddle extends ForcedBet
-
-  abstract class PassiveBet extends Value
-  case object Fold extends PassiveBet
-  case object Call extends PassiveBet
-
-  abstract class ActiveBet extends Value
-  case object Raise extends ActiveBet
-  case object Check extends ActiveBet
-
-  abstract class CardAction extends Value
+  trait CardAction
   case object Discard extends CardAction
   case object StandPat extends CardAction
   case object Show extends CardAction
@@ -64,7 +59,7 @@ object Bet {
   def fold = new Bet(Fold)
   def call(amount: Decimal) = new Bet(Call, amount)
   def raise(amount: Decimal) = new Bet(Raise, amount)
-  def forced(t: ForcedBet, amount: Decimal) = new Bet(t, amount)
+  def forced(t: Value, amount: Decimal) = new Bet(t, amount)
 
   case class CantCheck(call: Decimal)
     extends Error("Can't check: need to call=%.2f" format (call))

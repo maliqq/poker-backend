@@ -1,20 +1,27 @@
 package de.pokerno.model
 
 import scala.math.{ BigDecimal ⇒ Decimal }
+import de.pokerno.backend.{protocol => proto}
 
 object Seat {
-  sealed trait State
-
-  case object Empty extends State
-  case object Taken extends State
-  case object Ready extends State
-  case object Play extends State
-  case object Bet extends State
-  case object Fold extends State
-  case object AllIn extends State
-  case object WaitBB extends State
-  case object PostBB extends State
-
+  type State = proto.SeatSchema.SeatState
+  
+  final val Empty: State = proto.SeatSchema.SeatState.EMPTY
+  final val Taken: State = proto.SeatSchema.SeatState.TAKEN
+  final val Ready: State = proto.SeatSchema.SeatState.READY
+  
+  final val WaitBB: State = proto.SeatSchema.SeatState.POST_BB
+  final val PostBB: State = proto.SeatSchema.SeatState.WAIT_BB
+  
+  final val Play: State = proto.SeatSchema.SeatState.PLAY
+  final val AllIn: State = proto.SeatSchema.SeatState.ALL_IN
+  final val Bet: State = proto.SeatSchema.SeatState.BET
+  final val Fold: State = proto.SeatSchema.SeatState.FOLD
+  final val Auto: State = proto.SeatSchema.SeatState.AUTO
+  
+  final val Idle: State = proto.SeatSchema.SeatState.IDLE
+  final val Away: State = proto.SeatSchema.SeatState.AWAY
+  
   case class IsTaken() extends Exception("seat is taken")
 }
 
@@ -94,7 +101,9 @@ class Seat {
     case Bet.Fold             ⇒ fold
     case Bet.Call | Bet.Raise ⇒ raise(bet.amount)
     case Bet.Check            ⇒ check
-    case _: Bet.ForcedBet     ⇒ force(bet.amount)
+    case _     ⇒
+      if (bet.isForced)
+        force(bet.amount)
   }
 
   private def net(amount: Decimal) {

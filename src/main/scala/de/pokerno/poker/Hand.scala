@@ -81,7 +81,7 @@ object Hand {
 class Hand(
     val cards: Hand.Cards,
     val value: List[Card] = List.empty,
-    var rank: Option[Rank] = None,
+    var rank: Option[Rank.Value] = None,
     High: Either[List[Card], Boolean] = Right(false),
     Kicker: Either[List[Card], Boolean] = Right(false)
     ) extends Ordered[Hand] {
@@ -98,7 +98,7 @@ class Hand(
     case Right(false) => List.empty
   }
   
-  def ranked(r: Rank) = {
+  def ranked(r: Rank.Value) = {
     rank = Some(r)
     Some(this)
   }

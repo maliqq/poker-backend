@@ -2,6 +2,7 @@ package de.pokerno.gameplay
 
 import de.pokerno.model._
 import akka.actor.{ Actor, Props, ActorLogging, ActorRef }
+import de.pokerno.backend.{protocol => proto}
 
 class StreetActor(val gameplay: Gameplay, val name: Street.Value, val stages: List[StreetStage]) extends Actor with ActorLogging {
   import context._
@@ -38,28 +39,26 @@ object Street {
   case object Start
   case object Next
   case object Exit
+  
+  type Value = proto.StageEventSchema.StreetType
+  
+  final val Preflop: Value = proto.StageEventSchema.StreetType.PREFLOP
+  final val Flop: Value = proto.StageEventSchema.StreetType.FLOP
+  final val Turn: Value = proto.StageEventSchema.StreetType.TURN
+  final val River: Value = proto.StageEventSchema.StreetType.RIVER
 
-  trait Value {
-    def apply(stages: List[Stage]): Street = new Street(this, stages)
-  }
+  final val Second: Value = proto.StageEventSchema.StreetType.SECOND
+  final val Third: Value = proto.StageEventSchema.StreetType.THIRD
+  final val Fourth: Value = proto.StageEventSchema.StreetType.FOURTH
+  final val Fifth: Value = proto.StageEventSchema.StreetType.FIFTH
+  final val Sixth: Value = proto.StageEventSchema.StreetType.SIXTH
+  final val Seventh: Value = proto.StageEventSchema.StreetType.SEVENTH
 
-  case object Preflop extends Value
-  case object Flop extends Value
-  case object Turn extends Value
-  case object River extends Value
-
-  case object Second extends Value
-  case object Third extends Value
-  case object Fourth extends Value
-  case object Fifth extends Value
-  case object Sixth extends Value
-  case object Seventh extends Value
-
-  case object Predraw extends Value
-  case object Draw extends Value
-  case object FirstDraw extends Value
-  case object SecondDraw extends Value
-  case object ThirdDraw extends Value
+  final val Predraw: Value = proto.StageEventSchema.StreetType.PREDRAW
+  final val Draw: Value = proto.StageEventSchema.StreetType.DRAW
+  final val FirstDraw: Value = proto.StageEventSchema.StreetType.FIRST_DRAW
+  final val SecondDraw: Value = proto.StageEventSchema.StreetType.SECOND_DRAW
+  final val ThirdDraw: Value = proto.StageEventSchema.StreetType.THIRD_DRAW
 }
 
 object Streets {
@@ -84,55 +83,55 @@ object Streets {
 
     gameplay.game.options.group match {
       case Game.Holdem ⇒ List(
-        Street.Preflop(
+        Street(Street.Preflop,
           List(dealing(Dealer.Hole), betting)),
 
-        Street.Flop(
+        Street(Street.Flop,
           List(dealing(Dealer.Board, Some(3)), betting)),
 
-        Street.Turn(
+        Street(Street.Turn,
           List(dealing(Dealer.Board, Some(1)), bigBets, betting)),
 
-        Street.River(
+        Street(Street.River,
           List(dealing(Dealer.Board, Some(1)), betting)))
 
       case Game.SevenCard ⇒ List(
-        Street.Second(
+        Street(Street.Second,
           List(dealing(Dealer.Hole, Some(2)))),
 
-        Street.Third(
+        Street(Street.Third,
           List(dealing(Dealer.Door, Some(1)), bringIn, betting)),
 
-        Street.Fourth(
+        Street(Street.Fourth,
           List(dealing(Dealer.Door, Some(1)), betting)),
 
-        Street.Fifth(
+        Street(Street.Fifth,
           List(dealing(Dealer.Door, Some(1)), bigBets, betting)),
 
-        Street.Sixth(
+        Street(Street.Sixth,
           List(dealing(Dealer.Door, Some(1)), betting)),
 
-        Street.Seventh(
+        Street(Street.Seventh,
           List(dealing(Dealer.Hole, Some(1)), betting)))
 
       case Game.SingleDraw ⇒ List(
-        Street.Predraw(
+        Street(Street.Predraw,
           List(dealing(Dealer.Hole, Some(5)), betting, discarding)),
 
-        Street.Draw(
+        Street(Street.Draw,
           List(bigBets, betting, discarding)))
 
       case Game.TripleDraw ⇒ List(
-        Street.Predraw(
+        Street(Street.Predraw,
           List(dealing(Dealer.Hole), betting, discarding)),
 
-        Street.FirstDraw(
+        Street(Street.FirstDraw,
           List(betting, discarding)),
 
-        Street.SecondDraw(
+        Street(Street.SecondDraw,
           List(bigBets, betting, discarding)),
 
-        Street.ThirdDraw(
+        Street(Street.ThirdDraw,
           List(betting, discarding)))
     }
   }

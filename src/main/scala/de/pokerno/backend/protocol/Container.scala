@@ -171,7 +171,8 @@ trait HasAmount {
 }
 
 trait HasCards {
-  import Implicits._
+  implicit def byteString2Cards(v: protostuff.ByteString): List[poker.Card] = v.toByteArray.map(poker.Card.wrap(_)).toList
+  implicit def cards2ByteString(v: List[poker.Card]): protostuff.ByteString = protostuff.ByteString.copyFrom(v.map(_.toByte).toArray)
   
   def cards: List[poker.Card]
   def cards_=(v: List[poker.Card])

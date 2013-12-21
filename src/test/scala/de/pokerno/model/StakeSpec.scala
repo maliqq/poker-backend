@@ -12,7 +12,6 @@ class StakeSpec extends FunSpec with ClassicMatchers {
       Rates.Default(Bet.BringIn).toDouble should equal(0.25)
       Rates.Default(Bet.SmallBlind).toDouble should equal(0.5)
       Rates.Default(Bet.BigBlind).toDouble should equal(1.0)
-      Rates.Default(Bet.DoubleBet).toDouble should equal(2.0)
     }
   }
 
@@ -20,12 +19,6 @@ class StakeSpec extends FunSpec with ClassicMatchers {
     it("small blind") {
       val stake = new Stake(100)
       stake.smallBlind should equal(50)
-    }
-
-    it("double bet") {
-      val stake = new Stake(100)
-      val doubleBetRate = Rates.Default(Bet.DoubleBet)
-      stake.doubleBet should equal(100 * doubleBetRate)
     }
 
     it("ante true") {

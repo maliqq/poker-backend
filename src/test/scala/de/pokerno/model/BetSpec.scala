@@ -21,10 +21,10 @@ class BetSpec extends FunSpec with ClassicMatchers {
     }
 
     it("bet to string") {
-      Bet.check.toString should equal("Check")
-      Bet.fold.toString should equal("Fold")
-      Bet.call(1.0).toString should equal("Call 1.00")
-      Bet.raise(2.0).toString should equal("Raise 2.00")
+      Bet.check.toString should equal("CHECK")
+      Bet.fold.toString should equal("FOLD")
+      Bet.call(1.0).toString should equal("CALL 1.00")
+      Bet.raise(2.0).toString should equal("RAISE 2.00")
     }
 
     describe("isValid") {

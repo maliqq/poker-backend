@@ -12,9 +12,9 @@ class BadugiSpec extends FunSpec with ClassicMatchers {
     val kindCombinations = kinds.combinations(4)
     val suitPermutations = suits.permutations
     
-    val beBadugi = new Matcher[Tuple2[List[Card], Rank]] {
-      def apply(arg: Tuple2[List[Card], Rank]): MatchResult = {
-        val (value: List[Card], rank: Rank) = arg
+    val beBadugi = new Matcher[Tuple2[List[Card], Rank.Value]] {
+      def apply(arg: Tuple2[List[Card], Rank.Value]): MatchResult = {
+        val (value: List[Card], rank: Rank.Value) = arg
         val hand = Hand.Badugi(value)
         assert(hand.isDefined)
         val h = hand.get

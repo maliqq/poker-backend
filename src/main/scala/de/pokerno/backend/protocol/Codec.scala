@@ -39,21 +39,19 @@ object Codec {
     import protostuff.JsonIOUtil
     
     def encode[T <: Message](msg: T): Array[Byte] = {
-      protostuff.JsonIOUtil.toByteArray(msg, msg.schema.asInstanceOf[protostuff.Schema[Any]], false)
+      protostuff.JsonIOUtil.toByteArray(msg, msg.schema, false)
     }
     
     def encodeExplicit[T <: Message](msg: T): Array[Byte] = {
-      val schema: protostuff.Schema[T] = msg.schema.asInstanceOf[protostuff.Schema[T]]
-      
       val out = new java.io.ByteArrayOutputStream
       val context = new IOContext(JsonIOUtil.DEFAULT_JSON_FACTORY._getBufferRecycler(), out, false);
       val gen = JsonIOUtil.newJsonGenerator(out, context.allocWriteEncodingBuffer)
       
       try {
         gen.writeStartObject
-        gen.writeStringField(TypeField, msg.getClass.getSimpleName)
+        gen.writeStringField(TypeField, registryNames(msg.getClass))
         gen.writeFieldName(ObjectField)
-        protostuff.JsonIOUtil.writeTo(gen, msg, schema, false)
+        protostuff.JsonIOUtil.writeTo(gen, msg, msg.schema, false)
       } finally {
         gen.writeEndObject
         gen.close
@@ -62,7 +60,7 @@ object Codec {
       out.toByteArray
     }
     
-    final val registry = Map[String, Class[_ <: Message]](
+    final val registryClasses = Map[String, Class[_ <: Message]](
         
         "AddBet" -> classOf[AddBet],
         "DiscardCards" -> classOf[DiscardCards],
@@ -85,6 +83,8 @@ object Codec {
         "Error" -> classOf[Error]
         
     )
+    // inverse of map
+    final val registryNames = registryClasses.map(_.swap)
     
     def decode[T <: Message](data: Array[Byte])(implicit manifest: Manifest[T]): T = {
       val instance: T = manifest.erasure.newInstance.asInstanceOf[T]
@@ -120,11 +120,10 @@ object Codec {
       }
       
       if (parser.getCurrentName == ObjectField)
-        registry.get(_type) match {
+        registryClasses.get(_type) match {
           case Some(_class) =>
             _instance = _class.newInstance
-            val schema = _instance.schema.asInstanceOf[protostuff.Schema[Any]]
-            protostuff.JsonIOUtil.mergeFrom(parser, _instance, schema, false)
+            protostuff.JsonIOUtil.mergeFrom(parser, _instance, _instance.schema, false)
           case None =>
             // TODO handle this
         }
@@ -138,15 +137,13 @@ object Codec {
   
   object Protobuf extends Codec {
     def encode[T <: Message](msg: T): Array[Byte] = {
-      val schema: protostuff.Schema[T] = msg.schema.asInstanceOf[protostuff.Schema[T]]
       val buf = protostuff.LinkedBuffer.allocate(protostuff.LinkedBuffer.DEFAULT_BUFFER_SIZE)
-      protostuff.ProtostuffIOUtil.toByteArray(msg, schema, buf)
+      protostuff.ProtostuffIOUtil.toByteArray(msg, msg.schema, buf)
     }
     
     def decode[T <: Message](data: Array[Byte])(implicit manifest: Manifest[T]): T = {
       val instance: T = manifest.erasure.newInstance.asInstanceOf[T]
-      val schema: protostuff.Schema[T] = instance.schema.asInstanceOf[protostuff.Schema[T]]
-      protostuff.ProtobufIOUtil.mergeFrom(data, instance, schema)
+      protostuff.ProtobufIOUtil.mergeFrom(data, instance, instance.schema)
       instance
     }
   }

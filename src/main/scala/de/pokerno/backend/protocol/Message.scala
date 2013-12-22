@@ -9,7 +9,7 @@ import org.msgpack.annotation.{ Message => MsgPack }
 import com.dyuproject.protostuff
 
 trait Message {
-  def schema: protostuff.Schema[_ <: Any]
+  def schema: protostuff.Schema[Any]
   //def pipeSchema: protostuff.Pipe.Schema[_]
   
   def getSchema = schema
@@ -26,7 +26,7 @@ sealed case class AddBet(
     @BeanProperty var pos: Integer,
     var player: model.Player,
     var _bet: model.Bet) extends Message with HasPlayer {
-  def schema = AddBetSchema.SCHEMA
+  def schema = AddBetSchema.SCHEMA.asInstanceOf[protostuff.Schema[Any]]
   //def pipeSchema = AddBetSchema.PIPE_SCHEMA
   def this() = this(0, null, null)
 
@@ -40,7 +40,7 @@ sealed case class DiscardCards(
     @BeanProperty var pos: Integer,
     var player: model.Player,
     var cards: List[poker.Card]) extends Message with HasPlayer with HasCards {
-  def schema = DiscardCardsSchema.SCHEMA
+  def schema = DiscardCardsSchema.SCHEMA.asInstanceOf[protostuff.Schema[Any]]
   //def pipeSchema = DiscardCardsSchema.PIPE_SCHEMA
   @BeanProperty var cardsNum: Integer = null
   @BeanProperty var `type`: DiscardCardsSchema.DiscardType = null
@@ -53,7 +53,7 @@ sealed case class ShowCards(
     var player: model.Player,
     var cards: List[poker.Card],
     muck: Boolean = false) extends Message with HasPlayer with HasCards {
-  def schema = ShowCardsSchema.SCHEMA
+  def schema = ShowCardsSchema.SCHEMA.asInstanceOf[protostuff.Schema[Any]]
   //def pipeSchema = ShowCardsSchema.PIPE_SCHEMA
   @BeanProperty var `type`: ShowCardsSchema.ShowType = if (muck)
       ShowCardsSchema.ShowType.MUCK
@@ -131,7 +131,7 @@ sealed case class DealCards(
 
   def this() = this(null)
   
-  def schema = DealCardsSchema.SCHEMA
+  def schema = DealCardsSchema.SCHEMA.asInstanceOf[protostuff.Schema[Any]]
   //def pipeSchema = DealCardsSchema.PIPE_SCHEMA
 }
 
@@ -141,7 +141,7 @@ sealed case class RequireBet(
     var player: model.Player,
     var call: Decimal,
     var raise: model.Range) extends Message with HasPlayer{
-  def schema = RequireBetSchema.SCHEMA
+  def schema = RequireBetSchema.SCHEMA.asInstanceOf[protostuff.Schema[Any]]
   //def pipeSchema = RequireBetSchema.PIPE_SCHEMA
   
   def this() = this(null, null, .0, model.Range(.0, .0))
@@ -157,7 +157,7 @@ sealed case class RequireBet(
 sealed case class RequireDiscard(
     @BeanProperty var pos: Int,
     var player: model.Player) extends Message {
-  def schema = RequireDiscardSchema.SCHEMA
+  def schema = RequireDiscardSchema.SCHEMA.asInstanceOf[protostuff.Schema[Any]]
   //def pipeSchema = RequireDiscardSchema.PIPE_SCHEMA
   def this() = this(0, null)
   
@@ -169,7 +169,7 @@ sealed case class RequireDiscard(
 sealed case class DeclarePot(
     var pot: Decimal,
     var rake: Option[Decimal] = None) extends Message {
-  def schema = DeclarePotSchema.SCHEMA
+  def schema = DeclarePotSchema.SCHEMA.asInstanceOf[protostuff.Schema[Any]]
   //def pipeSchema = DeclarePotSchema.PIPE_SCHEMA
   def this() = this(.0)
   
@@ -190,7 +190,7 @@ sealed case class DeclareHand(
     var player: model.Player,
     var cards: List[poker.Card],
     var hand: poker.Hand) extends Message with HasPlayer with HasCards {
-  def schema = DeclareHandSchema.SCHEMA
+  def schema = DeclareHandSchema.SCHEMA.asInstanceOf[protostuff.Schema[Any]]
   //def pipeSchema = DeclareHandSchema.PIPE_SCHEMA
   def this() = this(0, null, List.empty, null)
   
@@ -219,7 +219,7 @@ sealed case class DeclareWinner(
     @BeanProperty var pos: Int,
     var player: model.Player,
     var amount: Decimal) extends Message with HasPlayer with HasAmount {
-  def schema = DeclareWinnerSchema.SCHEMA
+  def schema = DeclareWinnerSchema.SCHEMA.asInstanceOf[protostuff.Schema[Any]]
   //def pipeSchema = DeclareWinnerSchema.PIPE_SCHEMA
   def this() = this(0, null, .0)
 }
@@ -232,7 +232,7 @@ sealed case class JoinTable(
     @BeanProperty var pos: Integer,
     var amount: Decimal,
     var player: model.Player) extends Message with HasAmount {
-  def schema = JoinTableSchema.SCHEMA
+  def schema = JoinTableSchema.SCHEMA.asInstanceOf[protostuff.Schema[Any]]
   //def pipeSchema = JoinTableSchema.PIPE_SCHEMA
   def this() = this(null, .0, null)
   

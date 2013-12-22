@@ -1,18 +1,13 @@
 package de.pokerno.model
 
 import de.pokerno.poker.{ Card, Deck }
+import de.pokerno.backend.{protocol => proto}
 
-// FIXME move it to protocol
-object Dealer {
-  trait DealType {
-    def isPrivate: Boolean = false
-  }
-
-  case object Hole extends DealType {
-    override def isPrivate = true
-  }
-  case object Door extends DealType
-  case object Board extends DealType
+object DealCards {
+  type Value = proto.DealCardsSchema.DealType
+  final val Board = proto.DealCardsSchema.DealType.BOARD
+  final val Door = proto.DealCardsSchema.DealType.DOOR
+  final val Hole = proto.DealCardsSchema.DealType.HOLE
 }
 
 class Dealer(private var _deck: Deck = new Deck) {

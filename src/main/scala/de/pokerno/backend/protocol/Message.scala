@@ -9,11 +9,13 @@ import org.msgpack.annotation.{ Message => MsgPack }
 import com.dyuproject.protostuff
 
 trait Message {
-  def schema: protostuff.Schema[_]
+  def schema: protostuff.Schema[_ <: Any]
   //def pipeSchema: protostuff.Pipe.Schema[_]
   
   def getSchema = schema
   //def getPipeSchema = pipeSchema
+  
+  def messageName: String = getClass.getSimpleName
 }
 
 /**
@@ -23,13 +25,14 @@ trait Message {
 sealed case class AddBet(
     @BeanProperty var pos: Integer,
     var player: model.Player,
-    _bet: model.Bet) extends Message with HasPlayer {
+    var _bet: model.Bet) extends Message with HasPlayer {
   def schema = AddBetSchema.SCHEMA
   //def pipeSchema = AddBetSchema.PIPE_SCHEMA
   def this() = this(0, null, null)
 
-  def getBet: Bet = Bet(_bet.betType, _bet.amount.toDouble)
-  def setBet(v: Bet) = new model.Bet(v.getType, v.getAmount.toDouble)
+  def getBet: Bet = if (_bet != null) Bet(_bet.betType, _bet.amount.toDouble)
+    else null
+  def setBet(v: Bet) = _bet = new model.Bet(v.getType, v.getAmount.toDouble)
 }
 
 @MsgPack
@@ -48,10 +51,14 @@ sealed case class DiscardCards(
 sealed case class ShowCards(
     @BeanProperty var pos: Integer,
     var player: model.Player,
-    var cards: List[poker.Card]) extends Message with HasPlayer with HasCards {
+    var cards: List[poker.Card],
+    muck: Boolean = false) extends Message with HasPlayer with HasCards {
   def schema = ShowCardsSchema.SCHEMA
   //def pipeSchema = ShowCardsSchema.PIPE_SCHEMA
-  @BeanProperty var `type`: ShowCardsSchema.ShowType = null
+  @BeanProperty var `type`: ShowCardsSchema.ShowType = if (muck)
+      ShowCardsSchema.ShowType.MUCK
+    else
+      ShowCardsSchema.ShowType.SHOW
   def this() = this(null, null, null)
 }
 
@@ -116,7 +123,7 @@ sealed case class StreetStart(streetName: gameplay.Street.Value) extends StageEv
 
 @MsgPack
 sealed case class DealCards(
-    dealType: model.Dealer.DealType,
+    @BeanProperty var `type`: model.DealCards.Value,
     var cards: List[poker.Card] = List.empty,
     @BeanProperty var pos: Integer = null,
     var player: model.Player = null,
@@ -126,18 +133,6 @@ sealed case class DealCards(
   
   def schema = DealCardsSchema.SCHEMA
   //def pipeSchema = DealCardsSchema.PIPE_SCHEMA
-  
-  def getDealType: DealerDealType = dealType match {
-    case model.Dealer.Board => DealerDealType.BOARD
-    case model.Dealer.Door => DealerDealType.DOOR
-    case model.Dealer.Hole => DealerDealType.HOLE
-  }
-  
-  def setDealType(v: DealerDealType) = v match {
-    case DealerDealType.BOARD => model.Dealer.Board
-    case DealerDealType.DOOR => model.Dealer.Door
-    case DealerDealType.HOLE => model.Dealer.Hole
-  }
 }
 
 @MsgPack
@@ -156,7 +151,7 @@ sealed case class RequireBet(
   
   def getRaise: Range = new Range(raise.min.toDouble, raise.max.toDouble)
   def setRaise(r: Range) = raise = model.Range(r.min, r.max)
-  }
+}
 
 @MsgPack
 sealed case class RequireDiscard(

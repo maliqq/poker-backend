@@ -5,9 +5,9 @@ import de.pokerno.backend.{protocol => message}
 
 trait Dealing {
   g: GameplayLike ⇒
-  def dealCards(_type: Dealer.DealType, cardsNum: Option[Int] = None) {
+  def dealCards(_type: DealCards.Value, cardsNum: Option[Int] = None) {
     _type match {
-      case Dealer.Hole | Dealer.Door ⇒
+      case DealCards.Hole | DealCards.Door ⇒
         var n: Int = cardsNum getOrElse (0)
         if (n == 0)
           n = game.options.pocketSize
@@ -18,7 +18,7 @@ trait Dealing {
           case (seat, pos) ⇒
             val cards = dealer dealPocket (n, seat.player.get)  
             
-            if (_type.isPrivate) {
+            if (_type == DealCards.Hole) { // FIXME: isPrivate
 //              events.publish(
 //                  message.DealCards(_type, cards, pos = pos),
 //                events.One(seat.player.get.id))
@@ -30,7 +30,7 @@ trait Dealing {
             } else events.publish(message.DealCards(_type, cards, pos = pos))
         }
 
-      case Dealer.Board ⇒
+      case DealCards.Board ⇒
 
         Console printf ("dealing board %d cards\n", cardsNum.get)
 

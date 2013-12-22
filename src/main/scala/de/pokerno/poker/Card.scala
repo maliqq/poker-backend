@@ -32,6 +32,7 @@ object Card {
 
   @throws[NotACard]
   def apply(value: Any): Card = value match {
+    case i: Byte => parseInt(i - 1)
     case i: Int    ⇒ parseInt(i)
     case s: String ⇒ parseString(s)
     case c: Card   ⇒ c
@@ -51,6 +52,7 @@ object Card {
     wrap(kind, suit)
   }
 
+  def wrap(i: Byte) = All(i - 1)
   def wrap(i: Int) = All(i)
   def wrap(kind: Kind.Value.Kind, suit: Suit.Value) = All((kind.toInt << 2) + suit.toInt)
 }

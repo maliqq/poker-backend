@@ -33,6 +33,13 @@ class Bet(val betType: Bet.Value, val amount: Decimal = .0) {
       true
     case _ => false
   }
+  
+  override def equals(other: Any): Boolean = {
+    other match {
+      case b: Bet => betType == b.betType && amount == b.amount
+      case _ => false
+    }
+  }
 }
 
 object Bet {

@@ -26,9 +26,9 @@ class PlayerActor(i: Int, gameplay: Gameplay, instance: ActorRef) extends Actor 
       instance ! message.JoinTable(pos = i - 1, player = player, amount = stack)
       become({
         case message.DealCards(_type, cards, pos, player, cardsNum) ⇒ _type match {
-          case Dealer.Hole | Dealer.Door =>
+          case DealCards.Hole | DealCards.Door =>
             Console printf ("Dealt %s %s to %d\n", _type, Cards(cards) toConsoleString, pos)
-          case Dealer.Board =>
+          case DealCards.Board =>
             Console printf ("Dealt %s %s\n", _type, Cards(cards) toConsoleString)
           case _                         ⇒
         }
@@ -68,7 +68,7 @@ class Play(gameplay: Gameplay, instance: ActorRef, tableSize: Int) extends Actor
 
   def receive = {
     case message.DealCards(_type, cards, pos, player, cardsNum) ⇒ _type match {
-      case Dealer.Board ⇒ Console printf ("Dealt %s %s\n", _type, Cards(cards) toConsoleString)
+      case DealCards.Board ⇒ Console printf ("Dealt %s %s\n", _type, Cards(cards) toConsoleString)
       case _            ⇒
     }
 

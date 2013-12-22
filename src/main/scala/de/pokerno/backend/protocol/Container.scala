@@ -7,6 +7,8 @@ import scala.reflect._
 import scala.math.{BigDecimal => Decimal}
 import com.dyuproject.protostuff
 import org.msgpack.annotation.{ Message => MsgPack }
+import org.codehaus.jackson.annotate._
+import org.codehaus.jackson.annotate.JsonSubTypes.Type
 
 @MsgPack
 case class Bet(

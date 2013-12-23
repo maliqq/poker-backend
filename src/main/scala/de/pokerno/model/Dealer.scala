@@ -24,16 +24,16 @@ class Dealer(private var _deck: Deck = new Deck) {
     cards
   }
 
-  def discard(old: List[Card], p: Player): List[Card] = {
-    val cards = _deck discard (old) // FIXME validate old
-    _pockets += (p -> cards)
-    cards
-  }
-
   def dealBoard(n: Int): List[Card] = {
     _deck.burn(1)
     val cards = _deck deal (n)
     _board ++= cards
+    cards
+  }
+
+  def discard(old: List[Card], p: Player): List[Card] = {
+    val cards = _deck discard (old) // FIXME validate old
+    _pockets += (p -> cards)
     cards
   }
 

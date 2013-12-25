@@ -11,10 +11,18 @@ object EventSource {
   
   case object Ping
   
-  class Server extends Actor with ActorLogging {
-    final val port = 8082
-    final val path = "/_events"
-
+  final val DefaultPort = 8082
+  final val DefaultPath = "/_events"
+  
+  case class Config(
+      val port: Int = DefaultPort,
+      val path: String = DefaultPath
+      )
+  
+  class Server(config: Config) extends Actor with ActorLogging {
+    val port = config.port
+    val path = config.path
+    
     import context._
     var connections = new java.util.ArrayList[webbit.EventSourceConnection]()
   

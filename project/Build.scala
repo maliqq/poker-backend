@@ -10,7 +10,8 @@ object PokernoBuild extends Build {
 
   override lazy val settings = super.settings ++ Seq(
     organization := "de.pokerno",
-    scalaVersion := "2.10.3"
+    scalaVersion := "2.10.3",
+    resolvers += "spray repo" at "http://repo.spray.io"
   )
   
   lazy val deps = Seq(
@@ -32,7 +33,10 @@ object PokernoBuild extends Build {
     //"org.msgpack" % "msgpack" % "0.6.8",
     "com.dyuproject.protostuff" % "protostuff-core" % "1.0.7",
     "com.dyuproject.protostuff" % "protostuff-json" % "1.0.7",
-    "com.dyuproject.protostuff" % "protostuff-runtime" % "1.0.7"
+    "com.dyuproject.protostuff" % "protostuff-runtime" % "1.0.7",
+    
+    "com.twitter" %% "finagle-core" % "6.6.2",          
+    "com.twitter" %% "finagle-http" % "6.6.2"
   )
   
   lazy val testDeps = Seq(
@@ -82,11 +86,7 @@ object PokernoBuild extends Build {
     base = file("pokerno-server"),
     settings = Project.defaultSettings ++ Seq(
       name := "pokerno-server",
-      version := "0.0.1",
-      libraryDependencies ++= Seq(
-        "com.twitter" %% "finagle-core" % "6.6.2",          
-        "com.twitter" %% "finagle-http" % "6.6.2"
-      )
+      version := "0.0.1" 
     ) ++ assemblySettings
   ) dependsOn(root)
   

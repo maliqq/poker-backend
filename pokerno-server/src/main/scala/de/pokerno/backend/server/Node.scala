@@ -1,14 +1,16 @@
 package de.pokerno.backend.server
 
 import com.twitter.util.Future
-import com.twitter.finagle.builder.{ Server, ServerBuilder }
 import com.twitter.finagle
 import com.twitter.finagle.http.Http
 import org.jboss.netty.handler.codec.http._
 import java.net.InetSocketAddress
 import java.util.UUID
 
+import akka.actor.{ActorSystem, Props}
+
 import de.pokerno.model._
+import de.pokerno.backend.{gateway => gw}
 
 object Node {
   class Service extends finagle.Service[HttpRequest, HttpResponse] {
@@ -24,26 +26,41 @@ object Node {
     case class closeRoomRq(guid: UUID)
     def closeRoom(r: closeRoomRq) = {}
   }
-
-  val service: finagle.Service[HttpRequest, HttpResponse] = new Service
-
-  object Config {
-    var name = "node_service"
-    var host = "localhost"
-    var port = 8081
-  }
 }
 
-class Node extends Runnable {
-
+class Node(val config: Config) extends Runnable {
   def run {
-    val address = new InetSocketAddress(Node.Config.host, Node.Config.port)
-    val codec = Http()
-    val rpc: Server = ServerBuilder().
-      codec(codec).
-      bindTo(address).
-      name(Node.Config.name).
-      build(Node.service)
+    start
   }
+  
+  val actorSystem = ActorSystem("poker-node")
 
+  import com.twitter.finagle.builder.{ Server => RpcServer, ServerBuilder => RpcServerBuilder }
+
+  def start {
+    config.rpc.map { rpc =>
+      val address = new InetSocketAddress(rpc.host, rpc.port)
+      val rpcService = RpcServerBuilder().codec(Http()).bindTo(address).
+        name("node-rpc-service").
+        build(new Node.Service)
+    }
+    
+    config.zeromq.map { zmq =>
+      val zmq = actorSystem.actorOf(Props(classOf[gw.Zeromq]), name = "zeromq")
+    }
+    
+    config.http.map { http =>
+      http.api.map { api =>
+        
+      }
+      
+      http.eventSource.map { es =>
+        val eventSource = actorSystem.actorOf(Props(classOf[gw.EventSource.Server], es), name = "eventSource")
+      }
+      
+      http.webSocket.map { ws =>
+        val webSocket = actorSystem.actorOf(Props(classOf[gw.Websocket.Server], ws), name = "webSocket")
+      }
+    }
+  }
 }

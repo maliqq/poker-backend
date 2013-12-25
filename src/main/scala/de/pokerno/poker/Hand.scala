@@ -151,5 +151,8 @@ class Hand(
 
     case Rank.Badugi.BadugiFour ⇒
       "4-card badugi: %s + %s + %s + %s" format (value head, value(1), value(2), value(3))
+    
+    case _ =>
+      "(unknown: %s)" format(this)
   }
 }

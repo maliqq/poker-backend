@@ -2,7 +2,6 @@ package de.pokerno.gameplay
 
 import de.pokerno.model._
 
-
 object Gameplay {
   case object Start
   case object Stop

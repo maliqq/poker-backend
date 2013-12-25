@@ -14,10 +14,10 @@ case class Config(
 object Main {
 
   val parser = new scopt.OptionParser[Config]("poker-console") {
-    opt[Int]('t', "table-size") action { (value, c) ⇒ c.copy(tableSize = value) } text ("Table size")
-    opt[Decimal]('b', "bet-size") action { (value, c) ⇒ c.copy(betSize = value) } text ("Bet size")
-    opt[String]("mix") action { (value, c) ⇒ c.copy(mixedGame = Some(value)) } text ("Mixed game")
-    opt[String]('g', "game") action { (value, c) ⇒ c.copy(limitedGame = value) } text ("Limited game")
+    opt[Int]('t', "table-size") text ("Table size") action { (value, c) ⇒ c.copy(tableSize = value) }
+    opt[Decimal]('b', "bet-size") text ("Bet size") action { (value, c) ⇒ c.copy(betSize = value) }
+    opt[String]("mix") text ("Mixed game") action { (value, c) ⇒ c.copy(mixedGame = Some(value)) }
+    opt[String]('g', "game") text ("Limited game") action { (value, c) ⇒ c.copy(limitedGame = value) }
   }
 
   val config = Config()

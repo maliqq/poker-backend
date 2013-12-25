@@ -3,17 +3,19 @@ import akka.actor.Actor
 import akka.zeromq._
 
 object Zeromq {
-  case object Config {
-    val address = "tcp://0.0.0.0:5555"
-  }
+  final val DefaultAddr = "tcp://0.0.0.0:5555"
+
+  case class Config(
+    val address: String = DefaultAddr
+  )
 }
 
-class Zeromq extends Actor {
+class Zeromq(config: Zeromq.Config) extends Actor {
   import context._
 
   final val socketType = SocketType.Pub
 
-  val address = Zeromq.Config.address
+  val address = config.address
   val socket = ZeroMQExtension(system).newSocket(socketType, Bind(address))
 
   def receive = {

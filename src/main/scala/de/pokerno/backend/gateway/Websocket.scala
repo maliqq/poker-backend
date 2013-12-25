@@ -5,20 +5,20 @@ import akka.actor.{ Actor, ActorLogging, ActorRef }
 
 object Websocket {
 
-  final val DefaultWebsocketPort = 8080
-  final val DefaultWebsocketPath = "/_ws"
+  final val DefaultPort = 8080
+  final val DefaultPath = "/_ws"
 
-  object Config {
-    val port = DefaultWebsocketPort
-    val path = DefaultWebsocketPath
-  }
+  case class Config(
+      val port: Int = DefaultPort,
+      val path: String = DefaultPath
+  )
   
   case class Connect(conn: webbit.WebSocketConnection)
   case class Disconnect(conn: webbit.WebSocketConnection)
   
-  class Server extends Actor with ActorLogging {
-    val port = Websocket.Config.port
-    val path = Websocket.Config.path
+  class Server(config: Config) extends Actor with ActorLogging {
+    val port = config.port
+    val path = config.path
     
     override def preStart {
       log info("starting %s at %s".format(path, port))

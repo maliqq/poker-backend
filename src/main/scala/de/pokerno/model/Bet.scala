@@ -56,11 +56,13 @@ object Bet {
   final val GuestBlind: Value = proto.BetSchema.BetType.GUEST_BLIND
   final val Straddle: Value = proto.BetSchema.BetType.STRADDLE
 
-  trait CardAction
-  case object Discard extends CardAction
-  case object StandPat extends CardAction
-  case object Show extends CardAction
-  case object Muck extends CardAction
+  // TODO
+  final val Discard = proto.DiscardCardsSchema.DiscardType.DISCARD
+  final val StandPat = proto.DiscardCardsSchema.DiscardType.STAND_PAT
+  
+  // TODO
+  final val Show = proto.ShowCardsSchema.ShowType.SHOW
+  final val Muck = proto.ShowCardsSchema.ShowType.MUCK
 
   def check = new Bet(Check)
   def fold = new Bet(Fold)

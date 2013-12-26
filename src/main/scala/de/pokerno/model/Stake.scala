@@ -24,14 +24,14 @@ class Stake(
     case _              ⇒ throw new Error("no amount for %s" format (t))
   }
 
-  val smallBlind: Decimal = SmallBlind getOrElse (Rates.Default(Bet.SmallBlind) * bigBlind)
+  val smallBlind: Decimal = SmallBlind getOrElse rate(Bet.SmallBlind)
 
   val ante: Option[Decimal] = Ante match {
     case Left(amount) ⇒
       if (amount > .0) Some(amount)
       else None
     case Right(withAnte) ⇒
-      if (withAnte) Some(Rates.Default(Bet.Ante) * bigBlind)
+      if (withAnte) Some(rate(Bet.Ante))
       else None
   }
 
@@ -40,7 +40,9 @@ class Stake(
       if (amount > .0) Some(amount)
       else None
     case Right(withBringIn) ⇒
-      if (withBringIn) Some(Rates.Default(Bet.BringIn) * bigBlind)
+      if (withBringIn) Some(rate(Bet.BringIn))
       else None
   }
+  
+  private def rate(v: Bet.Value) = Rates.Default(v) * bigBlind
 }

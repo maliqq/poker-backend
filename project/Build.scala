@@ -12,6 +12,7 @@ object PokernoBuild extends Build {
     organization := "de.pokerno",
     scalaVersion := "2.10.3",
     resolvers += "spray repo" at "http://repo.spray.io"
+    //,resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
   )
   
   lazy val deps = Seq(
@@ -22,7 +23,7 @@ object PokernoBuild extends Build {
     
     "com.typesafe.akka" %% "akka-zeromq" % "2.2.1",
     "asia.stampy" % "stampy-core" % "1.0-RELEASE",
-    "asia.stampy" % "stampy-NETTY-client-server-RI" % "1.0-RELEASE",
+    //"asia.stampy" % "stampy-NETTY-client-server-RI" % "1.0-RELEASE",
     
     "com.github.scopt" %% "scopt" % "3.1.0",
     //"com.twitter" % "ostrich" % "2.3.0"
@@ -35,8 +36,7 @@ object PokernoBuild extends Build {
     "com.dyuproject.protostuff" % "protostuff-json" % "1.0.7",
     "com.dyuproject.protostuff" % "protostuff-runtime" % "1.0.7",
     
-    "com.twitter" %% "finagle-core" % "6.6.2",          
-    "com.twitter" %% "finagle-http" % "6.6.2"
+    "io.netty" % "netty-all" % "4.0.13.Final"
   )
   
   lazy val testDeps = Seq(

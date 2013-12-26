@@ -2,8 +2,16 @@ package de.pokerno.model
 
 import scala.math.{ BigDecimal ⇒ Decimal }
 import scala.collection._
+import de.pokerno.backend.{protocol => proto}
 
 case class Player(val id: String)
+
+object Table {
+  final val Waiting = proto.TableSchema.TableState.WAITING
+  final val Active = proto.TableSchema.TableState.ACTIVE
+  final val Paused = proto.TableSchema.TableState.PAUSED
+  final val Closed = proto.TableSchema.TableState.CLOSED
+}
 
 class Table(val size: Int) {
   val seats = new Seats(size)

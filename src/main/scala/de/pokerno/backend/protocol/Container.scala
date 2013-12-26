@@ -15,14 +15,27 @@ case class Bet(
   @BeanProperty var `type`: BetSchema.BetType,
   @BeanProperty var amount: java.lang.Double
 ) {
-  def this() = this(null, .0)
+  def this() = this(null, null)
 }
 
 @MsgPack
 class Game {
   @BeanProperty var `type`: GameSchema.GameType = null
   @BeanProperty var limit: GameSchema.GameLimit = null
-  @BeanProperty var tableSize: Int = 0
+  @BeanProperty var tableSize: Integer = null
+}
+
+@MsgPack
+class Mix {
+  @BeanProperty var `type`: MixSchema.MixType = null
+  @BeanProperty var tableSize: Integer = null
+}
+
+@MsgPack
+class Variation {
+  @BeanProperty var `type`: VariationSchema.VariationType = null
+  @BeanProperty var mix: Mix = null
+  @BeanProperty var game: Game = null
 }
 
 @MsgPack
@@ -39,10 +52,10 @@ case class Hand(
 
 @MsgPack
 case class Range(
-  @BeanProperty var min: Double,
-  @BeanProperty var max: Double
+  @BeanProperty var min: java.lang.Double,
+  @BeanProperty var max: java.lang.Double
 ) {
-  def this() = this(.0, .0)
+  def this() = this(null, null)
 }
 
 @MsgPack
@@ -66,11 +79,12 @@ class Table {
   @BeanProperty var size: Int = 0
   @BeanProperty var button: Int = 0
   @BeanProperty var seats: java.util.ArrayList[Seat] = null
+  @BeanProperty var state: TableSchema.TableState = null
 }
 
 @MsgPack
 class ActionEvent extends Message {
-  def schema = ActionEventSchema.SCHEMA.asInstanceOf[protostuff.Schema[Any]]
+  def schema = ActionEventSchema.SCHEMA
   //def pipeSchema = ActionEventSchema.PIPE_SCHEMA
   @BeanProperty var `type`: ActionEventSchema.EventType = null
   @BeanProperty var discardCards: DiscardCards = null
@@ -80,7 +94,7 @@ class ActionEvent extends Message {
 
 @MsgPack
 class GameplayEvent extends Message {
-  def schema = GameplayEventSchema.SCHEMA.asInstanceOf[protostuff.Schema[Any]]
+  def schema = GameplayEventSchema.SCHEMA
   //def pipeSchema = GameplayEventSchema.PIPE_SCHEMA
   @BeanProperty var `type`: GameplayEventSchema.EventType = null
   @BeanProperty var game: Game = null
@@ -89,7 +103,7 @@ class GameplayEvent extends Message {
 
 @MsgPack
 class StageEvent extends Message {
-  def schema = StageEventSchema.SCHEMA.asInstanceOf[protostuff.Schema[Any]]
+  def schema = StageEventSchema.SCHEMA
   //def pipeSchema = StageEventSchema.PIPE_SCHEMA
   @BeanProperty var `type`: StageEventSchema.EventType = null
   @BeanProperty var stage: StageEventSchema.StageType = null
@@ -98,7 +112,7 @@ class StageEvent extends Message {
 
 @MsgPack
 class TableEvent extends Message {
-  def schema = TableEventSchema.SCHEMA.asInstanceOf[protostuff.Schema[Any]]
+  def schema = TableEventSchema.SCHEMA
   //def pipeSchema = TableEventSchema.PIPE_SCHEMA
   @BeanProperty var `type`: TableEventSchema.EventType = null
   @BeanProperty var button: Integer = null
@@ -107,7 +121,7 @@ class TableEvent extends Message {
 
 @MsgPack
 class SeatEvent(_type: SeatEventSchema.EventType) extends Message {
-  def schema = SeatEventSchema.SCHEMA.asInstanceOf[protostuff.Schema[Any]]
+  def schema = SeatEventSchema.SCHEMA
   //def pipeSchema = SeatEventSchema.PIPE_SCHEMA
   @BeanProperty var `type` = _type
   @BeanProperty var pos: Integer = null
@@ -117,18 +131,19 @@ class SeatEvent(_type: SeatEventSchema.EventType) extends Message {
 
 @MsgPack
 class DealEvent extends Message {
-  def schema = DealEventSchema.SCHEMA.asInstanceOf[protostuff.Schema[Any]]
+  def schema = DealEventSchema.SCHEMA
   //def pipeSchema = DealEventSchema.PIPE_SCHEMA
   @BeanProperty var `type`: DealEventSchema.EventType = null
   @BeanProperty var requireBet: RequireBet = null
   @BeanProperty var requireDiscard: RequireDiscard = null
   @BeanProperty var declarePot: DeclarePot = null
   @BeanProperty var declareWinner: DeclareWinner = null
+  @BeanProperty var tickTimer: TickTimer = null
 }
 
 @MsgPack
 class Msg extends Message {
-  def schema = MsgSchema.SCHEMA.asInstanceOf[protostuff.Schema[Any]]
+  def schema = MsgSchema.SCHEMA
   //def pipeSchema = MsgSchema.PIPE_SCHEMA
   @BeanProperty var `type`: MsgSchema.MsgType = null
   @BeanProperty var body: String = null
@@ -136,7 +151,7 @@ class Msg extends Message {
 
 @MsgPack
 class Cmd extends Message {
-  def schema = CmdSchema.SCHEMA.asInstanceOf[protostuff.Schema[Any]]
+  def schema = CmdSchema.SCHEMA
   //def pipeSchema = CmdSchema.PIPE_SCHEMA
   @BeanProperty var `type`: CmdSchema.CmdType = null
   @BeanProperty var joinTable: JoinTable = null
@@ -145,7 +160,7 @@ class Cmd extends Message {
 
 @MsgPack
 class Event extends Message {
-  def schema = EventSchema.SCHEMA.asInstanceOf[protostuff.Schema[Any]]
+  def schema = EventSchema.SCHEMA
   //def pipeSchema = EventSchema.PIPE_SCHEMA
   @BeanProperty var `type`: EventSchema.EventType = null
   @BeanProperty var seatEvent: SeatEvent = null
@@ -154,6 +169,22 @@ class Event extends Message {
   @BeanProperty var tableEvent: TableEvent = null
   @BeanProperty var dealEvent: DealEvent = null
   @BeanProperty var gameplayEvent: GameplayEvent = null
+}
+
+@MsgPack
+class RoomAction extends Message {
+  def schema = RoomActionSchema.SCHEMA
+  @BeanProperty var `type`: RoomActionSchema.ActionType = null
+  @BeanProperty var id: String = null
+  @BeanProperty var deadline: Integer = null
+}
+
+@MsgPack
+class TableAction extends Message {
+  def schema = TableActionSchema.SCHEMA
+  @BeanProperty var `type`: TableActionSchema.ActionType = null
+  @BeanProperty var kickPlayer: KickPlayer = null
+  @BeanProperty var moveButton: MoveButton = null
 }
 
 trait HasPlayer {

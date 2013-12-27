@@ -1,7 +1,9 @@
 package de.pokerno.backend.gateway.eventsource
 
-import io.netty.channel.{ChannelHandler, ChannelHandlerContext}
+import io.netty.buffer.ByteBuf
+import io.netty.channel.{Channel, ChannelHandler, ChannelHandlerContext}
 import io.netty.channel.SimpleChannelInboundHandler
+import io.netty.handler.codec.MessageToByteEncoder
 import io.netty.handler.codec.http.{HttpResponse, HttpResponseStatus, HttpHeaders}
 
 object EventSource {
@@ -21,6 +23,37 @@ object EventSource {
       ctx.channel.write(resp)
       val pipeline = ctx.channel.pipeline
       pipeline.replace("handler", "ssehandler", handler)
+    }
+  }
+  
+  case class Packet(val data: String,
+      val comment: Boolean = false,
+      val event: String = null,
+      val id: java.lang.Long = null) {
+    
+    override def toString = {
+      var b = new StringBuffer
+      var prefix = ""
+      
+      if (!comment) {
+        if (id != null)
+          b.append("id: ").append(id.toString)
+        if (event != null)
+          b.append("event: ").append(event.replaceAll("\n", "")).append("\n")
+        prefix = "data"
+      }
+
+      data.split("\n").foreach { line =>
+        b.append(prefix + ": ").append(line).append("\n")
+      }
+      
+      b.append("\n").toString
+    }
+  }
+  
+  class Encoder extends MessageToByteEncoder[Packet] {
+    def encode(ctx: ChannelHandlerContext, packet: Packet, buf: ByteBuf) = {
+      
     }
   }
 }

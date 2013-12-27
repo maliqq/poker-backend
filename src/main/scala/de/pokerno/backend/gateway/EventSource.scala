@@ -19,7 +19,7 @@ object EventSource {
       val path: String = DefaultPath
       )
   
-  class Server(config: Config) extends Actor with ActorLogging {
+  class Server(config: Config = Config()) extends Actor with ActorLogging {
     val port = config.port
     val path = config.path
     

@@ -59,7 +59,7 @@ object PokernoBuild extends Build {
     base = file("pokerno-ai"),
     settings = Project.defaultSettings ++ Seq(
       name := "pokerno-ai",
-      version := "0.0.1"
+      version := "0.0.2"
     ) ++ assemblySettings
   ) dependsOn(root)
   

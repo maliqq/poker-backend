@@ -40,7 +40,7 @@ object EventSource {
     
     implicit def msg2EventSourceMessage(msg: protocol.Message): webbit.EventSourceMessage = {
       try {
-        val data = protocol.Codec.Json.encode(msg)
+        val data = protocol.Codec.Json.encodeExplicit(msg)
         new webbit.EventSourceMessage(new String(data.map(_.toChar)))
       } catch {
         case e: Exception =>

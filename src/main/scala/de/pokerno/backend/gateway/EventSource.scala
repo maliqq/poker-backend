@@ -19,7 +19,7 @@ object EventSource {
       val path: String = DefaultPath
       )
   
-  class Server(config: Config) extends Actor with ActorLogging {
+  class Server(config: Config = Config()) extends Actor with ActorLogging {
     val port = config.port
     val path = config.path
     
@@ -40,7 +40,7 @@ object EventSource {
     
     implicit def msg2EventSourceMessage(msg: protocol.Message): webbit.EventSourceMessage = {
       try {
-        val data = protocol.Codec.Json.encode(msg)
+        val data = protocol.Codec.Json.encodeExplicit(msg)
         new webbit.EventSourceMessage(new String(data.map(_.toChar)))
       } catch {
         case e: Exception =>

@@ -36,7 +36,7 @@ object PokernoBuild extends Build {
     "com.dyuproject.protostuff" % "protostuff-json" % "1.0.7",
     "com.dyuproject.protostuff" % "protostuff-runtime" % "1.0.7",
     
-    "io.netty" % "netty-all" % "4.0.13.Final"
+    "io.netty" % "netty-all" % "4.0.14.Final"
   )
   
   lazy val testDeps = Seq(

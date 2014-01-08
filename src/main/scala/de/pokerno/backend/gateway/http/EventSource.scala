@@ -1,6 +1,6 @@
-package de.pokerno.backend.gateway.eventsource
+package de.pokerno.backend.gateway.http
 
-import io.netty.buffer.ByteBuf
+import io.netty.buffer.{ByteBuf, DefaultByteBufHolder}
 import io.netty.channel.{Channel, ChannelHandler, ChannelHandlerContext}
 import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.MessageToByteEncoder
@@ -8,10 +8,10 @@ import io.netty.handler.codec.http.{HttpResponse, HttpResponseStatus, HttpHeader
 
 object EventSource {
   final val handshakeHeaders = Map[String, String](
-      HttpHeaders.Names.CONTENT_TYPE -> "text/event-stream",
-      HttpHeaders.Names.TRANSFER_ENCODING -> "identity",
-      HttpHeaders.Names.CONNECTION -> "keep-alive",
-      HttpHeaders.Names.CACHE_CONTROL -> "no-cache"    
+      HttpHeaders.Names.CONTENT_TYPE ->       "text/event-stream",
+      HttpHeaders.Names.TRANSFER_ENCODING ->  "identity",
+      HttpHeaders.Names.CONNECTION ->         "keep-alive",
+      HttpHeaders.Names.CACHE_CONTROL ->      "no-cache"    
   )
   
   class Handshake {
@@ -21,8 +21,7 @@ object EventSource {
         resp.headers().add(header, value)
       }
       ctx.channel.write(resp)
-      val pipeline = ctx.channel.pipeline
-      pipeline.replace("handler", "ssehandler", handler)
+      ctx.channel.pipeline.addLast(handler)
     }
   }
   
@@ -31,20 +30,28 @@ object EventSource {
       val event: String = null,
       val id: java.lang.Long = null) {
     
+    private object Token {
+      final val Id = "id: "
+      final val Event = "event: "
+      final val Comment = ": "
+      final val Data = "data: "
+    }
+    
     override def toString = {
       var b = new StringBuffer
-      var prefix = ""
+      var header = Token.Data
       
-      if (!comment) {
+      if (comment)
+        header = Token.Comment
+      else {
         if (id != null)
-          b.append("id: ").append(id.toString)
+          b.append(Token.Id).append(id.toString)
         if (event != null)
-          b.append("event: ").append(event.replaceAll("\n", "")).append("\n")
-        prefix = "data"
+          b.append(Token.Event).append(event.replaceAll("\n", "")).append("\n")
       }
 
       data.split("\n").foreach { line =>
-        b.append(prefix + ": ").append(line).append("\n")
+        b.append(header).append(line).append("\n")
       }
       
       b.append("\n").toString
@@ -52,12 +59,8 @@ object EventSource {
   }
   
   class Encoder extends MessageToByteEncoder[Packet] {
-    def encode(ctx: ChannelHandlerContext, packet: Packet, buf: ByteBuf) = {
+    def encode(ctx: ChannelHandlerContext, packet: Packet, out: ByteBuf) = {
       
     }
   }
-}
-
-class Handler {
-
 }

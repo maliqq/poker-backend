@@ -24,6 +24,8 @@ object EventSource {
     val path = config.path
     
     import context._
+    import scala.collection.JavaConversions._
+    
     var connections = new java.util.ArrayList[webbit.EventSourceConnection]()
   
     override def preStart {
@@ -69,9 +71,7 @@ object EventSource {
     def broadcast(msg: webbit.EventSourceMessage) {
       log debug("broadcast %s".format(msg))
       
-      val iter = connections.iterator
-      while (iter.hasNext){
-        val conn = iter.next
+      for (conn <- connections) {
         conn.send(msg)
       }
     }
@@ -90,7 +90,7 @@ object EventSource {
 }
 
 class CrossOriginHandler extends webbit.HttpHandler {
-  import org.jboss.netty.handler.codec.http
+  import io.netty.handler.codec.http
   
   def handleHttpRequest(req: webbit.HttpRequest, resp: webbit.HttpResponse, control: webbit.HttpControl) {
     resp.header(http.HttpHeaders.Names.ACCESS_CONTROL_ALLOW_ORIGIN, "*")

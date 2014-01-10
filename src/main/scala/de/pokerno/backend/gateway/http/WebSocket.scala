@@ -33,7 +33,7 @@ object WebSocket {
     def newConnection(channel: Channel, req: http.FullHttpRequest) = new Connection(channel, req)
     
     def handleWebSocketFrame(ctx: ChannelHandlerContext, frame: ws.WebSocketFrame): Unit = frame match {
-      case close: ws.CloseWebSocketFrame =>
+      case close: ws.CloseWebSocketFrame if (handshaker != null) =>
         handshaker.close(ctx.channel, frame.retain.asInstanceOf[ws.CloseWebSocketFrame])
       
       case ping: ws.PingWebSocketFrame =>

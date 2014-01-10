@@ -74,7 +74,7 @@ object ErrorStatusResponder extends HttpResponder {
   import http.HttpHeaders.{setContentLength, Names}
   
   def sendHttpResponse(req: http.FullHttpRequest, resp: http.FullHttpResponse) {
-    val buf = buffer.Unpooled.copiedBuffer(resp.getStatus.toString, CharsetUtil.UTF_8)
+    val buf = buffer.Unpooled.copiedBuffer(resp.getStatus.toString.toCharArray, CharsetUtil.UTF_8)
     resp.content.writeBytes(buf)
     buf.release
     resp.headers().add(Names.CONTENT_TYPE, "text/plain")

@@ -10,6 +10,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.handler.codec.http.{HttpObjectAggregator, HttpRequestDecoder, HttpResponseEncoder}
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler
 import io.netty.channel.socket.nio.NioServerSocketChannel
+import java.util.concurrent.{FutureTask, Callable}
 
 class Hub extends Actor {
   import context._
@@ -47,43 +48,50 @@ object Server {
   }
 }
 
+import org.slf4j.LoggerFactory
+
 case class Server(val port: Int, gw: ActorRef) {
   private var channel: Channel = null
-  private var boot: ServerBootstrap = null
   
   def isActive = channel != null && channel.isActive
   
-  def start = new java.util.concurrent.FutureTask[Server](new java.util.concurrent.Callable[Server] {
+  private lazy val bossGroup = new NioEventLoopGroup
+  private lazy val workerGroup = new NioEventLoopGroup
+  private lazy val boot = new ServerBootstrap
+  
+  def initializer = new Initializer
+  
+  class Initializer extends ChannelInitializer[SocketChannel] {
+    override def initChannel(ch: SocketChannel) {
+      val p = ch.pipeline
+      p.addLast("http-request-decoder", new HttpRequestDecoder)
+      p.addLast("http-object-aggregator", new HttpObjectAggregator(65536))
+      p.addLast("http-response-encoder", new HttpResponseEncoder)
+      p.addLast("http-eventsource-handler", new EventSource.Handler(gw))
+    }
+  }
+  
+  private def bootstrap: ServerBootstrap = boot.group(bossGroup, workerGroup)
+    .channel(classOf[NioServerSocketChannel])
+    //.option(ChannelOption.SO_KEEPALIVE.asInstanceOf[ChannelOption[Any]], true)
+    //.option(ChannelOption.TCP_NODELAY.asInstanceOf[ChannelOption[Any]], true)
+    .childHandler(initializer)
+  
+  def run {
+    if (isActive) throw new IllegalStateException("Server already running!")
+    
+    channel = bootstrap.bind(port).sync.channel
+    channel.closeFuture.sync
+  }
+  
+  def stop {
+    bossGroup.shutdownGracefully()
+    workerGroup.shutdownGracefully()
+  }
+  
+  def start = new FutureTask[Server](new Callable[Server] {
     override def call = {
-      if (isActive) throw new IllegalStateException("Server already running!")
-      
-      val bossGroup = new NioEventLoopGroup
-      val workerGroup = new NioEventLoopGroup
-      
-      boot = new ServerBootstrap
-      try {
-        boot.group(bossGroup, workerGroup)
-          .channel(classOf[NioServerSocketChannel])
-          //.option(ChannelOption.SO_KEEPALIVE.asInstanceOf[ChannelOption[Any]], true)
-          //.option(ChannelOption.TCP_NODELAY.asInstanceOf[ChannelOption[Any]], true)
-          .childHandler(new ChannelInitializer[SocketChannel]() {
-            override def initChannel(ch: SocketChannel) {
-              ch.pipeline.addLast(
-                  new HttpRequestDecoder,
-                  new HttpObjectAggregator(65536),
-                  new HttpResponseEncoder,
-                  //new PathHandler("/_events",
-                      new EventSource.Handler(gw)
-                  //)
-                  )
-            }
-          })
-        channel = boot.bind(port).sync.channel
-        channel.closeFuture.sync
-      } finally {
-        bossGroup.shutdownGracefully()
-        workerGroup.shutdownGracefully()
-      }
+      try run finally stop
       Server.this
     }
   })

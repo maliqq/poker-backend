@@ -18,7 +18,14 @@ object WebSocket {
     import HttpHandler._
     import http.HttpHeaders._
     
-    var handshaker: ws.WebSocketServerHandshaker = null
+    private def handshakerFactory(location: String) = new ws.WebSocketServerHandshakerFactory(location, null, false)
+    
+    def handshaker(req: http.FullHttpRequest) = {
+      val h = handshakerFactory(webSocketLocation(req)).newHandshaker(req)
+      if (h != null) Some(h) else None
+    }
+    
+    private var _handshaker: Option[ws.WebSocketServerHandshaker] = None 
     
     override def channelRead0(ctx: ChannelHandlerContext, msg: Object): Unit = msg match {
       case frame: ws.WebSocketFrame => handleWebSocketFrame(ctx, frame)
@@ -30,11 +37,11 @@ object WebSocket {
       if (conn == null) super.channelInactive(ctx)
     }
     
-    def newConnection(channel: Channel, req: http.FullHttpRequest) = new Connection(channel, req)
+    def connection(channel: Channel, req: http.FullHttpRequest) = new Connection(channel, req)
     
     def handleWebSocketFrame(ctx: ChannelHandlerContext, frame: ws.WebSocketFrame): Unit = frame match {
-      case close: ws.CloseWebSocketFrame if (handshaker != null) =>
-        handshaker.close(ctx.channel, frame.retain.asInstanceOf[ws.CloseWebSocketFrame])
+      case close: ws.CloseWebSocketFrame =>
+        _handshaker.foreach(_.close(ctx.channel, frame.retain.asInstanceOf[ws.CloseWebSocketFrame]))
       
       case ping: ws.PingWebSocketFrame =>
         ctx.channel.write(new ws.PongWebSocketFrame(frame.content.retain))
@@ -57,14 +64,13 @@ object WebSocket {
         return
       }
       
-      val handshakers = new ws.WebSocketServerHandshakerFactory(webSocketLocation(req), null, false)
-      handshaker = handshakers.newHandshaker(req)
-      if (handshaker == null) {
+      _handshaker = handshaker(req)
+      if (_handshaker.isEmpty) {
         ws.WebSocketServerHandshakerFactory.sendUnsupportedWebSocketVersionResponse(ctx.channel)
         return
       }
       
-      val f = handshaker.handshake(ctx.channel, req)
+      val f = _handshaker.get.handshake(ctx.channel, req)
       f.addListener(new ChannelFutureListener {
         override def operationComplete(future: ChannelFuture) = connect(ctx.channel, req)
       })

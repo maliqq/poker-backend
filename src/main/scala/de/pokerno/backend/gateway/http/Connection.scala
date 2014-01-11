@@ -16,38 +16,32 @@ class HttpConnection(
   
   def remoteAddr = channel.remoteAddress.toString
   
-  def write(msg: Any) = {
-    val writing = channel.writeAndFlush(msg)
-    writing.addListener(new ChannelFutureListener {
-      override def operationComplete(f: ChannelFuture) {
-        if (!f.isSuccess) {
-          f.cause().printStackTrace()
-          channel.close
-        }
-      }
-    })
-  }
+  def write(msg: Any) = channel.writeAndFlush(msg).addListener(ChannelFutureListener.CLOSE_ON_FAILURE)
 }
 
 trait ChannelConnections[T <: Connection] {
   def gw: ActorRef
-  def newConnection(channel: Channel, req: http.FullHttpRequest): T
-  val channelConnections = new java.util.concurrent.ConcurrentHashMap[Channel, T]()
+  def connection(channel: Channel, req: http.FullHttpRequest): T
+  
+  import collection.JavaConverters._
+  val channelConnections = new java.util.concurrent.ConcurrentHashMap[Channel, T]().asScala
   
   def connect(channel: Channel, req: http.FullHttpRequest) = {
-    val conn = newConnection(channel, req)
-    channelConnections.put(channel, conn)
-    gw ! Gateway.Connect(conn)
+    val conn = connection(channel, req)
+    if (channelConnections.putIfAbsent(channel, conn).isEmpty)
+      gw ! Gateway.Connect(conn)
   }
   
-  def disconnect(channel: Channel): T = {
+  def disconnect(channel: Channel) = {
     val conn = channelConnections.remove(channel)
-    if (conn != null) gw ! Gateway.Disconnect(conn)
+    conn.foreach(gw ! Gateway.Disconnect(_))
     conn
   }
   
-  def message(channel: Channel, data: String) = {
-    val conn = channelConnections.get(channel)
-    if (conn != null) gw ! Gateway.Message(conn, data)
+  def broadcast(msg: Any) = channelConnections.map { case (channel, conn) =>
+    conn.write(msg)
   }
+  
+  def message(channel: Channel, data: String) =
+    channelConnections.get(channel).foreach(gw ! Gateway.Message(_, data))
 }

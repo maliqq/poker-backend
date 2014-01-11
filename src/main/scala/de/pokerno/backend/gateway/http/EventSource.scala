@@ -23,6 +23,10 @@ object EventSource {
     
     override val includeCorsHeaders = true
     
+    object Mimes {
+      final val EventStream = "text/event-stream" 
+    }
+    
     def handshake(ctx: ChannelHandlerContext, req: http.FullHttpRequest) = {
       val promise = ctx.channel.newPromise
       val p = ctx.channel.pipeline
@@ -30,14 +34,13 @@ object EventSource {
       p.addBefore(encoderCtx.name, "eventsource-encoder", new Encoder)
       
       val resp = ok
-      resp.headers().add(Names.CONTENT_TYPE, "text/event-stream")
+      resp.headers().add(Names.CONTENT_TYPE, Mimes.EventStream)
       resp.headers().add(Names.TRANSFER_ENCODING, Values.IDENTITY)
       resp.headers().add(Names.CONNECTION, Values.KEEP_ALIVE)
       resp.headers().add(Names.CACHE_CONTROL, Values.NO_CACHE)
       
       sendHttpResponse(ctx, req, resp).addListener(new ChannelFutureListener {
         override def operationComplete(f: ChannelFuture) {
-          Console printf("send response complete!\n")
           if (f.isSuccess) promise.setSuccess
           else promise.setFailure(f.cause)
         }
@@ -47,10 +50,10 @@ object EventSource {
     }
   }
   
-  case class Packet(val data: String,
-      val comment: Boolean = false,
-      val event: String = null,
-      val id: java.lang.Long = null) {
+  case class Packet(data: String,
+      id: Option[String] = None,
+      event: Option[String] = None,
+      comment: Boolean = false) {
     
     private object Token {
       final val Id = "id: "
@@ -66,11 +69,11 @@ object EventSource {
       val b = new StringBuilder
       
       if (!comment) {
-        if (id != null) b.append(Token.Id).append(id.toString)
-        if (event != null) b.append(Token.Event).append(event.replaceAll(Token.Lf, "")).append(Token.Lf)
+        id.foreach(b.append(Token.Id).append(_))
+        event.map(_.replaceAll(Token.Lf, "")).foreach(b.append(Token.Event).append(_).append(Token.Lf))
       }
       
-      data.split(Token.Lf).foreach { line =>
+      for(line <- data.split("(\r?\n)|\r")) {
         b.append(header).append(line).append(Token.Lf)
       }
       
@@ -84,7 +87,6 @@ object EventSource {
     import HttpHandler._
     
     override def channelActive(ctx: ChannelHandlerContext) {
-      Console printf("channel active!\n")
     } 
     
     override def channelRead(ctx: ChannelHandlerContext, msg: Object): Unit = msg match {
@@ -94,7 +96,7 @@ object EventSource {
       case _ => ctx.fireChannelRead(msg)
     }
     
-    def newConnection(channel: Channel, req: http.FullHttpRequest) = new Connection(channel, req)
+    def connection(channel: Channel, req: http.FullHttpRequest) = new Connection(channel, req)
     
     def handleHttpRequest(ctx: ChannelHandlerContext, req: http.FullHttpRequest) {
       if (req.getMethod != http.HttpMethod.GET) {
@@ -111,21 +113,16 @@ object EventSource {
       })
     }
     
-    override def channelInactive(ctx: ChannelHandlerContext) {
-      Console printf("channel inactive!\n")
-      val conn = disconnect(ctx.channel)
-      if (conn == null) super.channelInactive(ctx)
-    }
+    override def channelInactive(ctx: ChannelHandlerContext) =
+      if (disconnect(ctx.channel).isEmpty)
+        super.channelInactive(ctx)
   }
   
   class Encoder extends MessageToMessageEncoder[Packet] { // FIXME
     import io.netty.buffer.Unpooled._
     
-    override def encode(ctx: ChannelHandlerContext, packet: Packet, out: java.util.List[Object]) = {
-      Console printf("sending: %s\n", packet)
-      val buf = copiedBuffer(packet.build, CharsetUtil.UTF_8)
-      out.add(buf)
-    }
+    override def encode(ctx: ChannelHandlerContext, packet: Packet, out: java.util.List[Object]) =
+      out.add(copiedBuffer(packet.build, CharsetUtil.UTF_8))
   }
   
 }

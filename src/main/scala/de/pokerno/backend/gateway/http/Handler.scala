@@ -1,6 +1,6 @@
 package de.pokerno.backend.gateway.http
 
-import io.netty.buffer
+import io.netty.buffer.{ByteBuf, Unpooled}
 import io.netty.util.CharsetUtil
 import io.netty.channel.{ChannelFuture, ChannelFutureListener}
 import io.netty.channel.{ChannelHandlerContext, ChannelInboundHandlerAdapter, SimpleChannelInboundHandler}
@@ -13,11 +13,13 @@ trait DefaultHttpResponder {
   def includeCorsHeaders: Boolean = false
   
   def sendHttpResponse(ctx: ChannelHandlerContext, req: http.FullHttpRequest, resp: http.FullHttpResponse): ChannelFuture = {
+    val response = Response(resp)
+    
     if (resp.getStatus.code == 200) {
-      if (includeCorsHeaders) CorsHeadersResponder.sendHttpResponse(req, resp)
-    } else {
-      ErrorStatusResponder.sendHttpResponse(req, resp)
-    }
+    
+      if (includeCorsHeaders) response.withCorsHeaders
+    
+    } else response.error(resp.getStatus.code.toString)
     
     val f = ctx.channel.writeAndFlush(resp)
     if (!isKeepAlive(req) || resp.getStatus.code != 200)
@@ -31,11 +33,13 @@ trait HttpHandler extends DefaultHttpResponder {
 }
 
 object HttpHandler {
+  
   def responseStatus(status: http.HttpResponseStatus) = new http.DefaultFullHttpResponse(http.HttpVersion.HTTP_1_1, status)
   def ok = responseStatus(http.HttpResponseStatus.OK)
   def badRequest = responseStatus(http.HttpResponseStatus.BAD_REQUEST)
   def notFound = responseStatus(http.HttpResponseStatus.NOT_FOUND)
   def forbidden = responseStatus(http.HttpResponseStatus.FORBIDDEN)
+  
 }
 
 import scala.util.matching.Regex
@@ -45,11 +49,8 @@ class PathHandler(path: String, handler: HttpHandler) extends ChannelInboundHand
   override def channelRead(ctx: ChannelHandlerContext, msg: Object): Unit = msg match {
     case req: http.FullHttpRequest =>
       val q = new http.QueryStringDecoder(req.getUri)
-      if (q.path != path) {
-        ctx.fireChannelRead(req)
-        return
-      }
-      handler.handleHttpRequest(ctx, req)
+      if (q.path != path) ctx.fireChannelRead(req)
+      else handler.handleHttpRequest(ctx, req)
     
     case _ => ctx.fireChannelRead(msg)
   }
@@ -60,23 +61,31 @@ trait HttpResponder {
   def sendHttpResponse(req: http.FullHttpRequest, resp: http.FullHttpResponse)
 }
 
-object CorsHeadersResponder extends HttpResponder {
-  import http.HttpHeaders.{Names, Values}
+case class Response(resp: http.FullHttpResponse) {
+  import http.HttpHeaders.{setContentLength, Names, Values}
   
-  def sendHttpResponse(req: http.FullHttpRequest, resp: http.FullHttpResponse) {
+  def setContentType(contentType: String) {
+    resp.headers.add(Names.CONTENT_TYPE, contentType)
+  }
+  
+  def withCorsHeaders = {
     resp.headers().add(Names.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
     resp.headers().add(Names.ACCESS_CONTROL_ALLOW_HEADERS, "*")
+    this
   }
-}
-
-object ErrorStatusResponder extends HttpResponder {
-  import http.HttpHeaders.{setContentLength, Names}
   
-  def sendHttpResponse(req: http.FullHttpRequest, resp: http.FullHttpResponse) {
-    val buf = buffer.Unpooled.copiedBuffer(resp.getStatus.toString.toCharArray, CharsetUtil.UTF_8)
-    resp.content.writeBytes(buf)
-    buf.release
-    resp.headers().add(Names.CONTENT_TYPE, "text/plain")
+  def withBody(body: ByteBuf): Response = {
     setContentLength(resp, resp.content.readableBytes)
+    resp.content.writeBytes(body)
+    body.release
+    this
   }
-}
+  
+  def withBody(body: String): Response = withBody(Unpooled.copiedBuffer(body, CharsetUtil.UTF_8))
+  
+  def error(message: String) {
+    setContentType("text/plain")
+    withBody(message)
+  }
+  
+} 

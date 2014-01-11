@@ -5,7 +5,7 @@ import akka.actor.{ ActorSystem, Props }
 object Main {
   val system = ActorSystem("test-gateway")
   
-  def main(args: Array[String]) {
+  def main_(args: Array[String]) {
     val ref = system.actorOf(Props(classOf[EventSource.Server]))
   }
 }

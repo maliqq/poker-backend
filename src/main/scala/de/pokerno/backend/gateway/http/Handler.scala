@@ -62,7 +62,6 @@ trait HttpResponder {
 
 object CorsHeadersResponder extends HttpResponder {
   import http.HttpHeaders.{Names, Values}
-  import HttpHandler.ok
   
   def sendHttpResponse(req: http.FullHttpRequest, resp: http.FullHttpResponse) {
     resp.headers().add(Names.ACCESS_CONTROL_ALLOW_ORIGIN, "*")

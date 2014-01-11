@@ -15,10 +15,17 @@ class HttpConnection(
     req: http.FullHttpRequest) extends Connection {
   
   def remoteAddr = channel.remoteAddress.toString
+  
   def write(msg: Any) = {
     val writing = channel.writeAndFlush(msg)
-    writing.addListener(ChannelFutureListener.CLOSE_ON_FAILURE)
-    writing
+    writing.addListener(new ChannelFutureListener {
+      override def operationComplete(f: ChannelFuture) {
+        if (!f.isSuccess) {
+          f.cause().printStackTrace()
+          channel.close
+        }
+      }
+    })
   }
 }
 

@@ -2,6 +2,7 @@ package de.pokerno.backend.gateway.http
 
 import akka.actor.ActorRef
 import io.netty.buffer.{ByteBuf, DefaultByteBufHolder}
+import io.netty.util.CharsetUtil
 import io.netty.channel.{
   Channel, ChannelHandler, ChannelHandlerContext,
   ChannelPromise, ChannelFuture, ChannelFutureListener,
@@ -26,7 +27,7 @@ object EventSource {
       val promise = ctx.channel.newPromise
       val p = ctx.channel.pipeline
       val encoderCtx = p.context(classOf[http.HttpResponseEncoder])
-      p.addAfter(encoderCtx.name, "eventsource-encoder", new Encoder)
+      p.addBefore(encoderCtx.name, "eventsource-encoder", new Encoder)
       
       val resp = ok
       resp.headers().add(Names.CONTENT_TYPE, "text/event-stream")
@@ -34,12 +35,11 @@ object EventSource {
       resp.headers().add(Names.CONNECTION, Values.KEEP_ALIVE)
       resp.headers().add(Names.CACHE_CONTROL, Values.NO_CACHE)
       
-      sendHttpResponse(ctx, req, resp).addListener(new ChannelFutureListener{
+      sendHttpResponse(ctx, req, resp).addListener(new ChannelFutureListener {
         override def operationComplete(f: ChannelFuture) {
-          if (f.isSuccess)
-            promise.setSuccess()
-          else
-            promise.setFailure(f.cause)
+          Console printf("send response complete!\n")
+          if (f.isSuccess) promise.setSuccess
+          else promise.setFailure(f.cause)
         }
       })
       
@@ -60,19 +60,16 @@ object EventSource {
       final val Lf = "\n"
     }
     
+    lazy val header = if (comment) Token.Comment else Token.Data
+    
     def build = {
-      var b = new StringBuilder
-      var header = Token.Data
+      val b = new StringBuilder
       
-      if (comment)
-        header = Token.Comment
-      else {
-        if (id != null)
-          b.append(Token.Id).append(id.toString)
-        if (event != null)
-          b.append(Token.Event).append(event.replaceAll(Token.Lf, "")).append(Token.Lf)
+      if (!comment) {
+        if (id != null) b.append(Token.Id).append(id.toString)
+        if (event != null) b.append(Token.Event).append(event.replaceAll(Token.Lf, "")).append(Token.Lf)
       }
-
+      
       data.split(Token.Lf).foreach { line =>
         b.append(header).append(line).append(Token.Lf)
       }
@@ -85,6 +82,10 @@ object EventSource {
   
   class Handler(val gw: ActorRef) extends ChannelInboundHandlerAdapter with HttpHandler with ChannelConnections[Connection] {
     import HttpHandler._
+    
+    override def channelActive(ctx: ChannelHandlerContext) {
+      Console printf("channel active!\n")
+    } 
     
     override def channelRead(ctx: ChannelHandlerContext, msg: Object): Unit = msg match {
       case req: http.FullHttpRequest =>
@@ -101,8 +102,8 @@ object EventSource {
         return
       }
       
-      val f = Handshaker.handshake(ctx, req)
-      f.addListener(new ChannelFutureListener{
+      val handshaking = Handshaker.handshake(ctx, req)
+      handshaking.addListener(new ChannelFutureListener{
         override def operationComplete(f: ChannelFuture) {
           if (!f.isSuccess) ctx.fireExceptionCaught(f.cause)
           else connect(ctx.channel, req)
@@ -111,14 +112,19 @@ object EventSource {
     }
     
     override def channelInactive(ctx: ChannelHandlerContext) {
+      Console printf("channel inactive!\n")
       val conn = disconnect(ctx.channel)
       if (conn == null) super.channelInactive(ctx)
     }
   }
   
   class Encoder extends MessageToMessageEncoder[Packet] { // FIXME
-    def encode(ctx: ChannelHandlerContext, packet: Packet, out: java.util.List[Object]) = {
-      out.add(packet.build)
+    import io.netty.buffer.Unpooled._
+    
+    override def encode(ctx: ChannelHandlerContext, packet: Packet, out: java.util.List[Object]) = {
+      Console printf("sending: %s\n", packet)
+      val buf = copiedBuffer(packet.build, CharsetUtil.UTF_8)
+      out.add(buf)
     }
   }
   

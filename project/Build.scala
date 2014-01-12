@@ -28,12 +28,12 @@ object PokernoBuild extends Build {
     "com.github.scopt" %% "scopt" % "3.1.0",
     //"com.twitter" % "ostrich" % "2.3.0"
     "com.codahale.metrics" % "metrics-core" % "3.0.1",
-    "org.codehaus.jackson" % "jackson-core-asl" % "1.9.13",
+    
+    "com.fasterxml.jackson.core" % "jackson-databind" % "2.3.0",
     
     "org.msgpack" %% "msgpack-scala" % "0.6.8",
     //"org.msgpack" % "msgpack" % "0.6.8",
     "com.dyuproject.protostuff" % "protostuff-core" % "1.0.7",
-    "com.dyuproject.protostuff" % "protostuff-json" % "1.0.7",
     "com.dyuproject.protostuff" % "protostuff-runtime" % "1.0.7",
     
     "io.netty" % "netty-all" % "4.0.14.Final"

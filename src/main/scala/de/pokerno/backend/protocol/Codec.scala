@@ -18,121 +18,34 @@ object Codec {
     msgpack.register(classOf[TableEventSchema.EventType])
     msgpack.register(classOf[TableEventSchema.TableState])
     
-    def encode[T <: Message](msg: T): Array[Byte] = {
+    def encode[T <: Message](msg: T): Array[Byte] =
       pack(msg)
-    }
     
-    def decode[T <: Message](data: Array[Byte])(implicit manifest: Manifest[T]): T = {
+    def decode[T <: Message](data: Array[Byte])(implicit manifest: Manifest[T]): T =
       unpack[T](data)
-    }
-    
-    def decode(data: Array[Byte]): Message = null
   }
   
   object Json extends Codec {
-    final val TypeField = "$type"
-    final val ObjectField = "$object"
+    import protostuff.ByteString
+    import com.fasterxml.jackson.databind.ObjectMapper
+    import com.fasterxml.jackson.databind.module.SimpleModule
     
-    import org.codehaus.jackson.JsonToken
-    import org.codehaus.jackson.io.IOContext
-    import org.codehaus.jackson.impl.Utf8StreamParser
-    import protostuff.JsonIOUtil
-    
-    def encode[T <: Message](msg: T): Array[Byte] = {
-      protostuff.JsonIOUtil.toByteArray(msg, msg.schema, false)
+    lazy val mapper = {
+      val o = new ObjectMapper
+      val m = new SimpleModule
+      m.addSerializer(new ByteStringSerializer)
+      m.addDeserializer(classOf[ByteString], new ByteStringDeserializer)
+      o.registerModule(m)
+      o
     }
     
-    def encodeExplicit[T <: Message](msg: T): Array[Byte] = {
-      val out = new java.io.ByteArrayOutputStream
-      val context = new IOContext(JsonIOUtil.DEFAULT_JSON_FACTORY._getBufferRecycler(), out, false);
-      val gen = JsonIOUtil.newJsonGenerator(out, context.allocWriteEncodingBuffer)
-      
-      try {
-        gen.writeStartObject
-        gen.writeStringField(TypeField, registryNames(msg.getClass))
-        gen.writeFieldName(ObjectField)
-        protostuff.JsonIOUtil.writeTo(gen, msg, msg.schema, false)
-      } finally {
-        gen.writeEndObject
-        gen.close
-      }
-      
-      out.toByteArray
-    }
+    def encode[T <: Message](msg: T): Array[Byte] =
+      mapper.writeValueAsBytes(msg)
     
-    final val registryClasses = Map[String, Class[_ <: Message]](
-        
-        "AddBet" -> classOf[AddBet],
-        "DiscardCards" -> classOf[DiscardCards],
-        "ShowCards" -> classOf[ShowCards],
-        "ButtonChange" -> classOf[ButtonChange],
-        "GameChange" -> classOf[GameChange],
-        "StakeChange" -> classOf[StakeChange],
-        "PlayStart" -> classOf[PlayStart],
-        "PlayStop" -> classOf[PlayStop],
-        "StreetStart" -> classOf[StreetStart],
-        "DealCards" -> classOf[DealCards],
-        "RequireBet" -> classOf[RequireBet],
-        "RequireDiscard" -> classOf[RequireDiscard],
-        "DeclarePot" -> classOf[DeclarePot],
-        "DeclareHand" -> classOf[DeclareHand],
-        "DeclareWinner" -> classOf[DeclareWinner],
-        "JoinTable" -> classOf[JoinTable],
-        "Chat" -> classOf[Chat],
-        "Dealer" -> classOf[Dealer],
-        "Error" -> classOf[Error]
-        
-    )
-    // inverse of map
-    final val registryNames = registryClasses.map(_.swap)
+    def decode[T <: Message](data: Array[Byte])(implicit manifest: Manifest[T]): T =
+      mapper.readValue(data, manifest.erasure).asInstanceOf[T]
     
-    def decode[T <: Message](data: Array[Byte])(implicit manifest: Manifest[T]): T = {
-      val instance: T = manifest.erasure.newInstance.asInstanceOf[T]
-      val schema: protostuff.Schema[T] = instance.schema.asInstanceOf[protostuff.Schema[T]]
-      protostuff.JsonIOUtil.mergeFrom(data, instance, schema, false)
-      instance
-    }
-    
-    def decodeExplicit(data: Array[Byte]): Message = {
-      val context = new IOContext(JsonIOUtil.DEFAULT_JSON_FACTORY._getBufferRecycler, data, false)
-      val parser = new Utf8StreamParser(context, 
-                JsonIOUtil.DEFAULT_JSON_FACTORY.getParserFeatures(), null, 
-                JsonIOUtil.DEFAULT_JSON_FACTORY.getCodec(), 
-                JsonIOUtil.DEFAULT_JSON_FACTORY.getRootByteSymbols().makeChild(true, true), 
-                data, 0, data.length, false)
-      var _type: String = ""
-      var _instance: Message = null
-
-      if (parser.nextToken != JsonToken.START_OBJECT) {
-        // TODO handle this
-      }
-      
-      if (parser.nextToken != JsonToken.FIELD_NAME) {
-        // TODO handle this
-      }
-      
-      if (parser.getCurrentName == TypeField && parser.nextToken == JsonToken.VALUE_STRING) {
-        _type = parser.getText
-      }
-      
-      if (parser.nextToken != JsonToken.FIELD_NAME) {
-        // TODO handle this
-      }
-      
-      if (parser.getCurrentName == ObjectField)
-        registryClasses.get(_type) match {
-          case Some(_class) =>
-            _instance = _class.newInstance
-            protostuff.JsonIOUtil.mergeFrom(parser, _instance, _instance.schema, false)
-          case None =>
-            // TODO handle this
-        }
-      
-      if (parser.nextToken != JsonToken.END_OBJECT) {
-        // TODO handle this
-      }
-      _instance
-    }
+    def decodeMessage(data: Array[Byte]): Message = mapper.readValue(data, classOf[Message])
   }
   
   object Protobuf extends Codec {

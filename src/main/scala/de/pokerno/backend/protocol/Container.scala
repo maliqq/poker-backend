@@ -5,10 +5,10 @@ import de.pokerno.poker
 
 import scala.reflect._
 import scala.math.{BigDecimal => Decimal}
+
 import com.dyuproject.protostuff
+import com.dyuproject.protostuff.ByteString
 import org.msgpack.annotation.{ Message => MsgPack }
-import org.codehaus.jackson.annotate._
-import org.codehaus.jackson.annotate.JsonSubTypes.Type
 
 @MsgPack
 case class Bet(
@@ -40,11 +40,11 @@ class Variation {
 
 @MsgPack
 case class Hand(
-  @BeanProperty var cards: protostuff.ByteString,
+  @BeanProperty var cards: ByteString,
   @BeanProperty var rank: HandSchema.RankType,
-  @BeanProperty var value: protostuff.ByteString,
-  @BeanProperty var high: protostuff.ByteString,
-  @BeanProperty var kicker: protostuff.ByteString,
+  @BeanProperty var value: ByteString,
+  @BeanProperty var high: ByteString,
+  @BeanProperty var kicker: ByteString,
   @BeanProperty var string: String = ""
 ) {
   def this() = this(null, null, null, null, null, "")
@@ -210,6 +210,23 @@ trait HasCards {
   def cards: List[poker.Card]
   def cards_=(v: List[poker.Card])
   
-  def getCards: protostuff.ByteString = cards
-  def setCards(v: protostuff.ByteString) = cards = v
+  def getCards: ByteString = cards
+  def setCards(v: ByteString) = cards = v 
+}
+
+
+import com.fasterxml.jackson.core.{JsonParser, JsonGenerator}
+import com.fasterxml.jackson.databind.{SerializerProvider, DeserializationContext}
+import com.fasterxml.jackson.databind.ser.std.StdSerializer
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer
+
+class ByteStringSerializer extends StdSerializer[ByteString](classOf[ByteString]) {
+  override def serialize(o: ByteString, g: JsonGenerator, p: SerializerProvider) {
+    g.writeObject(o.toByteArray)
+  }
+}
+
+class ByteStringDeserializer extends StdDeserializer[ByteString](classOf[ByteString]) {
+  override def deserialize(p: JsonParser, ctx: DeserializationContext): ByteString =
+    ByteString.copyFrom(p.getBinaryValue)
 }

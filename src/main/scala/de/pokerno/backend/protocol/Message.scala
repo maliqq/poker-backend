@@ -7,17 +7,44 @@ import de.pokerno.gameplay
 import scala.reflect._
 import org.msgpack.annotation.{ Message => MsgPack }
 import com.dyuproject.protostuff
+import com.fasterxml.jackson.annotation.{JsonTypeInfo, JsonSubTypes}
 
-trait Message {
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.PROPERTY,
+    property = "$type"
+)
+@JsonSubTypes(Array(
+  new JsonSubTypes.Type(value = classOf[AddBet], name="AddBet"),
+  new JsonSubTypes.Type(value = classOf[DiscardCards], name="DiscardCards"),
+  new JsonSubTypes.Type(value = classOf[ShowCards], name="ShowCards"),
+  new JsonSubTypes.Type(value = classOf[ButtonChange], name="ButtonChange"),
+  new JsonSubTypes.Type(value = classOf[GameChange], name="GameChange"),
+  new JsonSubTypes.Type(value = classOf[StakeChange], name="StakeChange"),
+  new JsonSubTypes.Type(value = classOf[PlayStart], name="PlayStart"),
+  new JsonSubTypes.Type(value = classOf[PlayStop], name="PlayStop"),
+  new JsonSubTypes.Type(value = classOf[StreetStart], name="StreetStart"),
+  new JsonSubTypes.Type(value = classOf[DealCards], name="DealCards"),
+  new JsonSubTypes.Type(value = classOf[RequireBet], name="RequireBet"),
+  new JsonSubTypes.Type(value = classOf[RequireDiscard], name="RequireDiscard"),
+  new JsonSubTypes.Type(value = classOf[DeclarePot], name="DeclarePot"),
+  new JsonSubTypes.Type(value = classOf[DeclareHand], name="DeclareHand"),
+  new JsonSubTypes.Type(value = classOf[DeclareWinner], name="DeclareWinner"),
+  new JsonSubTypes.Type(value = classOf[JoinTable], name="JoinTable"),
+  new JsonSubTypes.Type(value = classOf[Chat], name="Chat"),
+  new JsonSubTypes.Type(value = classOf[Dealer], name="Dealer"),
+  new JsonSubTypes.Type(value = classOf[Error], name="Error")
+))
+abstract class Message extends ProtobufMessage
+
+trait ProtobufMessage {
   implicit def schemaConv(s: protostuff.Schema[_ <: Any]): protostuff.Schema[Any] = s.asInstanceOf[protostuff.Schema[Any]]
+  
+  implicit def byteArray2ByteString(v: Array[Byte]) =
+    protostuff.ByteString.copyFrom(v)
   
   def schema: protostuff.Schema[Any]
   //def pipeSchema: protostuff.Pipe.Schema[_]
-  
-  def getSchema = schema
-  //def getPipeSchema = pipeSchema
-  
-  def messageName: String = getClass.getSimpleName
 }
 
 /**

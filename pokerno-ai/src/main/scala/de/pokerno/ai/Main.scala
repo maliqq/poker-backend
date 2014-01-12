@@ -9,7 +9,7 @@ import de.pokerno.gameplay._
 object Main {
   final val stack: Decimal = 10000
 
-  val system = ActorSystem("poker-cli")
+  val system = ActorSystem("poker-ai")
 
   val game = new Game(Game.Texas, Some(Game.FixedLimit), Some(9))
   val stake = new Stake(10)

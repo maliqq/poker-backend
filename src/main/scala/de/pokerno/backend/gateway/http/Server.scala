@@ -12,45 +12,32 @@ import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import java.util.concurrent.{FutureTask, Callable}
 
-class Hub extends Actor {
-  import context._
+import org.slf4j.LoggerFactory
 
-  override def preStart = {
-    Console printf("Started Hub\n")
+case class Config(
+    port: Int = Server.defaultPort,
+    eventSource: Either[EventSource.Config, Boolean] = Right(false),
+    webSocket: Either[WebSocket.Config, Boolean] = Right(false)
+  ) {
+  
+  def eventSourceConfig: Option[EventSource.Config] = eventSource match {
+    case Right(true) => Some(EventSource.Config())
+    case Left(c) => Some(c)
+    case _ => None
   }
   
-  import scala.concurrent.duration._
-  
-  case class Tick(conn: Connection)
-  
-  def receive = {
-    case Gateway.Connect(conn) =>
-      Console printf("%s connected!\n", conn.remoteAddr)
-      system.scheduler.schedule(0 milliseconds, 1 second, self, Tick(conn))
-    
-    case Tick(conn) =>
-      Console printf("tick!\n")
-      conn.write(EventSource.Packet("hello!"))
-    
-    case Gateway.Disconnect(conn) =>
-      Console printf("disconnected!\n")
+  def webSocketConfig: Option[WebSocket.Config] = webSocket match {
+    case Right(true) => Some(WebSocket.Config())
+    case Left(c) => Some(c)
+    case _ => None
   }
 }
 
 object Server {
-  val system = ActorSystem("server")
-  val gw = system.actorOf(Props(classOf[Hub]))
-  
-  def main(args: Array[String]) {
-    val s = Server(8080, gw)
-    val t = new Thread(s.start, "eventsource-server")
-    t.run
-  }
+  final val defaultPort = 8082
 }
 
-import org.slf4j.LoggerFactory
-
-case class Server(val port: Int, gw: ActorRef) {
+case class Server(config: Config, gw: ActorRef) {
   private var channel: Channel = null
   
   def isActive = channel != null && channel.isActive
@@ -67,7 +54,14 @@ case class Server(val port: Int, gw: ActorRef) {
       p.addLast("http-request-decoder", new HttpRequestDecoder)
       p.addLast("http-object-aggregator", new HttpObjectAggregator(65536))
       p.addLast("http-response-encoder", new HttpResponseEncoder)
-      p.addLast("http-eventsource-handler", new EventSource.Handler(gw))
+      
+      config.webSocketConfig.foreach { ws =>
+        p.addLast(WebSocket.Handler.Name, new WebSocket.Handler(ws.path, gw))
+      }
+      
+      config.eventSourceConfig.foreach { es =>
+          p.addLast(EventSource.Handler.Name, new EventSource.Handler(es.path, gw))
+      }
     }
   }
   
@@ -80,19 +74,34 @@ case class Server(val port: Int, gw: ActorRef) {
   def run {
     if (isActive) throw new IllegalStateException("Server already running!")
     
-    channel = bootstrap.bind(port).sync.channel
+    Console printf("starting at :%d...\n", config.port)
+    
+    channel = bootstrap.bind(config.port).sync.channel
     channel.closeFuture.sync
   }
   
-  def stop {
+  def shutdown {
     bossGroup.shutdownGracefully()
     workerGroup.shutdownGracefully()
   }
   
-  def start = new FutureTask[Server](new Callable[Server] {
+  def stop {
+    Console printf("stopping...\n")
+    shutdown
+  }
+  
+  lazy val task = new FutureTask[Server](new Callable[Server] {
     override def call = {
-      try run finally stop
+      try {
+        run 
+      } finally shutdown
       Server.this
     }
   })
+  
+  def start = {
+    val t = new Thread(task, "http-server")
+    t.start
+    t
+  }
 }

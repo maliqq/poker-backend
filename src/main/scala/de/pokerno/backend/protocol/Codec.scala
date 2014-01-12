@@ -30,7 +30,7 @@ object Codec {
     import com.fasterxml.jackson.databind.ObjectMapper
     import com.fasterxml.jackson.databind.module.SimpleModule
     
-    lazy val mapper = {
+    val mapper = {
       val o = new ObjectMapper
       val m = new SimpleModule
       m.addSerializer(new ByteStringSerializer)

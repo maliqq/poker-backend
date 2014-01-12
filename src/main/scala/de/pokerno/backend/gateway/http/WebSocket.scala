@@ -2,6 +2,7 @@ package de.pokerno.backend.gateway.http
 
 import akka.actor.ActorRef
 
+import io.netty.buffer.ByteBuf
 import io.netty.channel.{ChannelHandlerContext, SimpleChannelInboundHandler}
 import io.netty.handler.codec.http.{websocketx => ws}
 import io.netty.handler.codec.http
@@ -11,12 +12,32 @@ object WebSocket {
   class Connection(
       channel: Channel,
       request: http.FullHttpRequest) extends HttpConnection(channel, request) {
+    
+    override def write(data: Any) = data match {
+      case f: ws.TextWebSocketFrame => super.write(f)
+      case s: String => super.write(new ws.TextWebSocketFrame(s))
+      //case b: ByteBuf => super.write(new ws.BinaryWebSocketFrame(b))
+      case x => super.write(x) // FIXME handle this
+    }
+    
+  }
+  
+  final val defaultPath = "/_ws"
+    
+  case class Config(val path: String = defaultPath)
+  
+  object Handler {
+    final val Name = "http-websocket-handler"
   }
 
-  class Handler(path: String, val gw: ActorRef)
+  class Handler(val path: String, val gw: ActorRef)
       extends SimpleChannelInboundHandler[Object] with HttpHandler with ChannelConnections[Connection] {
     import HttpHandler._
     import http.HttpHeaders._
+    
+    override def handlerAdded(ctx: ChannelHandlerContext) {
+      ctx.pipeline.addBefore(Handler.Name, "path-handler-websocket", new PathHandler(path, this))
+    }
     
     private def handshakerFactory(location: String) = new ws.WebSocketServerHandshakerFactory(location, null, false)
     

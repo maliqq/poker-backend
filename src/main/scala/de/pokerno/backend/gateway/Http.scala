@@ -1,31 +1,39 @@
 package de.pokerno.backend.gateway
 
-import akka.actor.Actor
+import akka.actor.{Actor, ActorSystem, Props}
 
 object Http {
-  final val defaultPort = 8082
-  
-  object EventSource {
-    final val defaultPath = "/_events"
+  class Gateway(config: http.Config) extends Actor {
+
+    import concurrent.duration._
+    import context._
     
-    case class Config(val path: String)
-  }
-  
-  object WebSocket {
-    final val defaultPath = "/_ws"
+    lazy val server = http.Server(config, self)
     
-    case class Config(val path: String)
-  }
-  
-  case class Config(
-      port: Int,
-      eventSource: EventSource.Config,
-      webSocket: WebSocket.Config
-    )
+    override def preStart {
+      server.start
+    }
     
-  class Gateway extends Actor {
+    case class Tick(conn: http.Connection)
+    
     def receive = {
-      case _ =>
+      case http.Gateway.Connect(conn) =>
+        Console printf("%s connected!\n", conn.remoteAddr)
+        system.scheduler.schedule(0 milliseconds, 1 second, self, Tick(conn))
+      
+      case Tick(conn) =>
+        Console printf("tick!\n")
+        conn.write("hello!")
+      
+      case http.Gateway.Disconnect(conn) =>
+        Console printf("disconnected!\n")
+      
+      case http.Gateway.Message(conn, msg) =>
+        Console printf("got: %s", msg)
+    }
+    
+    override def postStop {
+      server.stop
     }
   }
 }

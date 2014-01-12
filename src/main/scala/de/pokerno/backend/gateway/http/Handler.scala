@@ -44,17 +44,18 @@ object HttpHandler {
 
 import scala.util.matching.Regex
 
-class PathHandler(path: String, handler: HttpHandler) extends ChannelInboundHandlerAdapter {
-  
+class PathHandler(path: String, handler: ChannelInboundHandlerAdapter) extends ChannelInboundHandlerAdapter {
   override def channelRead(ctx: ChannelHandlerContext, msg: Object): Unit = msg match {
     case req: http.FullHttpRequest =>
       val q = new http.QueryStringDecoder(req.getUri)
-      if (q.path != path) ctx.fireChannelRead(req)
-      else handler.handleHttpRequest(ctx, req)
+      if (q.path != path) {
+        ctx.pipeline.remove(handler)
+        ctx.fireChannelRead(req)
+      }
+      else handler.channelRead(ctx, req)
     
     case _ => ctx.fireChannelRead(msg)
   }
-  
 }
 
 trait HttpResponder {

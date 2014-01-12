@@ -4,6 +4,6 @@ object Gateway {
 
   case class Connect(conn: Connection)
   case class Disconnect(conn: Connection)
-  case class Message(conn: Connection, message: String = null, data: Array[Byte] = null)
+  case class Message(conn: Connection, message: String)
 
 }

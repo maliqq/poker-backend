@@ -16,7 +16,7 @@ class HttpConnection(
   
   def remoteAddr = channel.remoteAddress.toString
   
-  def write(msg: Any) = channel.writeAndFlush(msg).addListener(ChannelFutureListener.CLOSE_ON_FAILURE)
+  def write(msg: Any) = channel.writeAndFlush(msg).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE)
 }
 
 trait ChannelConnections[T <: Connection] {

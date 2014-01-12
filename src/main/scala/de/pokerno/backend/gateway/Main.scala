@@ -3,9 +3,10 @@ package de.pokerno.backend.gateway
 import akka.actor.{ ActorSystem, Props }
 
 object Main {
-  val system = ActorSystem("test-gateway")
+  val system = ActorSystem("http-gateway")
   
-  def main_(args: Array[String]) {
-    val ref = system.actorOf(Props(classOf[Http.Gateway]))
+  def main(args: Array[String]) = {
+    val gw = system.actorOf(Props(classOf[Http.Gateway],
+        http.Config(port = 8080, webSocket = Right(true), eventSource = Right(true))))
   }
 }

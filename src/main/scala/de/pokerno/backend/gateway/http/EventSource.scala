@@ -13,9 +13,19 @@ import io.netty.handler.codec.http
 object EventSource {
   import http.HttpHeaders.{Names, Values}
   
+  final val defaultPath = "/_events"
+    
+  case class Config(val path: String = defaultPath)
+  
   class Connection(
       channel: Channel,
       request: http.FullHttpRequest) extends HttpConnection(channel, request) {
+    
+    override def write(data: Any) = data match {
+      case p: Packet => super.write(p)
+      case s: String => super.write(new Packet(s))
+      case x => super.write(x) // FIXME handle this
+    }
   }
   
   object Handshaker extends DefaultHttpResponder {
@@ -83,8 +93,16 @@ object EventSource {
     override def toString = build
   }
   
-  class Handler(val gw: ActorRef) extends ChannelInboundHandlerAdapter with HttpHandler with ChannelConnections[Connection] {
+  object Handler {
+    final val Name = "http-eventsource-handler"
+  }
+  
+  class Handler(val path: String, val gw: ActorRef) extends ChannelInboundHandlerAdapter with HttpHandler with ChannelConnections[Connection] {
     import HttpHandler._
+    
+    override def handlerAdded(ctx: ChannelHandlerContext) {
+      ctx.pipeline.addBefore(Handler.Name, "path-handler-eventsource", new PathHandler(path, this))
+    }
     
     override def channelActive(ctx: ChannelHandlerContext) {
     } 

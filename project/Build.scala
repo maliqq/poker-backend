@@ -18,19 +18,21 @@ object PokernoBuild extends Build {
   lazy val deps = Seq(
     //"org.scalaz" %% "scalaz-core" % "7.0.3",
     "com.typesafe.akka" %% "akka-actor" % "2.2.1",
-    
-    "org.webbitserver" % "webbit" % "0.4.15",
-    
     "com.typesafe.akka" %% "akka-zeromq" % "2.2.1",
+    
     "asia.stampy" % "stampy-core" % "1.0-RELEASE",
     //"asia.stampy" % "stampy-NETTY-client-server-RI" % "1.0-RELEASE",
     
     "com.github.scopt" %% "scopt" % "3.1.0",
+    
     //"com.twitter" % "ostrich" % "2.3.0"
+    "com.twitter" %% "util-core" % "6.10.0",
+    
+    /* metrics */
     "com.codahale.metrics" % "metrics-core" % "3.0.1",
     
+    /* codecs */
     "com.fasterxml.jackson.core" % "jackson-databind" % "2.3.0",
-    
     "org.msgpack" %% "msgpack-scala" % "0.6.8",
     //"org.msgpack" % "msgpack" % "0.6.8",
     "com.dyuproject.protostuff" % "protostuff-core" % "1.0.7",

@@ -132,8 +132,7 @@ object EventSource {
     }
     
     override def channelInactive(ctx: ChannelHandlerContext) =
-      if (disconnect(ctx.channel).isEmpty)
-        super.channelInactive(ctx)
+      disconnect(ctx.channel)
   }
   
   class Encoder extends MessageToMessageEncoder[Packet] { // FIXME

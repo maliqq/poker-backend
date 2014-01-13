@@ -54,8 +54,7 @@ object WebSocket {
     }
     
     override def channelInactive(ctx: ChannelHandlerContext) {
-      val conn = disconnect(ctx.channel)
-      if (conn == null) super.channelInactive(ctx)
+      disconnect(ctx.channel)
     }
     
     def connection(channel: Channel, req: http.FullHttpRequest) = new Connection(channel, req)

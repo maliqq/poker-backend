@@ -10,8 +10,8 @@ object PokernoBuild extends Build {
 
   override lazy val settings = super.settings ++ Seq(
     organization := "de.pokerno",
-    scalaVersion := "2.10.3",
-    resolvers += "spray repo" at "http://repo.spray.io"
+    scalaVersion := "2.10.3"
+    //,resolvers += "spray repo" at "http://repo.spray.io"
     //,resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
   )
   
@@ -62,6 +62,15 @@ object PokernoBuild extends Build {
     settings = Project.defaultSettings ++ Seq(
       name := "pokerno-ai",
       version := "0.0.2"
+    ) ++ assemblySettings
+  ) dependsOn(root)
+  
+  lazy val playground = Project(
+    id = "pokerno-playground",
+    base = file("pokerno-playground"),
+    settings = Project.defaultSettings ++ Seq(
+      name := "pokerno-playground",
+      version := "0.0.1"
     ) ++ assemblySettings
   ) dependsOn(root)
   

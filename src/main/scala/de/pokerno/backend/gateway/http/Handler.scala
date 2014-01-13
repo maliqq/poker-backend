@@ -64,6 +64,7 @@ trait HttpResponder {
 
 case class Response(resp: http.FullHttpResponse) {
   import http.HttpHeaders.{setContentLength, Names, Values}
+  import Unpooled._
   
   def setContentType(contentType: String) {
     resp.headers.add(Names.CONTENT_TYPE, contentType)
@@ -82,7 +83,7 @@ case class Response(resp: http.FullHttpResponse) {
     this
   }
   
-  def withBody(body: String): Response = withBody(Unpooled.copiedBuffer(body, CharsetUtil.UTF_8))
+  def withBody(body: String): Response = withBody(copiedBuffer(body, CharsetUtil.UTF_8))
   
   def error(message: String) {
     setContentType("text/plain")

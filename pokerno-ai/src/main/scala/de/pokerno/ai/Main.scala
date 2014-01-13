@@ -1,6 +1,7 @@
 package de.pokerno.ai
 
 import de.pokerno.backend._
+import de.pokerno.backend.gateway._
 import akka.actor.{ ActorSystem, Props }
 import scala.math.{ BigDecimal ⇒ Decimal }
 import de.pokerno.model._
@@ -21,7 +22,8 @@ object Main {
   }
 
   def main(args: Array[String]) {
-    val htmlEventSource = system.actorOf(Props(classOf[gateway.EventSource.Server]))
+    val htmlEventSource = system.actorOf(Props(classOf[Http.Gateway],
+        http.Config(port = 8080, eventSource = Right(true))))
     instance ! Instance.Subscribe(htmlEventSource, "html-event-source")
     instance ! Instance.Start
   }

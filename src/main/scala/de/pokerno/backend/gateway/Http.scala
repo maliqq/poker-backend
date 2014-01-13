@@ -2,6 +2,7 @@ package de.pokerno.backend.gateway
 
 import akka.actor.{Actor, ActorSystem, Props}
 import io.netty.channel.Channel
+import de.pokerno.backend.server.hub
 
 import de.pokerno.backend.{protocol => proto}
 

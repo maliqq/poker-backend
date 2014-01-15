@@ -2,15 +2,15 @@ package de.pokerno.model
 
 import math.{ BigDecimal ⇒ Decimal }
 import collection._
-import de.pokerno.backend.{protocol => proto}
+import de.pokerno.protocol.wire
 
 case class Player(val id: String)
 
 object Table {
-  final val Waiting = proto.TableSchema.TableState.WAITING
-  final val Active = proto.TableSchema.TableState.ACTIVE
-  final val Paused = proto.TableSchema.TableState.PAUSED
-  final val Closed = proto.TableSchema.TableState.CLOSED
+  final val Waiting = wire.TableSchema.TableState.WAITING
+  final val Active = wire.TableSchema.TableState.ACTIVE
+  final val Paused = wire.TableSchema.TableState.PAUSED
+  final val Closed = wire.TableSchema.TableState.CLOSED
 }
 
 class Table(val size: Int) {

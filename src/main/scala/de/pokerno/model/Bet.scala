@@ -2,7 +2,6 @@ package de.pokerno.model
 
 import math.{ BigDecimal ⇒ Decimal }
 import java.util.Locale
-import de.pokerno.backend.{protocol => proto}
 
 class Bet(val betType: Bet.Value, val amount: Decimal = .0) {
   override def toString =
@@ -43,26 +42,27 @@ class Bet(val betType: Bet.Value, val amount: Decimal = .0) {
 }
 
 object Bet {
-  type Value = proto.BetSchema.BetType
+  import de.pokerno.protocol.{wire, msg}
+  type Value = wire.BetSchema.BetType
   
-  final val Call: Value = proto.BetSchema.BetType.CALL
-  final val Raise: Value = proto.BetSchema.BetType.RAISE
-  final val Check: Value = proto.BetSchema.BetType.CHECK
-  final val Fold: Value = proto.BetSchema.BetType.FOLD
-  final val Ante: Value = proto.BetSchema.BetType.ANTE
-  final val BringIn: Value = proto.BetSchema.BetType.BRING_IN
-  final val SmallBlind: Value = proto.BetSchema.BetType.SB
-  final val BigBlind: Value = proto.BetSchema.BetType.BB
-  final val GuestBlind: Value = proto.BetSchema.BetType.GUEST_BLIND
-  final val Straddle: Value = proto.BetSchema.BetType.STRADDLE
+  final val Call: Value = wire.BetSchema.BetType.CALL
+  final val Raise: Value = wire.BetSchema.BetType.RAISE
+  final val Check: Value = wire.BetSchema.BetType.CHECK
+  final val Fold: Value = wire.BetSchema.BetType.FOLD
+  final val Ante: Value = wire.BetSchema.BetType.ANTE
+  final val BringIn: Value = wire.BetSchema.BetType.BRING_IN
+  final val SmallBlind: Value = wire.BetSchema.BetType.SB
+  final val BigBlind: Value = wire.BetSchema.BetType.BB
+  final val GuestBlind: Value = wire.BetSchema.BetType.GUEST_BLIND
+  final val Straddle: Value = wire.BetSchema.BetType.STRADDLE
 
   // TODO
-  final val Discard = proto.DiscardCardsSchema.DiscardType.DISCARD
-  final val StandPat = proto.DiscardCardsSchema.DiscardType.STAND_PAT
+  final val Discard = msg.DiscardCardsSchema.DiscardType.DISCARD
+  final val StandPat = msg.DiscardCardsSchema.DiscardType.STAND_PAT
   
   // TODO
-  final val Show = proto.ShowCardsSchema.ShowType.SHOW
-  final val Muck = proto.ShowCardsSchema.ShowType.MUCK
+  final val Show = msg.ShowCardsSchema.ShowType.SHOW
+  final val Muck = msg.ShowCardsSchema.ShowType.MUCK
 
   def check = new Bet(Check)
   def fold = new Bet(Fold)

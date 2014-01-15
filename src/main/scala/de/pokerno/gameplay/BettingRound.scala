@@ -1,7 +1,7 @@
 package de.pokerno.gameplay
 
 import de.pokerno.model._
-import de.pokerno.backend.{protocol => message}
+import de.pokerno.protocol.{msg => message}
 
 import math.{ BigDecimal ⇒ Decimal }
 

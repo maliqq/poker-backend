@@ -1,7 +1,7 @@
 package de.pokerno.model
 
 import de.pokerno.poker.{ Card, Deck }
-import de.pokerno.backend.{protocol => proto}
+import de.pokerno.protocol.{msg => proto}
 
 object DealCards {
   type Value = proto.DealCardsSchema.DealType

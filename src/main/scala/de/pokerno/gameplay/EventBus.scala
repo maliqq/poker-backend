@@ -1,7 +1,7 @@
 package de.pokerno.gameplay
 
 import de.pokerno.model._
-import de.pokerno.backend.protocol
+import de.pokerno.protocol.msg
 
 import akka.event.{ ActorEventBus, ScanningClassification }
 import akka.actor.actorRef2Scala
@@ -17,7 +17,7 @@ class EventBus extends ActorEventBus with ScanningClassification {
   case class Only(endpoints: List[Classifier]) extends Route
   case class Except(endpoints: List[Classifier]) extends Route
 
-  case class Notification(message: protocol.Message, from: Route = NoOne, to: Route = All)
+  case class Notification(message: msg.Message, from: Route = NoOne, to: Route = All)
   type Event = Notification
 
   def compareClassifiers(a: Classifier, b: Classifier): Int = a compare b
@@ -35,7 +35,7 @@ class EventBus extends ActorEventBus with ScanningClassification {
     subscriber ! event.message
   }
 
-  def publish(message: protocol.Message, route: Route = All) {
+  def publish(message: msg.Message, route: Route = All) {
     publish(Notification(message, to = route))
   }
 }

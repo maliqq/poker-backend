@@ -3,7 +3,7 @@ package de.pokerno.gameplay
 import math.{ BigDecimal ⇒ Decimal }
 import de.pokerno.model._
 import de.pokerno.poker._
-import de.pokerno.backend.{protocol => message}
+import de.pokerno.protocol.{msg => message}
 
 trait Showdown {
   gameplay: GameplayLike ⇒

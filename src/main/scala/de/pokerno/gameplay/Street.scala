@@ -2,7 +2,7 @@ package de.pokerno.gameplay
 
 import de.pokerno.model._
 import akka.actor.{ Actor, Props, ActorLogging, ActorRef }
-import de.pokerno.backend.{protocol => proto}
+import de.pokerno.protocol.{msg => proto}
 
 class StreetActor(val gameplay: Gameplay, val name: Street.Value, val stages: List[StreetStage]) extends Actor with ActorLogging {
   import context._

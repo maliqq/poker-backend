@@ -4,7 +4,7 @@ import akka.actor.{ Actor, Props, ActorRef, ActorLogging }
 
 import de.pokerno.model._
 import concurrent._
-import de.pokerno.backend.{protocol => message}
+import de.pokerno.protocol.{msg => message}
 
 class GameplayActor(val gameplay: Gameplay) extends Actor with ActorLogging {
   import context._

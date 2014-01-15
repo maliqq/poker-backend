@@ -2,7 +2,7 @@ package de.pokerno.backend.storage
 
 import math.{BigDecimal => Decimal}
 import de.pokerno.poker
-import de.pokerno.backend.{protocol => proto}
+import de.pokerno.protocol.msg
 
 object PlayHistory {
 
@@ -12,7 +12,7 @@ object PlayHistory {
       stop: java.util.Date,
       winners: Map[String, Decimal],
       knownCards: Map[String, List[poker.Card]],
-      actions: List[proto.Message],
+      actions: List[msg.Message],
       pot: Decimal,
       rake: Option[Decimal] = None
   )

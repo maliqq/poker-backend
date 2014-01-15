@@ -4,7 +4,7 @@ import akka.actor.{Actor, ActorSystem, Props}
 import io.netty.channel.Channel
 import de.pokerno.backend.server.hub
 
-import de.pokerno.backend.{protocol => proto}
+import de.pokerno.protocol.{msg => message, Codec => codec}
 
 object Http {
   class Gateway(config: http.Config) extends Actor {
@@ -43,8 +43,8 @@ object Http {
       case http.Gateway.Message(channel, msg) =>
         Console printf("got: %s", msg)
       
-      case msg: proto.Message =>
-        broadcast(proto.Codec.Json.encode(msg))
+      case msg: message.Message =>
+        broadcast(codec.Json.encode(msg))
     }
     
     def broadcast(msg: Any) = channelConnections.foreach { case (channel, conn) =>

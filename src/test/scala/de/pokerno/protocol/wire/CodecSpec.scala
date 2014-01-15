@@ -1,4 +1,4 @@
-package de.pokerno.backend.protocol
+package de.pokerno.protocol.msg
 
 import org.scalatest.FunSpec
 import org.scalatest.matchers._
@@ -6,6 +6,7 @@ import org.scalatest.matchers.ShouldMatchers._
 
 import de.pokerno.model
 import de.pokerno.poker
+import de.pokerno.protocol.Codec
 
 class CodecSpec extends FunSpec with ClassicMatchers {
   describe("Codec") {

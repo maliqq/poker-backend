@@ -1,26 +1,26 @@
 package de.pokerno.model
 
 import math.{ BigDecimal ⇒ Decimal }
-import de.pokerno.backend.{protocol => proto}
+import de.pokerno.protocol.wire
 
 object Seat {
-  type State = proto.SeatSchema.SeatState
+  type State = wire.SeatSchema.SeatState
   
-  final val Empty: State = proto.SeatSchema.SeatState.EMPTY
-  final val Taken: State = proto.SeatSchema.SeatState.TAKEN
-  final val Ready: State = proto.SeatSchema.SeatState.READY
+  final val Empty: State = wire.SeatSchema.SeatState.EMPTY
+  final val Taken: State = wire.SeatSchema.SeatState.TAKEN
+  final val Ready: State = wire.SeatSchema.SeatState.READY
   
-  final val WaitBB: State = proto.SeatSchema.SeatState.POST_BB
-  final val PostBB: State = proto.SeatSchema.SeatState.WAIT_BB
+  final val WaitBB: State = wire.SeatSchema.SeatState.POST_BB
+  final val PostBB: State = wire.SeatSchema.SeatState.WAIT_BB
   
-  final val Play: State = proto.SeatSchema.SeatState.PLAY
-  final val AllIn: State = proto.SeatSchema.SeatState.ALL_IN
-  final val Bet: State = proto.SeatSchema.SeatState.BET
-  final val Fold: State = proto.SeatSchema.SeatState.FOLD
-  final val Auto: State = proto.SeatSchema.SeatState.AUTO
+  final val Play: State = wire.SeatSchema.SeatState.PLAY
+  final val AllIn: State = wire.SeatSchema.SeatState.ALL_IN
+  final val Bet: State = wire.SeatSchema.SeatState.BET
+  final val Fold: State = wire.SeatSchema.SeatState.FOLD
+  final val Auto: State = wire.SeatSchema.SeatState.AUTO
   
-  final val Idle: State = proto.SeatSchema.SeatState.IDLE
-  final val Away: State = proto.SeatSchema.SeatState.AWAY
+  final val Idle: State = wire.SeatSchema.SeatState.IDLE
+  final val Away: State = wire.SeatSchema.SeatState.AWAY
   
   case class IsTaken() extends Exception("seat is taken")
 }

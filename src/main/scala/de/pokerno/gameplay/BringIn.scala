@@ -1,6 +1,6 @@
 package de.pokerno.gameplay
 
-import de.pokerno.backend.{protocol => message}
+import de.pokerno.protocol.{msg => message}
 
 import akka.actor.ActorRef
 

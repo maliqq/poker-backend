@@ -2,7 +2,7 @@ package de.pokerno.ai
 
 import de.pokerno.model._
 import de.pokerno.poker._
-import de.pokerno.backend.{ protocol => message }
+import de.pokerno.protocol.{ msg => message }
 import math.{ BigDecimal ⇒ Decimal }
 import akka.actor.{ Actor, ActorRef }
 import util.Random

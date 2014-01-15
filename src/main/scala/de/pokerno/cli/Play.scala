@@ -6,7 +6,7 @@ import concurrent.duration._
 import de.pokerno.model._
 import de.pokerno.poker._
 import de.pokerno.gameplay._
-import de.pokerno.backend.{ protocol => message}
+import de.pokerno.protocol.{msg => message}
 import akka.actor.{ Actor, ActorRef, Props }
 import akka.pattern.ask
 import akka.util.Timeout

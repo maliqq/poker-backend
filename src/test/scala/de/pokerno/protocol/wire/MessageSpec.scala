@@ -1,4 +1,4 @@
-package de.pokerno.backend.protocol
+package de.pokerno.protocol.msg
 
 import org.scalatest._
 import org.scalatest.matchers._

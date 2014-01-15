@@ -1,9 +1,7 @@
-package de.pokerno.backend.protocol
+package de.pokerno.protocol
 
 import collection.mutable.{ Map => MMap }
 import org.msgpack.annotation.{ Message => MsgPack }
-import org.msgpack.ScalaMessagePack
-import com.dyuproject.protostuff
 
 abstract class Codec {
   def encode[T <: Message](msg: T): Array[Byte]
@@ -15,18 +13,18 @@ object Codec {
     import org.msgpack.ScalaMessagePack._
 
     val msgpack = org.msgpack.ScalaMessagePack.messagePack
-    msgpack.register(classOf[TableEventSchema.EventType])
-    msgpack.register(classOf[TableEventSchema.TableState])
+    msgpack.register(classOf[msg.TableEventSchema.EventType])
+    msgpack.register(classOf[msg.TableEventSchema.TableState])
     
-    def encode[T <: Message](msg: T): Array[Byte] =
+    def encode[T <: Message](msg: T) =
       pack(msg)
     
-    def decode[T <: Message](data: Array[Byte])(implicit manifest: Manifest[T]): T =
+    def decode[T <: Message](data: Array[Byte])(implicit manifest: Manifest[T]) =
       unpack[T](data)
   }
   
   object Json extends Codec {
-    import protostuff.ByteString
+    import com.dyuproject.protostuff.ByteString
     import com.fasterxml.jackson.databind.ObjectMapper
     import com.fasterxml.jackson.databind.module.SimpleModule
     
@@ -39,24 +37,26 @@ object Codec {
       o
     }
     
-    def encode[T <: Message](msg: T): Array[Byte] =
+    def encode[T <: Message](msg: T) =
       mapper.writeValueAsBytes(msg)
     
-    def decode[T <: Message](data: Array[Byte])(implicit manifest: Manifest[T]): T =
+    def decode[T <: Message](data: Array[Byte])(implicit manifest: Manifest[T]) =
       mapper.readValue(data, manifest.erasure).asInstanceOf[T]
     
     def decodeMessage(data: Array[Byte]): Message = mapper.readValue(data, classOf[Message])
   }
   
   object Protobuf extends Codec {
-    def encode[T <: Message](msg: T): Array[Byte] = {
-      val buf = protostuff.LinkedBuffer.allocate(protostuff.LinkedBuffer.DEFAULT_BUFFER_SIZE)
-      protostuff.ProtostuffIOUtil.toByteArray(msg, msg.schema, buf)
+    import com.dyuproject.protostuff.{ProtobufIOUtil => IOUtil, LinkedBuffer}
+    
+    def encode[T <: Message](msg: T) = {
+      val buf = LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE)
+      IOUtil.toByteArray(msg, msg.schema, buf)
     }
     
-    def decode[T <: Message](data: Array[Byte])(implicit manifest: Manifest[T]): T = {
+    def decode[T <: Message](data: Array[Byte])(implicit manifest: Manifest[T]) = {
       val instance: T = manifest.erasure.newInstance.asInstanceOf[T]
-      protostuff.ProtobufIOUtil.mergeFrom(data, instance, instance.schema)
+      IOUtil.mergeFrom(data, instance, instance.schema)
       instance
     }
   }

@@ -1,12 +1,15 @@
-package de.pokerno.backend.protocol
+package de.pokerno.protocol.msg
 
 import math.{ BigDecimal ⇒ Decimal }
 import de.pokerno.poker
 import de.pokerno.model
 import de.pokerno.gameplay
-import reflect._
-import org.msgpack.annotation.{ Message => MsgPack }
+import de.pokerno.protocol.wire
+import de.pokerno.protocol.{Message => BaseMessage}
+
 import com.dyuproject.protostuff
+import beans._
+import org.msgpack.annotation.{ Message => MsgPack }
 import com.fasterxml.jackson.annotation.{JsonTypeInfo, JsonSubTypes}
 
 @JsonTypeInfo(
@@ -35,56 +38,52 @@ import com.fasterxml.jackson.annotation.{JsonTypeInfo, JsonSubTypes}
   new JsonSubTypes.Type(value = classOf[Dealer], name="Dealer"),
   new JsonSubTypes.Type(value = classOf[Error], name="Error")
 ))
-abstract class Message extends ProtobufMessage
-
-trait ProtobufMessage {
-  implicit def schemaConv(s: protostuff.Schema[_ <: Any]): protostuff.Schema[Any] = s.asInstanceOf[protostuff.Schema[Any]]
-  
-  implicit def byteArray2ByteString(v: Array[Byte]) =
-    protostuff.ByteString.copyFrom(v)
-  
-  def schema: protostuff.Schema[Any]
-  //def pipeSchema: protostuff.Pipe.Schema[_]
-}
+abstract class Message extends BaseMessage
 
 /**
  * Action event
  * */
 @MsgPack
 sealed case class AddBet(
-    @BeanProperty var pos: Integer,
+    @BeanProperty
+    var pos: Integer,
     var player: model.Player,
     var _bet: model.Bet) extends Message with HasPlayer {
   def schema = AddBetSchema.SCHEMA
   //def pipeSchema = AddBetSchema.PIPE_SCHEMA
   def this() = this(null, null, null)
 
-  def getBet: Bet = if (_bet != null) Bet(_bet.betType, _bet.amount.toDouble)
+  def getBet: wire.Bet = if (_bet != null) wire.Bet(_bet.betType, _bet.amount.toDouble)
     else null
-  def setBet(v: Bet) = _bet = new model.Bet(v.getType, v.getAmount.toDouble)
+  def setBet(v: wire.Bet) = _bet = new model.Bet(v.getType, v.getAmount.toDouble)
 }
 
 @MsgPack
 sealed case class DiscardCards(
-    @BeanProperty var pos: Integer,
+    @BeanProperty
+    var pos: Integer,
     var player: model.Player,
     var cards: List[poker.Card]) extends Message with HasPlayer with HasCards {
   def schema = DiscardCardsSchema.SCHEMA
   //def pipeSchema = DiscardCardsSchema.PIPE_SCHEMA
-  @BeanProperty var cardsNum: Integer = null
-  @BeanProperty var `type`: DiscardCardsSchema.DiscardType = null
+  @BeanProperty
+  var cardsNum: Integer = null
+  @BeanProperty
+  var `type`: DiscardCardsSchema.DiscardType = null
   def this() = this(null, null, null)
 }
 
 @MsgPack
 sealed case class ShowCards(
-    @BeanProperty var pos: Integer,
+    @BeanProperty
+    var pos: Integer,
     var player: model.Player,
     var cards: List[poker.Card],
     muck: Boolean = false) extends Message with HasPlayer with HasCards {
   def schema = ShowCardsSchema.SCHEMA
   //def pipeSchema = ShowCardsSchema.PIPE_SCHEMA
-  @BeanProperty var `type`: ShowCardsSchema.ShowType = if (muck)
+  @BeanProperty
+  var `type`: ShowCardsSchema.ShowType = if (muck)
       ShowCardsSchema.ShowType.MUCK
     else
       ShowCardsSchema.ShowType.SHOW
@@ -109,8 +108,8 @@ sealed case class GameChange(
     _game: model.Game) extends GameplayEvent {
   `type` = GameplayEventSchema.EventType.GAME
   def this() = this(null)
-  override def getGame: Game = new Game
-  override def setGame(g: Game) = {}
+  override def getGame: wire.Game = new wire.Game
+  override def setGame(g: wire.Game) = {}
 }
 
 @MsgPack
@@ -118,8 +117,8 @@ sealed case class StakeChange(
     _stake: model.Stake) extends GameplayEvent {
   `type` = GameplayEventSchema.EventType.STAKE
   def this() = this(null)
-  override def getStake: Stake = new Stake
-  override def setStake(s: Stake) = {}
+  override def getStake: wire.Stake = new wire.Stake
+  override def setStake(s: wire.Stake) = {}
 }
 
 /**
@@ -152,11 +151,14 @@ sealed case class StreetStart(streetName: gameplay.Street.Value) extends StageEv
 
 @MsgPack
 sealed case class DealCards(
-    @BeanProperty var `type`: model.DealCards.Value,
+    @BeanProperty
+    var `type`: model.DealCards.Value,
     var cards: List[poker.Card] = List.empty,
-    @BeanProperty var pos: Integer = null,
+    @BeanProperty
+    var pos: Integer = null,
     var player: model.Player = null,
-    @BeanProperty var cardsNum: Integer = null) extends Message with HasPlayer with HasCards {
+    @BeanProperty
+    var cardsNum: Integer = null) extends Message with HasPlayer with HasCards {
 
   def this() = this(null)
   
@@ -166,7 +168,8 @@ sealed case class DealCards(
 
 @MsgPack
 sealed case class RequireBet(
-    @BeanProperty var pos: Integer,
+    @BeanProperty
+    var pos: Integer,
     var player: model.Player,
     var call: Decimal,
     var raise: model.Range) extends Message with HasPlayer{
@@ -174,17 +177,19 @@ sealed case class RequireBet(
   //def pipeSchema = RequireBetSchema.PIPE_SCHEMA
   
   def this() = this(null, null, null, model.Range(.0, .0))
-  @BeanProperty var `type` = DealEventSchema.EventType.REQUIRE_BET
+  @BeanProperty
+  var `type` = DealEventSchema.EventType.REQUIRE_BET
   def getCall: Double = call.toDouble
   def setCall(v: Double) = call = v
   
-  def getRaise: Range = new Range(raise.min.toDouble, raise.max.toDouble)
-  def setRaise(r: Range) = raise = model.Range(r.min.toDouble, r.max.toDouble)
+  def getRaise: wire.Range = new wire.Range(raise.min.toDouble, raise.max.toDouble)
+  def setRaise(r: wire.Range) = raise = model.Range(r.min.toDouble, r.max.toDouble)
 }
 
 @MsgPack
 sealed case class RequireDiscard(
-    @BeanProperty var pos: Integer,
+    @BeanProperty
+    var pos: Integer,
     var player: model.Player) extends Message {
   def schema = RequireDiscardSchema.SCHEMA
   //def pipeSchema = RequireDiscardSchema.PIPE_SCHEMA
@@ -215,7 +220,8 @@ sealed case class DeclarePot(
 
 @MsgPack
 sealed case class DeclareHand(
-    @BeanProperty var pos: Integer,
+    @BeanProperty
+    var pos: Integer,
     var player: model.Player,
     var cards: List[poker.Card],
     var hand: poker.Hand) extends Message with HasPlayer with HasCards {
@@ -223,7 +229,7 @@ sealed case class DeclareHand(
   //def pipeSchema = DeclareHandSchema.PIPE_SCHEMA
   def this() = this(null, null, List.empty, null)
   
-  def getHand: Hand = new Hand(
+  def getHand: wire.Hand = new wire.Hand(
       cards = hand.cards.value,
       rank = hand.rank.get,
       high = hand.high,
@@ -232,7 +238,7 @@ sealed case class DeclareHand(
       string = hand.description
   )
   
-  def setHand(h: Hand) {
+  def setHand(h: wire.Hand) {
     hand = new poker.Hand(
       cards = new poker.Hand.Cards(h.cards),
       rank = Some(h.rank),
@@ -245,7 +251,8 @@ sealed case class DeclareHand(
 
 @MsgPack
 sealed case class DeclareWinner(
-    @BeanProperty var pos: Integer,
+    @BeanProperty
+    var pos: Integer,
     var player: model.Player,
     var amount: Decimal) extends Message with HasPlayer with HasAmount {
   def schema = DeclareWinnerSchema.SCHEMA
@@ -255,9 +262,12 @@ sealed case class DeclareWinner(
 
 @MsgPack
 sealed case class TickTimer(
-    @BeanProperty var pos: Integer,
-    @BeanProperty var timeLeft: Integer,
-    @BeanProperty var timeBank: java.lang.Boolean = false
+    @BeanProperty
+    var pos: Integer,
+    @BeanProperty
+    var timeLeft: Integer,
+    @BeanProperty
+  var timeBank: java.lang.Boolean = false
 ) extends Message {
   def this() = this(null, null)
   def schema = TickTimerSchema.SCHEMA
@@ -269,7 +279,8 @@ sealed case class TickTimer(
  * */
 @MsgPack
 sealed case class JoinTable(
-    @BeanProperty var pos: Integer,
+    @BeanProperty
+    var pos: Integer,
     var amount: Decimal,
     var player: model.Player) extends Message with HasAmount {
   def schema = JoinTableSchema.SCHEMA
@@ -300,27 +311,3 @@ sealed case class Error(_body: String) extends Msg {
   `type` = MsgSchema.MsgType.ERROR
   def this() = this(null)
 }
-
-sealed case class CreateRoom(
-    @BeanProperty var id: String,
-    @BeanProperty var variation: Variation,
-    @BeanProperty var stake: Stake
-) extends Message {
-  def this() = this(null, null, null)
-  def schema = CreateRoomSchema.SCHEMA
-}
-
-sealed case class KickPlayer(
-    @BeanProperty var player: String,
-    @BeanProperty var reason: String
-) extends Message {
-  def this() = this(null, null)
-  def schema = KickPlayerSchema.SCHEMA
-}
-
-sealed case class MoveButton(
-    @BeanProperty var pos: Integer
-) extends Message {
-  def this() = this(null)
-  def schema = MoveButtonSchema.SCHEMA
-} 

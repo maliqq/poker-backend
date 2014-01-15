@@ -6,7 +6,8 @@ object Config {
   case class ZeroMQ(val host: String, port: Int)
   
   object Http {
-    case class Api(val port: Int, val path: String = "/_api")
+    final val defaultPath = "/_api"
+    case class Api(val port: Int, val path: String = defaultPath)
   }
   
   case class Rpc(val host: String, port: Int)

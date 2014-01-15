@@ -1,5 +1,17 @@
 package de.pokerno.backend.server
 
-class Node {
+import akka.actor.Actor
 
+class Node extends Actor {
+  override def preStart {
+    
+  }
+  
+  def receive = {
+    case _ =>
+  }
+  
+  override def postStop {
+    
+  }
 }

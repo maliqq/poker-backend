@@ -9,12 +9,25 @@ object Lexer {
   
   object Conversions {
     implicit def string2int(s: String) = Integer.parseInt(s)
-    implicit def string2cards(s: String) = poker.Cards(s)
+    implicit def string2cards(s: String): List[poker.Card] = poker.Cards(s)
     implicit def string2quotedString(s: String) = new QuotedString(s)
   }
   
   class QuotedString(v: String) {
-    override def toString = v
+    def unquote = {
+      val (start, end) = {
+        var start = 0
+        var end = v.length
+        if (v.startsWith("\""))
+          start = 1
+        if (v.endsWith("\""))
+          end = v.length - 1
+        (start, end)
+      }
+      v.substring(start, end)
+    }
+    
+    override def toString = unquote
   }
   
   trait Token
@@ -23,7 +36,7 @@ object Lexer {
     import Conversions._
     
     @Tag(name = "TABLE")
-    case class Table(uuid: QuotedString, max: Int) extends Token {
+    case class Table(id: QuotedString, max: Int) extends Token {
       def this(params: Array[String]) = this(params(0), params(1).replace("-max", ""))
     }
     
@@ -35,7 +48,6 @@ object Lexer {
     object StakeUtil {
       def fromParams(params: Array[String]): Tuple3[Int, Int, Option[Int]] = {
         val d = params(0).split("/")
-        println("HERE")
         d.length match {
           case 2 =>
             (d(0), d(1), None)

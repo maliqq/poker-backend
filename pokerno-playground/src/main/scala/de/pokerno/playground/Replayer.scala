@@ -2,13 +2,18 @@ package de.pokerno.playground
 
 import de.pokerno.format.text.Lexer.{Tags => tags}
 import de.pokerno.model
-import de.pokerno.protocol.msg
+import de.pokerno.protocol._
 import akka.actor.{Actor, ActorRef}
 
-class Replayer(server: ActorRef) extends Actor {
+class Replayer(node: ActorRef) extends Actor {
   import context._
 
-  var table: model.Table = null
+  var table: Option[model.Table] = None
+  var stake: Option[model.Stake] = None
+  var id: Option[String] = None
+  var speed: Option[Int] = None
+  var variation: Option[model.Variation] = None
+  var limit: Option[model.Game.Limit] = None
 
   override def preStart {
 
@@ -17,12 +22,17 @@ class Replayer(server: ActorRef) extends Actor {
   override def receive = main
 
   def main: Receive = {
-    case tags.Table(uuid, size) =>
-      table = new model.Table(size)
+    case tags.Table(_id, size) =>
+      table = Some(new model.Table(size))
+      id = Some(_id.unquote)
       become(tableBlock)
+      
     case tags.Speed(duration) =>
+      speed = Some(duration)
+      
     case tags.Street(name) =>
       become(streetBlock)
+      
     case _ =>
 
   }
@@ -42,15 +52,32 @@ class Replayer(server: ActorRef) extends Actor {
       self ! x
   }
 
+  import wire.Conversions._
+  
   def tableBlock: Receive = {
     case tags.Seat(uuid, stack) =>
-      server ! rpc.JoinTable(uuid, table.button, stack)
-      table.button.move
+      table.map(_.button.move)
+      
     case tags.Stake(sb, bb, ante) =>
-    case tags.Game(variation, limit) =>
+      stake = Some(model.Stake(sb,
+          Some(bb),
+          Ante = ante match {
+            case Some(n) => Left(n)
+            case None => Right(false)
+          }))
+          
+    case tags.Game(_variation, _limit) =>
+      variation = Some(_variation)
+      limit = Some(_limit)
+      
     case tags.Button(pos) =>
-      table.button.current = pos
+      table.map(_.button.current = pos)
+      
     case x: Any =>
+      node ! rpc.CreateRoom(id.get,
+          table = wire.Table(table.size),
+          variation = variation.get,
+          stake = stake.get)
       become(main)
       self ! x
   }

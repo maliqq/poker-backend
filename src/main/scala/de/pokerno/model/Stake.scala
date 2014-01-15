@@ -10,7 +10,7 @@ object Rates {
     Bet.BigBlind -> 1.0)
 }
 
-class Stake(
+case class Stake(
     val bigBlind: Decimal,
     SmallBlind: Option[Decimal] = None,
     Ante: Either[Decimal, Boolean] = Right(false),

@@ -99,13 +99,15 @@ class Stake {
 }
 
 @MsgPack
-class Table {
+case class Table(
   @BeanProperty
-  var size: Int = 0
+  var size: Integer,
   @BeanProperty
-  var button: Int = 0
+  var button: Integer = null,
   @BeanProperty
-  var seats: java.util.ArrayList[Seat] = null
+  var seats: java.util.ArrayList[Seat] = null,
   @BeanProperty
   var state: TableSchema.TableState = null
+) {
+  def this() = this(null)
 }

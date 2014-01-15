@@ -10,6 +10,7 @@ object Lexer {
     class Seat(playerUuid: String, stack: Int)
     class Stake(sb: Int, bb: Int, ante: Option[Int] = None)
     class Game(variation: Variation, limit: Limit)
+    class Speed(interval: Int)
     class Button(pos: Int)
     class Street(name: String)
     class Bet(`type`: BetType, player: String)

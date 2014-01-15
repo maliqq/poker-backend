@@ -88,6 +88,11 @@ object Lexer {
       def this(params: Array[String]) = this(params(0))
     }
     
+    @Tag(name = "ANTES")
+    case class Antes extends Token {
+      def this(params: Array[String]) = this()
+    }
+    
     @Tag(name = "RAISE")
     case class Raise(player: QuotedString, amount: Int) extends Token {
       def this(params: Array[String]) = this(params(0), params(1))
@@ -165,6 +170,6 @@ object Lexer {
     }
   }.toMap
   
-  Console printf("tagClasses=%s\n", tagClasses)
+  //Console printf("tagClasses=%s\n", tagClasses)
 
 }

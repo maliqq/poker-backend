@@ -8,7 +8,7 @@ object Parser {
     val p = """^([A-Z]+)(?:\s+(.+))?$""".r
     line.stripLineEnd match {
       case p(t: String, s: String) =>
-        (t, """\s""".r.split(s))
+        (t, """\s+""".r.split(s))
       case s: String =>
         (s, null)
       case _ =>

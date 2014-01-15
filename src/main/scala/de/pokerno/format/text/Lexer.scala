@@ -22,5 +22,11 @@ object Lexer {
     class Fold(player: String)
     class Deal(player: String, cardsNum: Int, cards: String)
     class Json(data: String)
+    class Chat(player: String, message: String)
+    class Discard(player: String, cards: String)
+    class Show(player: String, cards: String)
+    class Muck(player: String, cards: String)
+    class Sleep(time: Int)
+    class Timer(player: String, left: Int)
   }
 }

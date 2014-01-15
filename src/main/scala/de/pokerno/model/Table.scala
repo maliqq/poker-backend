@@ -1,7 +1,7 @@
 package de.pokerno.model
 
-import scala.math.{ BigDecimal ⇒ Decimal }
-import scala.collection._
+import math.{ BigDecimal ⇒ Decimal }
+import collection._
 import de.pokerno.backend.{protocol => proto}
 
 case class Player(val id: String)

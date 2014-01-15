@@ -1,9 +1,7 @@
 package de.pokerno.gameplay
 
-import scala.math.{ BigDecimal ⇒ Decimal }
+import math.{ BigDecimal ⇒ Decimal }
 import de.pokerno.model._
-
-import scala.math.{BigDecimal => Decimal}
 
 object Betting {
   // start new round

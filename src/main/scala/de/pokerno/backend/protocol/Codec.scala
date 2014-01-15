@@ -1,6 +1,6 @@
 package de.pokerno.backend.protocol
 
-import scala.collection.mutable.{ Map => MMap }
+import collection.mutable.{ Map => MMap }
 import org.msgpack.annotation.{ Message => MsgPack }
 import org.msgpack.ScalaMessagePack
 import com.dyuproject.protostuff

@@ -3,8 +3,8 @@ package de.pokerno.backend.protocol
 import de.pokerno.model
 import de.pokerno.poker
 
-import scala.reflect._
-import scala.math.{BigDecimal => Decimal}
+import reflect._
+import math.{BigDecimal => Decimal}
 
 import com.dyuproject.protostuff
 import com.dyuproject.protostuff.ByteString

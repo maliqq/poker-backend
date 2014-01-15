@@ -1,6 +1,6 @@
 package de.pokerno.model
 
-import scala.math.{ BigDecimal ⇒ Decimal }
+import math.{ BigDecimal ⇒ Decimal }
 import de.pokerno.backend.{protocol => proto}
 
 object Seat {

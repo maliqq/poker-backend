@@ -1,8 +1,8 @@
 package de.pokerno.cli
 
 import java.util.Scanner
-import scala.math.{ BigDecimal ⇒ Decimal }
-import scala.concurrent.duration._
+import math.{ BigDecimal ⇒ Decimal }
+import concurrent.duration._
 import de.pokerno.model._
 import de.pokerno.poker._
 import de.pokerno.gameplay._

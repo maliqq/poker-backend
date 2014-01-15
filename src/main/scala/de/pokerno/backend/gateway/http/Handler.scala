@@ -42,7 +42,7 @@ object HttpHandler {
   
 }
 
-import scala.util.matching.Regex
+import util.matching.Regex
 
 class PathHandler(path: String, handler: ChannelInboundHandlerAdapter) extends ChannelInboundHandlerAdapter {
   override def channelRead(ctx: ChannelHandlerContext, msg: Object): Unit = msg match {

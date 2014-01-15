@@ -1,6 +1,6 @@
 package de.pokerno.poker
 
-import scala.collection.mutable
+import collection.mutable
 
 trait FastHigh {
   final val HighCardFlag = 0x100000

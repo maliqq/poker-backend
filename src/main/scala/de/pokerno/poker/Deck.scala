@@ -1,6 +1,6 @@
 package de.pokerno.poker
 
-import scala.util.Random
+import util.Random
 
 object Deck {
   def shuffle(cards: List[Card] = Card.All) = Random.shuffle(cards)

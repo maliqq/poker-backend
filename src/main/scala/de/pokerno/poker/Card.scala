@@ -1,6 +1,6 @@
 package de.pokerno.poker
 
-import scala.collection.mutable.ListBuffer
+import collection.mutable.ListBuffer
 
 class Card(val kind: Kind.Value.Kind, val suit: Suit.Value) extends Ordered[Card] {
   def toInt: Int = (kind.toInt << 2) + suit.toInt

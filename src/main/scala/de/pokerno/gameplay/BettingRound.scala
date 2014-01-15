@@ -3,7 +3,7 @@ package de.pokerno.gameplay
 import de.pokerno.model._
 import de.pokerno.backend.{protocol => message}
 
-import scala.math.{ BigDecimal ⇒ Decimal }
+import math.{ BigDecimal ⇒ Decimal }
 
 class BettingRound(val gameplay: Gameplay) extends Round(gameplay.table.size) {
   current = gameplay.table.button

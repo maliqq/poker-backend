@@ -1,7 +1,7 @@
 package de.pokerno.model
 
-import scala.math.{ BigDecimal ⇒ Decimal }
-import scala.collection.mutable
+import math.{ BigDecimal ⇒ Decimal }
+import collection.mutable
 
 class SidePot(val cap: Option[Decimal] = None) {
   var members: Map[Player, Decimal] = Map.empty

@@ -3,7 +3,7 @@ package de.pokerno.cli
 import de.pokerno.model._
 import de.pokerno.gameplay._
 import akka.actor.{ ActorRef, ActorSystem, Props }
-import scala.math.{ BigDecimal ⇒ Decimal }
+import math.{ BigDecimal ⇒ Decimal }
 
 case class Config(
   val betSize: Decimal = 100.0,

@@ -3,8 +3,8 @@ package de.pokerno.tournament
 import akka.actor.{ Actor, ActorRef, ActorLogging }
 
 import de.pokerno.model._
-import scala.concurrent.duration._
-import scala.math.{ BigDecimal => Decimal }
+import concurrent.duration._
+import math.{ BigDecimal => Decimal }
 
 object Tournament {
   case class Entry(var stack: Decimal) {

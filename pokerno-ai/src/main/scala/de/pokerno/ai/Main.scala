@@ -3,7 +3,7 @@ package de.pokerno.ai
 import de.pokerno.backend._
 import de.pokerno.backend.gateway._
 import akka.actor.{ ActorSystem, Props }
-import scala.math.{ BigDecimal ⇒ Decimal }
+import math.{ BigDecimal ⇒ Decimal }
 import de.pokerno.model._
 import de.pokerno.gameplay._
 

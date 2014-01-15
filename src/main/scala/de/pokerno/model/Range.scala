@@ -1,6 +1,6 @@
 package de.pokerno.model
 
-import scala.math.{ BigDecimal ⇒ Decimal }
+import math.{ BigDecimal ⇒ Decimal }
 
 object Range {
   case class GreaterThanMax(amount: Decimal, max: Decimal)

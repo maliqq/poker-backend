@@ -1,7 +1,7 @@
 package de.pokerno.model
 
 import de.pokerno.poker.Hand
-import scala.math.{ BigDecimal ⇒ Decimal }
+import math.{ BigDecimal ⇒ Decimal }
 
 trait Variation {
   def isMixed: Boolean = this.isInstanceOf[Mix]

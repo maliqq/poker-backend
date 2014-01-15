@@ -1,10 +1,10 @@
 package de.pokerno.backend.protocol
 
-import scala.math.{ BigDecimal ⇒ Decimal }
+import math.{ BigDecimal ⇒ Decimal }
 import de.pokerno.poker
 import de.pokerno.model
 import de.pokerno.gameplay
-import scala.reflect._
+import reflect._
 import org.msgpack.annotation.{ Message => MsgPack }
 import com.dyuproject.protostuff
 import com.fasterxml.jackson.annotation.{JsonTypeInfo, JsonSubTypes}

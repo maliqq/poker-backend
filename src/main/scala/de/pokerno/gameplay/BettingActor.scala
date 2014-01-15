@@ -2,7 +2,7 @@ package de.pokerno.gameplay
 
 import de.pokerno.model._
 import de.pokerno.backend.{protocol => message}
-import scala.math.{ BigDecimal ⇒ Decimal }
+import math.{ BigDecimal ⇒ Decimal }
 import akka.actor.{ Actor, ActorRef, ActorLogging }
 
 class BettingActor(val round: BettingRound) extends Actor with ActorLogging {

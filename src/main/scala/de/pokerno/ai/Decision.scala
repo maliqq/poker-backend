@@ -1,6 +1,6 @@
 package de.pokerno.ai
 
-import scala.math.{ BigDecimal ⇒ Decimal }
+import math.{ BigDecimal ⇒ Decimal }
 
 case class Decision(
     val minBet: Decimal = .0,

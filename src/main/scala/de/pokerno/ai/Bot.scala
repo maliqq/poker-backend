@@ -3,10 +3,10 @@ package de.pokerno.ai
 import de.pokerno.model._
 import de.pokerno.poker._
 import de.pokerno.backend.{ protocol => message }
-import scala.math.{ BigDecimal ⇒ Decimal }
+import math.{ BigDecimal ⇒ Decimal }
 import akka.actor.{ Actor, ActorRef }
-import scala.util.Random
-import scala.concurrent.duration._
+import util.Random
+import concurrent.duration._
 
 trait Context {
   var game: Game

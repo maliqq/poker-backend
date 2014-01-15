@@ -3,7 +3,7 @@ import akka.actor.{Actor, ActorLogging, ActorRef, Props, FSM}
 import de.pokerno.model._
 import de.pokerno.backend.{protocol => message}
 
-import scala.concurrent.duration._
+import concurrent.duration._
 
 object Instance {
   sealed trait State

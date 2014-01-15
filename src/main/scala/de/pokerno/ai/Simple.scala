@@ -3,7 +3,7 @@ package de.pokerno.ai
 import de.pokerno.model._
 import de.pokerno.poker._
 import de.pokerno.poker.Math._
-import scala.math.{ BigDecimal ⇒ Decimal }
+import math.{ BigDecimal ⇒ Decimal }
 
 trait Simple {
   def stake: Stake

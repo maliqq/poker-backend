@@ -1,6 +1,6 @@
 package de.pokerno.model
 
-import scala.math.{ BigDecimal ⇒ Decimal }
+import math.{ BigDecimal ⇒ Decimal }
 
 object Rates {
   final val Default: Map[Bet.Value, Decimal] = Map(

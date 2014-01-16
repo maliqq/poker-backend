@@ -8,7 +8,7 @@ class RankSpec extends FunSpec with ClassicMatchers {
   describe("Rank.High") {
     it("ordered") {
       for (rank1 ← Rank.High.values; rank2 ← Rank.High.values) {
-        (rank1.ordinal compare rank2.ordinal) should equal(Rank.High.values.indexOf(rank1).compare(Rank.High.values.indexOf(rank2)))
+        (rank1 compare rank2) should equal(Rank.High.values.toList.indexOf(rank1).compare(Rank.High.values.toList.indexOf(rank2)))
       }
     }
 
@@ -24,7 +24,7 @@ class RankSpec extends FunSpec with ClassicMatchers {
   describe("Rank.Badugi") {
     it("ordered") {
       for (rank1 ← Rank.Badugi.values; rank2 ← Rank.Badugi.values) {
-        (rank1.ordinal compare rank2.ordinal) should equal(Rank.Badugi.values.indexOf(rank1).compare(Rank.Badugi.values.indexOf(rank2)))
+        (rank1 compare rank2) should equal(Rank.Badugi.values.toList.indexOf(rank1).compare(Rank.Badugi.values.toList.indexOf(rank2)))
       }
     }
 

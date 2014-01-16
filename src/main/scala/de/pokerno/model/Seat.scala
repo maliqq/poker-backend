@@ -4,29 +4,32 @@ import math.{ BigDecimal ⇒ Decimal }
 import de.pokerno.protocol.wire
 
 object Seat {
-  type State = wire.SeatSchema.SeatState
+  object State extends Enumeration {
+    type State = Value
+    def state(name: String) = new Val(nextId, name)
+    
+    val Empty = state("empty")
+    val Taken = state("taken")
+    val Ready = state("ready")
+    val WaitBB = state("wait-bb")
+    val PostBB = state("post-bb")
+    val Play = state("play")
+    val AllIn = state("all-in")
+    val Bet = state("bet")
+    val Fold = state("fold")
+    val Auto = state("auto")
+    val Idle = state("idle")
+    val Away = state("away")
+  }
   
-  final val Empty: State = wire.SeatSchema.SeatState.EMPTY
-  final val Taken: State = wire.SeatSchema.SeatState.TAKEN
-  final val Ready: State = wire.SeatSchema.SeatState.READY
-  
-  final val WaitBB: State = wire.SeatSchema.SeatState.POST_BB
-  final val PostBB: State = wire.SeatSchema.SeatState.WAIT_BB
-  
-  final val Play: State = wire.SeatSchema.SeatState.PLAY
-  final val AllIn: State = wire.SeatSchema.SeatState.ALL_IN
-  final val Bet: State = wire.SeatSchema.SeatState.BET
-  final val Fold: State = wire.SeatSchema.SeatState.FOLD
-  final val Auto: State = wire.SeatSchema.SeatState.AUTO
-  
-  final val Idle: State = wire.SeatSchema.SeatState.IDLE
-  final val Away: State = wire.SeatSchema.SeatState.AWAY
+  import State._
+  type State = Value
   
   case class IsTaken() extends Exception("seat is taken")
 }
 
 class Seat {
-  private var _state: Seat.State = Seat.Empty
+  private var _state: Seat.State.State = Seat.State.Empty
   def state = _state
 
   private var _amount: Decimal = .0
@@ -44,78 +47,77 @@ class Seat {
   private var _player: Option[Player] = None
   def player = _player
   def player_=(p: Player) {
-    if (_state != Seat.Empty) throw Seat.IsTaken()
+    if (_state != Seat.State.Empty) throw Seat.IsTaken()
 
-    _state = Seat.Taken
+    _state = Seat.State.Taken
     _player = Some(p)
   }
 
   def clear {
-    _state = Seat.Empty
+    _state = Seat.State.Empty
     _player = None
     _amount = .0
     _put = .0
   }
 
   def play {
-    _state = Seat.Play
+    _state = Seat.State.Play
     _put = .0
   }
 
   def playing {
-    _state = Seat.Play
+    _state = Seat.State.Play
   }
 
   def check {
-    _state = Seat.Bet
+    _state = Seat.State.Bet
   }
 
   def fold = {
-    _state = Seat.Fold
+    _state = Seat.State.Fold
     _put = .0
     .0
   }
 
   def force(amount: Decimal) {
     put = amount
-    _state = if (_amount == 0) Seat.AllIn else Seat.Play
+    _state = if (_amount == 0) Seat.State.AllIn else Seat.State.Play
   }
 
   def raise(amount: Decimal) {
     put = amount
-    _state = if (_amount == 0) Seat.AllIn else Seat.Bet
+    _state = if (_amount == 0) Seat.State.AllIn else Seat.State.Bet
   }
 
   def buyIn(amount: Decimal) {
     net(amount)
-    _state = Seat.Ready
+    _state = Seat.State.Ready
   }
 
   def wins(amount: Decimal) {
     net(amount)
   }
 
-  def isCalled(amount: Decimal): Boolean = _state == Seat.AllIn || amount <= _put
+  def isCalled(amount: Decimal): Boolean = _state == Seat.State.AllIn || amount <= _put
 
   def post(bet: Bet) = bet.betType match {
     case Bet.Fold             ⇒ fold
     case Bet.Call | Bet.Raise ⇒ raise(bet.amount)
     case Bet.Check            ⇒ check
-    case _     ⇒
-      if (bet.isForced)
-        force(bet.amount)
+    case _: Bet.ForcedBet     ⇒ force(bet.amount)
   }
 
   private def net(amount: Decimal) {
     _amount += amount
   }
 
-  def isReady = state == Seat.Ready || state == Seat.Play || state == Seat.Fold
-  def isActive = state == Seat.Play || state == Seat.PostBB
-  def isWaitingBB = state == Seat.WaitBB
-  def isPlaying = state == Seat.Play
-  def inPlay = state == Seat.Play || state == Seat.Bet
-  def inPot = inPlay || state == Seat.AllIn
+  def isReady = state == Seat.State.Ready || state == Seat.State.Play || state == Seat.State.Fold
+  def isActive = state == Seat.State.Play || state == Seat.State.PostBB
+  def isAllIn = state == Seat.State.AllIn
+  def isWaitingBB = state == Seat.State.WaitBB
+  def isPlaying = state == Seat.State.Play
+  def inPlay = state == Seat.State.Play || state == Seat.State.Bet
+  def inPot = inPlay || state == Seat.State.AllIn
 
   override def toString = if (_player.isDefined) "%s - %s (%.2f - %.2f)".format(_player get, _state, _amount, _put)
   else "(empty)"

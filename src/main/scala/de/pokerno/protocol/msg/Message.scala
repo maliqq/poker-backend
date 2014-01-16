@@ -5,6 +5,8 @@ import de.pokerno.poker
 import de.pokerno.model
 import de.pokerno.gameplay
 import de.pokerno.protocol.wire
+import de.pokerno.protocol.wire.Conversions._
+import Conversions._
 import de.pokerno.protocol.{Message => BaseMessage}
 
 import com.dyuproject.protostuff

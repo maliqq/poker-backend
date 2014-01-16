@@ -42,33 +42,34 @@ class Bet(val betType: Bet.Value, val amount: Decimal = .0) {
 }
 
 object Bet {
-  import de.pokerno.protocol.{wire, msg}
-  type Value = wire.BetSchema.BetType
+  trait Value
+  trait Rateable // FIXME - ?
   
-  final val Call: Value = wire.BetSchema.BetType.CALL
-  final val Raise: Value = wire.BetSchema.BetType.RAISE
-  final val Check: Value = wire.BetSchema.BetType.CHECK
-  final val Fold: Value = wire.BetSchema.BetType.FOLD
-  final val Ante: Value = wire.BetSchema.BetType.ANTE
-  final val BringIn: Value = wire.BetSchema.BetType.BRING_IN
-  final val SmallBlind: Value = wire.BetSchema.BetType.SB
-  final val BigBlind: Value = wire.BetSchema.BetType.BB
-  final val GuestBlind: Value = wire.BetSchema.BetType.GUEST_BLIND
-  final val Straddle: Value = wire.BetSchema.BetType.STRADDLE
+  object DoubleBet extends Value with Rateable
 
-  // TODO
-  final val Discard = msg.DiscardCardsSchema.DiscardType.DISCARD
-  final val StandPat = msg.DiscardCardsSchema.DiscardType.STAND_PAT
-  
-  // TODO
-  final val Show = msg.ShowCardsSchema.ShowType.SHOW
-  final val Muck = msg.ShowCardsSchema.ShowType.MUCK
+  abstract class ForcedBet extends Value
+  case object SmallBlind extends ForcedBet with Rateable
+  case object BigBlind extends ForcedBet with Rateable
+  case object Ante extends ForcedBet with Rateable
+  case object BringIn extends ForcedBet with Rateable
+  case object GuestBlind extends ForcedBet
+  case object Straddle extends ForcedBet
+
+  abstract class PassiveBet extends Value
+  case object Fold extends PassiveBet
+  case object Call extends PassiveBet
+
+  abstract class ActiveBet extends Value
+  case object Raise extends ActiveBet
+  case object Check extends ActiveBet
+
+  abstract class CardAction extends Value
 
   def check = new Bet(Check)
   def fold = new Bet(Fold)
   def call(amount: Decimal) = new Bet(Call, amount)
   def raise(amount: Decimal) = new Bet(Raise, amount)
-  def forced(t: Value, amount: Decimal) = new Bet(t, amount)
+  def forced(t: ForcedBet, amount: Decimal) = new Bet(t, amount)
 
   case class CantCheck(call: Decimal)
     extends Error("Can't check: need to call=%.2f" format (call))

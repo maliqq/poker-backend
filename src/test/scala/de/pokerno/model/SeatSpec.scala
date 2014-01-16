@@ -11,20 +11,20 @@ class SeatSpec extends FunSpec with ClassicMatchers {
       val seat = new Seat
 
       seat.player = new Player("1")
-      seat.state should equal(Seat.Taken)
+      seat.state should equal(Seat.State.Taken)
 
       seat.buyIn(1000)
-      seat.state should equal(Seat.Ready)
+      seat.state should equal(Seat.State.Ready)
 
       seat.play
-      seat.state should equal(Seat.Play)
+      seat.state should equal(Seat.State.Play)
 
       seat.fold
-      seat.state should equal(Seat.Fold)
+      seat.state should equal(Seat.State.Fold)
 
       seat.play
       seat.check
-      seat.state should equal(Seat.Bet)
+      seat.state should equal(Seat.State.Bet)
 
       seat.play
       seat.raise(100)
@@ -47,7 +47,7 @@ class SeatSpec extends FunSpec with ClassicMatchers {
 
       seat.buyIn(10)
       seat.raise(10)
-      seat.state should equal(Seat.AllIn)
+      seat.state should equal(Seat.State.AllIn)
       seat.isCalled(25) should be(true)
     }
 
@@ -60,7 +60,7 @@ class SeatSpec extends FunSpec with ClassicMatchers {
 
       seat.play
       seat.force(10)
-      seat.state should equal(Seat.AllIn)
+      seat.state should equal(Seat.State.AllIn)
       seat.isCalled(25) should be(true)
 
       seat.play

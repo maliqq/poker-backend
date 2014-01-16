@@ -22,7 +22,7 @@ this: Hand =>
     ((a: Hand, b: Hand) => compareCards(a.kicker, b.kicker))
   )
   
-  def compareRanks(rank1: Rank.Value, rank2: Rank.Value): Int = rank1.ordinal compare rank2.ordinal
+  def compareRanks(rank1: Rank.Value, rank2: Rank.Value): Int = rank1 compare rank2
   
   def compareCards(a: List[Card], b: List[Card]): Int = if (a.size == b.size) {
     var result = 0

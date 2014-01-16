@@ -35,30 +35,34 @@ class StreetActor(val gameplay: Gameplay, val name: Street.Value, val stages: Li
 
 case class Street(val name: Street.Value, val stages: List[Stage])
 
-object Street {
+object Street extends Enumeration {
+    
   case object Start
   case object Next
   case object Exit
   
-  type Value = proto.StageEventSchema.StreetType
+  class StreetVal(i: Int, name: String) extends Val(i, name) {
+    def apply(stages: List[Stage]): Street = new Street(this, stages)
+  }
   
-  final val Preflop: Value = proto.StageEventSchema.StreetType.PREFLOP
-  final val Flop: Value = proto.StageEventSchema.StreetType.FLOP
-  final val Turn: Value = proto.StageEventSchema.StreetType.TURN
-  final val River: Value = proto.StageEventSchema.StreetType.RIVER
-
-  final val Second: Value = proto.StageEventSchema.StreetType.SECOND
-  final val Third: Value = proto.StageEventSchema.StreetType.THIRD
-  final val Fourth: Value = proto.StageEventSchema.StreetType.FOURTH
-  final val Fifth: Value = proto.StageEventSchema.StreetType.FIFTH
-  final val Sixth: Value = proto.StageEventSchema.StreetType.SIXTH
-  final val Seventh: Value = proto.StageEventSchema.StreetType.SEVENTH
-
-  final val Predraw: Value = proto.StageEventSchema.StreetType.PREDRAW
-  final val Draw: Value = proto.StageEventSchema.StreetType.DRAW
-  final val FirstDraw: Value = proto.StageEventSchema.StreetType.FIRST_DRAW
-  final val SecondDraw: Value = proto.StageEventSchema.StreetType.SECOND_DRAW
-  final val ThirdDraw: Value = proto.StageEventSchema.StreetType.THIRD_DRAW
+  def street(name: String) = new StreetVal(nextId, name)
+  val Preflop = street("preflop")
+  val Flop = street("flop")
+  val Turn = street("turn")
+  val River = street("river")
+ 
+  val Second = street("second")
+  val Third = street("third")
+  val Fourth = street("fourth")
+  val Fifth = street("fifth")
+  val Sixth = street("sixth")
+  val Seventh = street("seventh")
+ 
+  val Predraw = street("predraw")
+  val Draw = street("draw")
+  val FirstDraw = street("first-draw")
+  val SecondDraw = street("second-draw")
+  val ThirdDraw = street("third-draw")
 }
 
 object Streets {
@@ -83,56 +87,60 @@ object Streets {
 
     gameplay.game.options.group match {
       case Game.Holdem ⇒ List(
-        Street(Street.Preflop,
+        Street.Preflop(
           List(dealing(DealCards.Hole), betting)),
 
-        Street(Street.Flop,
+        Street.Flop(
           List(dealing(DealCards.Board, Some(3)), betting)),
 
-        Street(Street.Turn,
+        Street.Turn(
           List(dealing(DealCards.Board, Some(1)), bigBets, betting)),
 
-        Street(Street.River,
-          List(dealing(DealCards.Board, Some(1)), betting)))
-
+        Street.River(
+          List(dealing(DealCards.Board, Some(1)), betting))
+      )
+      
       case Game.SevenCard ⇒ List(
-        Street(Street.Second,
+        Street.Second(
           List(dealing(DealCards.Hole, Some(2)))),
 
-        Street(Street.Third,
+        Street.Third(
           List(dealing(DealCards.Door, Some(1)), bringIn, betting)),
 
-        Street(Street.Fourth,
+        Street.Fourth(
           List(dealing(DealCards.Door, Some(1)), betting)),
 
-        Street(Street.Fifth,
+        Street.Fifth(
           List(dealing(DealCards.Door, Some(1)), bigBets, betting)),
 
-        Street(Street.Sixth,
+        Street.Sixth(
           List(dealing(DealCards.Door, Some(1)), betting)),
 
-        Street(Street.Seventh,
-          List(dealing(DealCards.Hole, Some(1)), betting)))
-
+        Street.Seventh(
+          List(dealing(DealCards.Hole, Some(1)), betting))
+      )
+      
       case Game.SingleDraw ⇒ List(
-        Street(Street.Predraw,
+        Street.Predraw(
           List(dealing(DealCards.Hole, Some(5)), betting, discarding)),
 
-        Street(Street.Draw,
-          List(bigBets, betting, discarding)))
-
+        Street.Draw(
+          List(bigBets, betting, discarding))
+      )
+      
       case Game.TripleDraw ⇒ List(
-        Street(Street.Predraw,
+        Street.Predraw(
           List(dealing(DealCards.Hole), betting, discarding)),
 
-        Street(Street.FirstDraw,
+        Street.FirstDraw(
           List(betting, discarding)),
 
-        Street(Street.SecondDraw,
+        Street.SecondDraw(
           List(bigBets, betting, discarding)),
 
-        Street(Street.ThirdDraw,
-          List(betting, discarding)))
+        Street.ThirdDraw(
+          List(betting, discarding))
+      )
     }
   }
 }

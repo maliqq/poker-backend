@@ -38,7 +38,7 @@ class BettingRound(val gameplay: Gameplay) extends Round(gameplay.table.size) {
   }
   
   val e = gameplay.events
-  def forceBet(act: Tuple2[Seat, Int], betType: Bet.Value) {
+  def forceBet(act: Tuple2[Seat, Int], betType: Bet.ForcedBet) {
     acting = act
 
     _call = gameplay.stake amount (betType)
@@ -86,7 +86,7 @@ class BettingRound(val gameplay: Gameplay) extends Round(gameplay.table.size) {
         _call = bet.amount
 
       val left = pot add (player, diff)
-      if (seat.state == Seat.AllIn)
+      if (seat.isAllIn)
         pot split (player, left)
       else
         pot.main add (player, left)

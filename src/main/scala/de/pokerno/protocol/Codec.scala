@@ -42,8 +42,6 @@ object Codec {
     
     def decode[T <: Message](data: Array[Byte])(implicit manifest: Manifest[T]) =
       mapper.readValue(data, manifest.erasure).asInstanceOf[T]
-    
-    def decodeMessage(data: Array[Byte]): Message = mapper.readValue(data, classOf[Message])
   }
   
   object Protobuf extends Codec {

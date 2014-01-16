@@ -1,36 +1,59 @@
 package de.pokerno.poker
 
-import de.pokerno.protocol.wire
+trait Rank {
+  def compare(other: Rank): Int
+  def equals(other: Rank): Boolean
+}
 
 object Rank {
-  type Value = wire.HandSchema.RankType
+  type Value = Rank
   
-  object High {
-    final val HighCard: Value =        wire.HandSchema.RankType.HIGH_CARD
-    final val OnePair: Value =         wire.HandSchema.RankType.ONE_PAIR
-    final val TwoPair: Value =         wire.HandSchema.RankType.TWO_PAIR
-    final val ThreeKind: Value =       wire.HandSchema.RankType.THREE_KIND
-    final val Straight: Value =        wire.HandSchema.RankType.STRAIGHT
-    final val Flush: Value =           wire.HandSchema.RankType.FLUSH
-    final val FullHouse: Value =       wire.HandSchema.RankType.FULL_HOUSE
-    final val FourKind: Value =        wire.HandSchema.RankType.FOUR_KIND
-    final val StraightFlush: Value =   wire.HandSchema.RankType.STRAIGHT_FLUSH
-    
-    def values = List(HighCard, OnePair, TwoPair, ThreeKind, Straight, Flush, FullHouse, FourKind, StraightFlush)
+  object High extends Enumeration {
+    class High(i: Int, name: String) extends Val(i, name) with Rank {
+      def compare(other: Rank): Int = super.compare(other.asInstanceOf[Value])
+      def equals(other: Rank): Boolean = equals(other.asInstanceOf[Value])
+    }
+
+    private def High(name: String) = new High(nextId, name)
+
+    val HighCard =        High("high-card")
+    val OnePair =         High("one-pair")
+    val TwoPair =         High("two-pair")
+    val ThreeKind =       High("three-kind")
+    val Straight =        High("straight")
+    val Flush =           High("flush")
+    val FullHouse =       High("full-house")
+    val FourKind =        High("four-kind")
+    val StraightFlush =   High("straight-flush")
   }
 
-  object Badugi {
-    final val BadugiOne: Value =       wire.HandSchema.RankType.BADUGI1
-    final val BadugiTwo: Value =       wire.HandSchema.RankType.BADUGI2
-    final val BadugiThree: Value =     wire.HandSchema.RankType.BADUGI3
-    final val BadugiFour: Value =      wire.HandSchema.RankType.BADUGI4
-    
-    def values = List(BadugiOne, BadugiTwo, BadugiThree, BadugiFour)
+  import High._
+
+  object Badugi extends Enumeration {
+    class Badugi(i: Int, name: String) extends Val(i, name) with Rank {
+      def compare(other: Rank): Int = compare(other.asInstanceOf[Value])
+      def equals(other: Rank): Boolean = equals(other.asInstanceOf[Value])
+    }
+
+    private def Badugi(name: String): Badugi = new Badugi(nextId, name)
+
+    val BadugiOne =       Badugi("badugi-one")
+    val BadugiTwo =       Badugi("badugi-two")
+    val BadugiThree =     Badugi("badugi-three")
+    val BadugiFour =      Badugi("badugi-four")
   }
-  
-  object Low {
-    final val Complete: Value =        wire.HandSchema.RankType.LOW
-    final val Incomplete: Value =      wire.HandSchema.RankType.NOT_LOW
+  import Badugi._
+
+  object Low extends Enumeration {
+    class Low(i: Int, name: String) extends Val(i, name) with Rank {
+      def compare(other: Rank): Int = compare(other.asInstanceOf[Value])
+      def equals(other: Rank): Boolean = equals(other.asInstanceOf[Value])
+    }
+
+    private def Low(name: String): Low = new Low(nextId, name)
+
+    val Complete =        Low("complete-low")
+    val Incomplete =      Low("incomplete-low")
   }
-  
+  import Low._
 }

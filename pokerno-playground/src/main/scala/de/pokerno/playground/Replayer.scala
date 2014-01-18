@@ -1,58 +1,47 @@
 package de.pokerno.playground
 
-import de.pokerno.format.text.Lexer.{Tags => tags}
-import de.pokerno.model.{Player, Table, Stake, Variation, Game, Bet}
+import de.pokerno.gameplay.Instance
+import de.pokerno.format.text.Lexer.{Token, Tags => tags}
+import de.pokerno.model.{Player, Table, Stake, Variation, Game, Bet, Seat}
 import de.pokerno.protocol._
 import wire.Conversions._
-import akka.actor.{Actor, ActorLogging, ActorRef}
+import akka.actor.{Actor, ActorSystem, ActorLogging, ActorRef, Props}
 
-class Replayer(node: ActorRef) extends Actor with ActorLogging {
-  import context._
+class Replayer(system: ActorSystem) {
   
   var table: Option[Table] = None
   var stake: Option[Stake] = None
   var variation: Option[Variation] = None
   var id: Option[String] = None
   var speed: Option[Int] = None
+  var node: ActorRef = system.deadLetters
   
-  override def preStart {
-  }
+  var processor: Function1[Token, Unit] = processMain
   
-  override def receive = main
-
-  def main: Receive = {
-    case x: Any =>
-      Console printf("x=%s\n", x)
-      x match {
-      case tags.Table(_id, size) =>
+  def process(t: Token) = processor(t)
+  
+  def processMain(t: Token): Unit = t match {
+    case tags.Table(_id, size) =>
       table = Some(new Table(size))
       id = Some(_id.unquote)
-      println("tableBlock")
-      become(tableBlock)
+      processor = processTable
       
     case tags.Speed(duration) =>
       speed = Some(duration)
       
     case tags.Street(name) =>
-      println("streetBlock")
-      become(streetBlock)
+      processor = processStreet
       
     case _ =>
-
-  }}
+  }
   
-  def bet(player: String, bet: Bet) {
-    Console printf("BET: %s", bet)
-    table.map { t =>
-      t.seats.where(_.player.get.toString == player).map { case (seat, pos) =>
-        node ! rpc.AddBet(seat.player.get, bet)
-      }
+  def bet(player: String, bet: Bet): Unit = table.map { t =>
+    t.seats.asInstanceOf[List[Seat]].zipWithIndex.filter (_._1.player.get.toString == player).map { case (seat, pos) =>
+      node ! rpc.AddBet(seat.player.get, bet)
     }
   }
 
-  def streetBlock: Receive = {case x: Any =>
-    Console printf("x=%s\n", x)
-    x match {
+  def processStreet(t: Token) = t match {
     case tags.Sb(player) =>
       bet(player.unquote, Bet.sb(stake.get.smallBlind))
       
@@ -76,15 +65,10 @@ class Replayer(node: ActorRef) extends Actor with ActorLogging {
       
     case tags.Deal(player, cards, cardsNum) =>
       
-    case x: Any =>
-      println("main from streetBlock")
-      self ! x
-      become(main)
-  }}
+    case x: Any => processor = processMain
+  }
 
-  def tableBlock: Receive = {case x:Any =>
-    Console printf("x=%s\n", x)
-    x match {
+  def processTable(t: Token) = t match {
     case tags.Seat(uuid, stack) =>
       table.map { t =>
         val player = Player(uuid.unquote)
@@ -108,16 +92,17 @@ class Replayer(node: ActorRef) extends Actor with ActorLogging {
       table.map(_.button.current = pos)
       
     case x: Any =>
-      node ! rpc.CreateRoom(id.get,
-          table = wire.Table(table.size),
-          variation = variation.get,
-          stake = stake.get)
-      println("main from tableBlock")
-      self ! x
-      become(main)
-  }}
-
-  override def postStop {
-
+      node = system.actorOf(Props(classOf[Instance], variation.get, stake.get))
+      node ! Instance.Start
+      
+      table.get.seats.asInstanceOf[List[Seat]].zipWithIndex.map { case (seat, pos) =>
+        if (!seat.isEmpty) {
+          node ! msg.JoinTable(pos, seat.player.get, seat.stack)
+        }
+      }
+      
+      processor = processMain
+      process(x)
   }
+  
 }

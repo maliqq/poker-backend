@@ -1,29 +1,24 @@
 package de.pokerno.model
 
-class Seats(size: Int) {
-  type Item = Tuple2[Seat, Int]
+object Seats {
 
-  val value = List.fill(size) { new Seat }
+  implicit def seats2list(v: Seats): List[Seat] = v.seats
+  implicit def seats2tuplelist(v: Seats): List[Tuple2[Seat, Int]] = v.seats.zipWithIndex
+  
+}
 
-  implicit def seats2slice(v: List[Item]) = new Slice(v)
-
-  def from(pos: Int): Slice = {
-    val (left, right) = value.zipWithIndex span (_._2 != pos)
+class Seats(val seats: List[Seat]) {
+  
+  type Slice = List[Tuple2[Seat, Int]]
+  
+  def slice(pos: Int): Slice = {
+    val (left, right) = seats.zipWithIndex span (_._2 != pos)
     right ++ left
   }
-
-  def where(f: (Seat ⇒ Boolean)) =
-    value.zipWithIndex filter { case (seat, pos) ⇒ f(seat) }
-
-  def apply(pos: Int) = value(pos)
-
-  override def toString = value.zipWithIndex map {
+  
+  override def toString = seats.zipWithIndex map {
     case (seat, index) ⇒
-      "Seat %d: %s".format(index, seat toString)
-  } mkString ("\n")
-
-  class Slice(val value: List[Item]) {
-    def where(f: (Seat ⇒ Boolean)) =
-      value filter { case (seat, pos) ⇒ f(seat) }
-  }
+      "Seat %d: %s" format(index, seat toString)
+  } mkString("\n")
+  
 }

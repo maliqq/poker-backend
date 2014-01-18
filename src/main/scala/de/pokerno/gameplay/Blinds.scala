@@ -11,8 +11,8 @@ trait Blinds {
     moveButton
 
     val seats = round seats
-    val active = seats where (_ isActive)
-    val waiting = seats where (_ isWaitingBB)
+    val active = seats filter (_._1 isActive)
+    val waiting = seats filter (_._1 isWaitingBB)
 
     if (active.size + waiting.size < 2) {
       //

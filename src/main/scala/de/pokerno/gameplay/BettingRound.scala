@@ -8,7 +8,7 @@ import math.{ BigDecimal ⇒ Decimal }
 class BettingRound(val gameplay: Gameplay) extends Round(gameplay.table.size) {
   current = gameplay.table.button
 
-  def seats = gameplay.table.seats.from(current)
+  def seats = gameplay.table.seats.slice(current)
   private var _acting: Tuple2[Seat, Int] = null
 
   def acting = _acting
@@ -106,7 +106,7 @@ class BettingRound(val gameplay: Gameplay) extends Round(gameplay.table.size) {
   def complete {
     clear
 
-    gameplay.table.seats where (_ inPlay) map (_._1 play)
+    gameplay.table.seats.asInstanceOf[List[Seat]].filter(_ inPlay) map (_ play)
     e.publish(message.DeclarePot(pot total))
   }
 

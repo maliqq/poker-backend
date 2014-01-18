@@ -111,6 +111,7 @@ class Seat {
     _amount += amount
   }
 
+  def isEmpty = state == Seat.State.Empty
   def isReady = state == Seat.State.Ready || state == Seat.State.Play || state == Seat.State.Fold
   def isActive = state == Seat.State.Play || state == Seat.State.PostBB
   def isAllIn = state == Seat.State.AllIn

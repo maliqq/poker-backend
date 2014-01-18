@@ -8,7 +8,7 @@ trait BringIn {
   g: GameplayLike ⇒
 
   def bringIn(betting: ActorRef) {
-    val (seat, pos) = round.seats where (_ isActive) minBy {
+    val (seat, pos) = round.seats filter (_._1 isActive) minBy {
       case (seat, pos) ⇒
         dealer pocket (seat.player get) last
     }

@@ -4,6 +4,7 @@ import math.{ BigDecimal ⇒ Decimal }
 import de.pokerno.model._
 
 object Betting {
+
   // start new round
   case object Start
   // require bet
@@ -21,4 +22,5 @@ object Betting {
   case object Timeout
   // turn on big bet mode
   case object BigBets
+
 }

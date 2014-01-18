@@ -89,7 +89,7 @@ trait Showdown {
   def showHands(ranking: Hand.Ranking): Map[Player, Hand] = {
     var hands: Map[Player, Hand] = Map.empty
 
-    table.seats where (_ inPot) foreach {
+    table.seats.asInstanceOf[List[Seat]].zipWithIndex filter (_._1 inPot) foreach {
       case (seat, pos) ⇒
         val (pocket, hand) = rank(seat.player get, ranking)
         val player = seat.player.get
@@ -101,7 +101,7 @@ trait Showdown {
   }
 
   def showdown = {
-    val stillInPot = table.seats where (_ inPot)
+    val stillInPot = table.seats.asInstanceOf[List[Seat]].zipWithIndex filter (_._1 inPot)
     if (stillInPot.size == 1) {
       declareWinner(round.pot, stillInPot head)
     } else if (stillInPot.size > 1) {

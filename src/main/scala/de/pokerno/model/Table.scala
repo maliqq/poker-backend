@@ -16,19 +16,33 @@ object Table {
 }
 
 class Table(val size: Int) {
-  val seats = new Seats(size)
-  val button = new Round(size)
+  private val _seats = new Seats(List.fill(size) { new Seat })
+  def seats = _seats
+  
+  private val _button = new Round(size)
+  def button = _button
+  
+  override def toString = {
+    var b = new StringBuilder 
+    
+    b.append(_seats toString)
+    b.append("button=%d" format(button))
+    
+    b.toString
+  }
 
   private var _seating: mutable.Map[Player, Int] = mutable.Map.empty
+  
   def addPlayer(player: Player, at: Int, amount: Option[Decimal] = None) {
-    seats(at) player = player
-    if (amount.isDefined) seats(at) buyIn (amount get)
+    val seat = seats.asInstanceOf[List[Seat]](at)
+    seat.player = player
+    if (amount.isDefined) seat buyIn (amount get)
     _seating(player) = at
   }
 
   def removePlayer(player: Player) {
     val at = _seating(player)
-    seats(at).clear
+    seats.asInstanceOf[List[Seat]](at).clear
     _seating remove (player)
   }
 }

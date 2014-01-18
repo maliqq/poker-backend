@@ -349,16 +349,13 @@ sealed case class TickTimer(
 sealed case class JoinTable(
     @BeanProperty
     var pos: Integer,
-    var amount: Decimal,
-    var player: model.Player) extends Message with HasAmount {
+    var player: model.Player,
+    var amount: Decimal) extends Message with HasAmount with HasPlayer {
   
   def schema = JoinTableSchema.SCHEMA
   //def pipeSchema = JoinTableSchema.PIPE_SCHEMA
+  
   def this() = this(null, null, null)
-  
-  def getPlayer: String = player.toString
-  def setPlayer(v: String) = player = new model.Player(v)
-  
 }
 
 /**

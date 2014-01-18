@@ -66,8 +66,8 @@ object Lexer {
     }
     
     @Tag(name = "GAME")
-    case class Game(variation: model.Variation, limit: model.Game.Limit) extends Token {
-      def this(params: Array[String]) = this(null, null)
+    case class Game(game: model.Game.Limited, limit: Option[model.Game.Limit]) extends Token {
+      def this(params: Array[String]) = this(params(0), params(1))
     }
     
     @Tag(name = "SPEED")

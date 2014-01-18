@@ -1,7 +1,7 @@
 package de.pokerno.protocol.msg
 
-import de.pokerno.model
-import de.pokerno.poker
+import de.pokerno.{model, poker}
+import de.pokerno.protocol.HasPlayer
 import de.pokerno.protocol.wire
 
 import reflect._
@@ -12,15 +12,25 @@ import com.dyuproject.protostuff.ByteString
 import org.msgpack.annotation.{ Message => MsgPack }
 
 @MsgPack
-class ActionEvent extends Message {
+class ActionEvent extends Message with HasPlayer {
+  
   def schema = ActionEventSchema.SCHEMA
   //def pipeSchema = ActionEventSchema.PIPE_SCHEMA
+  
   @BeanProperty
   var `type`: ActionEventSchema.EventType = null
+  
+  @BeanProperty
+  var pos: Integer = null
+  
+  var player: model.Player = null
+  
   @BeanProperty
   var discardCards: DiscardCards = null
+  
   @BeanProperty
   var showCards: ShowCards = null
+  
   @BeanProperty
   var addBet: AddBet = null
 }
@@ -132,31 +142,4 @@ class Event extends Message {
   var dealEvent: DealEvent = null
   @BeanProperty
   var gameplayEvent: GameplayEvent = null
-}
-
-trait HasPlayer {
-  def player: model.Player
-  def player_=(v: model.Player)
-  
-  def getPlayer: String = if (player != null) player.id else null
-  def setPlayer(v: String) = player = new model.Player(v)
-}
-
-trait HasAmount {
-  def amount: Decimal
-  def amount_=(v: Decimal)
-  
-  def getAmount: java.lang.Double = if (amount != null) amount.toDouble else null
-  def setAmount(v: java.lang.Double) = amount = v.toDouble
-}
-
-trait HasCards {
-  implicit def byteString2Cards(v: protostuff.ByteString): List[poker.Card] = v.toByteArray.map(poker.Card.wrap(_)).toList
-  implicit def cards2ByteString(v: List[poker.Card]): protostuff.ByteString = protostuff.ByteString.copyFrom(v.map(_.toByte).toArray)
-  
-  def cards: List[poker.Card]
-  def cards_=(v: List[poker.Card])
-  
-  def getCards: ByteString = cards
-  def setCards(v: ByteString) = cards = v 
 }

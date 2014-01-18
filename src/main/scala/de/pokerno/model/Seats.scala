@@ -12,22 +12,18 @@ class Seats(size: Int) {
     right ++ left
   }
 
-  def where(f: (Seat ⇒ Boolean)) = {
+  def where(f: (Seat ⇒ Boolean)) =
     value.zipWithIndex filter { case (seat, pos) ⇒ f(seat) }
-  }
 
   def apply(pos: Int) = value(pos)
 
-  override def toString = {
-    value.zipWithIndex map {
-      case (seat, index) ⇒
-        "Seat %d: %s".format(index, seat toString)
-    } mkString ("\n")
-  }
+  override def toString = value.zipWithIndex map {
+    case (seat, index) ⇒
+      "Seat %d: %s".format(index, seat toString)
+  } mkString ("\n")
 
   class Slice(val value: List[Item]) {
-    def where(f: (Seat ⇒ Boolean)) = {
+    def where(f: (Seat ⇒ Boolean)) =
       value filter { case (seat, pos) ⇒ f(seat) }
-    }
   }
 }

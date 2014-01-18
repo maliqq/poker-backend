@@ -74,8 +74,10 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
         decide(call, raise)
       }
     
-    case message.AddBet(_pos, _player, _bet) if (_pos == pos) ⇒
-      bet = _bet.amount
+    case e: message.ActionEvent => e match {
+      case message.AddBet(_pos, _player, _bet) if (_pos == pos) ⇒
+        bet = _bet.amount
+      }
     
     case _ =>
   }

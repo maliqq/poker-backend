@@ -37,10 +37,10 @@ class CodecSpec extends FunSpec with ClassicMatchers {
         val msg = AddBet(1, player, bet)
         val data = Codec.Json.encode(msg)
         val recover = Codec.Json.decode[Message](data)
-        val addBet = recover.asInstanceOf[AddBet]
-        addBet.getPos should equal(msg.getPos)
-        addBet.getPlayer should equal(msg.getPlayer)
-        addBet._bet should equal(msg._bet)
+        val e = recover.asInstanceOf[ActionEvent]
+        e.getPos should equal(msg.getPos)
+        e.getPlayer should equal(msg.getPlayer)
+        e.addBet.bet should equal(msg.addBet.bet)
       }
       
       it("ShowCards") {
@@ -51,10 +51,10 @@ class CodecSpec extends FunSpec with ClassicMatchers {
         //Console printf("[ShowCards] data=%s", new String(data))
         val recover = Codec.Json.decode[Message](data)
         //Console printf("[ShowCards] recover=%s", recover)
-        val showCards = recover.asInstanceOf[ShowCards]
-        showCards.getPos should equal(msg.getPos)
-        showCards.getPlayer should equal(msg.getPlayer)
-        showCards.getCards should equal(msg.getCards)
+        val e = recover.asInstanceOf[ActionEvent]
+        e.getPos should equal(msg.getPos)
+        e.getPlayer should equal(msg.getPlayer)
+        e.showCards.getCards should equal(msg.showCards.getCards)
       }
       
       it("ButtonChange") {

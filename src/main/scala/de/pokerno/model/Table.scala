@@ -4,7 +4,9 @@ import math.{ BigDecimal ⇒ Decimal }
 import collection._
 import de.pokerno.protocol.wire
 
-case class Player(val id: String)
+case class Player(val id: String) {
+  override def toString = id
+}
 
 object Table {
   final val Waiting = wire.TableSchema.TableState.WAITING

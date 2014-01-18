@@ -75,10 +75,11 @@ class Play(gameplay: Gameplay, instance: ActorRef, tableSize: Int) extends Actor
     case message.ButtonChange(pos) ⇒
       Console printf ("Button is %d\n", pos)
 
-    case message.AddBet(pos, player, bet) ⇒
-      val seat = gameplay.table.seats(pos)
-
-      Console printf ("%s: %s\n", seat.player.get, bet)
+    case e: message.ActionEvent ⇒ e match {
+        case message.AddBet(pos, player, bet) =>
+          val seat = gameplay.table.seats(pos)
+          Console printf ("%s: %s\n", seat.player.get, bet)
+      }
 
     case message.DeclarePot(total, rake) ⇒
       Console printf ("Pot size: %.2f\nBoard: %s\n", total, Cards(gameplay.dealer.board) toConsoleString)

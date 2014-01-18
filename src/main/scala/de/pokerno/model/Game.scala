@@ -9,6 +9,13 @@ trait Variation {
 }
 
 object Game {
+  implicit def string2limit(v: String): Option[Limit] = v match {
+    case "no-limit" => Some(NoLimit)
+    case "fixed-limit" => Some(FixedLimit)
+    case "pot-limit" => Some(PotLimit)
+    case _ => None
+  } 
+  
   trait Limit {
     def raise(stack: Decimal, bb: Decimal, potSize: Decimal): Tuple2[Decimal, Decimal]
   }

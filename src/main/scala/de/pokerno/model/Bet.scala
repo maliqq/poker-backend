@@ -61,6 +61,7 @@ object Bet {
 
   abstract class ActiveBet extends Value
   case object Raise extends ActiveBet
+  case object AllIn extends ActiveBet
   case object Check extends ActiveBet
 
   abstract class CardAction extends Value
@@ -69,7 +70,11 @@ object Bet {
   def fold = new Bet(Fold)
   def call(amount: Decimal) = new Bet(Call, amount)
   def raise(amount: Decimal) = new Bet(Raise, amount)
+  def allin = new Bet(AllIn)
   def forced(t: ForcedBet, amount: Decimal) = new Bet(t, amount)
+  def sb(amount: Decimal) = forced(SmallBlind, amount)
+  def bb(amount: Decimal) = forced(BigBlind, amount)
+  def ante(amount: Decimal) = forced(Ante, amount)
 
   case class CantCheck(call: Decimal)
     extends Error("Can't check: need to call=%.2f" format (call))

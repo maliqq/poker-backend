@@ -2,6 +2,7 @@ package de.pokerno.gameplay
 
 import de.pokerno.model._
 import de.pokerno.protocol.{msg => message}
+import de.pokerno.protocol.rpc
 import math.{ BigDecimal ⇒ Decimal }
 import akka.actor.{ Actor, ActorRef, ActorLogging }
 
@@ -9,7 +10,7 @@ class BettingActor(val round: BettingRound) extends Actor with ActorLogging {
   import context._
 
   def receive = {
-    case message.AddBet(pos, player, bet) ⇒
+    case rpc.AddBet(player, bet) ⇒
       round.addBet(bet)
       self ! Betting.Next
 

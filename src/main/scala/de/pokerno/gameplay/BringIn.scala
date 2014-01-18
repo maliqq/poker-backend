@@ -4,7 +4,11 @@ import de.pokerno.protocol.{msg => message}
 
 import akka.actor.ActorRef
 
+/*
+ * Стадия принудительных ставок - бринг-ин
+ */
 trait BringIn {
+  
   g: GameplayLike ⇒
 
   def bringIn(betting: ActorRef) {
@@ -18,10 +22,4 @@ trait BringIn {
     betting ! Betting.Require(stake.bringIn get, game.limit)
   }
   
-  private def setButton(pos: Int) {
-    table.button.current = pos
-    round.current = pos
-    events.publish(message.ButtonChange(_button = table.button))
-  }
-
 }

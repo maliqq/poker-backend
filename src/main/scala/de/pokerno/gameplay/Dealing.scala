@@ -4,7 +4,9 @@ import de.pokerno.model._
 import de.pokerno.protocol.{msg => message}
 
 trait Dealing {
+  
   g: GameplayLike ⇒
+  
   def dealCards(_type: DealCards.Value, cardsNum: Option[Int] = None) {
     _type match {
       case DealCards.Hole | DealCards.Door ⇒

@@ -4,10 +4,7 @@ import de.pokerno.model._
 import akka.actor.ActorRef
 
 /*
- * 
- * Стадия принудительных ставок
- * 
- * 
+ * Стадия принудительных ставок-анте
  */
 trait Antes {
   g: GameplayLike ⇒

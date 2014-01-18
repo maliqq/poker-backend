@@ -6,7 +6,8 @@ import de.pokerno.protocol.rpc
 import math.{ BigDecimal ⇒ Decimal }
 import akka.actor.{ Actor, ActorRef, ActorLogging }
 
-class BettingActor(val round: BettingRound) extends Actor with ActorLogging {
+class BettingActor(val round: BettingRound) extends Actor
+                                               with ActorLogging {
   import context._
 
   def receive = {

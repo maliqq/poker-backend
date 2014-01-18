@@ -6,6 +6,7 @@ import de.pokerno.protocol.{msg => message}
 import concurrent.duration._
 
 object Instance {
+
   sealed trait State
 
   case object Created extends State
@@ -24,13 +25,14 @@ object Instance {
   case object Start
   
   case class Subscribe(ref: ActorRef, name: String)
+  
 }
 
 class Instance(val variation: Variation, val stake: Stake) extends Actor with ActorLogging with FSM[Instance.State, Instance.Data] {
   import context._
   import context.dispatcher
 
-  val events = new EventBus
+  val events = new Events
   val table = new Table(variation.tableSize)
 
   startWith(Instance.Created, Instance.Empty)

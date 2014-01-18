@@ -6,7 +6,8 @@ import de.pokerno.model._
 import concurrent._
 import de.pokerno.protocol.{msg => message}
 
-class GameplayActor(val gameplay: Gameplay) extends Actor with ActorLogging {
+class GameplayActor(val gameplay: Gameplay) extends Actor
+                                               with ActorLogging {
   import context._
 
   def streets = Streets.build(gameplay, betting)
@@ -28,7 +29,6 @@ class GameplayActor(val gameplay: Gameplay) extends Actor with ActorLogging {
     RunStage("post-blinds") {
       gameplay.postBlinds(betting)
     }
-
   )
 
   override def preStart = {

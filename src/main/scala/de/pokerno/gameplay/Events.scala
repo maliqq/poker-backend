@@ -6,7 +6,9 @@ import de.pokerno.protocol.msg
 import akka.event.{ ActorEventBus, ScanningClassification }
 import akka.actor.actorRef2Scala
 
-class EventBus extends ActorEventBus with ScanningClassification {
+class Events extends ActorEventBus
+                with ScanningClassification {
+  
   type Classifier = String
 
   trait Route
@@ -23,6 +25,7 @@ class EventBus extends ActorEventBus with ScanningClassification {
   def compareClassifiers(a: Classifier, b: Classifier): Int = a compare b
 
   case class ListOfPlayers(v: List[Player])
+  
   def matches(classifier: Classifier, event: Event): Boolean = event.to match {
     case All             ⇒ true
     case One(id)         ⇒ id == classifier
@@ -38,4 +41,5 @@ class EventBus extends ActorEventBus with ScanningClassification {
   def publish(message: msg.Message, route: Route = All) {
     publish(Notification(message, to = route))
   }
+
 }

@@ -5,8 +5,13 @@ import de.pokerno.protocol.{msg => message}
 
 import akka.actor.ActorRef
 
+/*
+ * Стадия принудительных ставок-блайндов
+ */
 trait Blinds {
+  
   g: GameplayLike ⇒
+
   def postBlinds(betting: ActorRef) = if (game.options.hasBlinds) {
     moveButton
 
@@ -24,11 +29,4 @@ trait Blinds {
     }
   }
   
-  def moveButton {
-    table.button.move
-    round.current = table.button
-    events.publish(
-        message.ButtonChange(_button = table.button)
-      )
-  }
 }

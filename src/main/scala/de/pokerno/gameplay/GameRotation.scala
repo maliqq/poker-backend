@@ -4,6 +4,7 @@ import de.pokerno.model._
 import de.pokerno.protocol.{msg => message}
 
 trait GameRotation {
+
   g: GameplayLike ⇒
 
   def rotateGame = if (variation isMixed)
@@ -31,4 +32,5 @@ trait GameRotation {
       f(nextGame)
     }
   }
+  
 }

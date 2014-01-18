@@ -5,8 +5,13 @@ import de.pokerno.model._
 import de.pokerno.poker._
 import de.pokerno.protocol.{msg => message}
 
+/*
+ * Стадия вскрытия карт
+ */
 trait Showdown {
-  gameplay: GameplayLike ⇒
+
+  g: GameplayLike ⇒
+  
   // FIXME: equal hands
   def best(pot: SidePot, hands: Map[Player, Hand]): Tuple2[Player, Hand] = {
     var winner: Option[Player] = None

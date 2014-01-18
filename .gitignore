@@ -5,4 +5,6 @@
 .cache
 target
 *Schema.java
+/.idea
+*.iml
 

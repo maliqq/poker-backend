@@ -33,7 +33,7 @@ class Gameplay(
   val round = new BettingRound(this)
 
   def prepareSeats {
-    table.seats.asInstanceOf[List[Seat]] filter (_ isReady) map (_ play)
+    (table.seats: List[Seat]).filter (_ isReady) map (_ play)
   }
 
 }

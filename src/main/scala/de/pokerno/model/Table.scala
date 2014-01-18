@@ -34,7 +34,7 @@ class Table(val size: Int) {
   private var _seating: mutable.Map[Player, Int] = mutable.Map.empty
   
   def addPlayer(player: Player, at: Int, amount: Option[Decimal] = None) {
-    val seat = seats.asInstanceOf[List[Seat]](at)
+    val seat = (seats: List[Seat])(at)
     seat.player = player
     if (amount.isDefined) seat buyIn (amount get)
     _seating(player) = at
@@ -42,7 +42,7 @@ class Table(val size: Int) {
 
   def removePlayer(player: Player) {
     val at = _seating(player)
-    seats.asInstanceOf[List[Seat]](at).clear
+    (seats: List[Seat])(at).clear
     _seating remove (player)
   }
 }

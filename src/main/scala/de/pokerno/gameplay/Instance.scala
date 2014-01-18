@@ -115,5 +115,5 @@ class Instance(val variation: Variation, val stake: Stake) extends Actor with Ac
 
   initialize
 
-  def isReady: Boolean = table.seats.asInstanceOf[List[Seat]].filter(_ isReady).size == 2
+  def isReady: Boolean = (table.seats: List[Seat]).filter(_ isReady).size == 2
 }

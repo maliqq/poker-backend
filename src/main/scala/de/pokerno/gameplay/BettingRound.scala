@@ -106,7 +106,7 @@ class BettingRound(val gameplay: Gameplay) extends Round(gameplay.table.size) {
   def complete {
     clear
 
-    gameplay.table.seats.asInstanceOf[List[Seat]].filter(_ inPlay) map (_ play)
+    (gameplay.table.seats: List[Seat]).filter(_ inPlay) map (_ play)
     e.publish(message.DeclarePot(pot total))
   }
 

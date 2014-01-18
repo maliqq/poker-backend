@@ -36,14 +36,14 @@ class PlayerActor(i: Int, gameplay: Gameplay, instance: ActorRef) extends Actor 
         case message.RequireBet(pos, player, call, range) ⇒
           Console printf ("Seat %d: Call=%.2f Min=%.2f Max=%.2f\n", pos, call, range.min, range.max)
 
-          val seat = gameplay.table.seats.asInstanceOf[List[Seat]](pos)
+          val seat = (gameplay.table.seats: List[Seat])(pos)
           var bet = Play.readBet(call)
 
           val addBet = message.AddBet(pos, seat.player.get, bet)
           instance ! addBet
 
         case message.RequireDiscard(pos, player) ⇒
-          val seat = gameplay.table.seats.asInstanceOf[List[Seat]](pos)
+          val seat = (gameplay.table.seats: List[Seat])(pos)
 
           Console printf ("your cards: [%s]\n", gameplay.dealer.pocket(seat.player.get))
 
@@ -77,7 +77,7 @@ class Play(gameplay: Gameplay, instance: ActorRef, tableSize: Int) extends Actor
 
     case e: message.ActionEvent ⇒ e match {
         case message.AddBet(pos, player, bet) =>
-          val seat = gameplay.table.seats.asInstanceOf[List[Seat]](pos)
+          val seat = (gameplay.table.seats: List[Seat])(pos)
           Console printf ("%s: %s\n", seat.player.get, bet)
       }
 
@@ -85,12 +85,12 @@ class Play(gameplay: Gameplay, instance: ActorRef, tableSize: Int) extends Actor
       Console printf ("Pot size: %.2f\nBoard: %s\n", total, Cards(gameplay.dealer.board) toConsoleString)
 
     case message.DeclareHand(pos, player, cards, hand) ⇒
-      val seat = gameplay.table.seats.asInstanceOf[List[Seat]](pos)
+      val seat = (gameplay.table.seats: List[Seat])(pos)
 
       Console printf ("%s has %s (%s)\n", seat.player.get, Cards(cards) toConsoleString, hand description)
 
     case message.DeclareWinner(pos, player, amount) ⇒
-      val seat = gameplay.table.seats.asInstanceOf[List[Seat]](pos)
+      val seat = (gameplay.table.seats: List[Seat])(pos)
 
       Console printf ("%s won %.2f\n", seat.player.get, amount)
   }

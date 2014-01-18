@@ -14,7 +14,7 @@ trait Dealing {
 
         Console printf ("dealing %s %d cards\n", _type, n)
 
-        table.seats.asInstanceOf[List[Seat]].zipWithIndex filter (_._1 isActive) foreach {
+        (table.seats: List[Seat]).zipWithIndex filter (_._1 isActive) foreach {
           case (seat, pos) ⇒
             val cards = dealer dealPocket (n, seat.player.get)  
             

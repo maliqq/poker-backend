@@ -117,6 +117,7 @@ sealed case class ShowCards(
 }
 
 object ShowCards {
+  def apply(pos: Integer, player: model.Player, cards: List[poker.Card]): ActionEvent = apply(pos, player, cards, false)
   
   def apply(pos: Integer, player: model.Player, cards: List[poker.Card], muck: Boolean): ActionEvent = new ActionEvent {
     `type` = ActionEventSchema.EventType.SHOW_CARDS

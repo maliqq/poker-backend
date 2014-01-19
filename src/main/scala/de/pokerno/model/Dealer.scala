@@ -1,13 +1,13 @@
 package de.pokerno.model
 
 import de.pokerno.poker.{ Card, Deck }
-import de.pokerno.protocol.{msg => proto}
+import de.pokerno.protocol.wire
 
 object DealCards {
-  type Value = proto.DealCardsSchema.DealType
-  final val Board = proto.DealCardsSchema.DealType.BOARD
-  final val Door = proto.DealCardsSchema.DealType.DOOR
-  final val Hole = proto.DealCardsSchema.DealType.HOLE
+  type Value = wire.DealType
+  final val Board = wire.DealType.BOARD
+  final val Door = wire.DealType.DOOR
+  final val Hole = wire.DealType.HOLE
 }
 
 class Dealer(private var _deck: Deck = new Deck) {

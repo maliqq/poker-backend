@@ -44,6 +44,9 @@ class DealAction extends Request {
   def schema = DealActionSchema.SCHEMA
   
   @BeanProperty
+  var `type`: DealActionSchema.ActionType = null
+  
+  @BeanProperty
   var addBet: AddBet = null
   
   @BeanProperty

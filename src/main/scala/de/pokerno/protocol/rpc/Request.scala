@@ -74,10 +74,15 @@ sealed case class KickPlayer(
 
 @MsgPack
 sealed case class Chat(
-    var player: model.Player
+    var player: model.Player,
+    
+    @BeanProperty
+    var body: String
 ) extends Request with HasPlayer {
   
   def schema = ChatSchema.SCHEMA
+  
+  def this() = this(null, null)
   
 }
 
@@ -113,26 +118,28 @@ sealed case class DealCards(
 ) extends Request with HasPlayer with HasCards {
   
   def schema = DealCardsSchema.SCHEMA
-  
+  def this() = this(null)
 }
 
 @MsgPack
 sealed case class DiscardCards(
-    var cards: List[poker.Card] = null,
+    var cards: List[poker.Card],
     
-    var player: model.Player = null
+    var player: model.Player
 
 ) extends Request with HasPlayer with HasCards {
   
   def schema = DealCardsSchema.SCHEMA
   
+  def this() = this(null, null)
+  
 }
 
 @MsgPack
 sealed case class ShowCards(
-    var cards: List[poker.Card] = null,
+    var cards: List[poker.Card],
     
-    var player: model.Player = null,
+    var player: model.Player,
     
     @BeanProperty
     var muck: java.lang.Boolean = null
@@ -141,4 +148,7 @@ sealed case class ShowCards(
   
   def schema = ShowCardsSchema.SCHEMA
   
+  def this() = this(null, null)
+  
+  def isMuck = getMuck
 }

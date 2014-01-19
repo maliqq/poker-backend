@@ -2,11 +2,32 @@ package de.pokerno.protocol.wire
 
 import de.pokerno.model
 import de.pokerno.poker
+import de.pokerno.protocol.HasPlayer
 import reflect._
 import math.{BigDecimal => Decimal}
 
 import com.dyuproject.protostuff.ByteString
 import org.msgpack.annotation.{ Message => MsgPack }
+
+@MsgPack
+case class Range(
+  @BeanProperty
+  var min: java.lang.Double,
+  @BeanProperty
+  var max: java.lang.Double
+) {
+  def this() = this(null, null)
+}
+
+@MsgPack
+case class Box(
+  @BeanProperty
+  var pos: Integer,
+  
+  var player: model.Player
+) extends HasPlayer {
+  def this() = this(null, null)
+}
 
 @MsgPack
 case class Bet(
@@ -62,16 +83,6 @@ case class Hand(
   var string: String = ""
 ) {
   def this() = this(null, null, null, null, null, "")
-}
-
-@MsgPack
-case class Range(
-  @BeanProperty
-  var min: java.lang.Double,
-  @BeanProperty
-  var max: java.lang.Double
-) {
-  def this() = this(null, null)
 }
 
 @MsgPack

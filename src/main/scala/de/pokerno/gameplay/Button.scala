@@ -9,15 +9,13 @@ trait Button {
   def setButton(pos: Int) {
     table.button.current = pos
     round.current = pos
-    events.publish(message.ButtonChange(_button = table.button))
+    events.buttonChange(table.button)
   }
   
   def moveButton {
     table.button.move
     round.current = table.button
-    events.publish(
-        message.ButtonChange(_button = table.button)
-      )
+    events.buttonChange(table.button)
   }
 
 }

@@ -28,10 +28,32 @@ class TableAction extends Request {
   var `type`: TableActionSchema.ActionType = null
   
   @BeanProperty
+  var joinPlayer: JoinPlayer = null
+  
+  @BeanProperty
   var kickPlayer: KickPlayer = null
   
   @BeanProperty
+  var chat: Chat = null
+  
+}
+
+@MsgPack
+class DealAction extends Request {
+  
+  def schema = DealActionSchema.SCHEMA
+  
+  @BeanProperty
   var addBet: AddBet = null
+  
+  @BeanProperty
+  var dealCards: DealCards = null
+  
+  @BeanProperty
+  var discardCards: DiscardCards = null
+  
+  @BeanProperty
+  var showCards: ShowCards = null
   
 }
 

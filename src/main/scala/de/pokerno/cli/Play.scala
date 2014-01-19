@@ -63,7 +63,7 @@ class Play(gameplay: Gameplay, instance: ActorRef, tableSize: Int) extends Actor
       val playerActor = system.actorOf(Props(classOf[PlayerActor], i, gameplay, instance), name = "player-process-%d".format(i))
       playerActor ! PlayerActor.Start
     }
-    gameplay.events.subscribe(self, "play-observer")
+    gameplay.events.broker.subscribe(self, "play-observer")
   }
 
   def receive = {

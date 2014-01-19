@@ -34,7 +34,7 @@ class GameplayActor(val gameplay: Gameplay) extends Actor
   override def preStart = {
     log.info("start gameplay")
     // FKXME
-    gameplay.events.publish(message.PlayStart())
+    gameplay.events.playStart
     self ! Street.Start
   }
 
@@ -54,7 +54,7 @@ class GameplayActor(val gameplay: Gameplay) extends Actor
 
       if (streetsIterator hasNext) {
         val Street(name, stages) = streetsIterator.next
-        gameplay.events.publish(message.StreetStart(name))
+        gameplay.events.streetStart(name)
         currentStreet = actorOf(Props(classOf[StreetActor], gameplay, name, stages), name = "street-%s" format (name))
         currentStreet ! Stage.Next
       } else
@@ -68,7 +68,7 @@ class GameplayActor(val gameplay: Gameplay) extends Actor
 
   override def postStop {
     log.info("stop gameplay")
-    gameplay.events.publish(message.PlayStop())
+    gameplay.events.playStop
     parent ! Deal.Done
   }
 }

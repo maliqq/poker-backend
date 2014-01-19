@@ -65,9 +65,7 @@ class BettingRound(val gameplay: GameplayLike) extends Round(gameplay.table.size
     }
     val player = seat.player.get
 
-    e.publish(
-        message.RequireBet(pos = current, player = player, call = _call, raise = _raise)
-      )
+    e.requireBet((player, pos), _call, _raise)
   }
 
   def addBet(bet: Bet) {
@@ -90,16 +88,10 @@ class BettingRound(val gameplay: GameplayLike) extends Round(gameplay.table.size
         pot split (player, left)
       else
         pot.main add (player, left)
-
-      e.publish(
-          message.AddBet(pos, player, bet),
-        e.Except(List(player.id)))
+      e.addBet((player, pos), bet)
     } else {
-      seat fold
-
-      e.publish(
-          message.AddBet(pos, player, Bet.fold),
-        e.Except(List(player.id)))
+      seat.fold
+      e.addBet((player, pos), Bet.fold)
     }
   }
 
@@ -107,7 +99,7 @@ class BettingRound(val gameplay: GameplayLike) extends Round(gameplay.table.size
     clear
 
     (gameplay.table.seats: List[Seat]).filter(_ inPlay) map (_ play)
-    e.publish(message.DeclarePot(pot total))
+    e.declarePot(pot total)
   }
 
 }

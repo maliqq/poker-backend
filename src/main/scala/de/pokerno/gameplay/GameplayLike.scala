@@ -5,7 +5,7 @@ import de.pokerno.model._
 trait GameplayLike extends Button {
 
   //
-  val events: Events
+  val events: GameplayEvents
   // game or mix
   val variation: Variation
   // current game

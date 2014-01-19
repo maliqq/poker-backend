@@ -33,7 +33,10 @@ class Table(val size: Int) {
 
   private var _seating: mutable.Map[Player, Int] = mutable.Map.empty
   
-  def addPlayer(player: Player, at: Int, amount: Option[Decimal] = None) {
+  type Box = Tuple2[Player, Int]
+  def box(player: Player): Box = (player, _seating(player))
+  
+  def addPlayer(at: Int, player: Player, amount: Option[Decimal] = None) {
     val seat = (seats: List[Seat])(at)
     seat.player = player
     if (amount.isDefined) seat buyIn (amount get)

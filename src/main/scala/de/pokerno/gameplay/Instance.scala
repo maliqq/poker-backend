@@ -32,7 +32,7 @@ class Instance(val variation: Variation, val stake: Stake) extends Actor with Ac
   import context._
   import context.dispatcher
 
-  val events = new Events
+  val events = new GameplayEvents
   val table = new Table(variation.tableSize)
 
   startWith(Instance.Created, Instance.Empty)
@@ -85,10 +85,10 @@ class Instance(val variation: Variation, val stake: Stake) extends Actor with Ac
 
   whenUnhandled {
     case Event(join: message.JoinTable, _) ⇒
-      table.addPlayer(join.player, join.pos, Some(join.amount))
+      table.addPlayer(join.pos, join.player, Some(join.amount))
 
-      events.publish(join)
-      events.subscribe(sender, join.player.id)
+      events.joinTable((join.player, join.pos), join.amount)
+      events.broker.subscribe(sender, join.player.id)
 
       stay
 
@@ -97,11 +97,11 @@ class Instance(val variation: Variation, val stake: Stake) extends Actor with Ac
       stay
     
     case Event(Instance.Subscribe(ref, name), _) =>
-      events.subscribe(ref, name)
+      events.broker.subscribe(ref, name)
       stay
 
-    case Event(msg: message.Chat, _) ⇒
-      events.publish(msg)
+    case Event(msg: message.Chat, _) ⇒ // FIXME
+      //events.publish(msg)
       stay
   }
 

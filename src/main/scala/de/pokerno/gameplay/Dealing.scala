@@ -19,17 +19,7 @@ trait Dealing {
         (table.seats: List[Seat]).zipWithIndex filter (_._1 isActive) foreach {
           case (seat, pos) ⇒
             val cards = dealer dealPocket (n, seat.player.get)  
-            
-            if (_type == DealCards.Hole) { // FIXME: isPrivate
-//              events.publish(
-//                  message.DealCards(_type, cards, pos = pos),
-//                events.One(seat.player.get.id))
-              events.publish(
-                  message.DealCards(_type, pos = pos, cardsNum = n,
-                      cards = cards // FIXME hide later
-                      )
-                )
-            } else events.publish(message.DealCards(_type, cards, pos = pos))
+            events.dealCards(_type, cards, Some((seat.player.get, pos)))
         }
 
       case DealCards.Board ⇒
@@ -37,9 +27,7 @@ trait Dealing {
         Console printf ("dealing board %d cards\n", cardsNum.get)
 
         val cards = dealer dealBoard (cardsNum.get)
-        events.publish(
-            message.DealCards(_type, cards)
-          )
+        events.dealCards(_type, cards)
     }
   }
 }

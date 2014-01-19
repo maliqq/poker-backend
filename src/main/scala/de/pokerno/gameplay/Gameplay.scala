@@ -8,7 +8,7 @@ object Gameplay {
 }
 
 class Gameplay(
-    val events: Events,
+    val events: GameplayEvents,
     val variation: Variation,
     val stake: Stake,
     val table: Table) extends GameplayLike

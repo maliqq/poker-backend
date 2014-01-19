@@ -1,20 +1,22 @@
 package de.pokerno.playground
 
-import de.pokerno.gameplay.Instance
 import de.pokerno.format.text.Lexer.{Token, Tags => tags}
 import de.pokerno.model.{Player, Table, Stake, Variation, Game, Bet, Seat}
 import de.pokerno.protocol._
 import wire.Conversions._
-import akka.actor.{Actor, ActorSystem, ActorLogging, ActorRef, Props}
+import akka.actor.ActorRef
+import akka.pattern.ask
+import akka.util.Timeout
+import concurrent.duration._
+import concurrent.Await
 
-class Replayer(system: ActorSystem) {
-  
+class Replayer(listener: ActorRef) {
+
   var table: Option[Table] = None
   var stake: Option[Stake] = None
   var variation: Option[Variation] = None
   var id: Option[String] = None
   var speed: Option[Int] = None
-  var node: ActorRef = system.deadLetters
   
   var processor: Function1[Token, Unit] = processMain
   
@@ -36,8 +38,8 @@ class Replayer(system: ActorSystem) {
   }
   
   def bet(player: String, bet: Bet): Unit = table.map { t =>
-    t.seats.asInstanceOf[List[Seat]].zipWithIndex.filter (_._1.player.get.toString == player).map { case (seat, pos) =>
-      node ! rpc.AddBet(seat.player.get, bet)
+    (t.seats: List[Seat]).zipWithIndex.filter (_._1.player.get.toString == player).map { case (seat, pos) =>
+      listener ! rpc.AddBet(seat.player.get, bet)
     }
   }
 
@@ -67,12 +69,15 @@ class Replayer(system: ActorSystem) {
       
     case x: Any => processor = processMain
   }
+  
+  implicit val timeout = Timeout(5 seconds)
 
   def processTable(t: Token) = t match {
     case tags.Seat(uuid, stack) =>
       table.map { t =>
         val player = Player(uuid.unquote)
-        t.addPlayer(player, t.button, Some(stack))
+        val pos = t.button
+        t.addPlayer(pos, player, Some(stack))
         //node ! rpc.JoinPlayer(player, t.button, Some(stack))
         t.button.move
       }
@@ -92,15 +97,11 @@ class Replayer(system: ActorSystem) {
       table.map(_.button.current = pos)
       
     case x: Any =>
-      node = system.actorOf(Props(classOf[Instance], variation.get, stake.get))
-      node ! Instance.Start
+      listener ! table.get
       
-      table.get.seats.asInstanceOf[List[Seat]].zipWithIndex.map { case (seat, pos) =>
-        if (!seat.isEmpty) {
-          node ! msg.JoinTable(pos, seat.player.get, seat.stack)
-        }
-      }
-      
+      val f = ask(listener, Listener.StartInstance(variation.get, stake.get))
+      Await.result(f, 5 seconds)
+
       processor = processMain
       process(x)
   }

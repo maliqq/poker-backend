@@ -10,8 +10,8 @@ object Main {
   def main(args: Array[String]) = {
     val htmlEventSource = system.actorOf(Props(classOf[Http.Gateway],
         http.Config(port = 8080, eventSource = Right(true))))
-    
-    val replayer = new Replayer(system)
+    val listener = system.actorOf(Props(classOf[Listener]))
+    val replayer = new Replayer(listener)
     
     text.Parser.parse(scala.io.Source.fromFile(args(0))).foreach { tag =>
       Console printf("%s%s%s\n", Console.GREEN, tag, Console.RESET)

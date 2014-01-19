@@ -77,4 +77,10 @@ class GameplayEvents {
     broker.publish(
         message.GameChange(_game = game)
       )
+  
+  def showCards(box: Box, cards: List[Card], muck: Boolean = false) {
+    broker.publish(
+        message.ShowCards(pos = box._2, player = box._1, cards = cards, muck = muck)
+    )
+  }
 }

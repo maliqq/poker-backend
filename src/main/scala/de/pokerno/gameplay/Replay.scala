@@ -25,11 +25,14 @@ class Replay(val variation: Variation, val stake: Stake) extends Actor with Acto
   
   def receive = {
     case rpc.JoinPlayer(pos, player, amount) =>
-      
       table.addPlayer(pos, player, Some(amount))
       
     case rpc.AddBet(player, bet) =>
-    
+      events.addBet(table.box(player), bet)
+      
+    case rpc.ShowCards(cards, player, muck) =>
+      events.showCards(table.box(player), cards, muck)
+      
     case rpc.DealCards(_type, cards, player, cardsNum) =>
       _type match {
         case DealCards.Hole =>

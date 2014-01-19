@@ -101,7 +101,8 @@ object DiscardCards {
 @MsgPack
 sealed case class ShowCards(
     var cards: List[poker.Card],
-    muck: Boolean = false) extends Message with HasCards {
+    @BeanProperty
+    var muck: java.lang.Boolean = null) extends Message with HasCards {
   
   def schema = ShowCardsSchema.SCHEMA
   
@@ -117,11 +118,11 @@ sealed case class ShowCards(
 
 object ShowCards {
   
-  def apply(pos: Integer, player: model.Player, cards: List[poker.Card]): ActionEvent = new ActionEvent {
+  def apply(pos: Integer, player: model.Player, cards: List[poker.Card], muck: Boolean): ActionEvent = new ActionEvent {
     `type` = ActionEventSchema.EventType.SHOW_CARDS
     this.pos = pos
     this.player = player
-    showCards = ShowCards(cards)
+    showCards = ShowCards(cards, muck)
   }
 
 }

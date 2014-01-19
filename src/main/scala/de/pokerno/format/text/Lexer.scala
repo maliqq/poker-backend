@@ -75,6 +75,11 @@ object Lexer {
       def this(params: Array[String]) = this(params(0))
     }
     
+    @Tag(name = "DECK")
+    case class Deck(cards: List[poker.Card]) extends Token {
+      def this(params: Array[String]) = this(new QuotedString(params(0)).unquote)
+    }
+
     @Tag(name = "BUTTON")
     case class Button(pos: Int) extends Token {
       def this(params: Array[String]) = this(params(0))

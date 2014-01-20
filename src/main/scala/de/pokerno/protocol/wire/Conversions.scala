@@ -14,6 +14,29 @@ object Conversions {
   implicit def limit2wire(l: model.Game.Limit) = GameSchema.GameLimit.NL
   
   implicit def stake2wire(s: model.Stake) = new Stake()
+  
+  implicit def game2wire(g: model.Game.Limited): GameSchema.GameType = g match {
+    case model.Game.Texas => GameSchema.GameType.TEXAS
+    case model.Game.Omaha => GameSchema.GameType.OMAHA
+    case model.Game.Omaha8 => GameSchema.GameType.OMAHA_8
+    case model.Game.Stud => GameSchema.GameType.STUD
+    case model.Game.Stud8 => GameSchema.GameType.STUD_8
+    case model.Game.Razz => GameSchema.GameType.RAZZ
+    case model.Game.London => GameSchema.GameType.LONDON
+    case model.Game.FiveCard => GameSchema.GameType.FIVE_CARD
+    case model.Game.Single27 => GameSchema.GameType.SINGLE_27
+    case model.Game.Triple27 => GameSchema.GameType.TRIPLE_27
+    case model.Game.Badugi => GameSchema.GameType.BADUGI
+    
+    case _ => throw new IllegalArgumentException(f"Unknown limited game: ${g.toString}")
+  }
+  
+  implicit def mix2wire(m: model.Game.Mixed): MixSchema.MixType = m match {
+    case model.Game.Eight => MixSchema.MixType.EIGHT_GAME
+    case model.Game.Horse => MixSchema.MixType.HORSE
+    
+    case _ => throw new IllegalArgumentException(f"Unknown mixed game: ${m.toString}")
+  }
 
   implicit def bet2wire(v: model.Bet.Value): BetSchema.BetType = v match {
     case model.Bet.Call => BetSchema.BetType.CALL

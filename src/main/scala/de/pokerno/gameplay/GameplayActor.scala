@@ -33,7 +33,7 @@ class GameplayActor(val gameplay: Gameplay) extends Actor
 
   override def preStart = {
     log.info("start gameplay")
-    // FKXME
+    // FIXME
     gameplay.events.playStart
     self ! Street.Start
   }

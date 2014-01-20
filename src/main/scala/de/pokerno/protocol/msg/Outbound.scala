@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.{JsonTypeInfo, JsonSubTypes}
 //  new JsonSubTypes.Type(value = classOf[StageEvent], name="StageEvent"),
 //  new JsonSubTypes.Type(value = classOf[GameplayEvent], name="GameplayEvent"),
 //  new JsonSubTypes.Type(value = classOf[DealEvent], name="DealEvent"),
-  
+  new JsonSubTypes.Type(value = classOf[Start], name="Start"),
   new JsonSubTypes.Type(value = classOf[ButtonChange], name="ButtonChange"),
   new JsonSubTypes.Type(value = classOf[GameChange], name="GameChange"),
   new JsonSubTypes.Type(value = classOf[StakeChange], name="StakeChange"),
@@ -195,8 +195,8 @@ sealed case class RequireBet(
   //def pipeSchema = RequireBetSchema.PIPE_SCHEMA
   
   def this() = this(null, null, null, model.Range(.0, .0))
-  @BeanProperty
-  var `type` = DealEventSchema.EventType.REQUIRE_BET
+  //@BeanProperty
+  //var `type` = DealEventSchema.EventType.REQUIRE_BET
   def getCall: Double = call.toDouble
   def setCall(v: Double) = call = v
   
@@ -320,4 +320,60 @@ sealed case class PlayerJoin(
   def schema = PlayerJoinSchema.SCHEMA
   def this() = this(null, null)
   
+}
+
+@MsgPack
+sealed case class Start(
+    var table: model.Table,
+    var variation: model.Variation,
+    var stake: model.Stake
+) extends Outbound {
+  
+  def this() = this(null, null, null)
+  
+  def schema = StartSchema.SCHEMA
+  
+  def getTable = {
+    val t = new wire.Table(table.size, table.button)
+    val seats = new java.util.ArrayList[wire.Seat]()
+    for (seat <- (table.seats: List[model.Seat])) {
+      seats.add(new wire.Seat(
+          state = seat.state,
+          player = seat.player match {
+            case Some(p) => p.toString
+            case None => null
+          },
+          stackAmount = seat.stack.toDouble,
+          putAmount = seat.put.toDouble
+      ))
+    }
+    t.seats = seats
+    t
+  }
+  
+  def setTable(t: wire.Table) = {}
+  
+  def getVariation = variation match {
+    case g @ model.Game(game, limit, tableSize) =>
+      
+      wire.Variation.game(game, g.limit, g.tableSize)
+      
+    case m @ model.Mix(game, tableSize) =>
+      
+      wire.Variation.mix(game, m.tableSize)
+    
+  }
+  
+  def setVariation(v: wire.Variation) = {}
+  
+  def getStake = new wire.Stake(
+      bigBlind = stake.bigBlind.toDouble,
+      smallBlind = stake.smallBlind.toDouble,
+      ante = stake.ante match {
+        case Some(n) => n.toDouble
+        case None => null
+      }
+  )
+  
+  def setStake(s: wire.Stake) = {}
 }

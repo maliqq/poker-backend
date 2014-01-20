@@ -46,7 +46,7 @@ object Http {
       
       case msg: Message =>
         val data = codec.Json.encode(msg)
-        Console printf("--> SENDING %s\n", new String(data))
+        Console printf("%s--> SENDING %s%s\n", Console.CYAN, new String(data), Console.RESET)
         broadcast(data)
       
       case _ =>

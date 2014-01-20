@@ -17,6 +17,11 @@ class GameplayEvents {
         message.PlayerJoin(box._2, box._1, amount)
     )
   
+  def start(table: Table, variation: Variation, stake: Stake) =
+    broker.publish(
+        message.Start(table, variation, stake)
+    )
+  
   def playStart =
     broker.publish(message.PlayStart())
   

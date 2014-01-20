@@ -9,6 +9,8 @@ import math.{BigDecimal => Decimal}
 import com.dyuproject.protostuff.ByteString
 import org.msgpack.annotation.{ Message => MsgPack }
 
+import Conversions._
+  
 @MsgPack
 case class Range(
   @BeanProperty
@@ -40,31 +42,55 @@ case class Bet(
 }
 
 @MsgPack
-class Game {
+class Game(
   @BeanProperty
-  var `type`: GameSchema.GameType = null
+  var `type`: GameSchema.GameType,
+ 
   @BeanProperty
-  var limit: GameSchema.GameLimit = null
+  var limit: GameSchema.GameLimit,
+  
   @BeanProperty
   var tableSize: Integer = null
+) {
+  def this() = this(null, null)
 }
 
 @MsgPack
-class Mix {
+case class Mix(
   @BeanProperty
-  var `type`: MixSchema.MixType = null
+  var `type`: MixSchema.MixType,
+  
   @BeanProperty
   var tableSize: Integer = null
+) {
+  def this() = this(null)
+}
+
+object Variation {
+  def game(game: model.Game.Limited, limit: model.Game.Limit, tableSize: Int) =
+    new Variation(VariationSchema.VariationType.GAME, game = new Game(
+          game, limit, tableSize
+      ))
+  
+  def mix(game: model.Game.Mixed, tableSize: Int) =
+    new Variation(VariationSchema.VariationType.MIX,
+        mix = new Mix(
+            game, tableSize
+        ))
 }
 
 @MsgPack
-class Variation {
+case class Variation(
   @BeanProperty
-  var `type`: VariationSchema.VariationType = null
+  var `type`: VariationSchema.VariationType,
+  
   @BeanProperty
-  var mix: Mix = null
+  var mix: Mix = null,
+  
   @BeanProperty
   var game: Game = null
+) {
+  def this() = this(null)
 }
 
 @MsgPack
@@ -86,27 +112,37 @@ case class Hand(
 }
 
 @MsgPack
-class Seat {
+class Seat(
   @BeanProperty
-  var state: SeatSchema.SeatState = null
+  var state: SeatSchema.SeatState,
+  
   @BeanProperty
-  var player: String = null
+  var player: String,
+  
   @BeanProperty
-  var stackAmount: java.lang.Double = null
+  var stackAmount: java.lang.Double,
+  
   @BeanProperty
   var putAmount: java.lang.Double = null
+) {
+  def this() = this(null, null, null)
 }
 
 @MsgPack
-class Stake {
+case class Stake(
   @BeanProperty
-  var bigBlind: java.lang.Double = null
+  var bigBlind: java.lang.Double,
+  
   @BeanProperty
-  var smallBlind: java.lang.Double = null
+  var smallBlind: java.lang.Double = null,
+  
   @BeanProperty
-  var ante: java.lang.Double = null
+  var ante: java.lang.Double = null,
+  
   @BeanProperty
   var bringIn: java.lang.Double = null
+) {
+  def this() = this(null)
 }
 
 @MsgPack

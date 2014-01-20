@@ -128,8 +128,10 @@ sealed case class StakeChange(_stake: model.Stake) extends GameplayEvent {
  * */
 @MsgPack
 sealed case class PlayStart() extends StageEvent {
+  
   stage = StageEventSchema.StageType.PLAY
   `type` = StageEventSchema.EventType.START
+  
 }
 
 @MsgPack

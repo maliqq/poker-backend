@@ -1,7 +1,9 @@
 package de.pokerno.poker
 
 class Low {
+  
   self: Hand.Cards ⇒
+
   def isLow: Option[Hand] = {
     val uniq: List[Card] = groupKind.values map (_(0)) toList
     val lowCards = uniq.reverse take (5)

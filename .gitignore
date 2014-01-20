@@ -4,7 +4,7 @@
 .project
 .cache
 target
-*Schema.java
+/src/main/java/de/pokerno/protocol
 /.idea
 *.iml
 

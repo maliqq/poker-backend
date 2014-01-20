@@ -39,7 +39,7 @@ class PlayerActor(i: Int, gameplay: Gameplay, instance: ActorRef) extends Actor 
           val seat = (gameplay.table.seats: List[Seat])(pos)
           var bet = Play.readBet(call)
 
-          val addBet = message.AddBet(pos, seat.player.get, bet)
+          val addBet = message.AddBet(bet)
           instance ! addBet
 
         case message.RequireDiscard(pos, player) ⇒
@@ -49,7 +49,7 @@ class PlayerActor(i: Int, gameplay: Gameplay, instance: ActorRef) extends Actor 
 
           val cards = Play.readCards
 
-          instance ! message.DiscardCards(pos, seat.player.get, cards)
+          instance ! message.DiscardCards(cards)
       })
   }
 }
@@ -75,11 +75,9 @@ class Play(gameplay: Gameplay, instance: ActorRef, tableSize: Int) extends Actor
     case message.ButtonChange(pos) ⇒
       Console printf ("Button is %d\n", pos)
 
-    case e: message.ActionEvent ⇒ e match {
-        case message.AddBet(pos, player, bet) =>
-          val seat = (gameplay.table.seats: List[Seat])(pos)
-          Console printf ("%s: %s\n", seat.player.get, bet)
-      }
+    case message.BetAdd(pos, player, bet) =>
+      val seat = (gameplay.table.seats: List[Seat])(pos)
+      Console printf ("%s: %s\n", seat.player.get, bet)
 
     case message.DeclarePot(total, rake) ⇒
       Console printf ("Pot size: %.2f\nBoard: %s\n", total, Cards(gameplay.dealer.board) toConsoleString)

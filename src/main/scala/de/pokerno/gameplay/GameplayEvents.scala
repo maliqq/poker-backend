@@ -14,7 +14,7 @@ class GameplayEvents {
   
   def joinTable(box: Box, amount: Decimal) =
     broker.publish(
-        message.JoinTable(box._2, box._1, amount)
+        message.PlayerJoin(box._2, box._1, amount)
     )
   
   def playStart =
@@ -52,7 +52,7 @@ class GameplayEvents {
   
   def addBet(box: Box, bet: Bet) =
     broker.publish(
-          message.AddBet(box._2, box._1, bet),
+          message.BetAdd(box._2, box._1, bet),
         broker.Except(List(box._1.id)))
   
   def requireBet(box: Box, call: Decimal, raise: Range) =
@@ -80,7 +80,7 @@ class GameplayEvents {
   
   def showCards(box: Box, cards: List[Card], muck: Boolean = false) {
     broker.publish(
-        message.ShowCards(pos = box._2, player = box._1, cards = cards, muck = muck)
+        message.CardsShow(pos = box._2, player = box._1, cards = cards, muck = muck)
     )
   }
 }

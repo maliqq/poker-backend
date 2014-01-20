@@ -74,10 +74,8 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
         decide(call, raise)
       }
     
-    case e: message.ActionEvent => e match {
-      case message.AddBet(_pos, _player, _bet) if (_pos == pos) ⇒
-        bet = _bet.amount
-      }
+    case message.BetAdd(_pos, _player, _bet) if (_pos == pos) ⇒
+      bet = _bet.amount
     
     case _ =>
   }
@@ -85,7 +83,7 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
   def addBet(b: Bet) {
     Console printf ("%s*** BOT #%d: %s%s\n", Console.CYAN, pos, b, Console.RESET)
     
-    deal ! message.AddBet(pos, player, b)
+    deal ! message.AddBet(b)
   }
 
   def doCheck = addBet(Bet.check)

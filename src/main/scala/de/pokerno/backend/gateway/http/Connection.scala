@@ -7,7 +7,7 @@ import io.netty.handler.codec.http
 
 trait Connection {
   def remoteAddr: String
-  def write(msg: Any): ChannelFuture
+  def write(msg: Any)
 }
 
 class HttpConnection(
@@ -16,7 +16,10 @@ class HttpConnection(
   
   def remoteAddr = channel.remoteAddress.toString
   
-  def write(msg: Any) = channel.writeAndFlush(msg).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE)
+  def write(msg: Any) = {
+    if (channel.isActive)
+      channel.writeAndFlush(msg).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE)
+  }
 }
 
 trait ChannelConnections[T <: Connection] {

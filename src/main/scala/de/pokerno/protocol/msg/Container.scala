@@ -7,32 +7,36 @@ import de.pokerno.protocol.wire
 import reflect._
 import math.{BigDecimal => Decimal}
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.dyuproject.protostuff
 import com.dyuproject.protostuff.ByteString
 import org.msgpack.annotation.{ Message => MsgPack }
 
 @MsgPack
-class ActionEvent extends Message with HasPlayer {
+@JsonInclude()
+class ActionEvent(
+  @BeanProperty
+  var `type`: ActionEventSchema.EventType,
+  
+  @BeanProperty
+  var pos: Integer = null,
+  
+  var player: model.Player = null,
+  
+  @BeanProperty
+  var cardsDiscard: CardsDiscard = null,
+  
+  @BeanProperty
+  var cardsShow: CardsShow = null,
+  
+  @BeanProperty
+  var betAdd: BetAdd = null
+) extends Outbound with HasPlayer {
+  
+  def this() = this(null)
   
   def schema = ActionEventSchema.SCHEMA
   //def pipeSchema = ActionEventSchema.PIPE_SCHEMA
-  
-  @BeanProperty
-  var `type`: ActionEventSchema.EventType = null
-  
-  @BeanProperty
-  var pos: Integer = null
-  
-  var player: model.Player = null
-  
-  @BeanProperty
-  var discardCards: DiscardCards = null
-  
-  @BeanProperty
-  var showCards: ShowCards = null
-  
-  @BeanProperty
-  var addBet: AddBet = null
 }
 
 @MsgPack
@@ -60,7 +64,7 @@ class StageEvent extends Message {
 }
 
 @MsgPack
-class TableEvent extends Message {
+class TableEvent extends Outbound {
   def schema = TableEventSchema.SCHEMA
   //def pipeSchema = TableEventSchema.PIPE_SCHEMA
   @BeanProperty
@@ -72,7 +76,7 @@ class TableEvent extends Message {
 }
 
 @MsgPack
-class SeatEvent(_type: SeatEventSchema.EventType) extends Message {
+class SeatEvent(_type: SeatEventSchema.EventType) extends Outbound {
   def schema = SeatEventSchema.SCHEMA
   //def pipeSchema = SeatEventSchema.PIPE_SCHEMA
   @BeanProperty
@@ -85,19 +89,31 @@ class SeatEvent(_type: SeatEventSchema.EventType) extends Message {
 }
 
 @MsgPack
-class DealEvent extends Message {
+class DealEvent extends Outbound {
   def schema = DealEventSchema.SCHEMA
   //def pipeSchema = DealEventSchema.PIPE_SCHEMA
+  
   @BeanProperty
   var `type`: DealEventSchema.EventType = null
+
+  @BeanProperty
+  var dealCards: DealCards = null
+  
   @BeanProperty
   var requireBet: RequireBet = null
+  
   @BeanProperty
   var requireDiscard: RequireDiscard = null
+  
   @BeanProperty
   var declarePot: DeclarePot = null
+
+  @BeanProperty
+  var declareHand: DeclareHand = null
+  
   @BeanProperty
   var declareWinner: DeclareWinner = null
+  
   @BeanProperty
   var tickTimer: TickTimer = null
 }

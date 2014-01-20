@@ -5,7 +5,7 @@ import de.pokerno.model._
 import akka.actor.{Actor, ActorRef, ActorLogging}
 
 object Replay {
-  case class Subscribe
+  case class Subscribe(out: ActorRef)
 }
 
 class Replay(val variation: Variation, val stake: Stake) extends Actor with ActorLogging {
@@ -20,12 +20,16 @@ class Replay(val variation: Variation, val stake: Stake) extends Actor with Acto
   val betting: ActorRef = system.deadLetters
   
   override def preStart {
-    println("starting replay with variation=%s stake=%s", variation, stake)
+    Console printf("starting replay with variation=%s stake=%s", variation, stake)
   }
   
   def receive = {
+    case Replay.Subscribe(out) =>
+      events.broker.subscribe(out, "replay-out")
+      
     case rpc.JoinPlayer(pos, player, amount) =>
       table.addPlayer(pos, player, Some(amount))
+      events.joinTable((player, pos), amount)
       
     case rpc.AddBet(player, bet) =>
       events.addBet(table.box(player), bet)

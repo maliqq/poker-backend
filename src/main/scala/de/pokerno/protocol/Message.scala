@@ -24,6 +24,17 @@ trait HasPlayer {
   def setPlayer(v: String) = player = new model.Player(v)
 }
 
+trait HasBet {
+  def bet: model.Bet
+  def bet_=(v: model.Bet)
+  
+  import wire.Conversions._
+  
+  def getBet: wire.Bet = if (bet != null) wire.Bet(bet.betType, bet.amount.toDouble)
+    else null
+  def setBet(v: wire.Bet) = bet = new model.Bet(v.getType, v.getAmount.toDouble)
+}
+
 trait HasAmount {
   def amount: Decimal
   def amount_=(v: Decimal)

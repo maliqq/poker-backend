@@ -1,10 +1,11 @@
 package de.pokerno.backend.gateway
 
+import concurrent.Promise
 import akka.actor.{Actor, ActorSystem, Props}
 import io.netty.channel.Channel
 import de.pokerno.backend.server.hub
 
-import de.pokerno.protocol.{msg => message, Codec => codec}
+import de.pokerno.protocol.{Message, Codec => codec}
 
 object Http {
   class Gateway(config: http.Config) extends Actor {
@@ -27,13 +28,13 @@ object Http {
         if (!channelConnections.contains(channel)) {
           channelConnections.put(channel, conn)
           Console printf("%s connected!\n", conn.remoteAddr)
-          system.scheduler.schedule(0 milliseconds, 1 second, self, Tick(conn))
+          //system.scheduler.schedule(0 milliseconds, 1 second, self, Tick(conn))
         }
       
-      case Tick(conn) =>
-        Console printf("tick!\n")
-        conn.write("hello!")
-      
+//      case Tick(conn) =>
+//        Console printf("tick!\n")
+//        conn.write("hello!")
+//      
       case http.Gateway.Disconnect(channel) =>
         val conn = channelConnections.remove(channel)
         conn.map { conn =>
@@ -43,8 +44,12 @@ object Http {
       case http.Gateway.Message(channel, msg) =>
         Console printf("got: %s", msg)
       
-      case msg: message.Message =>
-        broadcast(codec.Json.encode(msg))
+      case msg: Message =>
+        val data = codec.Json.encode(msg)
+        Console printf("--> SENDING %s\n", new String(data))
+        broadcast(data)
+      
+      case _ =>
     }
     
     def broadcast(msg: Any) = channelConnections.foreach { case (channel, conn) =>

@@ -34,7 +34,7 @@ import com.fasterxml.jackson.annotation.{JsonTypeInfo, JsonSubTypes}
   new JsonSubTypes.Type(value = classOf[PlayStart], name="PlayStart"),
   new JsonSubTypes.Type(value = classOf[PlayStop], name="PlayStop"),
   new JsonSubTypes.Type(value = classOf[StreetStart], name="StreetStart"),
-  new JsonSubTypes.Type(value = classOf[PlayerJoin], name="PlayerJoin"),
+  new JsonSubTypes.Type(value = classOf[PlayerJoin], name="JoinTable"),
   new JsonSubTypes.Type(value = classOf[Chat], name="Chat"),
   new JsonSubTypes.Type(value = classOf[Dealer], name="Dealer"),
   new JsonSubTypes.Type(value = classOf[Error], name="Error")

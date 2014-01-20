@@ -43,10 +43,8 @@ class Replay(val variation: Variation, val stake: Stake) extends Actor with Acto
         
         gameplay.round.forceBet((seat, pos), bet.betType.asInstanceOf[Bet.ForcedBet])
 
-      } else {
-        betting ! addBet
-        events.addBet(table.box(player), bet)
-      }
+      } else betting ! addBet
+      //events.addBet(table.box(player), bet)
       
     case rpc.ShowCards(cards, player, muck) =>
       events.showCards(table.box(player), cards, muck)

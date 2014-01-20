@@ -70,7 +70,10 @@ object PokernoBuild extends Build {
     base = file("pokerno-playground"),
     settings = Project.defaultSettings ++ Seq(
       name := "pokerno-playground",
-      version := "0.0.1"
+      version := "0.0.1",
+      libraryDependencies ++= Seq(
+          "jline" % "jline" % "2.11"
+        )
     ) ++ assemblySettings
   ) dependsOn(root)
   

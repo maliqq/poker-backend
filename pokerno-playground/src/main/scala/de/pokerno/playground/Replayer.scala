@@ -98,9 +98,9 @@ class Replayer(listener: ActorRef) {
       
     case x: Any =>
       listener ! table.get
-      
-      val f = ask(listener, Listener.StartInstance(variation.get, stake.get))
-      Await.result(f, 5 seconds)
+      listener ! Listener.StartInstance(variation.get, stake.get)
+      //val f = ask(listener, Listener.StartInstance(variation.get, stake.get))
+      //Await.result(f, 5 seconds)
 
       processor = processMain
       process(x)

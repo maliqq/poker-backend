@@ -9,7 +9,7 @@ object Listener {
   case class StartInstance(variation: Variation, stake: Stake)
 }
 
-class Listener extends Actor {
+class Listener(out: ActorRef) extends Actor {
   import context._
   
   var table: Option[Table] = None
@@ -21,7 +21,9 @@ class Listener extends Actor {
   def receive = {
     case t: Table => table = Some(t)
     case Listener.StartInstance(variation, stake) =>
+      
       replay = system.actorOf(Props(classOf[Replay], variation, stake))
+      replay ! Replay.Subscribe(out)
       
       (table.get.seats: List[Seat]).zipWithIndex foreach { case (seat, pos) =>
         if (!seat.isEmpty) {
@@ -29,6 +31,8 @@ class Listener extends Actor {
         }
       }
     
+    case addBet: rpc.AddBet => replay ! addBet
+      
     case x: Any =>
       Console printf("unhandled!%s\n", x)
   }

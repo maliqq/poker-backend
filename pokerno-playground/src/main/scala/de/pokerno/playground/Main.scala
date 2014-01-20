@@ -15,6 +15,8 @@ object Main {
   val consoleReader = new ConsoleReader
   consoleReader.setExpandEvents(false)
   
+  var replayer: Replayer = null
+  
   def main(args: Array[String]) = {
     val htmlEventSource = system.actorOf(Props(classOf[Http.Gateway],
         http.Config(port = 8080, eventSource = Right(true))))
@@ -25,24 +27,31 @@ object Main {
     val f = ask(htmlEventSource, "test")
     
     val listener = system.actorOf(Props(classOf[Listener], htmlEventSource))
-    val replayer = new Replayer(listener)
+    replayer = new Replayer(listener)
     
-    while (true) {
+    if (args.length > 0) {
+      val filename = args(0)
+      parse(filename)
+    } else while (true) {
       val filename = consoleReader.readLine("Enter path to scenario >>> ")
-      
-      try {
-        val src = scala.io.Source.fromFile(filename)
-        text.Parser.parse(src).foreach { tag =>
-          Console printf("%s%s%s\n", Console.GREEN, tag, Console.RESET)
-          replayer.process(tag)
-        }
-      } catch {
-        case e: Throwable =>
-          Console printf("error: %s\n", e.getMessage)
-          Console printf("%s", Console.CYAN)
-          e.printStackTrace
-          Console printf("%s\n", Console.RESET)
-      }
+      parse(filename)
     }
   }
+  
+  def parse(filename: String) {
+    try {
+      val src = scala.io.Source.fromFile(filename)
+      text.Parser.parse(src).foreach { tag =>
+        Console printf("%s%s%s\n", Console.GREEN, tag, Console.RESET)
+        replayer.process(tag)
+      }
+    } catch {
+      case e: Throwable =>
+        Console printf("error: %s\n", e.getMessage)
+        Console printf("%s", Console.CYAN)
+        e.printStackTrace
+        Console printf("%s\n", Console.RESET)
+    }
+  }
+  
 }

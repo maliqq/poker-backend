@@ -1,7 +1,7 @@
 package de.pokerno.playground
 
 import de.pokerno.protocol.{msg, rpc}
-import de.pokerno.gameplay.Replay
+import de.pokerno.gameplay.{Replay, Street}
 import de.pokerno.model.{Player, Table, Stake, Variation, Game, Bet, Seat}
 import akka.actor.{Actor, ActorSystem, ActorLogging, ActorRef, Props}
 
@@ -32,6 +32,9 @@ class Listener(out: ActorRef) extends Actor {
       }
     
     case addBet: rpc.AddBet => replay ! addBet
+
+    case v @ Street.Next => replay ! v
+    case v @ Street.Start => replay ! v
       
     case x: Any =>
       Console printf("unhandled!%s\n", x)

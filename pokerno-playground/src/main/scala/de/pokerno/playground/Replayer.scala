@@ -3,6 +3,7 @@ package de.pokerno.playground
 import de.pokerno.format.text.Lexer.{Token, Tags => tags}
 import de.pokerno.model.{Player, Table, Stake, Variation, Game, Bet, Seat}
 import de.pokerno.protocol._
+import de.pokerno.gameplay.Street
 import wire.Conversions._
 import akka.actor.ActorRef
 import akka.pattern.ask
@@ -16,11 +17,13 @@ class Replayer(listener: ActorRef) {
   var stake: Option[Stake] = None
   var variation: Option[Variation] = None
   var id: Option[String] = None
-  var speed: Option[Int] = None
+  var speed: Int = 1
   
   var processor: Function1[Token, Unit] = processMain
   
   def process(t: Token) = processor(t)
+
+  var started = false
   
   def processMain(t: Token): Unit = t match {
     case tags.Table(_id, size) =>
@@ -29,15 +32,21 @@ class Replayer(listener: ActorRef) {
       processor = processTable
       
     case tags.Speed(duration) =>
-      speed = Some(duration)
+      speed = duration
       
     case tags.Street(name) =>
+      if (started) listener ! Street.Next
+      else {
+        listener ! Street.Start
+        started = true
+      }
       processor = processStreet
       
     case _ =>
   }
   
   def bet(player: String, bet: Bet): Unit = table.map { t =>
+    Thread.sleep(speed * 1000)
     (t.seats: List[Seat]).zipWithIndex.filter (_._1.player.get.toString == player).map { case (seat, pos) =>
       listener ! rpc.AddBet(seat.player.get, bet)
     }
@@ -48,7 +57,7 @@ class Replayer(listener: ActorRef) {
       bet(player.unquote, Bet.sb(stake.get.smallBlind))
       
     case tags.Bb(player) =>
-      bet(player.unquote, Bet.bb(stake.get.smallBlind))
+      bet(player.unquote, Bet.bb(stake.get.bigBlind))
       
     case tags.Ante(player) =>
       bet(player.unquote, Bet.ante(stake.get.smallBlind))

@@ -3,6 +3,8 @@ package de.pokerno.backend.gateway
 import concurrent.Promise
 import akka.actor.{Actor, ActorSystem, Props}
 import io.netty.channel.Channel
+import io.netty.buffer.Unpooled
+import io.netty.util.CharsetUtil
 import de.pokerno.backend.server.hub
 
 import de.pokerno.protocol.{Message, Codec => codec}
@@ -46,8 +48,10 @@ object Http {
       
       case msg: Message =>
         val data = codec.Json.encode(msg)
-        Console printf("%s--> SENDING %s%s\n", Console.CYAN, new String(data), Console.RESET)
-        broadcast(data)
+        val buf = Unpooled.copiedBuffer(data)
+        val s = buf.toString(CharsetUtil.UTF_8)
+        Console printf("%s--> SENDING %s%s\n", Console.CYAN, s, Console.RESET)
+        broadcast(s)
       
       case _ =>
     }

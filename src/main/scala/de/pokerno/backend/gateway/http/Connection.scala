@@ -6,8 +6,11 @@ import io.netty.channel.{Channel, ChannelFuture, ChannelHandlerContext, ChannelI
 import io.netty.handler.codec.http
 
 trait Connection {
+
   def remoteAddr: String
-  def write(msg: Any)
+
+  def send(msg: Any)
+
 }
 
 class HttpConnection(
@@ -20,9 +23,12 @@ class HttpConnection(
     if (channel.isActive)
       channel.writeAndFlush(msg).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE)
   }
+  
+  def send(msg: Any) = write(msg)
 }
 
 trait ChannelConnections[T <: Connection] {
+  
   def gw: ActorRef
   
   def connection(ch: Channel, req: http.FullHttpRequest): HttpConnection
@@ -38,4 +44,5 @@ trait ChannelConnections[T <: Connection] {
   def message(channel: Channel, data: String) {
     gw ! Gateway.Message(channel, data)
   }
+
 }

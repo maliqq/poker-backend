@@ -53,7 +53,7 @@ object Http {
     }
     
     def broadcast(msg: Any) = channelConnections.foreach { case (channel, conn) =>
-      conn.write(msg)
+      conn.send(msg)
     }
     
     override def postStop {

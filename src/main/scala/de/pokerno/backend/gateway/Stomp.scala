@@ -5,15 +5,18 @@ import concurrent.duration._
 
 object Stomp {
 
-  object Config {
-    val host = "localhost"
-    val port = 1234
-    val heartbeat = 1 second
-  }
+  final val defaultHost = "localhost"
+  final val defaultPort = 1234
+  final val defaultHb = 1
+
+  case class Config(
+    var host: String = "localhost",
+    var port: Int = defaultPort,
+    var heartbeat: Int = defaultHb
+  )
   
   class Server extends Actor with ActorLogging {
     override def preStart {
-      
     }
     
     def receive = {

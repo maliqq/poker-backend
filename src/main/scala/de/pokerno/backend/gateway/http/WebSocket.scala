@@ -13,18 +13,18 @@ object WebSocket {
       channel: Channel,
       request: http.FullHttpRequest) extends HttpConnection(channel, request) {
     
-    override def write(data: Any) = data match {
-      case f: ws.TextWebSocketFrame => super.write(f)
-      case s: String => super.write(new ws.TextWebSocketFrame(s))
-      //case b: ByteBuf => super.write(new ws.BinaryWebSocketFrame(b))
-      case x => super.write(x) // FIXME handle this
+    override def send(data: Any) = data match {
+      case f: ws.TextWebSocketFrame => write(f)
+      case s: String => write(new ws.TextWebSocketFrame(s))
+      //case b: ByteBuf => write(new ws.BinaryWebSocketFrame(b))
+      case x => write(x) // FIXME handle this
     }
     
   }
   
   final val defaultPath = "/_ws"
     
-  case class Config(val path: String = defaultPath)
+  case class Config(var path: String = defaultPath)
   
   object Handler {
     final val Name = "http-websocket-handler"

@@ -3,10 +3,7 @@ package de.pokerno.backend.gateway.http
 import akka.actor.ActorRef
 import io.netty.buffer.{ByteBuf, DefaultByteBufHolder}
 import io.netty.util.CharsetUtil
-import io.netty.channel.{
-  Channel, ChannelHandler, ChannelHandlerContext,
-  ChannelPromise, ChannelFuture, ChannelFutureListener,
-  ChannelInboundHandlerAdapter, ChannelOutboundHandlerAdapter}
+import io.netty.channel._
 import io.netty.handler.codec.{MessageToByteEncoder, MessageToMessageEncoder}
 import io.netty.handler.codec.http
 
@@ -15,16 +12,16 @@ object EventSource {
   
   final val defaultPath = "/_events"
     
-  case class Config(val path: String = defaultPath)
+  case class Config(var path: String = defaultPath)
   
   class Connection(
       channel: Channel,
       request: http.FullHttpRequest) extends HttpConnection(channel, request) {
     
-    override def write(data: Any) = data match {
-      case p: Packet => super.write(p)
-      case s: String => super.write(new Packet(s))
-      case x => super.write(x) // FIXME handle this
+    override def send(data: Any) = data match {
+      case p: Packet => write(p)
+      case s: String => write(new Packet(s))
+      case x => write(x) // FIXME handle this
     }
   }
   

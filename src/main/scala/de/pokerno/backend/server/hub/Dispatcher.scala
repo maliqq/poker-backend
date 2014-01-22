@@ -1,6 +1,7 @@
 package de.pokerno.backend.server.hub
 
 trait Dispatcher extends Exchange {
+  
   def topics: Map[String, Topic]
   
   import collection.JavaConversions._

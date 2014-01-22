@@ -20,6 +20,7 @@ class BettingActor(val round: BettingRound) extends Actor
       self ! Betting.Next
 
     case Betting.Next ⇒
+    
       round.move
       round.seats filter (_._1 inPlay) foreach {
         case (seat, pos) ⇒

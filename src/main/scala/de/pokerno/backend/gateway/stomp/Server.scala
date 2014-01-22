@@ -29,8 +29,6 @@ class Server(port: Int) {
   
   private def bootstrap: ServerBootstrap = boot.group(bossGroup, workerGroup)
     .channel(classOf[NioServerSocketChannel])
-    //.option(ChannelOption.SO_KEEPALIVE.asInstanceOf[ChannelOption[Any]], true)
-    //.option(ChannelOption.TCP_NODELAY.asInstanceOf[ChannelOption[Any]], true)
     .childHandler(initializer)
     
   def shutdown {

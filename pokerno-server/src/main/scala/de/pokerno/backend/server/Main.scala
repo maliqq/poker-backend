@@ -24,6 +24,13 @@ object Main {
       c.copy(config = config)
     }
     
+    opt[Int]("stomp-port") text("STOMP port") action { (value, c) =>
+      val config = c.config.withStomp
+      config.getStomp.port = value
+      
+      c.copy(config = config)
+    }
+    
     opt[String]("http-host") text("HTTP host") action { (value, c) =>
       val config = c.config.withHttp
       config.getHttp.host = value

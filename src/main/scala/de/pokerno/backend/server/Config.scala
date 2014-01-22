@@ -40,14 +40,21 @@ object Config {
       var host: String = "localhost",
       var port: Int = Http.defaultPort,
       var api: Option[Http.Api] = None,
+      var stomp: Option[gw.Stomp.Config] = None,
       var webSocket: Option[gw.http.WebSocket.Config] = None,
       var eventSource: Option[gw.http.EventSource.Config] = None
       ) {
     
     def getApi = api.get
     
-    def withApi ={
+    def withApi = {
       if (!api.isDefined) api = Some(Http.Api())
+      this
+    }
+    
+    def getStomp = stomp.get
+    def withStomp = {
+      if (!stomp.isDefined) stomp = Some(gw.Stomp.Config())
       this
     }
     

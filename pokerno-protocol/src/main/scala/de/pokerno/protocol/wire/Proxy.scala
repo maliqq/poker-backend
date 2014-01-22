@@ -1,16 +1,10 @@
 package de.pokerno.protocol.wire
 
-import de.pokerno.model
-import de.pokerno.poker
-import de.pokerno.protocol.HasPlayer
 import reflect._
-import math.{BigDecimal => Decimal}
 
 import com.dyuproject.protostuff.ByteString
 import org.msgpack.annotation.{ Message => MsgPack }
 
-import Conversions._
-  
 @MsgPack
 case class Range(
   @BeanProperty
@@ -26,8 +20,9 @@ case class Box(
   @BeanProperty
   var pos: Integer,
   
-  var player: model.Player
-) extends HasPlayer {
+  @BeanProperty
+  var player: String
+) {
   def this() = this(null, null)
 }
 
@@ -64,19 +59,6 @@ case class Mix(
   var tableSize: Integer = null
 ) {
   def this() = this(null)
-}
-
-object Variation {
-  def game(game: model.Game.Limited, limit: model.Game.Limit, tableSize: Int) =
-    new Variation(VariationSchema.VariationType.GAME, game = new Game(
-          game, limit, tableSize
-      ))
-  
-  def mix(game: model.Game.Mixed, tableSize: Int) =
-    new Variation(VariationSchema.VariationType.MIX,
-        mix = new Mix(
-            game, tableSize
-        ))
 }
 
 @MsgPack
@@ -149,10 +131,13 @@ case class Stake(
 case class Table(
   @BeanProperty
   var size: Integer,
+
   @BeanProperty
   var button: Integer = null,
+  
   @BeanProperty
   var seats: java.util.ArrayList[Seat] = null,
+  
   @BeanProperty
   var state: TableSchema.TableState = null
 ) {

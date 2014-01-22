@@ -11,6 +11,7 @@ object Betting {
   case class Require(amount: Decimal, limit: Game.Limit)
   // force bet
   case class Force(amount: Decimal)
+  case class Add(bet: Bet)
 
   // go to next seat
   case object Next

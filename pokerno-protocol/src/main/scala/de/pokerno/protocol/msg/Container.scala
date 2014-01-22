@@ -1,11 +1,8 @@
 package de.pokerno.protocol.msg
 
-import de.pokerno.{model, poker}
-import de.pokerno.protocol.HasPlayer
 import de.pokerno.protocol.wire
 
 import reflect._
-import math.{BigDecimal => Decimal}
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.dyuproject.protostuff
@@ -16,22 +13,23 @@ import org.msgpack.annotation.{ Message => MsgPack }
 @JsonInclude()
 class ActionEvent(
   @BeanProperty
-  var `type`: ActionEventSchema.EventType,
+  var `type`: ActionEventSchema.EventType
+) extends Outbound {
+
+  @BeanProperty
+  var pos: Integer = null
   
   @BeanProperty
-  var pos: Integer = null,
-  
-  var player: model.Player = null,
+  var player: String = null
   
   @BeanProperty
-  var cardsDiscard: CardsDiscard = null,
+  var cardsDiscard: CardsDiscard = null
   
   @BeanProperty
-  var cardsShow: CardsShow = null,
+  var cardsShow: CardsShow = null
   
   @BeanProperty
   var betAdd: BetAdd = null
-) extends Outbound with HasPlayer {
   
   def this() = this(null)
   
@@ -40,51 +38,72 @@ class ActionEvent(
 }
 
 @MsgPack
-class GameplayEvent extends Message {
+class GameplayEvent(
+    @BeanProperty
+    var `type`: GameplayEventSchema.EventType
+  ) extends Message {
+
   def schema = GameplayEventSchema.SCHEMA
   //def pipeSchema = GameplayEventSchema.PIPE_SCHEMA
-  @BeanProperty
-  var `type`: GameplayEventSchema.EventType = null
+  
   @BeanProperty
   var game: wire.Game = null
+
   @BeanProperty
   var stake: wire.Stake = null
+
+  def this() = this(null)
 }
 
 @MsgPack
-class StageEvent extends Message {
+class StageEvent(
+    @BeanProperty
+    var `type`: StageEventSchema.EventType
+  ) extends Message {
   def schema = StageEventSchema.SCHEMA
   //def pipeSchema = StageEventSchema.PIPE_SCHEMA
-  @BeanProperty
-  var `type`: StageEventSchema.EventType = null
+  
   @BeanProperty
   var stage: StageEventSchema.StageType = null
+  
   @BeanProperty
   var street: StageEventSchema.StreetType = null
+
+  def this() = this(null)
 }
 
 @MsgPack
-class TableEvent extends Outbound {
+class TableEvent(
+    @BeanProperty
+    var `type`: TableEventSchema.EventType
+  ) extends Outbound {
+  
   def schema = TableEventSchema.SCHEMA
   //def pipeSchema = TableEventSchema.PIPE_SCHEMA
-  @BeanProperty
-  var `type`: TableEventSchema.EventType = null
+  
   @BeanProperty
   var button: Integer = null
+
   @BeanProperty
   var state: TableEventSchema.TableState = null
+
+  def this() = this(null)
 }
 
 @MsgPack
-class SeatEvent(_type: SeatEventSchema.EventType) extends Outbound {
+class SeatEvent(
+    @BeanProperty
+    var `type`: SeatEventSchema.EventType
+  ) extends Outbound {
   def schema = SeatEventSchema.SCHEMA
   //def pipeSchema = SeatEventSchema.PIPE_SCHEMA
-  @BeanProperty
-  var `type` = _type
+  
   @BeanProperty
   var pos: Integer = null
+  
   @BeanProperty
   var seat: wire.Seat = null
+  
   def this() = this(null)
 }
 

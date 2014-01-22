@@ -1,6 +1,7 @@
 package de.pokerno.gameplay
 import akka.actor.{Actor, ActorLogging, ActorRef, Props, FSM}
 import de.pokerno.model._
+import de.pokerno.protocol.Conversions.{wire2player, wire2bet, wire2decimal}
 import de.pokerno.protocol.{msg => message}
 
 import concurrent.duration._
@@ -93,7 +94,7 @@ class Instance(val variation: Variation, val stake: Stake) extends Actor with Ac
       stay
 
     case Event(msg: message.AddBet, Instance.Run(running)) ⇒
-      running ! msg
+      running ! Betting.Add(msg.bet)
       stay
     
     case Event(Instance.Subscribe(ref, name), _) =>

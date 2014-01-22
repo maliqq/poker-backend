@@ -1,5 +1,6 @@
 package de.pokerno.gameplay
 
+import de.pokerno.protocol
 import de.pokerno.protocol.{msg, rpc}
 import de.pokerno.model._
 import akka.actor.{Actor, Props, ActorRef, ActorLogging}
@@ -9,6 +10,10 @@ object Replay {
 }
 
 class Replay(val variation: Variation, val stake: Stake) extends Actor with ActorLogging {
+  
+  import protocol.Conversions._
+  import protocol.wire.Conversions._
+  import protocol.msg.Conversions._
   
   import context._
   
@@ -50,7 +55,7 @@ class Replay(val variation: Variation, val stake: Stake) extends Actor with Acto
       events.showCards(table.box(player), cards, muck)
       
     case rpc.DealCards(_type, cards, player, cardsNum) =>
-      _type match {
+      (_type: DealCards.Value) match {
         case DealCards.Hole =>
           Console printf(" | deal %s -> %s\n", cards, player)
           dealer.dealPocket(cards, player)

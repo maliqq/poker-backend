@@ -8,11 +8,14 @@ case class Player(val id: String) {
   override def toString = id
 }
 
-object Table {
-  final val Waiting = wire.TableSchema.TableState.WAITING
-  final val Active = wire.TableSchema.TableState.ACTIVE
-  final val Paused = wire.TableSchema.TableState.PAUSED
-  final val Closed = wire.TableSchema.TableState.CLOSED
+object Table { // FIXME use conversions
+  trait State
+
+  case object Waiting extends State
+  case object Active extends State
+  case object Paused extends State
+  case object Closed extends State
+  
 }
 
 class Table(val size: Int) {

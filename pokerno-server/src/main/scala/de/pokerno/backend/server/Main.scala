@@ -4,7 +4,7 @@ import de.pokerno.gameplay._
 import de.pokerno.backend.{gateway => gw}
 import de.pokerno.model._
 import akka.actor.{ ActorSystem, Props }
-import de.pokerno.backend.server.Config
+//import de.pokerno.backend.server.Config
 
 case class Options(
     val configFile: Option[String] = None,

@@ -3,6 +3,8 @@ package de.pokerno.ai.bot
 import de.pokerno.model._
 import de.pokerno.poker._
 import de.pokerno.protocol.{ msg => message }
+import de.pokerno.protocol.Conversions._
+import de.pokerno.protocol.wire.Conversions.{wire2range, wire2dealCards}
 import math.{ BigDecimal ⇒ Decimal }
 import akka.actor.{ Actor, ActorRef }
 import util.Random
@@ -60,7 +62,7 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
       pot = total
       bet = .0
 
-    case message.DealCards(_type, _cards, _pos, _player, _cardsNum) ⇒ _type match {
+    case message.DealCards(_type, _cards, _pos, _player, _cardsNum) ⇒ (_type: DealCards.Value) match {
       case DealCards.Board =>
         board ++= _cards
       case DealCards.Hole | DealCards.Door if (_pos == pos) =>

@@ -5,15 +5,6 @@ import de.pokerno.backend.{gateway => gw}
 object Config {
   final val defaultHost = "localhost"
   
-  object ZeroMQ {
-    final val defaultPort = 5555
-  }
-  
-  case class ZeroMQ(
-      var host: String = defaultHost,
-      var port: Int = ZeroMQ.defaultPort, 
-      var topic: String = "")
-  
   object Http {
     final val defaultPort = 8080
     
@@ -40,7 +31,6 @@ object Config {
       var host: String = "localhost",
       var port: Int = Http.defaultPort,
       var api: Option[Http.Api] = None,
-      var stomp: Option[gw.Stomp.Config] = None,
       var webSocket: Option[gw.http.WebSocket.Config] = None,
       var eventSource: Option[gw.http.EventSource.Config] = None
       ) {
@@ -51,13 +41,7 @@ object Config {
       if (!api.isDefined) api = Some(Http.Api())
       this
     }
-    
-    def getStomp = stomp.get
-    def withStomp = {
-      if (!stomp.isDefined) stomp = Some(gw.Stomp.Config())
-      this
-    }
-    
+
     def getWs = webSocket.get
     
     def withWebSocket = {
@@ -83,13 +67,20 @@ object Config {
 case class Config(
     var http: Option[Config.Http] = None,
     var rpc: Option[Config.Rpc] = None,
-    var zeromq: Option[Config.ZeroMQ] = None
+    var stomp: Option[gw.Stomp.Config] = None,
+    var zeromq: Option[gw.Zeromq.Config] = None
 ) {
   
   def getHttp = http.get
   
   def withHttp = {
     if (!http.isDefined) http = Some(Config.Http())
+    this
+  }
+
+  def getStomp = stomp.get
+  def withStomp = {
+    if (!stomp.isDefined) stomp = Some(gw.Stomp.Config())
     this
   }
   
@@ -103,7 +94,7 @@ case class Config(
   def getZmq = zeromq.get
   
   def withZmq = {
-    if (!zeromq.isDefined) zeromq = Some(Config.ZeroMQ())
+    if (!zeromq.isDefined) zeromq = Some(gw.Zeromq.Config())
     this
   }
 

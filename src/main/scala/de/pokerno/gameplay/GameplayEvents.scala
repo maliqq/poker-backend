@@ -1,5 +1,6 @@
 package de.pokerno.gameplay
 
+import de.pokerno.protocol
 import de.pokerno.protocol.{msg => message}
 import de.pokerno.model._
 import de.pokerno.poker.{Card, Hand}
@@ -7,6 +8,10 @@ import de.pokerno.poker.{Card, Hand}
 import math.{BigDecimal => Decimal}
 
 class GameplayEvents {
+
+  import protocol.Conversions._
+  import protocol.wire.Conversions._
+  import protocol.msg.Conversions._
   
   lazy val broker = new Broker
   

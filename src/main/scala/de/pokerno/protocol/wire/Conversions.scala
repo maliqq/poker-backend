@@ -1,8 +1,6 @@
 package de.pokerno.protocol.wire
 
-import de.pokerno.model
-import de.pokerno.poker
-import de.pokerno.gameplay
+import de.pokerno.{model, poker, gameplay}
 
 object Conversions {
   
@@ -14,8 +12,20 @@ object Conversions {
   implicit def limit2wire(l: model.Game.Limit) = GameSchema.GameLimit.NL
   
   implicit def stake2wire(s: model.Stake) = new Stake()
-  
-  implicit def game2wire(g: model.Game.Limited): GameSchema.GameType = g match {
+
+  implicit def dealCards2wire(v: model.DealCards.Value): DealType = v match {
+    case model.DealCards.Board => DealType.BOARD
+    case model.DealCards.Door => DealType.DOOR
+    case model.DealCards.Hole => DealType.HOLE
+  }
+
+  implicit def wire2dealCards(w: DealType): model.DealCards.Value = w match {
+    case DealType.BOARD => model.DealCards.Board
+    case DealType.DOOR => model.DealCards.Door
+    case DealType.HOLE => model.DealCards.Hole
+  }
+
+  implicit def limitedGame2wire(g: model.Game.Limited): GameSchema.GameType = g match {
     case model.Game.Texas => GameSchema.GameType.TEXAS
     case model.Game.Omaha => GameSchema.GameType.OMAHA
     case model.Game.Omaha8 => GameSchema.GameType.OMAHA_8
@@ -30,15 +40,19 @@ object Conversions {
     
     case _ => throw new IllegalArgumentException(f"Unknown limited game: ${g.toString}")
   }
+
+  implicit def game2wire(g: model.Game): Game = new Game(g.game, g.limit, g.tableSize)
   
-  implicit def mix2wire(m: model.Game.Mixed): MixSchema.MixType = m match {
+  implicit def mixedGame2wire(m: model.Game.Mixed): MixSchema.MixType = m match {
     case model.Game.Eight => MixSchema.MixType.EIGHT_GAME
     case model.Game.Horse => MixSchema.MixType.HORSE
     
     case _ => throw new IllegalArgumentException(f"Unknown mixed game: ${m.toString}")
   }
 
-  implicit def bet2wire(v: model.Bet.Value): BetSchema.BetType = v match {
+  implicit def mix2wire(m: model.Mix): Mix = new Mix(m.game, m.tableSize)
+
+  implicit def betType2wire(v: model.Bet.Value): BetSchema.BetType = v match {
     case model.Bet.Call => BetSchema.BetType.CALL
     case model.Bet.Raise => BetSchema.BetType.RAISE
     case model.Bet.Check => BetSchema.BetType.CHECK
@@ -51,7 +65,7 @@ object Conversions {
     case model.Bet.Straddle => BetSchema.BetType.STRADDLE
   }
   
-  implicit def wire2bet(v: BetSchema.BetType): model.Bet.Value = v match {
+  implicit def wire2betType(v: BetSchema.BetType): model.Bet.Value = v match {
     case BetSchema.BetType.CALL => model.Bet.Call
     case BetSchema.BetType.RAISE => model.Bet.Raise  
     case BetSchema.BetType.CHECK => model.Bet.Check 
@@ -145,5 +159,9 @@ object Conversions {
     case HandSchema.RankType.LOW => poker.Rank.Low.Complete
     case HandSchema.RankType.NOT_LOW => poker.Rank.Low.Incomplete // FIXME
   }
+
+  implicit def range2wire(r: model.Range) = new Range(r.min.toDouble, r.max.toDouble)
+
+  implicit def wire2range(w: Range) = new model.Range((w.min.toDouble, w.max.toDouble))
     
 }

@@ -1,10 +1,6 @@
 package de.pokerno.protocol.msg
 
-import math.{ BigDecimal ⇒ Decimal }
-import de.pokerno.{poker, model, gameplay}
-import de.pokerno.protocol.{wire, Message => BaseMessage, HasPlayer, HasCards, HasAmount}
-import wire.Conversions._
-import Conversions._
+import de.pokerno.protocol.{wire, Message => BaseMessage}
 
 import com.dyuproject.protostuff
 import beans._
@@ -26,8 +22,12 @@ abstract class Message extends BaseMessage
 sealed case class JoinTable(
     @BeanProperty
     var pos: Integer,
-    var player: model.Player,
-    var amount: Decimal) extends Message with HasAmount with HasPlayer {
+
+    @BeanProperty
+    var player: String,
+
+    @BeanProperty
+    var amount: java.lang.Double) extends Message {
   
   def schema = JoinTableSchema.SCHEMA
   //def pipeSchema = JoinTableSchema.PIPE_SCHEMA

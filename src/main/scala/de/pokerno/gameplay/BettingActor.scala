@@ -11,7 +11,7 @@ class BettingActor(val round: BettingRound) extends Actor
   import context._
 
   def receive = {
-    case rpc.AddBet(player, bet) ⇒
+    case Betting.Add(bet) ⇒
       round.addBet(bet)
       self ! Betting.Next
 

@@ -1,11 +1,9 @@
 package de.pokerno.protocol.rpc
 
-import de.pokerno.{model, poker}
-import de.pokerno.protocol.{wire, Message => BaseMessage, HasPlayer, HasAmount, HasCards}
-import wire.Conversions._
+import de.pokerno.protocol.{wire, Message => BaseMessage}
 
-import math.{ BigDecimal ⇒ Decimal }
 import beans._
+import com.dyuproject.protostuff.ByteString
 import org.msgpack.annotation.{ Message => MsgPack }
 import com.fasterxml.jackson.annotation.{JsonTypeInfo, JsonSubTypes}
 
@@ -50,8 +48,12 @@ sealed case class CreateRoom(
 sealed case class JoinPlayer(
     @BeanProperty
     var pos: Integer,
-    var player: model.Player,
-    var amount: Decimal) extends Request with HasAmount with HasPlayer {
+    
+    @BeanProperty
+    var player: String,
+
+    @BeanProperty
+    var amount: java.lang.Double) extends Request {
   
   def schema = JoinPlayerSchema.SCHEMA
   //def pipeSchema = JoinTableSchema.PIPE_SCHEMA
@@ -61,10 +63,12 @@ sealed case class JoinPlayer(
 
 @MsgPack
 sealed case class KickPlayer(
-    var player: model.Player,
+    @BeanProperty
+    var player: String,
+    
     @BeanProperty
     var reason: String
-) extends Request with HasPlayer {
+) extends Request {
   
   def schema = KickPlayerSchema.SCHEMA
   
@@ -74,11 +78,12 @@ sealed case class KickPlayer(
 
 @MsgPack
 sealed case class Chat(
-    var player: model.Player,
+    @BeanProperty
+    var player: String,
     
     @BeanProperty
     var body: String
-) extends Request with HasPlayer {
+) extends Request {
   
   def schema = ChatSchema.SCHEMA
   
@@ -89,33 +94,32 @@ sealed case class Chat(
 @MsgPack
 sealed case class AddBet(
     
-    var player: model.Player,
+    @BeanProperty
+    var player: String,
     
-    var _bet: model.Bet
+    @BeanProperty
+    var bet: wire.Bet
     
-) extends Request with HasPlayer {
+) extends Request {
   
-  def schema = AddBetSchema.SCHEMA
-  
+  def schema = AddBetSchema.SCHEMA  
   def this() = this(null, null)
-  
-  def getBet: wire.Bet = if (_bet != null) wire.Bet(_bet.betType, _bet.amount.toDouble)
-    else null
-  def setBet(v: wire.Bet) = _bet = new model.Bet(v.getType, v.getAmount.toDouble)
 }
 
 @MsgPack
 sealed case class DealCards(
     @BeanProperty
-    var `type`: model.DealCards.Value,
+    var `type`: wire.DealType,
     
-    var cards: List[poker.Card] = List.empty,
+    @BeanProperty
+    var cards: ByteString = null,
     
-    var player: model.Player = null,
+    @BeanProperty
+    var player: String = null,
     
     @BeanProperty
     var cardsNum: Integer = null
-) extends Request with HasPlayer with HasCards {
+) extends Request {
   
   def schema = DealCardsSchema.SCHEMA
   def this() = this(null)
@@ -123,11 +127,13 @@ sealed case class DealCards(
 
 @MsgPack
 sealed case class DiscardCards(
-    var cards: List[poker.Card],
+    @BeanProperty
+    var cards: ByteString,
     
-    var player: model.Player
+    @BeanProperty
+    var player: String
 
-) extends Request with HasPlayer with HasCards {
+) extends Request {
   
   def schema = DealCardsSchema.SCHEMA
   
@@ -137,14 +143,16 @@ sealed case class DiscardCards(
 
 @MsgPack
 sealed case class ShowCards(
-    var cards: List[poker.Card],
+    @BeanProperty  
+    var cards: ByteString,
     
-    var player: model.Player,
+    @BeanProperty
+    var player: String,
     
     @BeanProperty
     var muck: java.lang.Boolean = null
 
-) extends Request with HasPlayer with HasCards {
+) extends Request {
   
   def schema = ShowCardsSchema.SCHEMA
   

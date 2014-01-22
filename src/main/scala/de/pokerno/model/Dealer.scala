@@ -4,10 +4,12 @@ import de.pokerno.poker.{ Card, Deck }
 import de.pokerno.protocol.wire
 
 object DealCards {
-  type Value = wire.DealType
-  final val Board = wire.DealType.BOARD
-  final val Door = wire.DealType.DOOR
-  final val Hole = wire.DealType.HOLE
+
+  trait Value
+  case object Board extends Value
+  case object Door extends Value
+  case object Hole extends Value
+
 }
 
 class Dealer(private var _deck: Deck = new Deck) {

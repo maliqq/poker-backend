@@ -1,6 +1,7 @@
 package de.pokerno.playground
 
 import de.pokerno.protocol.{msg, rpc}
+import de.pokerno.protocol.Conversions._
 import de.pokerno.gameplay.{Replay, Street}
 import de.pokerno.model.{Player, Table, Stake, Variation, Game, Bet, Seat}
 import akka.actor.{Actor, ActorSystem, ActorLogging, ActorRef, Props}

@@ -3,6 +3,7 @@ package de.pokerno.playground
 import de.pokerno.format.text.Lexer.{Token, Tags => tags}
 import de.pokerno.model.{Player, Table, Stake, Variation, Game, Bet, Seat}
 import de.pokerno.protocol._
+import de.pokerno.protocol.Conversions._
 import de.pokerno.gameplay.Street
 import wire.Conversions._
 import akka.actor.ActorRef

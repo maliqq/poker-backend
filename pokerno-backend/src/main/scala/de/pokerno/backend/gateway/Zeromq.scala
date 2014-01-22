@@ -4,11 +4,18 @@ import akka.{zeromq => zmq}
 import de.pokerno.protocol.{msg => message, Codec => codec}
 
 object Zeromq {
-  final val DefaultAddr = "tcp://0.0.0.0:5555"
+
+  final val defaultHost = "0.0.0.0"
+  final val defaultPort = 5555
 
   case class Config(
-    val address: String = DefaultAddr
-  )
+      var host: String = defaultHost,
+      var port: Int = defaultPort, 
+      var topic: String = "") {
+    
+    def address = f"tcp://$host:$port"
+
+  }
 }
 
 class Zeromq(config: Zeromq.Config) extends Actor with ActorLogging {

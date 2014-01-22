@@ -18,7 +18,7 @@ object Main {
   val instance = system.actorOf(Props(classOf[Instance], game, stake), name = "poker-instance")
 
   val bots = (0 to game.tableSize - 1).map { i ⇒
-    system.actorOf(Props(classOf[Bot], instance, i, stack, game, stake))
+    system.actorOf(Props(classOf[bot.Bot], instance, i, stack, game, stake))
   }
 
   def main(args: Array[String]) {

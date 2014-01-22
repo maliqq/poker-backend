@@ -1,4 +1,4 @@
-package de.pokerno.ai
+package de.pokerno.ai.bot
 
 import de.pokerno.model._
 import de.pokerno.poker._

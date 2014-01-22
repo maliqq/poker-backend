@@ -28,13 +28,13 @@ object Main {
     parser.parse(args, config) map { config ⇒
       val gameplay = createGameplay(config)
       val instance = system.actorOf(Props(classOf[Instance], gameplay), name = "deal-process")
-      val play = system.actorOf(Props(classOf[Play], gameplay, instance, config.tableSize), name = "play-process")
+      val playing = system.actorOf(Props(classOf[play.Play], gameplay, instance, config.tableSize), name = "play-process")
       instance ! Instance.Start
     }
   }
 
   def createGameplay(config: Config): Gameplay = {
-    val broadcast = new EventBus
+    val broadcast = new GameplayEvents
     val variation = if (config.mixedGame.isDefined)
       new Mix(config.mixedGame.get, config.tableSize)
     else

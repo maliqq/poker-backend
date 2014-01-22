@@ -1,4 +1,4 @@
-package de.pokerno.ai
+package de.pokerno.ai.bot
 
 import math.{ BigDecimal ⇒ Decimal }
 

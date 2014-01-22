@@ -1,4 +1,4 @@
-package de.pokerno.cli
+package de.pokerno.cli.play
 
 import java.util.Scanner
 import math.{ BigDecimal ⇒ Decimal }

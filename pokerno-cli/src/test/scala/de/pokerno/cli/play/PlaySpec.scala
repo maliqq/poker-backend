@@ -1,4 +1,4 @@
-package de.pokerno.cli
+package de.pokerno.cli.play
 
 import org.scalatest._
 import org.scalatest.matchers._

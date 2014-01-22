@@ -1,11 +1,11 @@
-package de.pokerno.ai
+package de.pokerno.ai.bot
 
 import org.scalatest._
 import org.scalatest.matchers._
 import org.scalatest.matchers.ShouldMatchers._
 
-class BotSpec extends FunSpec with ClassicMatchers {
-  describe("Bot") {
+class DecisionSpec extends FunSpec with ClassicMatchers {
+  describe("Decision") {
     it("sample") {
     }
   }

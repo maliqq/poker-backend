@@ -42,7 +42,9 @@ object PokernoBuild extends Build {
         "com.dyuproject.protostuff" % "protostuff-core" % "1.0.7",
         "com.dyuproject.protostuff" % "protostuff-runtime" % "1.0.7"
       )
-    ) ++ assemblySettings
+    ) ++ assemblySettings ++ Seq(
+      assemblyOption in assembly ~= { _.copy(includeScala = false) }
+    )
   )
   
   lazy val root = Project(
@@ -100,7 +102,9 @@ object PokernoBuild extends Build {
           "jline" % "jline" % "2.11",
           "com.github.scopt" %% "scopt" % "3.1.0"
         )
-    ) ++ assemblySettings
+    ) ++ assemblySettings ++ Seq(
+      assemblyOption in assembly ~= { _.copy(includeScala = false) }
+    )
   ) dependsOn(util, root, backend)
   
   lazy val bench = Project(

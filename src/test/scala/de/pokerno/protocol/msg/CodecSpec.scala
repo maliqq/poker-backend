@@ -7,6 +7,7 @@ import org.scalatest.matchers.ShouldMatchers._
 import de.pokerno.model
 import de.pokerno.poker
 import de.pokerno.protocol.Codec
+import de.pokerno.protocol
 
 class CodecSpec extends FunSpec with ClassicMatchers {
   describe("Codec") {

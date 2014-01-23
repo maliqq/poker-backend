@@ -2,7 +2,6 @@ package de.pokerno.backend.gateway.http
 
 import akka.actor.ActorRef
 
-import io.netty.buffer.ByteBuf
 import io.netty.channel.{ChannelHandlerContext, SimpleChannelInboundHandler}
 import io.netty.handler.codec.http.{websocketx => ws}
 import io.netty.handler.codec.http

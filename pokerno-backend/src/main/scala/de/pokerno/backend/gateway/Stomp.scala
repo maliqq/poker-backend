@@ -1,7 +1,6 @@
 package de.pokerno.backend.gateway
 
 import akka.actor.{ Actor, ActorLogging, ActorRef }
-import concurrent.duration._
 
 object Stomp {
 

@@ -1,18 +1,14 @@
 package de.pokerno.backend.gateway.http
 
-import akka.actor.{Actor, Props, ActorSystem, ActorRef}
+import akka.actor.Actor
 
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.{Channel, ChannelOption, ChannelInitializer}
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
-import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.handler.codec.http.{HttpObjectAggregator, HttpRequestDecoder, HttpResponseEncoder}
-import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import java.util.concurrent.{FutureTask, Callable}
-
-import org.slf4j.LoggerFactory
 
 case class Config(
     port: Int = Server.defaultPort,

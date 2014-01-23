@@ -6,8 +6,6 @@ import io.netty.channel.{ChannelFuture, ChannelFutureListener}
 import io.netty.channel.{ChannelHandlerContext, ChannelInboundHandlerAdapter, SimpleChannelInboundHandler}
 import io.netty.handler.codec.http
 
-import org.slf4j.LoggerFactory
-
 trait DefaultHttpResponder {
   import http.HttpHeaders.isKeepAlive
   def includeCorsHeaders: Boolean = false
@@ -42,8 +40,6 @@ object HttpHandler {
   
 }
 
-import util.matching.Regex
-
 class PathHandler(path: String, handler: ChannelInboundHandlerAdapter) extends ChannelInboundHandlerAdapter {
   override def channelRead(ctx: ChannelHandlerContext, msg: Object): Unit = msg match {
     case req: http.FullHttpRequest =>
@@ -63,7 +59,7 @@ trait HttpResponder {
 }
 
 case class Response(resp: http.FullHttpResponse) {
-  import http.HttpHeaders.{setContentLength, Names, Values}
+  import http.HttpHeaders.{setContentLength, Names}
   import Unpooled._
   
   def setContentType(contentType: String) {

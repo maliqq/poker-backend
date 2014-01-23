@@ -31,7 +31,7 @@ object Node {
     }
 
     config.http.map { http =>
-      val httpGateway = system.actorOf(Props(classOf[gw.Http.Gateway], http), name = "http")
+      val httpGateway = system.actorOf(Props(classOf[gw.Http.Dispatcher], http), name = "http")
     }
 
   }

@@ -2,7 +2,7 @@ package de.pokerno.backend.gateway.http
 
 import akka.actor.ActorRef
 
-import io.netty.channel.{Channel, ChannelFuture, ChannelHandlerContext, ChannelInboundHandlerAdapter, ChannelFutureListener}
+import io.netty.channel.{Channel, ChannelFutureListener}
 import io.netty.handler.codec.http
 
 trait Connection {
@@ -34,15 +34,15 @@ trait ChannelConnections[T <: Connection] {
   def connection(ch: Channel, req: http.FullHttpRequest): HttpConnection
   
   def connect(channel: Channel, req: http.FullHttpRequest) {
-    gw ! Gateway.Connect(channel, connection(channel, req))
+    gw ! Event.Connect(channel, connection(channel, req))
   }
   
   def disconnect(channel: Channel) {
-    gw ! Gateway.Disconnect(channel)
+    gw ! Event.Disconnect(channel)
   }
   
   def message(channel: Channel, data: String) {
-    gw ! Gateway.Message(channel, data)
+    gw ! Event.Message(channel, data)
   }
 
 }

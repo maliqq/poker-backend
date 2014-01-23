@@ -18,7 +18,7 @@ object Main {
   var replayer: Replayer = null
   
   def main(args: Array[String]) = {
-    val htmlEventSource = system.actorOf(Props(classOf[Http.Gateway],
+    val htmlEventSource = system.actorOf(Props(classOf[Http.Dispatcher],
         http.Config(port = 8080, eventSource = Right(true))))
     
     Console printf("waiting for eventsource server to startup...\n")

@@ -10,7 +10,8 @@ object PokernoBuild extends Build {
 
   override lazy val settings = super.settings ++ Seq(
     organization := "de.pokerno",
-    scalaVersion := "2.10.3"
+    scalaVersion := "2.10.3",
+    exportJars := true
     //,resolvers += "spray repo" at "http://repo.spray.io"
     //,resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
   )

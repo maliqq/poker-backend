@@ -19,7 +19,6 @@ object PokernoBuild extends Build {
   lazy val deps = Seq(
     //"org.scalaz" %% "scalaz-core" % "7.0.3",
     "com.typesafe.akka" %% "akka-actor" % "2.2.1",
-    "com.typesafe.akka" %% "akka-zeromq" % "2.2.1",
     //"com.twitter" % "ostrich" % "2.3.0"
     "com.twitter" %% "util-core" % "6.10.0",
     "com.codahale.metrics" % "metrics-core" % "3.0.1"
@@ -43,20 +42,44 @@ object PokernoBuild extends Build {
         "com.dyuproject.protostuff" % "protostuff-core" % "1.0.7",
         "com.dyuproject.protostuff" % "protostuff-runtime" % "1.0.7"
       )
-    ) ++ assemblySettings ++ Seq(
-      assemblyOption in assembly ~= { _.copy(includeScala = false) }
-    )
+    ) ++ assemblySettings
   )
   
-  lazy val root = Project(
-    id = "pokerno",
-    base = file("."),
+  lazy val core = Project(
+    id = "pokerno-core",
+    base = file("pokerno-core"),
     settings = Project.defaultSettings ++ Seq(
-      name := "pokerno",
+      name := "pokerno-core",
       version := "0.0.1",
       libraryDependencies ++= deps ++ testDeps
     ) ++ assemblySettings
   ) dependsOn(protocol)
+
+  lazy val httpGateway = Project(
+    id = "pokerno-gateway-http",
+    base = file("pokerno-gateway-http"),
+    settings = Project.defaultSettings ++ Seq(
+      name := "pokerno-gateway-http",
+      version := "0.0.1",
+      libraryDependencies ++= deps ++ Seq(
+        "io.netty" % "netty-all" % "4.0.14.Final"
+      )
+    ) ++ assemblySettings
+  )
+
+  lazy val stompGateway = Project(
+    id = "pokerno-gateway-stomp",
+    base = file("pokerno-gateway-stomp"),
+    settings = Project.defaultSettings ++ Seq(
+      name := "pokerno-gateway-stomp",
+      version := "0.0.1",
+      libraryDependencies ++= deps ++ Seq(
+        "asia.stampy" % "stampy-core" % "1.0-RELEASE",
+        //"asia.stampy" % "stampy-NETTY-client-server-RI" % "1.0-RELEASE",
+        "io.netty" % "netty-all" % "4.0.14.Final"
+      )
+    ) ++ assemblySettings
+  )
 
   lazy val backend = Project(
     id = "pokerno-backend",
@@ -65,12 +88,10 @@ object PokernoBuild extends Build {
       name := "pokerno-backend",
       version := "0.0.1",
       libraryDependencies ++= Seq(
-        "asia.stampy" % "stampy-core" % "1.0-RELEASE",
-        //"asia.stampy" % "stampy-NETTY-client-server-RI" % "1.0-RELEASE",
-        "io.netty" % "netty-all" % "4.0.14.Final"
+        "com.typesafe.akka" %% "akka-zeromq" % "2.2.1"
       )
     ) ++ assemblySettings
-  ) dependsOn(root)
+  ) dependsOn(core, httpGateway, stompGateway)
 
   lazy val ai = Project(
     id = "pokerno-ai",
@@ -82,7 +103,7 @@ object PokernoBuild extends Build {
         "com.github.scopt" %% "scopt" % "3.1.0"
       )
     ) ++ assemblySettings
-  ) dependsOn(root, backend)
+  ) dependsOn(core, backend)
 
   lazy val util = Project(
     id = "pokerno-util",
@@ -91,22 +112,20 @@ object PokernoBuild extends Build {
       name := "pokerno-util",
       version := "0.0.1"
     ) ++ assemblySettings
-  ) dependsOn(root)
+  ) dependsOn(core)
   
-  lazy val playground = Project(
-    id = "pokerno-playground",
-    base = file("pokerno-playground"),
+  lazy val replay = Project(
+    id = "pokerno-replay",
+    base = file("pokerno-replay"),
     settings = Project.defaultSettings ++ Seq(
-      name := "pokerno-playground",
+      name := "pokerno-replay",
       version := "0.0.2",
       libraryDependencies ++= Seq(
           "jline" % "jline" % "2.11",
           "com.github.scopt" %% "scopt" % "3.1.0"
         )
-    ) ++ assemblySettings ++ Seq(
-      assemblyOption in assembly ~= { _.copy(includeScala = false) }
-    )
-  ) dependsOn(util, root, backend)
+    ) ++ assemblySettings
+  ) dependsOn(util, core, backend)
   
   lazy val bench = Project(
     id = "pokerno-bench",
@@ -115,7 +134,7 @@ object PokernoBuild extends Build {
       name := "pokerno-bench",
       version := "0.0.1"
     ) ++ assemblySettings
-  ) dependsOn(root)
+  ) dependsOn(core)
   
   lazy val cli = Project(
     id = "pokerno-cli",
@@ -128,7 +147,7 @@ object PokernoBuild extends Build {
         "com.github.scopt" %% "scopt" % "3.1.0"
       )
     ) ++ assemblySettings
-  ) dependsOn(root)
+  ) dependsOn(core)
   
   lazy val server = Project(
     id = "pokerno-server",
@@ -140,6 +159,6 @@ object PokernoBuild extends Build {
         "com.github.scopt" %% "scopt" % "3.1.0"
       )
     ) ++ assemblySettings
-  ) dependsOn(root, backend)
+  ) dependsOn(core, backend)
   
 }

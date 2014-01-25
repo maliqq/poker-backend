@@ -18,8 +18,10 @@ object Parser {
   
   import reflect.runtime.{ currentMirror => cm }
   import reflect.runtime.{ universe => ru }
+
+  type ParsedLine = Tuple3[String, Int, Lexer.Token]
   
-  def parseLine(line: String): Option[Lexer.Token] = {
+  def parseLine(line: String, lineno: Int): Option[ParsedLine] = {
     if (line.startsWith("#") || line.matches("^\\s*$")) return None
     val parts = line.split("#", 2)
     val (tag, params) = parseTagAndParams(parts(0))
@@ -30,7 +32,7 @@ object Parser {
       try {
         val m = decl.get.typeSignature.declaration(ru.nme.CONSTRUCTOR).asTerm.alternatives.last
         val result = cm.reflectClass(decl.get.asClass).reflectConstructor(m.asMethod)(params)
-        return Some(result.asInstanceOf[Lexer.Token])
+        return Some((line, lineno, result.asInstanceOf[Lexer.Token]))
       } catch {
       case e: Throwable =>
         e.printStackTrace()
@@ -40,11 +42,13 @@ object Parser {
     } else None
   }
   
-  def parse(lines: List[String]): List[Lexer.Token] = {
-    lines.map(parseLine(_)).filter(_.isDefined).map(_.get)
+  def parse(lines: List[String]): List[ParsedLine] = {
+    lines.zipWithIndex.map { case (line, i) =>
+      parseLine(line, i + 1)
+    }.filter(_.isDefined).map(_.get)
   }
   
-  def parse(src: scala.io.Source): List[Lexer.Token] = {
+  def parse(src: scala.io.Source): List[ParsedLine] = {
     parse(src.getLines.toList)
   }
   

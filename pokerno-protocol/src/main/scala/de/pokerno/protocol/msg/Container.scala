@@ -160,11 +160,11 @@ class Cmd extends Message {
 }
 
 @MsgPack
-class Event extends Message {
-  def schema = EventSchema.SCHEMA
+class Evt extends Message {
+  def schema = EvtSchema.SCHEMA
   //def pipeSchema = EventSchema.PIPE_SCHEMA
   @BeanProperty
-  var `type`: EventSchema.EventType = null
+  var `type`: EvtSchema.EventType = null
   @BeanProperty
   var seatEvent: SeatEvent = null
   @BeanProperty

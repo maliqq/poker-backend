@@ -45,11 +45,7 @@ object Http {
         Console printf("got: %s", msg)
       
       case msg: Message =>
-        val data = codec.Json.encode(msg)
-        val buf = Unpooled.copiedBuffer(data)
-        val s = buf.toString(CharsetUtil.UTF_8)
-        Console printf("%s--> SENDING %s%s\n", Console.CYAN, s, Console.RESET)
-        broadcast(s)
+        broadcast(codec.Json.encode(msg))
       
       case _ =>
     }

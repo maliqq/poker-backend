@@ -84,11 +84,12 @@ object Game {
   trait Mixed
 
   object Mixed {
-    implicit def string2Mixed(v: String): Mixed = v match {
+    implicit def string2Mixed(v: String): Option[Mixed] = v match {
       case "eight" | "8-game" | "eight-game" ⇒
-        Game.Eight
+        Some(Game.Eight)
       case "horse" ⇒
-        Game.Horse
+        Some(Game.Horse)
+      case _ => None
     }
   }
 

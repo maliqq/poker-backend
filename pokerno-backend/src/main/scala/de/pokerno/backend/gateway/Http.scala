@@ -8,17 +8,14 @@ import io.netty.util.CharsetUtil
 import de.pokerno.protocol.{Message, Codec => codec}
 
 object Http {
-  class Dispatcher(config: http.Config) extends Actor {
+  class Dispatcher extends Actor {
 
     import concurrent.duration._
     import context._
-    
-    lazy val server = http.Server(config, self)
-    
+
     val channelConnections = new collection.mutable.HashMap[Channel, http.Connection]()
     
     override def preStart {
-      server.start
     }
     
     case class Tick(conn: http.Connection)
@@ -55,7 +52,6 @@ object Http {
     }
     
     override def postStop {
-      server.stop
     }
   }
 }

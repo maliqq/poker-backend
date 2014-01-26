@@ -42,17 +42,19 @@ class GameplayEvents {
           message.DealCards(_type, cards)
         )
     
-    case _ =>
+    case _ if box.isDefined =>
       if (_type == DealCards.Hole) {
 //        broker.publish(
 //            message.DealCards(_type, cards, pos = pos),
 //          broker.One(seat.player.get.id))
-        broker.publish(
-            message.DealCards(_type, player = box.get._1, pos = box.get._2,
-                cards = cards // FIXME hide later
-                )
-          )
+
+          broker.publish(
+              message.DealCards(_type, player = box.get._1, pos = box.get._2,
+                  cards = cards // FIXME hide later
+                  )
+            )
       } else broker.publish(message.DealCards(_type, cards, player = box.get._1, pos = box.get._2))
+    case  _ =>
     }
   
   def buttonChange(pos: Int) =

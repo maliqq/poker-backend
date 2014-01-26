@@ -20,81 +20,82 @@ class Replay(val variation: Variation, val stake: Stake) extends Actor with Acto
   val table = new Table(variation.tableSize)
   val gameplay = new Gameplay(events, variation, stake, table)
   
-  lazy val events = new GameplayEvents
-  lazy val dealer = new Dealer
-  
-  var betting: ActorRef = system.deadLetters
+  val events = new GameplayEvents
+  val dealer = new Dealer
+
+  val betting = context.actorOf(Props(classOf[BettingActor], gameplay.round), name = "betting-process")
 
   override def preStart {
-    Console printf("starting replay with variation=%s stake=%s\n", variation, stake)
-    betting = actorOf(Props(classOf[BettingActor], gameplay.round), name = "betting-process")
+    log.info("starting replay with variation={} stake={}", variation, stake)
   }
 
   def receive = {
     case Replay.Subscribe(out) =>
+      log.info("subscribe")
       events.broker.subscribe(out, "replay-out")
       events.start(table, variation, stake)
 
     case join @ rpc.JoinPlayer(pos, player, amount) =>
-      Console printf("got: %s" format(join))
+      log.info("got: {}", join)
       table.addPlayer(pos, player, Some(amount))
       events.joinTable((player, pos), amount)
-      
+
     case addBet @ rpc.AddBet(player, bet) =>
-      Console printf("got: %s" format(addBet))
+      log.info("got: {}", addBet)
       if (bet.isForced) {
-        
-        val (_, pos) = table.box(player)
-        val seat = (table.seats: List[Seat])(pos)
-        
+
+        val (seat, pos) = table.seat(player).get
+
         gameplay.round.forceBet((seat, pos), bet.betType.asInstanceOf[Bet.ForcedBet])
 
       } else betting ! addBet
-      //events.addBet(table.box(player), bet)
-      
+      events.addBet(table.box(player).get, bet)
+
     case s @ rpc.ShowCards(cards, player, muck) =>
-      Console printf("got: %s" format(s))
-      events.showCards(table.box(player), cards, muck)
-      
+      log.debug("got: {}", s)
+      events.showCards(table.box(player).get, cards, muck)
+
     case d @ rpc.DealCards(_type, player, cards, cardsNum) =>
-      Console printf("got: %s" format(d))
+      log.debug("got: {}", d)
       (_type: DealCards.Value) match {
         case DealCards.Hole =>
-          Console printf(" | deal %s -> %s\n", cards, player)
+          log.debug(" | deal {} -> {}", cards, player)
           dealer.dealPocket(cards, player)
-          events.dealCards(_type, cards, Some(table.box(player)))
-        
+          events.dealCards(_type, cards, table.box(player))
+
         case DealCards.Door =>
-          Console printf(" | deal door %s -> %s\n", cards, player)
+          log.debug(" | deal door {} -> {}", cards, player)
           dealer.dealPocket(cards, player)
-          events.dealCards(_type, cards, Some(table.box(player)))
-          
+          events.dealCards(_type, cards, table.box(player))
+
         case DealCards.Board =>
-          Console printf(" | deal board %s\n", cards)
+          log.debug(" | deal board {}", cards)
           dealer.dealBoard(cards)
           events.dealCards(_type, cards)
+
+        case x =>
+          Console printf("\n\nWHAT THE FUCK?????%s\n\n", x)
       }
-    
+
     case Street.Start =>
-      Console printf("street start")
+      log.debug("street start")
       gameplay.prepareSeats
       self ! Street.Next
 
     case Street.Next =>
-      Console printf("next street")
+      log.debug("next street")
       betting ! Betting.Next
 
     case Street.Exit =>
-      Console printf("showdown")
+      log.debug("showdown")
       gameplay.showdown
       stop(self)
 
-    case x =>
-      Console printf("UNHANDLED: %s", x)
+    case x => log.warning("unandled: {}", x)
   }
 
   override def postStop {
-    Console printf("actor stopped!")
+    log.info("actor stopped!")
   }
   
 }

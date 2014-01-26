@@ -34,7 +34,7 @@ object Server {
   final val defaultPort = 8082
 }
 
-case class Server(config: Config, gw: ActorRef) {
+case class Server(gw: ActorRef, config: Config) {
   private var channel: Channel = null
   
   def isActive = channel != null && channel.isActive

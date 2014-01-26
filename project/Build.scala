@@ -61,7 +61,7 @@ object PokernoBuild extends Build {
     settings = Project.defaultSettings ++ Seq(
       name := "pokerno-gateway-http",
       version := "0.0.1",
-      libraryDependencies ++= deps ++ Seq(
+      libraryDependencies ++= deps ++ testDeps ++ Seq(
         "io.netty" % "netty-all" % "4.0.14.Final"
       )
     ) ++ assemblySettings
@@ -73,7 +73,7 @@ object PokernoBuild extends Build {
     settings = Project.defaultSettings ++ Seq(
       name := "pokerno-gateway-stomp",
       version := "0.0.1",
-      libraryDependencies ++= deps ++ Seq(
+      libraryDependencies ++= deps ++ testDeps ++ Seq(
         "asia.stampy" % "stampy-core" % "1.0-RELEASE",
         //"asia.stampy" % "stampy-NETTY-client-server-RI" % "1.0-RELEASE",
         "io.netty" % "netty-all" % "4.0.14.Final"
@@ -87,7 +87,7 @@ object PokernoBuild extends Build {
     settings = Project.defaultSettings ++ Seq(
       name := "pokerno-backend",
       version := "0.0.1",
-      libraryDependencies ++= Seq(
+      libraryDependencies ++= testDeps ++ Seq(
         "com.typesafe.akka" %% "akka-zeromq" % "2.2.1"
       )
     ) ++ assemblySettings
@@ -121,9 +121,8 @@ object PokernoBuild extends Build {
       name := "pokerno-replay",
       version := "0.0.2",
       libraryDependencies ++= Seq(
-          "jline" % "jline" % "2.11",
-          "com.github.scopt" %% "scopt" % "3.1.0"
-        )
+        "jline" % "jline" % "2.11"
+      )
     ) ++ assemblySettings
   ) dependsOn(util, core, backend)
   
@@ -155,7 +154,7 @@ object PokernoBuild extends Build {
     settings = Project.defaultSettings ++ Seq(
       name := "pokerno-server",
       version := "0.0.1",
-      libraryDependencies ++= Seq(
+      libraryDependencies ++= testDeps ++ Seq(
         "com.github.scopt" %% "scopt" % "3.1.0"
       )
     ) ++ assemblySettings

@@ -21,12 +21,13 @@ object Table { // FIXME use conversions
 class Table(val size: Int) {
   private val _seats = new Seats(List.fill(size) { new Seat })
   def seats = _seats
+  def seatsAsList = _seats:List[Seat]
   
   private val _button = new Round(size)
   def button = _button
   
   override def toString = {
-    var b = new StringBuilder 
+    val b = new StringBuilder
     
     b.append("size=%d\n" format(size))
     b.append("button=%d\n" format(button: Int))
@@ -35,10 +36,24 @@ class Table(val size: Int) {
     b.toString
   }
 
-  private var _seating: mutable.Map[Player, Int] = mutable.Map.empty
+  private val _seating: mutable.Map[Player, Int] = mutable.Map.empty
   
-  type Box = Tuple2[Player, Int]
-  def box(player: Player): Box = (player, _seating(player))
+  type Box = (Player, Int)
+
+  def boxes = seatsAsList.filter(_.player.isDefined).zipWithIndex.map { case (seat, i) =>
+    (seat.player.get, i)
+  }
+
+  def pos(player: Player): Option[Int] =
+    _seating.get(player)
+
+  def box(player: Player): Option[Box] = pos(player).map { i =>
+    (player, i)
+  }
+
+  def seat(player: Player): Option[(Seat, Int)] = pos(player).map { i =>
+    (seatsAsList(i), i)
+  }
   
   def addPlayer(at: Int, player: Player, amount: Option[Decimal] = None) {
     val seat = (seats: List[Seat])(at)

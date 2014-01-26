@@ -16,9 +16,9 @@ class Replay(val variation: Variation, val stake: Stake) extends Actor with Acto
   import protocol.msg.Conversions._
   
   val table = new Table(variation.tableSize)
+  val events = new GameplayEvents
   val gameplay = new Gameplay(events, variation, stake, table)
   
-  val events = new GameplayEvents
   val dealer = new Dealer
 
   val betting = context.actorOf(Props(classOf[BettingActor], gameplay.round), name = "betting-process")

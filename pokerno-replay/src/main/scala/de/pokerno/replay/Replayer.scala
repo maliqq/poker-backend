@@ -67,7 +67,7 @@ object Replayer {
 
       val actions = scenario.actions.get(street)
       for (action <- actions) {
-        // sleep
+        sleep
         replay ! action
       }
     }

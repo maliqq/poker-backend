@@ -31,9 +31,9 @@ case class Bet(
   @BeanProperty
   var `type`: BetSchema.BetType,
   @BeanProperty
-  var amount: java.lang.Double
+  var amount: java.lang.Double = null
 ) {
-  def this() = this(null, null)
+  def this() = this(null)
 }
 
 @MsgPack

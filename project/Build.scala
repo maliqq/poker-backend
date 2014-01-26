@@ -11,7 +11,8 @@ object PokernoBuild extends Build {
   override lazy val settings = super.settings ++ Seq(
     organization := "de.pokerno",
     scalaVersion := "2.10.3",
-    exportJars := true
+    exportJars := true,
+    javacOptions ++= Seq("-source", "1.7", "-target", "1.7")
     //,resolvers += "spray repo" at "http://repo.spray.io"
     //,resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
   )

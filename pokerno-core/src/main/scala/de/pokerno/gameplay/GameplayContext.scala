@@ -7,7 +7,7 @@ object Gameplay {
   case object Stop
 }
 
-class Gameplay(
+class GameplayContext(
     val events: GameplayEvents,
     val variation: Variation,
     val stake: Stake,

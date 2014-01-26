@@ -21,6 +21,11 @@ object Main {
       c.copy(configFile = Some(value))
     }
     
+    // --host node1.localhost
+    opt[String]('h', "host") text("Node hostname") action { (value, c) =>
+      c.copy(config = c.config.copy(host = value))
+    }
+    
     // --http-port 8080
     opt[Int]("http-port") text("HTTP port") action { (value, c) =>
       c.copy(config = c.config.copy(

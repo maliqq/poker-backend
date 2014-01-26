@@ -17,7 +17,7 @@ class Replay(val variation: Variation, val stake: Stake) extends Actor with Acto
   
   val table = new Table(variation.tableSize)
   val events = new GameplayEvents
-  val gameplay = new Gameplay(events, variation, stake, table)
+  val gameplay = new GameplayContext(events, variation, stake, table)
   
   val dealer = new Dealer
 

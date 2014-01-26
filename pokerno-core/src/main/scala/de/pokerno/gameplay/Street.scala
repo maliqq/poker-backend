@@ -4,7 +4,7 @@ import de.pokerno.model._
 import akka.actor.{ Actor, Props, ActorLogging, ActorRef }
 import de.pokerno.protocol.{msg => proto}
 
-class StreetActor(val gameplay: Gameplay, val name: Street.Value, val stages: List[StreetStage]) extends Actor with ActorLogging {
+class StreetActor(val gameplay: GameplayContext, val name: Street.Value, val stages: List[StreetStage]) extends Actor with ActorLogging {
   import context._
   val stagesIterator = stages.iterator
 
@@ -66,7 +66,7 @@ object Street extends Enumeration {
 }
 
 object Streets {
-  def build(gameplay: Gameplay, bettingRef: ActorRef): List[Street] = {
+  def build(gameplay: GameplayContext, bettingRef: ActorRef): List[Street] = {
     val discarding = DirectStreetStage("discarding") {}
 
     val bringIn = DirectStreetStage("bring-in") {

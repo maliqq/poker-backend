@@ -34,6 +34,7 @@ object Config {
 }
 
 case class Config(
+    var host: String = "localhost",
     var http: Option[gw.http.Config] = None,
     var rpc: Option[Config.Rpc] = None,
     var stomp: Option[gw.Stomp.Config] = None,

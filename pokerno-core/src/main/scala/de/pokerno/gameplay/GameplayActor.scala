@@ -6,7 +6,7 @@ import de.pokerno.model._
 import concurrent._
 import de.pokerno.protocol.{msg => message}
 
-class GameplayActor(val gameplay: Gameplay) extends Actor
+class GameplayActor(val gameplay: GameplayContext) extends Actor
                                                with ActorLogging {
   import context._
 

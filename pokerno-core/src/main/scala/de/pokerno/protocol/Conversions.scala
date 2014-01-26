@@ -27,13 +27,10 @@ object Conversions {
   implicit def wire2bet(w: wire.Bet) =
     new model.Bet(w.getType, w.getAmount)
 
-  implicit def decimal2wire(d: Decimal): java.lang.Double = {
-    if (d != null) return d.toDouble
-    return null
-  }
+  implicit def decimal2wire(d: Decimal): java.lang.Double = d.toDouble
 
-  implicit def wire2decimal(w: java.lang.Double): Decimal = w:Decimal
-  
+  implicit def wire2decimal(w: java.lang.Double): Decimal = Decimal.double2bigDecimal(w)
+
   implicit def cards2wire(c: List[poker.Card]): ByteString =
     ByteString.copyFrom(c.map(_.toByte).toArray)
   

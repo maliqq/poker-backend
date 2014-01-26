@@ -19,7 +19,7 @@ object PokernoBuild extends Build {
   
   lazy val deps = Seq(
     //"org.scalaz" %% "scalaz-core" % "7.0.3",
-    "com.typesafe.akka" %% "akka-actor" % "2.2.1",
+    "com.typesafe.akka" %% "akka-actor" % "2.2.3",
     //"com.twitter" % "ostrich" % "2.3.0"
     "com.twitter" %% "util-core" % "6.10.0",
     "com.codahale.metrics" % "metrics-core" % "3.0.1"
@@ -27,7 +27,7 @@ object PokernoBuild extends Build {
   
   lazy val testDeps = Seq(
     "org.scalatest" %% "scalatest" % "1.9.2" % "test",
-    "com.typesafe.akka" %% "akka-testkit" % "2.2.1"
+    "com.typesafe.akka" %% "akka-testkit" % "2.2.3"
   )
 
   lazy val protocol = Project(
@@ -89,7 +89,7 @@ object PokernoBuild extends Build {
       name := "pokerno-backend",
       version := "0.0.1",
       libraryDependencies ++= testDeps ++ Seq(
-        "com.typesafe.akka" %% "akka-zeromq" % "2.2.1"
+        "com.typesafe.akka" %% "akka-zeromq" % "2.2.3"
       )
     ) ++ assemblySettings
   ) dependsOn(core, httpGateway, stompGateway)

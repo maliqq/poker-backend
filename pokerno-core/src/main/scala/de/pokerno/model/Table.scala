@@ -54,7 +54,7 @@ class Table(val size: Int) {
   def seat(player: Player): Option[(Seat, Int)] = pos(player).map { i =>
     (seatsAsList(i), i)
   }
-  
+
   def addPlayer(at: Int, player: Player, amount: Option[Decimal] = None) {
     val seat = seatsAsList(at)
     seat.player = player

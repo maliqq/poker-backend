@@ -18,11 +18,11 @@ object PokernoBuild extends Build {
   )
   
   lazy val deps = Seq(
-    //"org.scalaz" %% "scalaz-core" % "7.0.3",
+    "org.scalaz" %% "scalaz-core" % "7.0.3",
+    "org.slf4j" % "slf4j-simple" % "1.7.5",
     "com.typesafe.akka" %% "akka-actor" % "2.2.3",
     //"com.twitter" % "ostrich" % "2.3.0"
-    "com.twitter" %% "util-core" % "6.10.0",
-    "com.codahale.metrics" % "metrics-core" % "3.0.1"
+    "com.twitter" %% "util-core" % "6.10.0"
   )
   
   lazy val testDeps = Seq(
@@ -89,10 +89,12 @@ object PokernoBuild extends Build {
       name := "pokerno-backend",
       version := "0.0.1",
       libraryDependencies ++= testDeps ++ Seq(
-        "com.typesafe.akka" %% "akka-zeromq" % "2.2.3"
+        "com.codahale.metrics" % "metrics-core" % "3.0.1",
+        "com.typesafe.akka" %% "akka-zeromq" % "2.2.3",
+        "redis.clients" % "jedis" % "2.2.1"
       )
     ) ++ assemblySettings
-  ) dependsOn(core, httpGateway, stompGateway)
+  ) dependsOn(core, protocol, httpGateway, stompGateway)
 
   lazy val ai = Project(
     id = "pokerno-ai",
@@ -124,7 +126,9 @@ object PokernoBuild extends Build {
       libraryDependencies ++= Seq(
         "jline" % "jline" % "2.11"
       )
-    ) ++ assemblySettings
+    ) ++ assemblySettings ++ Seq(
+      assemblyOption in assembly ~= { _.copy(includeBin = true, includeScala = false, includeDependency = false) }
+    )
   ) dependsOn(util, core, backend)
   
   lazy val bench = Project(

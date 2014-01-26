@@ -28,7 +28,7 @@ object Replayer {
     """)
 
   val system = ActorSystem("poker-replayer", ConfigFactory.load(config))
-  val es = system.actorOf(Props(classOf[Http.Dispatcher]), "http-dispatcher")
+  val es = system.actorOf(Props(classOf[Http.Gateway]), "http-dispatcher")
 
   def startHttpServer = {
     val server = new http.Server(es,

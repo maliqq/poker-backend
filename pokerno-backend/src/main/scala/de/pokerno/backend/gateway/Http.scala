@@ -1,6 +1,6 @@
 package de.pokerno.backend.gateway
 
-import akka.actor.Actor
+import akka.actor.{Actor, ActorLogging}
 import io.netty.channel.Channel
 import io.netty.buffer.Unpooled
 import io.netty.util.CharsetUtil
@@ -8,7 +8,8 @@ import io.netty.util.CharsetUtil
 import de.pokerno.protocol.{Message, Codec => codec}
 
 object Http {
-  class Dispatcher extends Actor {
+  class Gateway
+    extends Actor with ActorLogging {
 
     import concurrent.duration._
     import context._
@@ -24,22 +25,16 @@ object Http {
       case http.Event.Connect(channel, conn) =>
         if (!channelConnections.contains(channel)) {
           channelConnections.put(channel, conn)
-          Console printf("%s connected!\n", conn.remoteAddr)
-          //system.scheduler.schedule(0 milliseconds, 1 second, self, Tick(conn))
+          log.info("{} connected", conn)
         }
-      
-//      case Tick(conn) =>
-//        Console printf("tick!\n")
-//        conn.write("hello!")
-//      
+
       case http.Event.Disconnect(channel) =>
-        val conn = channelConnections.remove(channel)
-        conn.map { conn =>
-          Console printf("disconnected!\n")
+        channelConnections.remove(channel).map { conn =>
+          log.info("{} disconnected", conn)
         }
       
-      case http.Event.Message(channel, msg) =>
-        Console printf("got: %s", msg)
+      case http.Event.Message(channel, data) =>
+        val msg = codec.Json.decode(data.getBytes)
       
       case msg: Message =>
         broadcast(codec.Json.encode(msg))

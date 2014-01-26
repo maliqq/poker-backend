@@ -26,38 +26,7 @@ object Config {
   case class Rpc(
       var host: String = Rpc.defaultHost,
       var port: Int = Rpc.defaultPort)
-  
-  case class Http(
-      var host: String = "localhost",
-      var port: Int = Http.defaultPort,
-      var api: Option[Http.Api] = None,
-      var webSocket: Option[gw.http.WebSocket.Config] = None,
-      var eventSource: Option[gw.http.EventSource.Config] = None
-      ) {
-    
-    def getApi = api.get
-    
-    def withApi = {
-      if (!api.isDefined) api = Some(Http.Api())
-      this
-    }
-
-    def getWs = webSocket.get
-    
-    def withWebSocket = {
-      if (!webSocket.isDefined) webSocket = Some(gw.http.WebSocket.Config())
-      this
-    }
-    
-    def getEs = eventSource.get
-    
-    def withEventSource = {
-      if (!eventSource.isDefined) eventSource = Some(gw.http.EventSource.Config())
-      this
-    }
-    
-  }
-
+      
   import com.fasterxml.jackson.databind.ObjectMapper
 
   def from(f: java.io.InputStream): Config =
@@ -65,37 +34,22 @@ object Config {
 }
 
 case class Config(
-    var http: Option[Config.Http] = None,
+    var http: Option[gw.http.Config] = None,
     var rpc: Option[Config.Rpc] = None,
     var stomp: Option[gw.Stomp.Config] = None,
     var zeromq: Option[gw.Zeromq.Config] = None
 ) {
   
-  def getHttp = http.get
+  def httpConfig =
+    http.getOrElse(gw.http.Config())
   
-  def withHttp = {
-    if (!http.isDefined) http = Some(Config.Http())
-    this
-  }
-
-  def getStomp = stomp.get
-  def withStomp = {
-    if (!stomp.isDefined) stomp = Some(gw.Stomp.Config())
-    this
-  }
+  def stompConfig =
+    stomp.getOrElse(gw.Stomp.Config())
   
-  def getRpc = rpc.get
+  def rpcConfig =
+    rpc.getOrElse(Config.Rpc())
   
-  def withRpc = {
-    if (!rpc.isDefined) rpc = Some(Config.Rpc())
-    this
-  }
-  
-  def getZmq = zeromq.get
-  
-  def withZmq = {
-    if (!zeromq.isDefined) zeromq = Some(gw.Zeromq.Config())
-    this
-  }
+  def zeromqConfig =
+    zeromq.getOrElse(gw.Zeromq.Config())
 
 }

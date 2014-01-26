@@ -1,9 +1,9 @@
-package de.pokerno.gameplay
+package de.pokerno.backend.server
+
 import akka.actor.{ Actor }
 import com.codahale.metrics._
 
 object Metrics {
-
 }
 
 class Metrics extends Actor {

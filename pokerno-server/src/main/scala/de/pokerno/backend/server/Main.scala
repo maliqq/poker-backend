@@ -1,5 +1,6 @@
 package de.pokerno.backend.server
 
+import org.slf4j.LoggerFactory
 import de.pokerno.gameplay._
 import de.pokerno.backend.{gateway => gw}
 import de.pokerno.model._
@@ -12,99 +13,115 @@ case class Options(
     )
 
 object Main {
+  val log = LoggerFactory.getLogger(getClass)
+  
   private val optionParser = new scopt.OptionParser[Options]("poker-server") {
+    // -c /etc/node.json
     opt[String]('c', "config") text ("Path to config file") action { (value, c) =>
       c.copy(configFile = Some(value))
     }
-
-    opt[Int]("rpc-port") text("RPC Port") action { (value, c) =>
-      val config = c.config.withRpc
-      config.getRpc.port = value
-
-      c.copy(config = config)
-    }
     
-    opt[Int]("stomp-port") text("STOMP port") action { (value, c) =>
-      val config = c.config.withStomp
-      config.getStomp.port = value
-      
-      c.copy(config = config)
-    }
-    
-    opt[String]("http-host") text("HTTP host") action { (value, c) =>
-      val config = c.config.withHttp
-      config.getHttp.host = value
-      
-      c.copy(config = config)
-    }
-    
+    // --http-port 8080
     opt[Int]("http-port") text("HTTP port") action { (value, c) =>
-      val config = c.config.withHttp
-      config.getHttp.port = value
-      
-      c.copy(config = config)
-    }
-
-//    opt[Int]("http-api-port") text("HTTP API port") action { (value, c) =>
-//      val config = c.config.withHttp
-//      config.getHttp.withApi.getApi.port = value
-//      
-//      c.copy(config = config)
-//    }
-
-    opt[String]("http-api-path") text("HTTP API path") action { (value, c) =>
-      val config = c.config.withHttp
-      config.getHttp.withApi.getApi.path = value
-      
-      c.copy(config = config)
+      c.copy(config = c.config.copy(
+          http = Some(c.config.httpConfig.copy(port = value))
+      ))
     }
     
-//    opt[Int]("http-websocket-port") text("HTTP WebSocket port") action { (value, c) =>
-//      val config = c.config.withHttp
-//      config.getHttp.withWebSocket.getWs.port = value
-//      c.copy(config = config)
-//    }
+    // --http-websocket
+    opt[Unit]("http-websocket") text("HTTP WebSocket path") action { (value, c) =>
+      val config = c.config.httpConfig.webSocketConfig
+      if (config.isDefined) c // skip
+      else c.copy(config = c.config.copy(
+          http = Some(c.config.httpConfig.copy(webSocket = Right(true)))
+      ))
+    }
     
+    // --http-websocket-path /_ws
     opt[String]("http-websocket-path") text("HTTP WebSocket path") action { (value, c) =>
-      val config = c.config.withHttp
-      config.getHttp.withWebSocket.getWs.path = value
-      
-      c.copy(config = config)
+      val config = c.config.httpConfig.webSocketConfig
+      if (config.isDefined) c.copy(config = c.config.copy(
+          http = Some(c.config.httpConfig.copy(webSocket = Left(config.get.copy(path = value))))
+      ))
+      else c
     }
     
-//    opt[Int]("http-eventsource-port") text("HTTP EventSource port") action { (value, c) =>
-//      val config = c.config.withHttp
-//      config.getHttp.withEventSource.getEs.port = value
-//      
-//      c.copy(config = config)
-//    }
+    // --http-eventsource
+    opt[Unit]("http-eventsource") text("HTTP WebSocket path") action { (value, c) =>
+      val config = c.config.httpConfig.eventSourceConfig
+      if (config.isDefined) c // skip
+      else c.copy(config = c.config.copy(
+          http = Some(c.config.httpConfig.copy(eventSource = Right(true)))
+      ))
+    }
+    
+    // --http-eventsource-path /_es
     opt[String]("http-eventsource-path") text("HTTP EventSource path") action { (value, c) =>
-      val config = c.config.withHttp
-      config.getHttp.withEventSource.getEs.path = value
-      
-      c.copy(config = config)
+      val config = c.config.httpConfig.eventSourceConfig
+      if (config.isDefined) c.copy(config = c.config.copy(
+          http = Some(c.config.httpConfig.copy(eventSource = Left(config.get.copy(path = value))))
+      ))
+      else c
     }
     
+    // --rpc
+    opt[Unit]("rpc") text("RPC with default options") action { (value, c) =>
+      c.copy(config = c.config.copy(
+          rpc = Some(c.config.rpcConfig)
+      ))
+    }
+
+    // --rpc-port 8081
+    opt[Int]("rpc-port") text("RPC Port") action { (value, c) =>
+      c.copy(config = c.config.copy(
+          rpc = Some(c.config.rpcConfig.copy(port = value))
+      ))
+    }
+    
+    // --stomp
+    opt[Unit]("stomp") text("STOMP with default options") action { (value, c) =>
+      c.copy(config = c.config.copy(
+          stomp = Some(c.config.stompConfig)
+      ))
+    }
+    
+    // --stomp-port 8082
+    opt[Int]("stomp-port") text("STOMP port") action { (value, c) =>
+      c.copy(config = c.config.copy(
+          stomp = Some(c.config.stompConfig.copy(port = value))
+      ))
+    }
+    
+    // --zeromq
+    opt[Unit]("zeromq") text("ZeroMQ with default options") action { (value, c) =>
+      c.copy(config = c.config.copy(
+          zeromq = Some(c.config.zeromqConfig)
+      ))
+    }
+    
+    // --zeromq-port
     opt[Int]("zeromq-port") text("ZeroMQ port") action { (value, c) =>
-      val config = c.config.withZmq
-      config.getZmq.port = value
-      
-      c.copy(config = config)
+      val config = c.config.zeromqConfig
+      c.copy(config = c.config.copy(
+          zeromq = Some(config.copy(port = value))
+      ))
     }
+    // --zeromq-host
     opt[String]("zeromq-host") text("ZeroMQ host") action { (value, c) =>
-      val config = c.config.withZmq
-      config.getZmq.host = value
-      
-      c.copy(config = config)
+      val config = c.config.zeromqConfig
+      c.copy(config = c.config.copy(
+          zeromq = Some(config.copy(host = value))
+      ))
     }
-    
+    // --zeromq-topic "updates"
     opt[String]("zeromq-topic") text("ZeroMQ subscribe topic") action { (value, c) =>
-      val config = c.config.withZmq
-      config.getZmq.topic = value
-      
-      c.copy(config = config)
+      val config = c.config.zeromqConfig
+      c.copy(config = c.config.copy(
+          zeromq = Some(config.copy(topic = value))
+      ))
     }
     
+    // --help
     help("help") text("Help")
   }
 
@@ -112,24 +129,25 @@ object Main {
   
   def main(args: Array[String]) {
     optionParser.parse(args, options) map { opts =>
-      var config: Config = null
-      
-      if (opts.configFile.isDefined) {
+      val config: Option[Config] = if (opts.configFile.isDefined) {
         val f = new java.io.FileInputStream(opts.configFile.get)
         
-        try config = Config.from(f)
+        try Some(Config.from(f))
         catch {
           case _: java.io.FileNotFoundException =>
-            Console printf("Config file not found!")
-            System exit(1)
+            log.error("Config file not found!")
+            None
           
           case e: com.fasterxml.jackson.core.JsonParseException =>
-            Console printf("Invalid JSON: %s", e.getMessage)
-            System exit(1)
+            log.error("Invalid JSON: %s", e.getMessage)
+            None
         }
-      } else config = opts.config
+      } else Some(opts.config)
       
-      Node.start(config)
+      config match {
+        case Some(c) => Node.start(c)
+        case None => System.exit(0)
+      }
     }
   }
 

@@ -8,22 +8,31 @@ trait BettingBehavior {
 
   def handleBetting: Receive = {
     case Betting.Add(bet) ⇒
+      log.info("[betting] add {}", bet)
       gameplay.round.addBet(bet)
       nextTurn
 
-    case Betting.Next ⇒
+    case Betting.NextTurn ⇒
+      log.info("[betting] next turn")
       nextTurn
 
     case Betting.Stop ⇒
+      log.info("[betting] stop")
+      context.become(handleStreets)
+      self ! Streets.Done
       
     case Betting.Timeout ⇒
+      log.info("[betting] timeout")
       nextTurn
 
     case Betting.Done ⇒
+      log.info("[betting] done")
       gameplay.round.complete
+      context.become(handleStreets)
       streets(stageContext)
 
     case Betting.BigBets ⇒
+      log.info("[betting] big bets")
       gameplay.round.bigBets = true
   }
   

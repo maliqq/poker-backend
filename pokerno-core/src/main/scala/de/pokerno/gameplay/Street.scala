@@ -41,13 +41,15 @@ case class Street(val value: Street.Value, val stages: StageChain) {
 }
 
 class StreetChain(ctx: StageContext, streets: List[Street]) {
-  private var i = 0
-  def current = streets(i)
+  private val iterator = streets.iterator
+  private var _current: Street = null
   
-  def apply(ctx: StageContext) = {
-    val result = current(ctx)
+  def current = _current
+  
+  def apply(ctx: StageContext) = if (iterator.hasNext) {
+    _current = iterator.next
     
-    result match {
+    current(ctx) match {
       case Stage.Next | Stage.Skip =>
         ctx.ref ! Streets.Next
         
@@ -56,8 +58,7 @@ class StreetChain(ctx: StageContext, streets: List[Street]) {
         
       case x => throw new MatchError("unhandled stage transition: %s".format(x))
     }
-    i += 1
-    
-    result
-  }
+  
+  } else ctx.ref ! Streets.Done
+  
 }

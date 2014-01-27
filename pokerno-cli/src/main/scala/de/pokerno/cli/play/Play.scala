@@ -18,19 +18,19 @@ object PlayerActor {
   case object Start
 }
 
-class PlayerActor(i: Int, instance: ActorRef) extends Actor {
+class PlayerActor(pos: Int, instance: ActorRef) extends Actor {
   val stack = 1500.0
-  val player = new Player("player-%d".format(i))
+  val player = new Player("player-%d".format(pos))
   var pocketCards: List[Card] = List()
 
   import context._
 
   def receive = {
     case PlayerActor.Start ⇒
-      instance ! rpc.JoinPlayer(pos = i - 1, player = player, amount = stack)
+      instance ! rpc.JoinPlayer(pos = pos, player = player, amount = stack)
       become({
-        case msg.DealCards(_type, cards, pos, player, cardsNum) ⇒ (_type: DealCards.Value) match {
-          case DealCards.Hole | DealCards.Door if pos == i =>
+        case msg.DealCards(_type, cards, _pos, player, cardsNum) ⇒ (_type: DealCards.Value) match {
+          case DealCards.Hole | DealCards.Door if _pos == pos =>
             Console printf ("Dealt %s %s to %d\n", _type, Cards(cards) toConsoleString, pos)
             pocketCards = cards
             
@@ -40,7 +40,7 @@ class PlayerActor(i: Int, instance: ActorRef) extends Actor {
           case _                         ⇒
         }
 
-        case msg.RequireBet(pos, player, call, range) if pos == i ⇒
+        case msg.RequireBet(_pos, player, call, range) if _pos == pos ⇒
           Console printf ("Seat %d: Call=%.2f Min=%.2f Max=%.2f\n", pos, call, range.min, range.max)
 
           var bet = Play.readBet(call)
@@ -49,7 +49,7 @@ class PlayerActor(i: Int, instance: ActorRef) extends Actor {
           
           instance ! addBet
 
-        case msg.RequireDiscard(pos, player) if pos == i ⇒
+        case msg.RequireDiscard(_pos, player) if _pos == pos ⇒
           Console printf ("your cards: [%s]\n", pocketCards)
 
           val cards = Play.readCards
@@ -66,11 +66,12 @@ class Play(instance: ActorRef, tableSize: Int) extends Actor {
 
   override def preStart = {
     Console println ("starting play")
+    instance ! Instance.Subscribe(self, "play-observer")
+    
     (1 to tableSize) foreach { i ⇒
-      val playerActor = system.actorOf(Props(classOf[PlayerActor], i, instance), name = "player-process-%d".format(i))
+      val playerActor = system.actorOf(Props(classOf[PlayerActor], i - 1, instance), name = "player-process-%d".format(i))
       playerActor ! PlayerActor.Start
     }
-    instance ! Instance.Subscribe(self, "play-observer")
   }
   
   var boardCards: List[Card] = List()
@@ -109,6 +110,8 @@ class Play(instance: ActorRef, tableSize: Int) extends Actor {
 
       Console printf ("%s won %.2f\n", seat.player.get, amount)
     
+    case _: msg.RequireBet =>
+      
     case x =>
       Console printf("%sunhandled by play: %s%s\n", Console.RED, x, Console.RESET)
   }

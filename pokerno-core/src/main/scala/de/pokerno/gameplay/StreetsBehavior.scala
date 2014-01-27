@@ -36,6 +36,7 @@ trait StreetsBehavior {
     
   def handleStreets: Receive = {
     case Betting.Start =>
+      log.info("[betting] start")
       gameplay.round.reset
       nextTurn
       context.become(handleBetting)

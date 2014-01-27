@@ -17,7 +17,7 @@ object Betting {
   case class Add(bet: Bet)
 
   // go to next seat
-  case object Next
+  case object NextTurn
   // stop current deal
   case object Stop
   // betting done - wait for next street to occur

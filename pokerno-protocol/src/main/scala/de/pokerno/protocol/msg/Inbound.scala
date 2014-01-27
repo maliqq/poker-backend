@@ -6,14 +6,32 @@ import com.dyuproject.protostuff
 import com.dyuproject.protostuff.ByteString
 import beans._
 import org.msgpack.annotation.{ Message => MsgPack }
-import com.fasterxml.jackson.annotation.{JsonTypeInfo, JsonSubTypes}
+import com.fasterxml.jackson.annotation.{JsonTypeInfo, JsonSubTypes, JsonIgnoreProperties}
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 abstract class Inbound extends Message
 
+/**
+ * Command
+ * */
+@MsgPack
+sealed case class JoinTable(
+    @BeanProperty
+    var pos: Integer,
+
+    @BeanProperty
+    var amount: java.lang.Double) extends Message {
+  
+  def schema = JoinTableSchema.SCHEMA
+  //def pipeSchema = JoinTableSchema.PIPE_SCHEMA
+  
+  def this() = this(null, null)
+}
 /**
  * Action event
  * */
 @MsgPack
+@JsonIgnoreProperties(ignoreUnknown = true)
 sealed case class AddBet(
     @BeanProperty
     var bet: wire.Bet
@@ -24,6 +42,7 @@ sealed case class AddBet(
 }
 
 @MsgPack
+@JsonIgnoreProperties(ignoreUnknown = true)
 sealed case class DiscardCards(
     @BeanProperty
     var cards: ByteString
@@ -41,6 +60,7 @@ sealed case class DiscardCards(
 }
 
 @MsgPack
+@JsonIgnoreProperties(ignoreUnknown = true)
 sealed case class ShowCards(
     @BeanProperty
     var cards: ByteString,

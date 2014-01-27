@@ -14,27 +14,6 @@ import com.fasterxml.jackson.annotation.{JsonTypeInfo, JsonSubTypes}
 )
 abstract class Message extends BaseMessage
 
-
-/**
- * Command
- * */
-@MsgPack
-sealed case class JoinTable(
-    @BeanProperty
-    var pos: Integer,
-
-    @BeanProperty
-    var player: String,
-
-    @BeanProperty
-    var amount: java.lang.Double) extends Message {
-  
-  def schema = JoinTableSchema.SCHEMA
-  //def pipeSchema = JoinTableSchema.PIPE_SCHEMA
-  
-  def this() = this(null, null, null)
-}
-
 /**
  * Msg
  * */

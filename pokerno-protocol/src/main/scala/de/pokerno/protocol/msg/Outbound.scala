@@ -36,7 +36,6 @@ import com.fasterxml.jackson.annotation.{JsonInclude, JsonTypeInfo, JsonSubTypes
   new JsonSubTypes.Type(value = classOf[Dealer], name="Dealer"),
   new JsonSubTypes.Type(value = classOf[Error], name="Error")
 ))
-@JsonInclude(JsonInclude.Include.NON_NULL)
 abstract class Outbound extends Message
 
 @MsgPack
@@ -54,6 +53,7 @@ sealed case class BetAdd(
 }
 
 @MsgPack
+@JsonInclude(JsonInclude.Include.NON_NULL)
 sealed case class CardsDiscard(
     @BeanProperty
     var pos: Integer,
@@ -71,6 +71,7 @@ sealed case class CardsDiscard(
 }
 
 @MsgPack
+@JsonInclude(JsonInclude.Include.NON_NULL)
 sealed case class CardsShow(
     @BeanProperty
     var pos: Integer,
@@ -156,6 +157,7 @@ sealed case class StreetStart(streetName: StageEventSchema.StreetType) extends S
  * */
 
 @MsgPack
+@JsonInclude(JsonInclude.Include.NON_NULL)
 sealed case class DealCards(
     
     @BeanProperty
@@ -218,6 +220,7 @@ sealed case class RequireDiscard(
 }
 
 @MsgPack
+@JsonInclude(JsonInclude.Include.NON_NULL)
 sealed case class DeclarePot(
     @BeanProperty
     var pot: java.lang.Double,
@@ -232,6 +235,7 @@ sealed case class DeclarePot(
 }
 
 @MsgPack
+@JsonInclude(JsonInclude.Include.NON_NULL)
 sealed case class DeclareHand(
     @BeanProperty
     var pos: Integer,

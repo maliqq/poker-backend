@@ -42,7 +42,7 @@ class ActionEvent(
 class GameplayEvent(
     @BeanProperty
     var `type`: GameplayEventSchema.EventType
-  ) extends Message {
+  ) extends Outbound {
 
   def schema = GameplayEventSchema.SCHEMA
   //def pipeSchema = GameplayEventSchema.PIPE_SCHEMA
@@ -61,7 +61,7 @@ class GameplayEvent(
 class StageEvent(
     @BeanProperty
     var `type`: StageEventSchema.EventType
-  ) extends Message {
+  ) extends Outbound {
   def schema = StageEventSchema.SCHEMA
   //def pipeSchema = StageEventSchema.PIPE_SCHEMA
   
@@ -144,7 +144,7 @@ class DealEvent extends Outbound {
 
 @MsgPack
 @JsonInclude(JsonInclude.Include.NON_NULL)
-class Msg extends Message {
+class Msg extends Outbound {
   def schema = MsgSchema.SCHEMA
   //def pipeSchema = MsgSchema.PIPE_SCHEMA
   @BeanProperty
@@ -168,7 +168,7 @@ class Cmd extends Message {
 
 @MsgPack
 @JsonInclude(JsonInclude.Include.NON_NULL)
-class Evt extends Message {
+class Evt extends Outbound {
   def schema = EvtSchema.SCHEMA
   //def pipeSchema = EventSchema.PIPE_SCHEMA
   @BeanProperty

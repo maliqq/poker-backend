@@ -9,32 +9,33 @@ import org.msgpack.annotation.{ Message => MsgPack }
 import com.fasterxml.jackson.annotation.{JsonInclude, JsonTypeInfo, JsonSubTypes}
 
 @JsonSubTypes(Array(
-  new JsonSubTypes.Type(value = classOf[BetAdd], name="AddBet"),
-  new JsonSubTypes.Type(value = classOf[CardsDiscard], name="DiscardCards"),
-  new JsonSubTypes.Type(value = classOf[CardsShow], name="ShowCards"),
+  new JsonSubTypes.Type(value = classOf[BetAdd], name="bet:add"),
+  new JsonSubTypes.Type(value = classOf[CardsDiscard], name="cards:discard"),
+  new JsonSubTypes.Type(value = classOf[CardsShow], name="cards:show"),
   
-  new JsonSubTypes.Type(value = classOf[DealCards], name="DealCards"),
-  new JsonSubTypes.Type(value = classOf[RequireBet], name="RequireBet"),
-  new JsonSubTypes.Type(value = classOf[RequireDiscard], name="RequireDiscard"),
-  new JsonSubTypes.Type(value = classOf[DeclarePot], name="DeclarePot"),
-  new JsonSubTypes.Type(value = classOf[DeclareHand], name="DeclareHand"),
-  new JsonSubTypes.Type(value = classOf[DeclareWinner], name="DeclareWinner"),
-  new JsonSubTypes.Type(value = classOf[TickTimer], name="TickTimer"),
+  new JsonSubTypes.Type(value = classOf[DealCards], name="cards:deal"),
+  new JsonSubTypes.Type(value = classOf[RequireBet], name="bet:ask"),
+  new JsonSubTypes.Type(value = classOf[RequireDiscard], name="discard:ask"),
+  new JsonSubTypes.Type(value = classOf[DeclarePot], name="pot:"),
+  new JsonSubTypes.Type(value = classOf[DeclareHand], name="hand:"),
+  new JsonSubTypes.Type(value = classOf[DeclareWinner], name="winner:"),
+  new JsonSubTypes.Type(value = classOf[TickTimer], name="timer:tick"),
 
 //  new JsonSubTypes.Type(value = classOf[StageEvent], name="StageEvent"),
 //  new JsonSubTypes.Type(value = classOf[GameplayEvent], name="GameplayEvent"),
 //  new JsonSubTypes.Type(value = classOf[DealEvent], name="DealEvent"),
-  new JsonSubTypes.Type(value = classOf[Start], name="Start"),
-  new JsonSubTypes.Type(value = classOf[ButtonChange], name="ButtonChange"),
-  new JsonSubTypes.Type(value = classOf[GameChange], name="GameChange"),
-  new JsonSubTypes.Type(value = classOf[StakeChange], name="StakeChange"),
-  new JsonSubTypes.Type(value = classOf[PlayStart], name="PlayStart"),
-  new JsonSubTypes.Type(value = classOf[PlayStop], name="PlayStop"),
-  new JsonSubTypes.Type(value = classOf[StreetStart], name="StreetStart"),
-  new JsonSubTypes.Type(value = classOf[PlayerJoin], name="JoinTable"),
-  new JsonSubTypes.Type(value = classOf[Chat], name="Chat"),
-  new JsonSubTypes.Type(value = classOf[Dealer], name="Dealer"),
-  new JsonSubTypes.Type(value = classOf[Error], name="Error")
+
+  new JsonSubTypes.Type(value = classOf[Start], name="start:"),
+  new JsonSubTypes.Type(value = classOf[ButtonChange], name="table:"),
+  new JsonSubTypes.Type(value = classOf[GameChange], name="gameplay:"),
+  new JsonSubTypes.Type(value = classOf[StakeChange], name="gameplay:"),
+  new JsonSubTypes.Type(value = classOf[PlayStart], name="stage:"),
+  new JsonSubTypes.Type(value = classOf[PlayStop], name="stage:"),
+  new JsonSubTypes.Type(value = classOf[StreetStart], name="street:start"),
+  new JsonSubTypes.Type(value = classOf[PlayerJoin], name="player:join"),
+  new JsonSubTypes.Type(value = classOf[Chat], name="msg:"),
+  new JsonSubTypes.Type(value = classOf[Dealer], name="msg:"),
+  new JsonSubTypes.Type(value = classOf[Error], name="msg:")
 ))
 abstract class Outbound extends Message
 
@@ -173,7 +174,7 @@ sealed case class DealCards(
     var player: String = null,
     
     @BeanProperty
-    var cardsNum: Integer = null) extends Message {
+    var cardsNum: Integer = null) extends Outbound {
 
   def this() = this(null)
   
@@ -194,7 +195,7 @@ sealed case class RequireBet(
     var call: java.lang.Double,
     
     @BeanProperty
-    var raise: wire.Range) extends Message {
+    var raise: wire.Range) extends Outbound {
   
   def schema = RequireBetSchema.SCHEMA
   //def pipeSchema = RequireBetSchema.PIPE_SCHEMA
@@ -211,7 +212,7 @@ sealed case class RequireDiscard(
     var pos: Integer,
     
     @BeanProperty
-    var player: String) extends Message {
+    var player: String) extends Outbound {
   
   def schema = RequireDiscardSchema.SCHEMA
   //def pipeSchema = RequireDiscardSchema.PIPE_SCHEMA
@@ -226,7 +227,7 @@ sealed case class DeclarePot(
     var pot: java.lang.Double,
 
     @BeanProperty
-    var rake: java.lang.Double = null) extends Message {
+    var rake: java.lang.Double = null) extends Outbound {
   
   def schema = DeclarePotSchema.SCHEMA
   //def pipeSchema = DeclarePotSchema.PIPE_SCHEMA
@@ -247,7 +248,7 @@ sealed case class DeclareHand(
     var cards: ByteString,
 
     @BeanProperty
-    var hand: wire.Hand) extends Message {
+    var hand: wire.Hand) extends Outbound {
   
   def schema = DeclareHandSchema.SCHEMA
   //def pipeSchema = DeclareHandSchema.PIPE_SCHEMA
@@ -263,7 +264,7 @@ sealed case class DeclareWinner(
     var player: String,
     
     @BeanProperty
-    var amount: java.lang.Double) extends Message {
+    var amount: java.lang.Double) extends Outbound {
   
   def schema = DeclareWinnerSchema.SCHEMA
   //def pipeSchema = DeclareWinnerSchema.PIPE_SCHEMA
@@ -284,7 +285,7 @@ sealed case class TickTimer(
     
     @BeanProperty
     var timeBank: java.lang.Boolean = false
-) extends Message {
+) extends Outbound {
   
   def this() = this(null, null, null)
   def schema = TickTimerSchema.SCHEMA

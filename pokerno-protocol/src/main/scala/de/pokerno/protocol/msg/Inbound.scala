@@ -8,6 +8,12 @@ import beans._
 import org.msgpack.annotation.{ Message => MsgPack }
 import com.fasterxml.jackson.annotation.{JsonTypeInfo, JsonSubTypes, JsonIgnoreProperties}
 
+@JsonSubTypes(Array(
+  new JsonSubTypes.Type(value = classOf[JoinTable], name="table:join"),
+  new JsonSubTypes.Type(value = classOf[AddBet], name="bet:add"),
+  new JsonSubTypes.Type(value = classOf[DiscardCards], name="cards:discard"),
+  new JsonSubTypes.Type(value = classOf[ShowCards], name="cards:show")
+))
 @JsonIgnoreProperties(ignoreUnknown = true)
 abstract class Inbound extends Message
 

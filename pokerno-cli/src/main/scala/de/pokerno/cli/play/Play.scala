@@ -1,12 +1,15 @@
 package de.pokerno.cli.play
 
-import java.util.Scanner
+import jline.console.ConsoleReader
 import math.{ BigDecimal ⇒ Decimal }
 import concurrent.duration._
 import de.pokerno.model._
 import de.pokerno.poker._
 import de.pokerno.gameplay._
-import de.pokerno.protocol.message
+import de.pokerno.protocol._
+import msg.Conversions._
+import wire.Conversions._
+import Conversions._ // FIXME: ProtocolConversions
 import akka.actor.{ Actor, ActorRef, Props }
 import akka.pattern.ask
 import akka.util.Timeout
@@ -15,96 +18,112 @@ object PlayerActor {
   case object Start
 }
 
-class PlayerActor(i: Int, gameplay: Gameplay, instance: ActorRef) extends Actor {
+class PlayerActor(i: Int, instance: ActorRef) extends Actor {
   val stack = 1500.0
   val player = new Player("player-%d".format(i))
+  var pocketCards: List[Card] = List()
 
   import context._
 
   def receive = {
     case PlayerActor.Start ⇒
-      instance ! message.JoinTable(pos = i - 1, player = player, amount = stack)
+      instance ! rpc.JoinPlayer(pos = i - 1, player = player, amount = stack)
       become({
-        case message.DealCards(_type, cards, pos, player, cardsNum) ⇒ _type match {
-          case DealCards.Hole | DealCards.Door =>
+        case msg.DealCards(_type, cards, pos, player, cardsNum) ⇒ (_type: DealCards.Value) match {
+          case DealCards.Hole | DealCards.Door if pos == i =>
             Console printf ("Dealt %s %s to %d\n", _type, Cards(cards) toConsoleString, pos)
+            pocketCards = cards
+            
           case DealCards.Board =>
             Console printf ("Dealt %s %s\n", _type, Cards(cards) toConsoleString)
+          
           case _                         ⇒
         }
 
-        case message.RequireBet(pos, player, call, range) ⇒
+        case msg.RequireBet(pos, player, call, range) if pos == i ⇒
           Console printf ("Seat %d: Call=%.2f Min=%.2f Max=%.2f\n", pos, call, range.min, range.max)
 
-          val seat = (gameplay.table.seats: List[Seat])(pos)
           var bet = Play.readBet(call)
 
-          val addBet = message.AddBet(bet)
+          val addBet = rpc.AddBet(player, bet)
+          
           instance ! addBet
 
-        case message.RequireDiscard(pos, player) ⇒
-          val seat = (gameplay.table.seats: List[Seat])(pos)
-
-          Console printf ("your cards: [%s]\n", gameplay.dealer.pocket(seat.player.get))
+        case msg.RequireDiscard(pos, player) if pos == i ⇒
+          Console printf ("your cards: [%s]\n", pocketCards)
 
           val cards = Play.readCards
 
-          instance ! message.DiscardCards(cards)
+          instance ! msg.DiscardCards(cards)
       })
   }
 }
 
-class Play(gameplay: Gameplay, instance: ActorRef, tableSize: Int) extends Actor {
+class Play(instance: ActorRef, tableSize: Int) extends Actor {
   import context._
+  
+  val seats: List[Seat] = List.fill(tableSize) { new Seat }
 
   override def preStart = {
     Console println ("starting play")
     (1 to tableSize) foreach { i ⇒
-      val playerActor = system.actorOf(Props(classOf[PlayerActor], i, gameplay, instance), name = "player-process-%d".format(i))
+      val playerActor = system.actorOf(Props(classOf[PlayerActor], i, instance), name = "player-process-%d".format(i))
       playerActor ! PlayerActor.Start
     }
-    gameplay.events.broker.subscribe(self, "play-observer")
+    instance ! Instance.Subscribe(self, "play-observer")
   }
+  
+  var boardCards: List[Card] = List()
 
   def receive = {
-    case message.DealCards(_type, cards, pos, player, cardsNum) ⇒ _type match {
-      case DealCards.Board ⇒ Console printf ("Dealt %s %s\n", _type, Cards(cards) toConsoleString)
+    case msg.DealCards(_type, cards, pos, player, cardsNum) ⇒ (_type: DealCards.Value) match {
+      case DealCards.Board ⇒
+        boardCards = cards
+        Console printf ("Dealt %s %s\n", _type, Cards(boardCards) toConsoleString)
+        
       case _            ⇒
     }
+    
+    case msg.PlayerJoin(pos, player, amount) =>
+      val seat = seats(pos)
+      seat.player = player
+      seat.buyIn(amount)
 
-    case message.ButtonChange(pos) ⇒
+    case msg.ButtonChange(pos) ⇒
       Console printf ("Button is %d\n", pos)
 
-    case message.BetAdd(pos, player, bet) =>
-      val seat = (gameplay.table.seats: List[Seat])(pos)
+    case msg.BetAdd(pos, player, bet) =>
+      val seat = seats(pos)
       Console printf ("%s: %s\n", seat.player.get, bet)
 
-    case message.DeclarePot(total, rake) ⇒
-      Console printf ("Pot size: %.2f\nBoard: %s\n", total, Cards(gameplay.dealer.board) toConsoleString)
+    case msg.DeclarePot(total, rake) ⇒
+      Console printf ("Pot size: %.2f\nBoard: %s\n", total, Cards(boardCards) toConsoleString)
 
-    case message.DeclareHand(pos, player, cards, hand) ⇒
-      val seat = (gameplay.table.seats: List[Seat])(pos)
+    case msg.DeclareHand(pos, player, cards, hand) ⇒
+      val seat = seats(pos)
 
       Console printf ("%s has %s (%s)\n", seat.player.get, Cards(cards) toConsoleString, hand description)
 
-    case message.DeclareWinner(pos, player, amount) ⇒
-      val seat = (gameplay.table.seats: List[Seat])(pos)
+    case msg.DeclareWinner(pos, player, amount) ⇒
+      val seat = seats(pos)
 
       Console printf ("%s won %.2f\n", seat.player.get, amount)
+    
+    case x =>
+      Console printf("%sunhandled by play: %s%s\n", Console.RED, x, Console.RESET)
   }
 }
 
 object Play {
   case class Join(tableSize: Int, deal: ActorRef)
 
-  val sc = new Scanner(System.in)
+  val consoleReader = new ConsoleReader
+  consoleReader.setExpandEvents(false)
 
   def readBet(call: Decimal): Bet = {
     var bet: Option[Bet] = None
     while (bet.isEmpty) {
-      Console print (">>> ")
-
-      bet = parseBet(call, sc.nextLine)
+      bet = parseBet(call, consoleReader.readLine(">>> "))
     }
     bet.get
   }
@@ -144,11 +163,12 @@ object Play {
     var cards: Option[List[Card]] = None
 
     while (cards.isEmpty) {
-      val str = sc.nextLine
+      val str = consoleReader.readLine
       try {
         cards = Some(Cards(str))
       } catch {
-        case _: Card.ParseError ⇒ cards = None
+        case _: Card.ParseError ⇒
+          cards = None
       }
     }
 

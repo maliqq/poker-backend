@@ -24,10 +24,10 @@ class GameSpec extends FunSpec with ClassicMatchers {
 
     it("implicits") {
       val g: Option[Game.Limited] = "texas"
-      g should equal(Game.Texas)
+      g.get should equal(Game.Texas)
 
       val m: Option[Game.Mixed] = "horse"
-      m should equal(Game.Horse)
+      m.get should equal(Game.Horse)
     }
   }
 

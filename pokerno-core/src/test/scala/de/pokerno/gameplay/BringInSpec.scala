@@ -1,4 +1,4 @@
-package de.pokerno.backend
+package de.pokerno.gameplay
 
 import org.scalatest._
 import org.scalatest.matchers._

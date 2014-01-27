@@ -11,10 +11,6 @@ trait BettingBehavior {
       gameplay.round.addBet(bet)
       nextTurn
 
-    case Betting.Start ⇒
-      gameplay.round.reset
-      nextTurn
-
     case Betting.Next ⇒
       nextTurn
 
@@ -31,7 +27,7 @@ trait BettingBehavior {
       gameplay.round.bigBets = true
   }
   
-  private def nextTurn {
+  protected def nextTurn {
     gameplay.round.move
     gameplay.round.seats filter (_._1 inPlay) foreach {
       case (seat, pos) ⇒

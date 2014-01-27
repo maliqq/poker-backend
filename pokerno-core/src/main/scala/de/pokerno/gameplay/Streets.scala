@@ -4,27 +4,27 @@ import de.pokerno.model._
 import akka.actor.{ Actor, Props, ActorLogging, ActorRef }
 import de.pokerno.protocol.{msg => proto}
 
-class Streets(chain: Function1[StageContext, StageContext]) {
-  def next
-  def stop
-}
-
-object Streets extends Stages {
+object Streets {
+  case object Next
+  case object Done
+  
+  import Stages._
   
   val bringIn = stage("bring-in") { ctx =>
     ctx.gameplay.bringIn(ctx)
+    Stage.Next
   }
   
-  val discarding = stage("discarding") { ctx =>
-    Console printf("not implemented")
-  }
+  val discarding = stage("discarding") { ctx => Stage.Next }
   
   val bigBets = stage("big-bets") { ctx =>
     ctx.ref ! Betting.BigBets
+    Stage.Next
   }
   
   val betting = stage("betting") { ctx =>
     ctx.ref ! Betting.Start
+    Stage.Wait
   }
   
   implicit def int2option(n: Int): Option[Int] = Some(n)
@@ -32,42 +32,44 @@ object Streets extends Stages {
   def dealing(dealType: DealCards.Value, cardsNum: Option[Int] = None) =
     stage("dealing") { ctx =>
       ctx.gameplay.dealCards(dealType, cardsNum)
+      Stage.Next
     }
   
   def apply(ctx: StageContext) = {
     val gameGroup = ctx.gameplay.game.options.group
     
-    val b = new Builder
+    val b = new Builder(ctx)
     gameGroup match {
       case Game.Holdem =>
-        b.holdem(ctx)
+        b.holdem
       
       case Game.SevenCard =>
-        b.sevenCard(ctx)
+        b.sevenCard
       
       case Game.SingleDraw =>
-        b.singleDraw(ctx)
+        b.singleDraw
       
       case Game.TripleDraw =>
-        b.tripleDraw(ctx)
+        b.tripleDraw
+      
+      case _ => throw new IllegalArgumentException("unknown game group {}" format(gameGroup))
     }
     
     b.build
   }
   
-  class Builder {
+  class Builder(ctx: StageContext) {
     import Street._
     
-    private var streets: StreetChain = null
+    private var result: List[Street] = List()
     
     private def street(value: Street.Value)(u: => StageChain) {
-      if (streets == null) streets = new StreetChain(u)
-      else streets = streets chain u
+      result :+= Street(value, u)
     }
     
-    def build = streets
+    def build = new StreetChain(ctx, result)
     
-    def holdem(ctx: StageContext) {
+    def holdem {
       street(Preflop) {
         dealing(DealCards.Hole) chain betting
       }
@@ -85,7 +87,7 @@ object Streets extends Stages {
       }
     }
     
-    def sevenCard(ctx: StageContext) {
+    def sevenCard {
       street(Second) {
         dealing(DealCards.Hole, 2) chain
       }
@@ -111,7 +113,7 @@ object Streets extends Stages {
       }
     }
     
-    def singleDraw(ctx: StageContext) {
+    def singleDraw {
       street(Predraw) {
         dealing(DealCards.Hole, 5) chain betting chain discarding
       }
@@ -121,7 +123,7 @@ object Streets extends Stages {
       }
     }
     
-    def tripleDraw(ctx: StageContext) {
+    def tripleDraw {
       street(Predraw) {
         dealing(DealCards.Hole) chain betting chain discarding
       }

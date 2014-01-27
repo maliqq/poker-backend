@@ -6,10 +6,6 @@ import de.pokerno.protocol.{msg => proto}
 
 object Street extends Enumeration {
     
-  case object Start
-  case object Next
-  case object Exit
-  
   class StreetVal(i: Int, name: String) extends Val(i, name)
   
   private def value(name: String) = new StreetVal(nextId, name)
@@ -34,12 +30,34 @@ object Street extends Enumeration {
   
 }
 
-class StreetChain(u: => StageChain) {
-  def chain(u: => StageChain): StreetChain = {
-    this
-  }
+object Chain {
+  trait Result
+  case object Next extends Result
+  case object Stop extends Result
+}
+
+case class Street(val value: Street.Value, val stages: StageChain) {
+  def apply(ctx: StageContext) = stages(ctx)
+}
+
+class StreetChain(ctx: StageContext, streets: List[Street]) {
+  private var i = 0
+  def current = streets(i)
   
-  def apply(ctx: StageContext) {
+  def apply(ctx: StageContext) = {
+    val result = current(ctx)
     
+    result match {
+      case Stage.Next | Stage.Skip =>
+        ctx.ref ! Streets.Next
+        
+      case Stage.Wait =>
+        println("waiting")
+        
+      case x => throw new MatchError("unhandled stage transition: %s".format(x))
+    }
+    i += 1
+    
+    result
   }
 }

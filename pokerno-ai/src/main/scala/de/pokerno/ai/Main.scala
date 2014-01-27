@@ -20,11 +20,15 @@ object Main {
   val bots = (0 to game.tableSize - 1).map { i ⇒
     system.actorOf(Props(classOf[bot.Bot], instance, i, stack, game, stake))
   }
-
+  
   def main(args: Array[String]) {
-    val htmlEventSource = system.actorOf(Props(classOf[Http.Gateway],
-        http.Config(port = 8080, eventSource = Right(true))))
-    instance ! Instance.Subscribe(htmlEventSource, "html-event-source")
+    val gw = system.actorOf(Props(classOf[Http.Gateway]))
+    val httpServer = new http.Server(gw,
+        http.Config(port = 8080, eventSource = Right(true))
+    )
+    httpServer.start
+
+    instance ! Instance.Subscribe(gw, "html-event-source")
     instance ! Instance.Start
   }
 }

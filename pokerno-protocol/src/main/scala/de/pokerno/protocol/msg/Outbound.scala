@@ -6,7 +6,7 @@ import com.dyuproject.protostuff
 import com.dyuproject.protostuff.ByteString
 import beans._
 import org.msgpack.annotation.{ Message => MsgPack }
-import com.fasterxml.jackson.annotation.{JsonTypeInfo, JsonSubTypes}
+import com.fasterxml.jackson.annotation.{JsonInclude, JsonTypeInfo, JsonSubTypes}
 
 @JsonSubTypes(Array(
   new JsonSubTypes.Type(value = classOf[BetAdd], name="AddBet"),
@@ -36,6 +36,7 @@ import com.fasterxml.jackson.annotation.{JsonTypeInfo, JsonSubTypes}
   new JsonSubTypes.Type(value = classOf[Dealer], name="Dealer"),
   new JsonSubTypes.Type(value = classOf[Error], name="Error")
 ))
+@JsonInclude(JsonInclude.Include.NON_NULL)
 abstract class Outbound extends Message
 
 @MsgPack

@@ -2,7 +2,7 @@ package de.pokerno.ai.bot
 
 import de.pokerno.model._
 import de.pokerno.poker._
-import de.pokerno.protocol.{ msg => message }
+import de.pokerno.protocol.{msg, rpc}
 import de.pokerno.protocol.Conversions._
 import de.pokerno.protocol.wire.Conversions.{wire2range, wire2dealCards}
 import math.{ BigDecimal ⇒ Decimal }
@@ -38,11 +38,11 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
   import context._
 
   override def preStart {
-    deal ! message.JoinTable(pos = pos, amount = stack, player = player)
+    deal ! rpc.JoinPlayer(pos = pos, amount = stack, player = player)
   }
   
   def receive = {
-    case message.PlayStart() ⇒
+    case msg.PlayStart() ⇒
       cards = List[Card]()
       board = List[Card]()
       pot = .0
@@ -52,17 +52,17 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
     //  game = _game
     //  stake = _stake
 
-    case message.DeclareWinner(_pos, winner, amount) if (_pos == pos) ⇒
+    case msg.DeclareWinner(_pos, winner, amount) if (_pos == pos) ⇒
       stack += amount
 
-    case message.StreetStart(name) ⇒
+    case msg.StreetStart(name) ⇒
       street = name toString
 
-    case message.DeclarePot(total, _rake) ⇒
+    case msg.DeclarePot(total, _rake) ⇒
       pot = total
       bet = .0
 
-    case message.DealCards(_type, _cards, _pos, _player, _cardsNum) ⇒ (_type: DealCards.Value) match {
+    case msg.DealCards(_type, _cards, _pos, _player, _cardsNum) ⇒ (_type: DealCards.Value) match {
       case DealCards.Board =>
         board ++= _cards
       case DealCards.Hole | DealCards.Door if (_pos == pos) =>
@@ -71,12 +71,12 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
       case _ =>
     }
     
-    case message.RequireBet(_pos, _, call, raise) if (_pos == pos) ⇒
+    case msg.RequireBet(_pos, _, call, raise) if (_pos == pos) ⇒
       system.scheduler.scheduleOnce(1 second) {
         decide(call, raise)
       }
     
-    case message.BetAdd(_pos, _player, _bet) if (_pos == pos) ⇒
+    case msg.BetAdd(_pos, _player, _bet) if (_pos == pos) ⇒
       bet = _bet.amount
     
     case _ =>
@@ -85,7 +85,7 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
   def addBet(b: Bet) {
     Console printf ("%s*** BOT #%d: %s%s\n", Console.CYAN, pos, b, Console.RESET)
     
-    deal ! message.AddBet(b)
+    deal ! rpc.AddBet(id, b)
   }
 
   def doCheck = addBet(Bet.check)

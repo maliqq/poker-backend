@@ -10,7 +10,7 @@ import com.dyuproject.protostuff.ByteString
 import org.msgpack.annotation.{ Message => MsgPack }
 
 @MsgPack
-@JsonInclude()
+@JsonInclude(JsonInclude.Include.NON_NULL)
 class ActionEvent(
   @BeanProperty
   var `type`: ActionEventSchema.EventType
@@ -38,6 +38,7 @@ class ActionEvent(
 }
 
 @MsgPack
+@JsonInclude(JsonInclude.Include.NON_NULL)
 class GameplayEvent(
     @BeanProperty
     var `type`: GameplayEventSchema.EventType
@@ -56,6 +57,7 @@ class GameplayEvent(
 }
 
 @MsgPack
+@JsonInclude(JsonInclude.Include.NON_NULL)
 class StageEvent(
     @BeanProperty
     var `type`: StageEventSchema.EventType
@@ -73,6 +75,7 @@ class StageEvent(
 }
 
 @MsgPack
+@JsonInclude(JsonInclude.Include.NON_NULL)
 class TableEvent(
     @BeanProperty
     var `type`: TableEventSchema.EventType
@@ -91,6 +94,7 @@ class TableEvent(
 }
 
 @MsgPack
+@JsonInclude(JsonInclude.Include.NON_NULL)
 class SeatEvent(
     @BeanProperty
     var `type`: SeatEventSchema.EventType
@@ -108,6 +112,7 @@ class SeatEvent(
 }
 
 @MsgPack
+@JsonInclude(JsonInclude.Include.NON_NULL)
 class DealEvent extends Outbound {
   def schema = DealEventSchema.SCHEMA
   //def pipeSchema = DealEventSchema.PIPE_SCHEMA
@@ -138,6 +143,7 @@ class DealEvent extends Outbound {
 }
 
 @MsgPack
+@JsonInclude(JsonInclude.Include.NON_NULL)
 class Msg extends Message {
   def schema = MsgSchema.SCHEMA
   //def pipeSchema = MsgSchema.PIPE_SCHEMA
@@ -148,6 +154,7 @@ class Msg extends Message {
 }
 
 @MsgPack
+@JsonInclude(JsonInclude.Include.NON_NULL)
 class Cmd extends Message {
   def schema = CmdSchema.SCHEMA
   //def pipeSchema = CmdSchema.PIPE_SCHEMA
@@ -160,6 +167,7 @@ class Cmd extends Message {
 }
 
 @MsgPack
+@JsonInclude(JsonInclude.Include.NON_NULL)
 class Evt extends Message {
   def schema = EvtSchema.SCHEMA
   //def pipeSchema = EventSchema.PIPE_SCHEMA

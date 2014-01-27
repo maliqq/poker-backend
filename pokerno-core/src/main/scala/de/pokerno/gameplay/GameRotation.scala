@@ -7,7 +7,7 @@ trait GameRotation {
 
   g: GameplayLike ⇒
 
-  def rotateGame = if (variation isMixed)
+  def rotateGame(ctx: StageContext) = if (variation isMixed)
     rotateNext { g ⇒
       game = g
       events.gameChange(game)

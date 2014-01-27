@@ -1,23 +1,35 @@
 package de.pokerno.gameplay
 
 import akka.actor.ActorRef
-import akka.actor.actorRef2Scala
-
-object Stages {
-  type Stage = Function1[GameplayContext, GameplayContext]
-}
 
 trait Stages {
-  import Stages._
-  
-  def stage(name: String)(u: GameplayContext => Unit): Stage = {
-    new PartialFunction[GameplayContext, GameplayContext] {
-      def apply(g: GameplayContext): GameplayContext = {
-        Console printf ("%s*** START %s%s\n", Console.BLUE, name, Console.RESET)
-        u(g)
-        Console printf ("%s*** DONE %s%s\n", Console.BLUE, name, Console.RESET)
-        g
-      }
-    }
+  def stage(name: String)(f: StageContext => Unit): Stage = {
+    new Stage(name, f)
   }
+}
+
+case class StageContext(gameplay: GameplayContext, ref: ActorRef)
+
+class Stage(name: String, f: StageContext => Unit) {
+  val context: StageContext = null
+  
+  def chain(f: => Stage): StageChain = {
+    (new StageChain(this)) chain (f)
+  }
+  
+  def chain = {
+    new StageChain(this)
+  }
+}
+
+class StageChain(stage: Stage) {
+  
+  def chain(f: => Stage): StageChain = {
+    this
+  }
+  
+  def apply(ctx: StageContext) {
+    
+  }
+  
 }

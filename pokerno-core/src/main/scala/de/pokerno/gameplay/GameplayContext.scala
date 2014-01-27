@@ -22,7 +22,7 @@ class GameplayContext(
   lazy val dealer: Dealer = new Dealer
   val round = new BettingRound(this)
 
-  def prepareSeats {
+  def prepareSeats(ctx: StageContext) {
     (table.seats: List[Seat]).filter (_ isReady) map (_ play)
   }
 

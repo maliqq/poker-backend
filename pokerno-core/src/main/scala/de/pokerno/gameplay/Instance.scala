@@ -65,8 +65,8 @@ class Instance(val variation: Variation, val stake: Stake) extends Actor with Ac
       goto(Instance.Closed)
 
     case Event(Deal.Start, _) ⇒
-      val gameplay = new Gameplay(events, variation, stake, table)
-      val running = actorOf(Props(classOf[GameplayActor], gameplay), name = "gameplay-process")
+      val gameplay = new GameplayContext(events, variation, stake, table)
+      val running = actorOf(Props(classOf[DealActor], gameplay), name = "gameplay-process")
       stay using Instance.Run(running)
 
     case Event(Deal.Done, _) ⇒

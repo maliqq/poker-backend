@@ -9,17 +9,15 @@ import akka.actor.ActorRef
  */
 trait BringIn {
   
-  g: GameplayLike ⇒
-
-  def bringIn(betting: ActorRef) {
-    val (seat, pos) = round.seats filter (_._1 isActive) minBy {
+  def bringIn(ctx: StageContext) {
+    val (seat, pos) = ctx.gameplay.round.seats filter (_._1 isActive) minBy {
       case (seat, pos) ⇒
-        dealer pocket (seat.player get) last
+        ctx.gameplay.dealer pocket (seat.player get) last
     }
-    setButton(pos)
-    round.acting = (seat, pos)
+    ctx.gameplay.setButton(pos)
+    ctx.gameplay.round.acting = (seat, pos)
 
-    betting ! Betting.Require(stake.bringIn get, game.limit)
+    ctx.ref ! Betting.Require(ctx.gameplay.stake.bringIn get, ctx.gameplay.game.limit)
   }
   
 }

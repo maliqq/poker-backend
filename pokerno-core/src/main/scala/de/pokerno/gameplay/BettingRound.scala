@@ -67,32 +67,33 @@ class BettingRound(val gameplay: GameplayLike) extends Round(gameplay.table.size
 
     e.requireBet((player, pos), _call, _raise)
   }
-
+  
   def addBet(bet: Bet) {
     val (seat, pos) = _acting
     val player = seat.player get
     
-    if (bet.isValid(seat.amount, seat.put, _call, _raise)) {
+    def postBet {
       val diff = bet.amount - seat.put
-
+  
       seat post (bet)
-
+  
       if (bet.betType == Bet.Raise)
         raiseCount += 1
-
+  
       if (bet.betType != Bet.Call && bet.amount > _call)
         _call = bet.amount
-
+  
       val left = pot add (player, diff)
       if (seat.isAllIn)
         pot split (player, left)
       else
         pot.main add (player, left)
-      e.addBet((player, pos), bet)
-    } else {
-      seat.fold
-      e.addBet((player, pos), Bet.fold)
     }
+    
+    e.addBet((player, pos), if (bet.isValid(seat.amount, seat.put, _call, _raise)) {
+      postBet
+      bet
+    } else Bet.fold)
   }
 
   def complete {

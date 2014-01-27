@@ -7,10 +7,13 @@ import akka.actor.ActorRef
  * Стадия принудительных ставок-анте
  */
 trait Antes {
-  g: GameplayLike ⇒
-
-  def postAntes(betting: ActorRef) = if (stake.ante.isDefined) {
-    round.seats filter (_._1 isActive) foreach (round.forceBet(_, Bet.Ante))
-    round.complete
+  
+  def postAntes(ctx: StageContext) = if (ctx.gameplay.stake.ante.isDefined) {
+    val seats = ctx.gameplay.round.seats filter (_._1 isActive)
+    seats foreach { seat =>
+      ctx.gameplay.round.forceBet(seat, Bet.Ante)
+    }
+    ctx.gameplay.round.complete
   }
+  
 }

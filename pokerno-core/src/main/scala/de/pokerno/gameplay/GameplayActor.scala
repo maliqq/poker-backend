@@ -7,30 +7,22 @@ import concurrent._
 import de.pokerno.protocol.{msg => message}
 
 class GameplayActor(val gameplay: GameplayContext) extends Actor
-                                               with ActorLogging {
+                                               with ActorLogging
+                                               with Stages
+                                               with Betting {
   import context._
-
+  
   def streets = Streets.build(gameplay, betting)
   lazy val streetsIterator = streets iterator
 
-  var betting: ActorRef = system deadLetters
   var currentStreet: ActorRef = system deadLetters
-
-  val stages: List[RunStage] = List(
-    RunStage("prepare-seats") {
-      gameplay.prepareSeats
-    },
-    RunStage("rotate-game") {
-      gameplay.rotateGame
-    },
-    RunStage("post-antes") {
-      gameplay.postAntes(betting)
-    },
-    RunStage("post-blinds") {
-      gameplay.postBlinds(betting)
-    }
-  )
-
+  
+  val stages = (g: GameplayContext) =>
+    stage("prepare-seats")(_.prepareSeats) andThen
+    stage("rotate-game")(_.rotateGame) andThen
+    stage("post-antes")(_.postAntes(betting)) andThen
+    stage("post-blinds")(_.postBlinds(betting))
+    
   override def preStart = {
     log.info("start gameplay")
     // FIXME
@@ -43,10 +35,8 @@ class GameplayActor(val gameplay: GameplayContext) extends Actor
       betting ! msg
 
     case Street.Start ⇒
-      betting = actorOf(Props(classOf[BettingActor], gameplay.round), name = "betting-process")
-      for (stage ← stages) {
-        stage.run
-      }
+      stages(gameplay)
+      become(betting)
       self ! Street.Next
 
     case Street.Next ⇒

@@ -65,82 +65,100 @@ object Street extends Enumeration {
   val ThirdDraw = street("third-draw")
 }
 
-object Streets {
-  def build(gameplay: GameplayContext, bettingRef: ActorRef): List[Street] = {
-    val discarding = DirectStreetStage("discarding") {}
 
-    val bringIn = DirectStreetStage("bring-in") {
-      gameplay.bringIn(bettingRef)
+object Streets extends Stages {
+  
+  val bringIn = stage("bring-in") { g => }
+  val discarding = stage("discarding") { g => }
+  val bigBets = stage("big-bets") { g => }
+  val betting = stage("betting") { g => }
+  
+  implicit def int2option(n: Int): Option[Int] = Some(n)
+  
+  def dealing(dealType: DealCards.Value, cardsNum: Option[Int] = None) = stage("dealing") { g =>
+    g.dealCards(dealType, cardsNum)
+  }
+  
+  def apply(gameplay: GameplayContext) {
+    val gameGroup = gameplay.game.options.group
+    
+    gameGroup match {
+      case Game.Holdem => holdem(gameplay)
+      case Game.SevenCard => sevenCard(gameplay)
+      case Game.SingleDraw => singleDraw(gameplay)
+      case Game.TripleDraw => tripleDraw(gameplay)
+    }
+  }
+  
+  def holdem(gameplay: GameplayContext) {
+    Street.Preflop {
+      dealing(DealCards.Hole) andThen betting
+    }
+    
+    Street.Flop {
+      dealing(DealCards.Board, Some(3)) andThen betting
     }
 
-    val bigBets = DirectStreetStage("big-bets") {
-      bettingRef ! Betting.BigBets
+    Street.Turn {
+      dealing(DealCards.Board, 1) andThen bigBets andThen betting
+    }
+  
+    Street.River {
+      dealing(DealCards.Board, 1) andThen betting
+    }
+  }
+  
+  def sevenCard(gameplay: GameplayContext) {
+    Street.Second {
+      dealing(DealCards.Hole, 2)
+    }
+  
+    Street.Third {
+      dealing(DealCards.Door, 1) andThen bringIn andThen betting
+    }
+  
+    Street.Fourth {
+      dealing(DealCards.Door, 1) andThen betting
+    }
+  
+    Street.Fifth {
+      dealing(DealCards.Door, 1) andThen bigBets andThen betting
+    }
+  
+    Street.Sixth {
+      dealing(DealCards.Door, 1) andThen betting
+    }
+  
+    Street.Seventh {
+      dealing(DealCards.Hole, 1) andThen betting
+    }
+  }
+  
+  def singleDraw(gameplay: GameplayContext) {
+    Street.Predraw {
+      dealing(DealCards.Hole, 5) andThen betting andThen discarding
     }
 
-    val betting = BlockingStreetStage("betting") {
-      bettingRef ! Betting.Next
+    Street.Draw {
+      bigBets andThen betting andThen discarding
     }
-
-    def dealing(dealType: DealCards.Value, cardsNum: Option[Int] = None): Stage = DirectStreetStage("dealing") {
-      gameplay.dealCards(dealType, cardsNum)
+  }
+  
+  def tripleDraw(gameplay: GameplayContext) {
+    Street.Predraw {
+      dealing(DealCards.Hole) andThen betting andThen discarding
     }
-
-    gameplay.game.options.group match {
-      case Game.Holdem ⇒ List(
-        Street.Preflop(
-          List(dealing(DealCards.Hole), betting)),
-
-        Street.Flop(
-          List(dealing(DealCards.Board, Some(3)), betting)),
-
-        Street.Turn(
-          List(dealing(DealCards.Board, Some(1)), bigBets, betting)),
-
-        Street.River(
-          List(dealing(DealCards.Board, Some(1)), betting))
-      )
-      
-      case Game.SevenCard ⇒ List(
-        Street.Second(
-          List(dealing(DealCards.Hole, Some(2)))),
-
-        Street.Third(
-          List(dealing(DealCards.Door, Some(1)), bringIn, betting)),
-
-        Street.Fourth(
-          List(dealing(DealCards.Door, Some(1)), betting)),
-
-        Street.Fifth(
-          List(dealing(DealCards.Door, Some(1)), bigBets, betting)),
-
-        Street.Sixth(
-          List(dealing(DealCards.Door, Some(1)), betting)),
-
-        Street.Seventh(
-          List(dealing(DealCards.Hole, Some(1)), betting))
-      )
-      
-      case Game.SingleDraw ⇒ List(
-        Street.Predraw(
-          List(dealing(DealCards.Hole, Some(5)), betting, discarding)),
-
-        Street.Draw(
-          List(bigBets, betting, discarding))
-      )
-      
-      case Game.TripleDraw ⇒ List(
-        Street.Predraw(
-          List(dealing(DealCards.Hole), betting, discarding)),
-
-        Street.FirstDraw(
-          List(betting, discarding)),
-
-        Street.SecondDraw(
-          List(bigBets, betting, discarding)),
-
-        Street.ThirdDraw(
-          List(betting, discarding))
-      )
+  
+    Street.FirstDraw {
+      betting andThen discarding
+    }
+  
+    Street.SecondDraw{
+      bigBets andThen betting andThen discarding
+    }
+  
+    Street.ThirdDraw {
+      betting andThen discarding
     }
   }
 }

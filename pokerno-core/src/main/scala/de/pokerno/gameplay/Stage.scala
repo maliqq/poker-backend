@@ -3,31 +3,21 @@ package de.pokerno.gameplay
 import akka.actor.ActorRef
 import akka.actor.actorRef2Scala
 
-object Stage {
-  case object Next
+object Stages {
+  type Stage = Function1[GameplayContext, GameplayContext]
 }
 
-abstract class Stage(val name: String)(_run: ⇒ Unit) {
-  def run {
-    Console printf ("%s*** START %s%s\n", Console.BLUE, name, Console.RESET)
-    _run
-    Console printf ("%s*** DONE %s%s\n", Console.BLUE, name, Console.RESET)
-  }
-}
-
-case class RunStage(_name: String)(_run: ⇒ Unit) extends Stage(_name)(_run)
-
-abstract class StreetStage(_name: String)(_run: ⇒ Unit) extends Stage(_name)(_run) {
-  def run(street: ActorRef) = {
-    super.run
-  }
-}
-
-case class BlockingStreetStage(_name: String)(_run: ⇒ Unit) extends StreetStage(_name)(_run)
-
-case class DirectStreetStage(_name: String)(_run: ⇒ Unit) extends StreetStage(_name)(_run) {
-  override def run(street: ActorRef) {
-    super.run(street)
-    street ! Stage.Next
+trait Stages {
+  import Stages._
+  
+  def stage(name: String)(u: GameplayContext => Unit): Stage = {
+    new PartialFunction[GameplayContext, GameplayContext] {
+      def apply(g: GameplayContext): GameplayContext = {
+        Console printf ("%s*** START %s%s\n", Console.BLUE, name, Console.RESET)
+        u(g)
+        Console printf ("%s*** DONE %s%s\n", Console.BLUE, name, Console.RESET)
+        g
+      }
+    }
   }
 }

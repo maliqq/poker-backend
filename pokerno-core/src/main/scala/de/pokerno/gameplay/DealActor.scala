@@ -16,7 +16,7 @@ class DealActor(val gameplay: GameplayContext) extends Actor
   lazy val streets = Streets(stageContext)
   lazy val stageContext = StageContext(gameplay, self)
   
-  override def preStart = {
+  override def preStart() {
     log.info("start deal")
     gameplay.events.playStart
     beforeStreets(stageContext) match {
@@ -27,7 +27,7 @@ class DealActor(val gameplay: GameplayContext) extends Actor
   
   def receive = handleStreets
 
-  override def postStop {
+  override def postStop() {
     log.info("stop deal")
     //afterStreets(stageContext)
     gameplay.events.playStop

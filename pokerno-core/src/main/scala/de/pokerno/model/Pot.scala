@@ -6,12 +6,12 @@ import collection.mutable
 class SidePot(val cap: Option[Decimal] = None) {
   var members: Map[Player, Decimal] = Map.empty
 
-  def total: Decimal = members.values sum
+  def total: Decimal = members.values.sum
 
   def isActive: Boolean = members.size > 0 && total > .0
 
   def add(member: Player, amount: Decimal): Decimal = {
-    if (amount == .0) return .0
+    if (amount.toDouble == .0) return .0
 
     val value: Decimal = members.getOrElse(member, .0)
     val newValue = value + amount
@@ -36,13 +36,13 @@ class SidePot(val cap: Option[Decimal] = None) {
 
     val main = new SidePot
     main.members = members.
-      filter { case (key, value) ⇒ value > bet && key != member }.
-      map { case (key, value) ⇒ (key, value - bet) }
+      filter { case (key, _value) ⇒ _value > bet && key != member }.
+      map { case (key, _value) ⇒ (key, _value - bet) }
 
     val side = new SidePot(Some(bet))
     side.members = members map {
-      case (key, value) ⇒
-        (key, List(value, bet).min)
+      case (key, _value) ⇒
+        (key, List(_value, bet).min)
     }
 
     (main, side)
@@ -54,9 +54,9 @@ class SidePot(val cap: Option[Decimal] = None) {
       case (member, amount) ⇒
         s ++= "%s: %.2f\n" format (member, amount)
     }
-    s ++= "-- Total: %.2f" format (total)
-    if (cap isDefined) s ++= " Cap: %.2f" format (cap get)
-    s toString
+    s ++= "-- Total: %.2f" format total
+    if (cap.isDefined) s ++= " Cap: %.2f" format (cap get)
+    s.toString()
   }
 }
 
@@ -64,17 +64,17 @@ class Pot {
   var main: SidePot = new SidePot
   var side: List[SidePot] = List.empty
 
-  def total: Decimal = sidePots map (_.total) sum
+  def total: Decimal = sidePots.map(_.total).sum
 
   def sidePots: List[SidePot] = {
     var pots = new mutable.ListBuffer[SidePot]
-    if (main isActive)
+    if (main.isActive)
       pots += main
     side foreach { side ⇒
-      if (side isActive)
+      if (side.isActive)
         pots += side
     }
-    pots toList
+    pots.toList
   }
 
   def split(member: Player, amount: Decimal) {
@@ -91,6 +91,6 @@ class Pot {
     val s = new StringBuilder
     s ++= main.toString
     sidePots foreach { sidePot ⇒ s ++= sidePot.toString }
-    s toString
+    s.toString()
   }
 }

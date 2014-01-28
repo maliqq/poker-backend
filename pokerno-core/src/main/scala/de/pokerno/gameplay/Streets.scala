@@ -41,18 +41,18 @@ object Streets {
     val b = new Builder(ctx)
     gameGroup match {
       case Game.Holdem =>
-        b.holdem
+        b.holdem()
       
       case Game.SevenCard =>
-        b.sevenCard
+        b.sevenCard()
       
       case Game.SingleDraw =>
-        b.singleDraw
+        b.singleDraw()
       
       case Game.TripleDraw =>
-        b.tripleDraw
+        b.tripleDraw()
       
-      case _ => throw new IllegalArgumentException("unknown game group {}" format(gameGroup))
+      case _ => throw new IllegalArgumentException("unknown game group %s" format gameGroup)
     }
     
     b.build
@@ -69,7 +69,7 @@ object Streets {
     
     def build = new StreetChain(ctx, result)
     
-    def holdem {
+    def holdem() {
       street(Preflop) {
         dealing(DealCards.Hole) chain betting
       }
@@ -87,9 +87,9 @@ object Streets {
       }
     }
     
-    def sevenCard {
+    def sevenCard() {
       street(Second) {
-        dealing(DealCards.Hole, 2) chain
+        dealing(DealCards.Hole, 2).chain
       }
     
       street(Third) {
@@ -113,7 +113,7 @@ object Streets {
       }
     }
     
-    def singleDraw {
+    def singleDraw() {
       street(Predraw) {
         dealing(DealCards.Hole, 5) chain betting chain discarding
       }
@@ -123,7 +123,7 @@ object Streets {
       }
     }
     
-    def tripleDraw {
+    def tripleDraw() {
       street(Predraw) {
         dealing(DealCards.Hole) chain betting chain discarding
       }

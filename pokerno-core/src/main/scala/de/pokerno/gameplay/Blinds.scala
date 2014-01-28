@@ -13,7 +13,7 @@ trait Blinds {
   def postBlinds(ctx: StageContext) = if (ctx.gameplay.game.options.hasBlinds) {
     ctx.gameplay.moveButton
 
-    val seats = ctx.gameplay.round seats
+    val seats = ctx.gameplay.round.seats
     val active = seats filter (_._1 isActive)
     val waiting = seats filter (_._1 isWaitingBB)
 

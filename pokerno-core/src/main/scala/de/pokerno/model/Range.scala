@@ -15,7 +15,7 @@ object Range {
   implicit def range2Tuple(r: Range): Tuple2[Decimal, Decimal] = r.value
 }
 
-case class Range(val value: Tuple2[Decimal, Decimal] = (.0, .0)) {
+case class Range(value: Tuple2[Decimal, Decimal] = (.0, .0)) {
   def min = value._1
   def max = value._2
 

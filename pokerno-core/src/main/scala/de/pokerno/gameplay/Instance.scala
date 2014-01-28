@@ -49,12 +49,12 @@ class Instance(val variation: Variation, val stake: Stake) extends Actor with Ac
 
     case Event(Deal.Next, _) ⇒
       log.info("game is paused")
-      stay
+      stay()
   }
 
   when(Instance.Waiting) {
     case Event(join: rpc.JoinPlayer, _) ⇒
-      stay // TODO
+      stay() // TODO
   }
 
   when(Instance.Running) {
@@ -73,15 +73,15 @@ class Instance(val variation: Variation, val stake: Stake) extends Actor with Ac
       val after = (5 seconds)
       log.info("deal done; starting next deal in %s".format(after))
       self ! Deal.Next(after)
-      stay
+      stay()
 
     case Event(Deal.Next(after), _) ⇒
       system.scheduler.scheduleOnce(after, self, Deal.Start)
-      stay
+      stay()
   }
 
   when(Instance.Closed) {
-    case _ ⇒ stay
+    case _ ⇒ stay()
   }
 
   whenUnhandled {
@@ -91,19 +91,19 @@ class Instance(val variation: Variation, val stake: Stake) extends Actor with Ac
       events.joinTable((join.player, join.pos), join.amount)
       events.broker.subscribe(sender, join.player.id)
 
-      stay
+      stay()
 
     case Event(addBet: rpc.AddBet, Instance.Run(running)) ⇒
       running ! Betting.Add(addBet.bet)
-      stay
+      stay()
     
     case Event(Instance.Subscribe(ref, name), _) =>
       events.broker.subscribe(ref, name)
-      stay
+      stay()
 
     case Event(chat: rpc.Chat, _) ⇒ // FIXME
       //events.publish(msg)
-      stay
+      stay()
   }
 
   onTransition {
@@ -116,7 +116,7 @@ class Instance(val variation: Variation, val stake: Stake) extends Actor with Ac
       self ! Deal.Next(after) // start deal after timeout
   }
 
-  initialize
+  initialize()
 
   def isReady: Boolean = (table.seats: List[Seat]).filter(_ isReady).size == 2
 }

@@ -53,23 +53,23 @@ class Seat {
     _player = Some(p)
   }
 
-  def clear {
+  def clear() {
     _state = Seat.State.Empty
     _player = None
     _amount = .0
     _put = .0
   }
 
-  def play {
+  def play() {
     _state = Seat.State.Play
     _put = .0
   }
 
-  def playing {
+  def playing() {
     _state = Seat.State.Play
   }
 
-  def check {
+  def check() {
     _state = Seat.State.Bet
   }
 
@@ -81,12 +81,18 @@ class Seat {
 
   def force(amount: Decimal) {
     put = amount
-    _state = if (_amount == 0) Seat.State.AllIn else Seat.State.Play
+    _state = if (_amount.toDouble == 0)
+      Seat.State.AllIn
+    else
+      Seat.State.Play
   }
 
   def raise(amount: Decimal) {
     put = amount
-    _state = if (_amount == 0) Seat.State.AllIn else Seat.State.Bet
+    _state = if (_amount.toDouble == 0)
+      Seat.State.AllIn
+    else
+      Seat.State.Bet
   }
 
   def buyIn(amount: Decimal) {
@@ -103,7 +109,7 @@ class Seat {
   def post(bet: Bet) = bet.betType match {
     case Bet.Fold             ⇒ fold
     case Bet.Call | Bet.Raise ⇒ raise(bet.amount)
-    case Bet.Check            ⇒ check
+    case Bet.Check            ⇒ check()
     case _: Bet.ForcedBet     ⇒ force(bet.amount)
   }
 

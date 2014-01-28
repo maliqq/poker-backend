@@ -10,11 +10,11 @@ trait BettingBehavior {
     case Betting.Add(bet) ⇒
       log.info("[betting] add {}", bet)
       gameplay.round.addBet(bet)
-      nextTurn
+      nextTurn()
 
     case Betting.NextTurn ⇒
       log.info("[betting] next turn")
-      nextTurn
+      nextTurn()
 
     case Betting.Stop ⇒
       log.info("[betting] stop")
@@ -23,7 +23,7 @@ trait BettingBehavior {
       
     case Betting.Timeout ⇒
       log.info("[betting] timeout")
-      nextTurn
+      nextTurn()
 
     case Betting.Done ⇒
       log.info("[betting] done")
@@ -36,11 +36,11 @@ trait BettingBehavior {
       gameplay.round.bigBets = true
   }
   
-  protected def nextTurn {
+  protected def nextTurn() {
     gameplay.round.move
     gameplay.round.seats filter (_._1 inPlay) foreach {
       case (seat, pos) ⇒
-        if (!seat.isCalled(gameplay.round.call)) seat playing
+        if (!seat.isCalled(gameplay.round.call)) seat.playing
     }
 
     if (gameplay.round.seats.filter(_._1 inPot).size < 2)
@@ -51,7 +51,7 @@ trait BettingBehavior {
       if (active.size == 0)
         self ! Betting.Done
       else
-        gameplay.round requireBet (active.head)
+        gameplay.round requireBet active.head
     }
   }
 

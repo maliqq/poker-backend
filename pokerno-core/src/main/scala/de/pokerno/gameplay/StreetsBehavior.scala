@@ -30,15 +30,15 @@ trait StreetsBehavior {
   
   lazy val afterStreets =
     stage("showdown") { ctx =>
-      ctx.gameplay.showdown
+      ctx.gameplay.showdown()
       Stage.Next
-    } chain
+    }.chain
     
   def handleStreets: Receive = {
     case Betting.Start =>
       log.info("[betting] start")
       gameplay.round.reset
-      nextTurn
+      nextTurn()
       context.become(handleBetting)
     
     case Streets.Next ⇒

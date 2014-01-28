@@ -34,11 +34,11 @@ object Math {
     }
   }
 
-  case class AgainstOne(val samplesNum: Int = DefaultSamplesNum) {
+  case class AgainstOne(samplesNum: Int = DefaultSamplesNum) {
     def preflop(hole: List[Card], other: List[Card]): Sample = {
       val sample = new Sample
       (0 to samplesNum) foreach { _ ⇒
-        val deck = new Deck without (hole) without (other)
+        val deck = new Deck without hole without other
 
         val board = deck.share(5)
         sample.compare(hole ++ board, other ++ board)
@@ -50,7 +50,7 @@ object Math {
       if (board.size > 5 || board.size == 0)
         throw new Error("invalid board")
 
-      val deck = new Deck without (hole) without (board)
+      val deck = new Deck without hole without board
       val cardsLeft: List[Card] = deck.cards
 
       val sample = new Sample
@@ -67,9 +67,9 @@ object Math {
     }
   }
 
-  case class Headsup(val a: List[Card], val b: List[Card], val samplesNum: Int = DefaultSamplesNum) {
+  case class Headsup(a: List[Card], b: List[Card], samplesNum: Int = DefaultSamplesNum) {
     def withBoard(board: List[Card]) = {
-      val deck = new Deck without (a) without (b) without (board)
+      val deck = new Deck without a without b without board
       val cardsLeft = deck.cards
       val cardsNumToCompleteBoard = FullBoardLen - board.size
 
@@ -83,7 +83,7 @@ object Math {
     }
   }
 
-  case class Against(val opponentsNum: Int, val samplesNum: Int = DefaultSamplesNum) {
+  case class Against(opponentsNum: Int, samplesNum: Int = DefaultSamplesNum) {
     def equity(hole: List[Card], board: List[Card]): Double = {
       var sample = if (board.size == 0)
         preflop(hole)
@@ -112,7 +112,7 @@ object Math {
       val holeCardsNum = hole.size
       val cardsNumToCompleteBoard = FullBoardLen - board.size
 
-      val deck = new Deck without (hole) without (board)
+      val deck = new Deck without hole without board
       val cardsLeft = deck.cards
 
       val sample = new Sample

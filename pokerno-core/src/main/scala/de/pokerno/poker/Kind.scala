@@ -5,7 +5,7 @@ object Kind {
     class Kind(i: Int, name: String) extends Val(i, name) {
       def toInt: Int = id
       def short: Char = _short(id)
-      override def toString: String = short toString
+      override def toString(): String = short.toString()
     }
 
     private def Kind(name: String) = new Kind(nextId, name)

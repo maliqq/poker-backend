@@ -53,7 +53,7 @@ class Tournament(val game: Game, val buyIn: Tournament.BuyIn, val format: Tourna
   var entries: Map[Player, Tournament.Entry] = Map()
   val tables: List[Table] = List()
 
-  override def preStart {
+  override def preStart() {
     
   }
   
@@ -68,7 +68,7 @@ class Tournament(val game: Game, val buyIn: Tournament.BuyIn, val format: Tourna
     groupBy { x => Math.floor(x._2 / total.toDouble * perBucket) }.
     map { case (k, v) => (k, v.map(_._1)) }
   
-  def initialSeating {
+  def initialSeating() {
     val buckets = bucketize(entries.size, game.tableSize)
     
   }

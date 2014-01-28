@@ -6,24 +6,24 @@ import akka.actor.{ ActorRef, ActorSystem, Props }
 import math.{ BigDecimal ⇒ Decimal }
 
 case class Config(
-  val betSize: Decimal = 100.0,
-  val tableSize: Int = 6,
-  val mixedGame: Option[Game.Mixed] = None,
-  val limitedGame: Option[Game.Limited] = Some(Game.Texas))
+  betSize: Decimal = 100.0,
+  tableSize: Int = 6,
+  mixedGame: Option[Game.Mixed] = None,
+  limitedGame: Option[Game.Limited] = Some(Game.Texas))
 
 object Main {
 
   val parser = new scopt.OptionParser[Config]("poker-console") {
-    opt[Int]('t', "table-size") text ("Table size") action { (value, c) ⇒
+    opt[Int]('t', "table-size") text "Table size" action { (value, c) ⇒
       c.copy(tableSize = value)
     }
-    opt[Decimal]('b', "bet-size") text ("Bet size") action { (value, c) ⇒
+    opt[Decimal]('b', "bet-size") text "Bet size" action { (value, c) ⇒
       c.copy(betSize = value)
     }
-    opt[String]("mix") text ("Mixed game") action { (value, c) ⇒
+    opt[String]("mix") text "Mixed game" action { (value, c) ⇒
       c.copy(mixedGame = value)
     }
-    opt[String]('g', "game") text ("Limited game") action { (value, c) ⇒
+    opt[String]('g', "game") text "Limited game" action { (value, c) ⇒
       c.copy(limitedGame = value)
     }
   }

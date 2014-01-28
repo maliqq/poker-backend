@@ -36,7 +36,7 @@ object Chain {
   case object Stop extends Result
 }
 
-case class Street(val value: Street.Value, val stages: StageChain) {
+case class Street(value: Street.Value, stages: StageChain) {
   def apply(ctx: StageContext) = stages(ctx)
   
   override def toString = f"#[Street $value]"
@@ -49,7 +49,7 @@ class StreetChain(ctx: StageContext, streets: List[Street]) {
   def current = _current
   
   def apply(ctx: StageContext) = if (iterator.hasNext) {
-    _current = iterator.next
+    _current = iterator.next()
     
     current(ctx) match {
       case Stage.Next | Stage.Skip =>
@@ -69,6 +69,6 @@ class StreetChain(ctx: StageContext, streets: List[Street]) {
     for (street <- streets) {
       b.append(" " + street.toString)
     }
-    b.append("]").toString
+    b.append("]").toString()
   }
 }

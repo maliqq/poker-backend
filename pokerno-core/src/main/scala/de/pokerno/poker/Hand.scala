@@ -49,7 +49,7 @@ object Hand {
       var _counter: Map[Int, List[List[Card]]] = Map.empty
       groups foreach {
         case (k, v) ⇒
-          val count = v size
+          val count = v.size
           val group = _counter getOrElse (count, List.empty)
           _counter += (count -> (group ++ List(v)))
       }
@@ -87,14 +87,14 @@ class Hand(
     ) extends Ordered[Hand] {
 
   val kicker: List[Card] = Kicker match {
-    case Left(cards) => cards
-    case Right(true) => cards.value.diff(value) sorted (cards.ordering).reverse take (5 - value.size)
+    case Left(_cards) => _cards
+    case Right(true) => cards.value.diff(value).sorted(cards.ordering).reverse.take(5 - value.size)
     case Right(false) => List.empty
   }
   
   val high: List[Card] = High match {
-    case Left(cards) => cards
-    case Right(true) => value sorted (cards.ordering).reverse take (1)
+    case Left(_cards) => _cards
+    case Right(true) => value.sorted(cards.ordering).reverse.take(1)
     case Right(false) => List.empty
   }
   
@@ -114,28 +114,28 @@ class Hand(
 
   def description: String = rank.get match {
     case Rank.High.HighCard ⇒
-      "high card %s" format (high.head.kind)
+      "high card %s" format high.head.kind
 
     case Rank.High.OnePair ⇒
-      "pair of %ss" format (high.head.kind)
+      "pair of %ss" format high.head.kind
 
     case Rank.High.TwoPair ⇒
       "two pairs, %ss and %ss" format (high.head.kind, high(1).kind)
 
     case Rank.High.ThreeKind ⇒
-      "three of a kind, %ss" format (high.head.kind)
+      "three of a kind, %ss" format high.head.kind
 
     case Rank.High.Straight ⇒
       "straight, %s to %s" format (value.min.kind, value.max.kind)
 
     case Rank.High.Flush ⇒
-      "flush, %s high" format (high.head.kind)
+      "flush, %s high" format high.head.kind
 
     case Rank.High.FullHouse ⇒
       "full house, %ss full of %ss" format (high.head.kind, high(1).kind)
 
     case Rank.High.FourKind ⇒
-      "four of a kind, %ss" format (high.head.kind)
+      "four of a kind, %ss" format high.head.kind
 
     case Rank.High.StraightFlush ⇒
       "straight flush, %s to %s" format (value.min.kind, value.max.kind)
@@ -144,15 +144,15 @@ class Hand(
       "1-card badugi: %s" format (value head)
 
     case Rank.Badugi.BadugiTwo ⇒
-      "2-card badugi: %s + %s" format (value head, value(1))
+      "2-card badugi: %s + %s" format (value.head, value(1))
 
     case Rank.Badugi.BadugiThree ⇒
-      "3-card badugi: %s + %s + %s" format (value head, value(1), value(2))
+      "3-card badugi: %s + %s + %s" format (value.head, value(1), value(2))
 
     case Rank.Badugi.BadugiFour ⇒
-      "4-card badugi: %s + %s + %s + %s" format (value head, value(1), value(2), value(3))
+      "4-card badugi: %s + %s + %s + %s" format (value.head, value(1), value(2), value(3))
     
     case _ =>
-      "(unknown: %s)" format(this)
+      "(unknown: %s)" format this
   }
 }

@@ -4,7 +4,7 @@ object Mix {
   final val MaxTableSize = 8
 }
 
-case class Mix(val game: Game.Mixed, var _tableSize: Int = Mix.MaxTableSize) extends Variation {
+case class Mix(game: Game.Mixed, var _tableSize: Int = Mix.MaxTableSize) extends Variation {
   val options = Mixes.Default(game)
   if (_tableSize > Mix.MaxTableSize)
     _tableSize = Mix.MaxTableSize

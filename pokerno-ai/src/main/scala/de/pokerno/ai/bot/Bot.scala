@@ -52,11 +52,11 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
     //  game = _game
     //  stake = _stake
 
-    case msg.DeclareWinner(_pos, winner, amount) if (_pos == pos) ⇒
+    case msg.DeclareWinner(_pos, winner, amount) if _pos == pos ⇒
       stack += amount
 
     case msg.StreetStart(name) ⇒
-      street = name toString
+      street = name.toString()
 
     case msg.DeclarePot(total, _rake) ⇒
       pot = total
@@ -65,18 +65,18 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
     case msg.DealCards(_type, _cards, _pos, _player, _cardsNum) ⇒ (_type: DealCards.Value) match {
       case DealCards.Board =>
         board ++= _cards
-      case DealCards.Hole | DealCards.Door if (_pos == pos) =>
+      case DealCards.Hole | DealCards.Door if _pos == pos =>
         cards ++= _cards
-        Console printf("*** BOT #%d: %s\n", pos, Cards(cards) toConsoleString)
+        Console printf("*** BOT #%d: %s\n", pos, Cards(cards).toConsoleString)
       case _ =>
     }
     
-    case msg.RequireBet(_pos, _, call, raise) if (_pos == pos) ⇒
+    case msg.RequireBet(_pos, _, call, raise) if _pos == pos ⇒
       system.scheduler.scheduleOnce(1 second) {
         decide(call, raise)
       }
     
-    case msg.BetAdd(_pos, _player, _bet) if (_pos == pos) ⇒
+    case msg.BetAdd(_pos, _player, _bet) if _pos == pos ⇒
       bet = _bet.amount
     
     case _ =>
@@ -88,8 +88,8 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
     deal ! rpc.AddBet(id, b)
   }
 
-  def doCheck = addBet(Bet.check)
-  def doFold {
+  def doCheck() = addBet(Bet.check)
+  def doFold() {
     bet = .0
     addBet(Bet.fold)
   }
@@ -97,19 +97,19 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
   def doRaise(amount: Decimal) {
     stack += bet - amount
     bet = amount
-    addBet(Bet raise (amount))
+    addBet(Bet raise amount)
   }
 
   def doCall(amount: Decimal) {
     stack += bet - amount
     bet = amount
-    addBet(Bet call (amount))
+    addBet(Bet call amount)
   }
 
   def decide(call: Decimal, raise: Range) =
     if (cards.size != 2) {
-      Console printf ("*** can't decide with cards=%s\n", Cards(cards) toConsoleString)
-      doFold
+      Console printf ("*** can't decide with cards=%s\n", Cards(cards).toConsoleString)
+      doFold()
     } else {
 
       val decision = if (board.size == 0) decidePreflop(cards)
@@ -125,7 +125,7 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
     val min = if (call > stack + bet) stack + bet else call
     val max = decision.maxBet
 
-    var action = if (minRaise == .0 && maxRaise == .0)
+    var action = if (minRaise.toDouble == .0 && maxRaise.toDouble == .0)
       Action.CheckCall
     else if (min > max)
       Action.CheckFold
@@ -139,17 +139,17 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
     }
 
     action match {
-      case Action.Fold      ⇒ doFold
+      case Action.Fold      ⇒ doFold()
       
       case Action.CheckFold ⇒
         if (call == bet)
-          doCheck
+          doCheck()
         else
-          doFold
+          doFold()
       
       case Action.CheckCall ⇒
-        if (call == bet || call == .0)
-          doCheck
+        if (call == bet || call.toDouble == .0)
+          doCheck()
         else if (call > .0)
           doCall(call)
       

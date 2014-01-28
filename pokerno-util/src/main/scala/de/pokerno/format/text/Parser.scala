@@ -32,12 +32,12 @@ object Parser {
       try {
         val m = decl.get.typeSignature.declaration(ru.nme.CONSTRUCTOR).asTerm.alternatives.last
         val result = cm.reflectClass(decl.get.asClass).reflectConstructor(m.asMethod)(params)
-        return Some((line, lineno, result.asInstanceOf[Lexer.Token]))
+        Some((line, lineno, result.asInstanceOf[Lexer.Token]))
       } catch {
       case e: Throwable =>
         e.printStackTrace()
         Console printf("can't parse: %s with type: %s\n", line, decl.get)
-        return None
+        None
       }
     } else None
   }
@@ -49,7 +49,7 @@ object Parser {
   }
   
   def parse(src: scala.io.Source): List[ParsedLine] = {
-    parse(src.getLines.toList)
+    parse(src.getLines().toList)
   }
   
 }

@@ -4,7 +4,7 @@ import collection.mutable.ListBuffer
 
 class Card(val kind: Kind.Value.Kind, val suit: Suit.Value) extends Ordered[Card] {
   def toInt: Int = (kind.toInt << 2) + suit.toInt
-  def toByte: Byte = (toInt + 1) toByte
+  def toByte: Byte = (toInt + 1).toByte
 
   override def toString = kind.toString + suit.toString
   def toConsoleString = "%s%s%s%s".format(suit.color, kind.toString, suit.unicode, Console.RESET)
@@ -18,16 +18,22 @@ object Card {
 //  implicit def str2Card(s: String): Card = Card(s)
   implicit def symbol2Card(s: Symbol): Card = Card(s.name replace("_", ""))
 
-  case class NotACard(value: Any) extends Exception("not a card: %s" format (value))
-  case class InvalidCard(value: Any) extends Exception("invalid card: %s" format (value))
-  case class ParseError(s: String) extends Exception("can't parse card: %s" format (s))
+  case class NotACard(value: Any) extends Exception("not a card: %s" format value)
+  case class InvalidCard(value: Any) extends Exception("invalid card: %s" format value)
+  case class ParseError(s: String) extends Exception("can't parse card: %s" format s)
 
   private var _all: ListBuffer[Card] = new ListBuffer
   private var _masks: ListBuffer[Int] = new ListBuffer
 
-  final val All = for { kind ← Kind.All; suit ← Suit.All } yield (new Card(kind, suit))
+  final val All = for {
+    kind ← Kind.All;
+    suit ← Suit.All
+  } yield new Card(kind, suit)
   final val CardsNum = All.size
-  final val Masks: List[Int] = for { kind ← Kind.All; suit ← Suit.All } yield (kind.toInt << (1 << 4 * suit.toInt))
+  final val Masks: List[Int] = for {
+    kind ← Kind.All;
+    suit ← Suit.All
+  } yield kind.toInt << (1 << 4 * suit.toInt)
   final val Seq = List range (0, 51)
 
   @throws[NotACard]
@@ -80,6 +86,6 @@ object Cards {
 }
 
 class Cards(val value: List[Card]) {
-  override def toString = value.map(_ toString) mkString ("")
-  def toConsoleString = value.map(_ toConsoleString) mkString ("")
+  override def toString = value.map(_ toString) mkString ""
+  def toConsoleString = value.map(_ toConsoleString) mkString ""
 }

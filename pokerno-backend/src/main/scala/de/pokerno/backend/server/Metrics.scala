@@ -10,12 +10,12 @@ class Metrics extends Actor {
   final val metrics = new MetricRegistry
   val deals = metrics.meter("deals")
 
-  override def preStart = {
+  override def preStart() {
 
   }
 
   case object Deal
   def receive = {
-    case Deal ⇒ deals.mark
+    case Deal ⇒ deals.mark()
   }
 }

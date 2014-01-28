@@ -4,7 +4,7 @@ import math.{ BigDecimal ⇒ Decimal }
 import collection._
 import de.pokerno.protocol.wire
 
-case class Player(val id: String) {
+case class Player(id: String) {
   override def toString = id
 }
 
@@ -29,11 +29,11 @@ class Table(val size: Int) {
   override def toString = {
     val b = new StringBuilder
     
-    b.append("size=%d\n" format(size))
+    b.append("size=%d\n" format size)
     b.append("button=%d\n" format(button: Int))
     b.append(_seats toString)
     
-    b.toString
+    b.toString()
   }
 
   private val _seating: mutable.Map[Player, Int] = mutable.Map.empty
@@ -64,7 +64,7 @@ class Table(val size: Int) {
 
   def removePlayer(player: Player) {
     val at = _seating(player)
-    seatsAsList(at).clear
-    _seating remove (player)
+    seatsAsList(at).clear()
+    _seating remove player
   }
 }

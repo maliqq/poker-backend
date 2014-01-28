@@ -9,11 +9,11 @@ class Round(size: Int) {
     _current %= size
   }
 
-  def reset = {
+  def reset() {
     _current = 0
   }
 
-  def move = {
+  def move() {
     _current += 1
     _current %= size
   }

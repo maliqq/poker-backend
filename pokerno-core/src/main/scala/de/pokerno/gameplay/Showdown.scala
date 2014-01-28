@@ -29,9 +29,9 @@ trait Showdown {
   def declareWinner(pot: Pot, box: Tuple2[Seat, Int]) = {
     val (seat, pos) = box
     pot.sidePots foreach { side ⇒
-      val amount = side total
+      val amount = side.total
       val winner = seat.player.get
-      seat wins (amount)
+      seat wins amount
       events.declareWinner((winner, pos), amount)
     }
   }
@@ -39,7 +39,7 @@ trait Showdown {
   def declareWinners(pot: Pot, hi: Option[Map[Player, Hand]], lo: Option[Map[Player, Hand]]) = {
     val split: Boolean = hi.isDefined && lo.isDefined
     pot.sidePots foreach { side ⇒
-      val total = side total
+      val total = side.total
       var winnerLow: Option[Player] = None
       var winnerHigh: Option[Player] = None
       var bestLow: Option[Hand] = None
@@ -68,25 +68,25 @@ trait Showdown {
         case (winner, amount) ⇒
           val pos = 0
           val seat = new Seat
-          seat wins (amount)
+          seat wins amount
           events.declareWinner((winner, pos), amount)
       }
     }
   }
 
   def rank(player: Player, ranking: Hand.Ranking): Tuple2[List[Card], Hand] = {
-    val pocket = dealer pocket (player)
-    val board = dealer board
+    val pocket = dealer pocket player
+    val board = dealer.board
 
     if (board.size == 0)
-      return (pocket, ranking(pocket) get)
+      return (pocket, ranking(pocket).get)
 
-    var hands = for {
-      pair ← pocket combinations (2);
-      board ← dealer.board combinations (3)
-    } yield (ranking(pair ++ board) get)
+    val hands = for {
+      pair ← pocket combinations 2;
+      board ← dealer.board combinations 3
+    } yield ranking(pair ++ board).get
 
-    (pocket, hands.toList max(Ranking))
+    (pocket, hands.toList.max(Ranking))
   }
 
   def showHands(ranking: Hand.Ranking): Map[Player, Hand] = {
@@ -103,7 +103,7 @@ trait Showdown {
     hands
   }
 
-  def showdown = {
+  def showdown() {
     val stillInPot = (table.seats: List[Seat]).zipWithIndex filter (_._1 inPot)
     if (stillInPot.size == 1) {
       declareWinner(round.pot, stillInPot head)

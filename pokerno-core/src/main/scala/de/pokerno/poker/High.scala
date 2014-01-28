@@ -5,30 +5,30 @@ trait HighHand {
   def isStraightFlush: Option[Hand] = isFlush match {
     case None ⇒ isFourKind orElse isFullHouse orElse isStraight
     case Some(flush) ⇒
-      val cards = (new Hand.Cards(flush.value) with HighHand)
+      val cards = new Hand.Cards(flush.value) with HighHand
       cards.isStraight match {
         case Some(hand) ⇒ flush ranked Rank.High.StraightFlush
         case None       ⇒ isFourKind orElse isFullHouse orElse Some(flush)
       }
   }
 
-  def isFourKind: Option[Hand] = paired get (4) match {
+  def isFourKind: Option[Hand] = paired get 4 match {
     case Some(quads) ⇒
       val cards = quads.head
       new Hand(self, value = cards, High = Left(cards), Kicker = Right(true)) ranked Rank.High.FourKind
     case None ⇒ None
   }
 
-  def isFullHouse: Option[Hand] = paired get (3) match {
+  def isFullHouse: Option[Hand] = paired get 3 match {
     case Some(sets) ⇒
       val (major, minor) = if (sets.size > 1) {
-        val List(minor, major, _*) = sets sorted (Cards.OrderingByHead).reverse take (2)
+        val List(minor, major, _*) = sets.sorted(Cards.OrderingByHead).reverse.take(2)
         (major, minor)
       } else {
         paired.get(2) match {
           case None ⇒ return None
           case Some(pairs) ⇒
-            val minor = pairs sorted (Cards.OrderingByHead) head
+            val minor = pairs.sorted(Cards.OrderingByHead).head
             val major = sets.head
             (major, minor)
         }
@@ -47,33 +47,33 @@ trait HighHand {
   def isStraight: Option[Hand] = gaps find { group ⇒ group.size >= 5 } match { // FIXME sorted for Ace low
     case Some(group) ⇒
       val cards = group.sorted.reverse
-      new Hand(self, value = cards take (5), High = Left(cards take (1))) ranked Rank.High.Straight
+      new Hand(self, value = cards take 5, High = Left(cards take 1)) ranked Rank.High.Straight
     case None ⇒ None
   }
 
-  def isThreeKind: Option[Hand] = paired get (3) match {
+  def isThreeKind: Option[Hand] = paired get 3 match {
     case Some(sets) if sets.size == 1 ⇒
       new Hand(self, value = sets head, High = Right(true), Kicker = Right(true)) ranked Rank.High.ThreeKind
     case None ⇒ None
     case _    ⇒ None
   }
 
-  def isTwoPair: Option[Hand] = paired get (2) match {
+  def isTwoPair: Option[Hand] = paired get 2 match {
     case Some(pairs) if pairs.size >= 2 ⇒
-      val List(major, minor, _*) = pairs sorted (Cards.OrderingByMax).reverse
+      val List(major, minor, _*) = pairs.sorted(Cards.OrderingByMax).reverse
       new Hand(self, value = major ++ minor, High = Left(List(major head, minor head)), Kicker = Right(true)) ranked Rank.High.TwoPair
     case None ⇒ None
     case _    ⇒ None
   }
 
-  def isOnePair: Option[Hand] = paired get (2) match {
+  def isOnePair: Option[Hand] = paired get 2 match {
     case Some(pairs) if pairs.size == 1 ⇒
       new Hand(self, value = pairs head, High = Right(true), Kicker = Right(true)) ranked Rank.High.OnePair
     case None ⇒ None
   }
 
   def isHighCard: Option[Hand] = {
-    val highest = value max(ordering)
+    val highest = value.max(ordering)
     new Hand(self, value = List(highest), High = Right(true), Kicker = Right(true)) ranked Rank.High.HighCard
   }
 

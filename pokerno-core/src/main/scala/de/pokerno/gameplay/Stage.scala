@@ -23,7 +23,7 @@ object Stage {
 
 class Stage(val name: String, f: StageContext => Stage.Control) {
   def chain(f: Stage): StageChain =
-    (new StageChain(this)) chain (f)
+    new StageChain(this) chain f
   
   def chain =
     new StageChain(this)
@@ -63,7 +63,7 @@ class StageChain(stage: Stage) {
     for(stage <- stages) {
       b.append(" " + stage.toString)
     }
-    b.append("]").toString
+    b.append("]").toString()
   }
   
 }

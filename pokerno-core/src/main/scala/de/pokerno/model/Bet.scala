@@ -5,8 +5,8 @@ import java.util.Locale
 
 class Bet(val betType: Bet.Value, val amount: Decimal = .0) {
   override def toString =
-    if (amount > .0) "%s %.2f" formatLocal (Locale.US, betType toString, amount)
-    else betType toString
+    if (amount > .0) "%s %.2f" formatLocal (Locale.US, betType.toString, amount)
+    else betType.toString
 
   def isValid(left: Decimal, _put: Decimal, call: Decimal, _range: Range): Boolean = betType match {
     case Bet.Fold ⇒
@@ -77,7 +77,7 @@ object Bet {
   def ante(amount: Decimal) = forced(Ante, amount)
 
   case class CantCheck(call: Decimal)
-    extends Error("Can't check: need to call=%.2f" format (call))
+    extends Error("Can't check: need to call=%.2f" format call)
 
   case class CantBet(amount: Decimal, stack: Decimal)
     extends Error("Can't bet: got amount=%.2f, stack=%.2f" format (amount, stack))

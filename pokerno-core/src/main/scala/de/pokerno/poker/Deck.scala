@@ -16,12 +16,12 @@ class Deck(private var _cards: List[Card] = Deck.shuffle()) {
 
   def cards = _cards
   def deal(n: Int): List[Card] = {
-    val cards = _cards take (n)
+    val cards = _cards take n
     _cards = _cards diff cards
     cards
   }
 
-  def reshuffle {
+  def reshuffle() {
     _cards = Random shuffle (_cards ++ _burned)
     _burned = List.empty
   }
@@ -45,12 +45,12 @@ class Deck(private var _cards: List[Card] = Deck.shuffle()) {
 
   @throws[Deck.NoCardsLeft]
   def discard(old: List[Card]): List[Card] = {
-    val n = old size
+    val n = old.size
 
     if (n > _cards.size + _burned.size) throw Deck.NoCardsLeft()
 
     if (n > _cards.size)
-      reshuffle
+      reshuffle()
 
     val cards = deal(n)
     _burned ++= old

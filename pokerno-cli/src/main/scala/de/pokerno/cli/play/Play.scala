@@ -29,27 +29,27 @@ class PlayerActor(pos: Int, instance: ActorRef) extends Actor {
     case PlayerActor.Start ⇒
       instance ! rpc.JoinPlayer(pos = pos, player = player, amount = stack)
       become({
-        case msg.DealCards(_type, cards, _pos, player, cardsNum) ⇒ (_type: DealCards.Value) match {
+        case msg.DealCards(_type, cards, _pos, _player, cardsNum) ⇒ (_type: DealCards.Value) match {
           case DealCards.Hole | DealCards.Door if _pos == pos =>
-            Console printf ("Dealt %s %s to %d\n", _type, Cards(cards) toConsoleString, pos)
+            Console printf ("Dealt %s %s to %d\n", _type, Cards(cards).toConsoleString, pos)
             pocketCards = cards
             
           case DealCards.Board =>
-            Console printf ("Dealt %s %s\n", _type, Cards(cards) toConsoleString)
+            Console printf ("Dealt %s %s\n", _type, Cards(cards).toConsoleString)
           
           case _                         ⇒
         }
 
-        case msg.RequireBet(_pos, player, call, range) if _pos == pos ⇒
+        case msg.RequireBet(_pos, _player, call, range) if _pos == pos ⇒
           Console printf ("Seat %d: Call=%.2f Min=%.2f Max=%.2f\n", pos, call, range.min, range.max)
 
           var bet = Play.readBet(call)
 
-          val addBet = rpc.AddBet(player, bet)
+          val addBet = rpc.AddBet(_player, bet)
           
           instance ! addBet
 
-        case msg.RequireDiscard(_pos, player) if _pos == pos ⇒
+        case msg.RequireDiscard(_pos, _player) if _pos == pos ⇒
           Console printf ("your cards: [%s]\n", pocketCards)
 
           val cards = Play.readCards
@@ -64,8 +64,8 @@ class Play(instance: ActorRef, tableSize: Int) extends Actor {
   
   val seats: List[Seat] = List.fill(tableSize) { new Seat }
 
-  override def preStart = {
-    Console println ("starting play")
+  override def preStart() {
+    Console println "starting play"
     instance ! Instance.Subscribe(self, "play-observer")
     
     (1 to tableSize) foreach { i ⇒
@@ -80,7 +80,7 @@ class Play(instance: ActorRef, tableSize: Int) extends Actor {
     case msg.DealCards(_type, cards, pos, player, cardsNum) ⇒ (_type: DealCards.Value) match {
       case DealCards.Board ⇒
         boardCards = cards
-        Console printf ("Dealt %s %s\n", _type, Cards(boardCards) toConsoleString)
+        Console printf ("Dealt %s %s\n", _type, Cards(boardCards).toConsoleString)
         
       case _            ⇒
     }
@@ -98,12 +98,12 @@ class Play(instance: ActorRef, tableSize: Int) extends Actor {
       Console printf ("%s: %s\n", seat.player.get, bet)
 
     case msg.DeclarePot(total, rake) ⇒
-      Console printf ("Pot size: %.2f\nBoard: %s\n", total, Cards(boardCards) toConsoleString)
+      Console printf ("Pot size: %.2f\nBoard: %s\n", total, Cards(boardCards).toConsoleString)
 
     case msg.DeclareHand(pos, player, cards, hand) ⇒
       val seat = seats(pos)
 
-      Console printf ("%s has %s (%s)\n", seat.player.get, Cards(cards) toConsoleString, hand description)
+      Console printf ("%s has %s (%s)\n", seat.player.get, Cards(cards).toConsoleString, hand.description)
 
     case msg.DeclareWinner(pos, player, amount) ⇒
       val seat = seats(pos)
@@ -137,7 +137,7 @@ object Play {
 
   def parseBet(call: Decimal, str: String): Option[Bet] = str match {
     case "" ⇒
-      if (call == .0) Some(Bet.check)
+      if (call.toDouble == .0) Some(Bet.check)
       else Some(Bet.call(call))
     case Fold  ⇒ Some(Bet.fold)
     case Check ⇒ Some(Bet.check)

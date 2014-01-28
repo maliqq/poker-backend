@@ -18,7 +18,7 @@ class Seats(val seats: List[Seat]) {
   
   override def toString = seats.zipWithIndex map {
     case (seat, index) ⇒
-      "Seat %d: %s" format(index, seat toString)
-  } mkString("\n")
+      "Seat %d: %s" format(index, seat.toString())
+  } mkString "\n"
   
 }

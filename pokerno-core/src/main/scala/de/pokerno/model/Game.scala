@@ -105,27 +105,27 @@ object Game {
   final val MaxTableSize = 10
 
   case class Options(
-    val group: Group = Holdem,
-    val hasBlinds: Boolean = false,
-    val hasAnte: Boolean = false,
-    val hasBringIn: Boolean = false,
-    val hasBoard: Boolean = false,
-    val hasVela: Boolean = false,
+    group: Group = Holdem,
+    hasBlinds: Boolean = false,
+    hasAnte: Boolean = false,
+    hasBringIn: Boolean = false,
+    hasBoard: Boolean = false,
+    hasVela: Boolean = false,
 
-    val discards: Boolean = false,
-    val reshuffle: Boolean = false,
+    discards: Boolean = false,
+    reshuffle: Boolean = false,
 
-    val maxTableSize: Int = MaxTableSize,
+    maxTableSize: Int = MaxTableSize,
 
-    val pocketSize: Int = 0,
-    val streetsNum: Int = 0,
-    val hiRanking: Option[Hand.Ranking] = None,
-    val loRanking: Option[Hand.Ranking] = None,
+    pocketSize: Int = 0,
+    streetsNum: Int = 0,
+    hiRanking: Option[Hand.Ranking] = None,
+    loRanking: Option[Hand.Ranking] = None,
 
-    val defaultLimit: Limit = NoLimit)
+    defaultLimit: Limit = NoLimit)
 }
 
-case class Game(val game: Game.Limited, var Limit: Option[Game.Limit] = None, var TableSize: Option[Int] = None) extends Variation {
+case class Game(game: Game.Limited, var Limit: Option[Game.Limit] = None, var TableSize: Option[Int] = None) extends Variation {
   val options = Games.Default(game)
   val tableSize: Int = TableSize match {
     case None ⇒ options.maxTableSize
@@ -136,8 +136,8 @@ case class Game(val game: Game.Limited, var Limit: Option[Game.Limit] = None, va
         size
   }
   val limit: Game.Limit = Limit match {
-    case None        ⇒ options.defaultLimit
-    case Some(limit) ⇒ limit
+    case None       ⇒ options.defaultLimit
+    case Some(l)    ⇒ l
   }
   override def toString = "%s %s %s-max" format (game, limit, tableSize)
 }

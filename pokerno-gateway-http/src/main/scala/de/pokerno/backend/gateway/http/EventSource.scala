@@ -65,7 +65,7 @@ object EventSource {
       
       sendHttpResponse(ctx, req, resp).addListener(new ChannelFutureListener {
         override def operationComplete(f: ChannelFuture) {
-          if (f.isSuccess) promise.setSuccess
+          if (f.isSuccess) promise.setSuccess()
           else promise.setFailure(f.cause)
         }
       })
@@ -101,7 +101,7 @@ object EventSource {
         b.append(header).append(line).append(Token.Lf)
       }
       
-      b.append(Token.Lf).toString
+      b.append(Token.Lf).toString()
     }
   }
   

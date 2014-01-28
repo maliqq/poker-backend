@@ -11,17 +11,17 @@ object Rates {
 }
 
 case class Stake(
-    val bigBlind: Decimal,
+    bigBlind: Decimal,
     SmallBlind: Option[Decimal] = None,
     Ante: Either[Decimal, Boolean] = Right(false),
     BringIn: Either[Decimal, Boolean] = Right(false)) {
 
   def amount(t: Bet.Value): Decimal = t match {
-    case Bet.BringIn    ⇒ bringIn get
-    case Bet.Ante       ⇒ ante get
+    case Bet.BringIn    ⇒ bringIn.get
+    case Bet.Ante       ⇒ ante.get
     case Bet.SmallBlind ⇒ smallBlind
     case Bet.BigBlind   ⇒ bigBlind
-    case _              ⇒ throw new Error("no amount for %s" format (t))
+    case _              ⇒ throw new Error("no amount for %s" format t)
   }
 
   val smallBlind: Decimal = SmallBlind getOrElse rate(Bet.SmallBlind)

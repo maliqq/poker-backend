@@ -6,7 +6,7 @@ object Suit {
     def unicode: String
     def toInt: Int
     def color: String
-    override def toString: String = short toString
+    override def toString: String = short.toString()
   }
   case object Spade extends Value {
     def toInt = 0

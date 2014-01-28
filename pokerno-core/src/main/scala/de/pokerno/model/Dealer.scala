@@ -26,7 +26,7 @@ class Dealer(private var _deck: Deck = new Deck) {
   }
   
   def dealPocket(n: Int, p: Player): List[Card] = {
-    val cards = _deck share (n)
+    val cards = _deck share n
     dealPocket(cards, p)
     cards
   }
@@ -37,13 +37,13 @@ class Dealer(private var _deck: Deck = new Deck) {
 
   def dealBoard(n: Int): List[Card] = {
     _deck.burn(1)
-    val cards = _deck deal (n)
+    val cards = _deck deal n
     dealBoard(cards)
     cards
   }
 
   def discard(old: List[Card], p: Player): List[Card] = {
-    val cards = _deck discard (old) // FIXME validate old
+    val cards = _deck discard old // FIXME validate old
     _pockets += (p -> cards)
     cards
   }

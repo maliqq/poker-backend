@@ -11,8 +11,8 @@ trait BringIn {
   
   def bringIn(ctx: StageContext) {
     val (seat, pos) = ctx.gameplay.round.seats filter (_._1 isActive) minBy {
-      case (seat, pos) ⇒
-        ctx.gameplay.dealer pocket (seat.player get) last
+      case (_seat, _pos) ⇒
+        ctx.gameplay.dealer.pocket(_seat.player.get).last
     }
     ctx.gameplay.setButton(pos)
     ctx.gameplay.round.acting = (seat, pos)

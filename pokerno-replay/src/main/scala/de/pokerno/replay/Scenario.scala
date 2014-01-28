@@ -92,7 +92,7 @@ class Scenario {
         val pos = t.button
         t.addPlayer(pos, player, Some(stack))
         //node ! rpc.JoinPlayer(player, t.button, Some(stack))
-        t.button.move
+        t.button.move()
       }
       
     case tags.Stake(sb, bb, ante) =>

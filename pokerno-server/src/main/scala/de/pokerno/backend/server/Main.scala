@@ -17,24 +17,24 @@ object Main {
   
   private val optionParser = new scopt.OptionParser[Options]("poker-server") {
     // -c /etc/node.json
-    opt[String]('c', "config") text ("Path to config file") action { (value, c) =>
+    opt[String]('c', "config") text "Path to config file" action { (value, c) =>
       c.copy(configFile = Some(value))
     }
     
     // --host node1.localhost
-    opt[String]('h', "host") text("Node hostname") action { (value, c) =>
+    opt[String]('h', "host") text "Node hostname" action { (value, c) =>
       c.copy(config = c.config.copy(host = value))
     }
     
     // --http-port 8080
-    opt[Int]("http-port") text("HTTP port") action { (value, c) =>
+    opt[Int]("http-port") text "HTTP port" action { (value, c) =>
       c.copy(config = c.config.copy(
           http = Some(c.config.httpConfig.copy(port = value))
       ))
     }
     
     // --http-websocket
-    opt[Unit]("http-websocket") text("HTTP WebSocket path") action { (value, c) =>
+    opt[Unit]("http-websocket") text "HTTP WebSocket path" action { (value, c) =>
       val config = c.config.httpConfig.webSocketConfig
       if (config.isDefined) c // skip
       else c.copy(config = c.config.copy(
@@ -43,7 +43,7 @@ object Main {
     }
     
     // --http-websocket-path /_ws
-    opt[String]("http-websocket-path") text("HTTP WebSocket path") action { (value, c) =>
+    opt[String]("http-websocket-path") text "HTTP WebSocket path" action { (value, c) =>
       val config = c.config.httpConfig.webSocketConfig
       if (config.isDefined) c.copy(config = c.config.copy(
           http = Some(c.config.httpConfig.copy(webSocket = Left(config.get.copy(path = value))))
@@ -52,7 +52,7 @@ object Main {
     }
     
     // --http-eventsource
-    opt[Unit]("http-eventsource") text("HTTP WebSocket path") action { (value, c) =>
+    opt[Unit]("http-eventsource") text "HTTP WebSocket path" action { (value, c) =>
       val config = c.config.httpConfig.eventSourceConfig
       if (config.isDefined) c // skip
       else c.copy(config = c.config.copy(
@@ -61,7 +61,7 @@ object Main {
     }
     
     // --http-eventsource-path /_es
-    opt[String]("http-eventsource-path") text("HTTP EventSource path") action { (value, c) =>
+    opt[String]("http-eventsource-path") text "HTTP EventSource path" action { (value, c) =>
       val config = c.config.httpConfig.eventSourceConfig
       if (config.isDefined) c.copy(config = c.config.copy(
           http = Some(c.config.httpConfig.copy(eventSource = Left(config.get.copy(path = value))))
@@ -70,56 +70,56 @@ object Main {
     }
     
     // --rpc
-    opt[Unit]("rpc") text("RPC with default options") action { (value, c) =>
+    opt[Unit]("rpc") text "RPC with default options" action { (value, c) =>
       c.copy(config = c.config.copy(
           rpc = Some(c.config.rpcConfig)
       ))
     }
 
     // --rpc-port 8081
-    opt[Int]("rpc-port") text("RPC Port") action { (value, c) =>
+    opt[Int]("rpc-port") text "RPC Port" action { (value, c) =>
       c.copy(config = c.config.copy(
           rpc = Some(c.config.rpcConfig.copy(port = value))
       ))
     }
     
     // --stomp
-    opt[Unit]("stomp") text("STOMP with default options") action { (value, c) =>
+    opt[Unit]("stomp") text "STOMP with default options" action { (value, c) =>
       c.copy(config = c.config.copy(
           stomp = Some(c.config.stompConfig)
       ))
     }
     
     // --stomp-port 8082
-    opt[Int]("stomp-port") text("STOMP port") action { (value, c) =>
+    opt[Int]("stomp-port") text "STOMP port" action { (value, c) =>
       c.copy(config = c.config.copy(
           stomp = Some(c.config.stompConfig.copy(port = value))
       ))
     }
     
     // --zeromq
-    opt[Unit]("zeromq") text("ZeroMQ with default options") action { (value, c) =>
+    opt[Unit]("zeromq") text "ZeroMQ with default options" action { (value, c) =>
       c.copy(config = c.config.copy(
           zeromq = Some(c.config.zeromqConfig)
       ))
     }
     
     // --zeromq-port
-    opt[Int]("zeromq-port") text("ZeroMQ port") action { (value, c) =>
+    opt[Int]("zeromq-port") text "ZeroMQ port" action { (value, c) =>
       val config = c.config.zeromqConfig
       c.copy(config = c.config.copy(
           zeromq = Some(config.copy(port = value))
       ))
     }
     // --zeromq-host
-    opt[String]("zeromq-host") text("ZeroMQ host") action { (value, c) =>
+    opt[String]("zeromq-host") text "ZeroMQ host" action { (value, c) =>
       val config = c.config.zeromqConfig
       c.copy(config = c.config.copy(
           zeromq = Some(config.copy(host = value))
       ))
     }
     // --zeromq-topic "updates"
-    opt[String]("zeromq-topic") text("ZeroMQ subscribe topic") action { (value, c) =>
+    opt[String]("zeromq-topic") text "ZeroMQ subscribe topic" action { (value, c) =>
       val config = c.config.zeromqConfig
       c.copy(config = c.config.copy(
           zeromq = Some(config.copy(topic = value))
@@ -127,7 +127,7 @@ object Main {
     }
     
     // --help
-    help("help") text("Help")
+    help("help") text "Help"
   }
 
   val options = Options()

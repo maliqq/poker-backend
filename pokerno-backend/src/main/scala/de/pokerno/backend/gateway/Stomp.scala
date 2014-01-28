@@ -15,7 +15,7 @@ object Stomp {
   )
   
   class Server extends Actor with ActorLogging {
-    override def preStart {
+    override def preStart() {
     }
     
     def receive = {

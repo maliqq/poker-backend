@@ -68,7 +68,7 @@ case class Server(gw: ActorRef, config: Config) {
     //.option(ChannelOption.TCP_NODELAY.asInstanceOf[ChannelOption[Any]], true)
     .childHandler(initializer)
   
-  def run {
+  def run() {
     if (isActive) throw new IllegalStateException("Server already running!")
     
     Console printf("starting at :%d...\n", config.port)
@@ -77,28 +77,28 @@ case class Server(gw: ActorRef, config: Config) {
     channel.closeFuture.sync
   }
   
-  def shutdown {
+  def shutdown() {
     bossGroup.shutdownGracefully()
     workerGroup.shutdownGracefully()
   }
   
-  def stop {
-    Console printf("stopping...\n")
-    shutdown
+  def stop() {
+    Console printf "stopping...\n"
+    shutdown()
   }
   
   lazy val task = new FutureTask[Server](new Callable[Server] {
     override def call = {
       try {
-        run 
-      } finally shutdown
+        run()
+      } finally shutdown()
       Server.this
     }
   })
   
   def start = {
     val t = new Thread(task, "http-server")
-    t.start
+    t.start()
     t
   }
 }

@@ -30,7 +30,7 @@ class BettingRound(val gameplay: GameplayLike) extends Round(gameplay.table.size
   private var _raise: Range = (.0, .0)
   def raise = _raise
 
-  def clear {
+  def clear() {
     raiseCount = 0
     _call = .0
     _raise = (.0, .0)
@@ -41,9 +41,9 @@ class BettingRound(val gameplay: GameplayLike) extends Round(gameplay.table.size
   def forceBet(act: Tuple2[Seat, Int], betType: Bet.ForcedBet) {
     acting = act
 
-    _call = gameplay.stake amount (betType)
+    _call = gameplay.stake amount betType
 
-    val stack = seat amount
+    val stack = seat.amount
     val bet = Bet.forced(betType, List(stack, _call) min)
 
     addBet(bet)
@@ -55,12 +55,12 @@ class BettingRound(val gameplay: GameplayLike) extends Round(gameplay.table.size
     val limit = gameplay.game.limit
 
     val bb = if (bigBets) stake.bigBlind * 2 else stake.bigBlind
-    val stack = seat stack
+    val stack = seat.stack
 
     if (stack < _call || raiseCount >= MaxRaiseCount)
       _raise = (.0, .0)
     else {
-      var (min, max) = limit raise (stack, bb + _call, pot total)
+      var (min, max) = limit raise (stack, bb + _call, pot.total)
       _raise = Range(List(stack, min) min, List(stack, max) min)
     }
     val player = seat.player.get
@@ -70,12 +70,12 @@ class BettingRound(val gameplay: GameplayLike) extends Round(gameplay.table.size
   
   def addBet(bet: Bet) {
     val (seat, pos) = _acting
-    val player = seat.player get
+    val player = seat.player.get
     
-    def postBet {
+    def postBet() {
       val diff = bet.amount - seat.put
   
-      seat post (bet)
+      seat post bet
   
       if (bet.betType == Bet.Raise)
         raiseCount += 1
@@ -91,13 +91,13 @@ class BettingRound(val gameplay: GameplayLike) extends Round(gameplay.table.size
     }
     
     e.addBet((player, pos), if (bet.isValid(seat.amount, seat.put, _call, _raise)) {
-      postBet
+      postBet()
       bet
     } else Bet.fold)
   }
 
-  def complete {
-    clear
+  def complete() {
+    clear()
 
     (gameplay.table.seats: List[Seat]).filter(_ inPlay) map (_ play)
     e.declarePot(pot total)

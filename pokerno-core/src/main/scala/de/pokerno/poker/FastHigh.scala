@@ -26,10 +26,10 @@ trait FastHigh {
   final val Bit2 = new Array[Int](8129)
 
   def doRank(hand: Int): Int = {
-    val s = (hand & 0x1fff)
-    val h = ((hand >> 16) & 0x1fff)
-    val d = ((hand >> 32) & 0x1fff)
-    val c = ((hand >> 48) & 0x1fff)
+    val s = hand & 0x1fff
+    val h = (hand >> 16) & 0x1fff
+    val d = (hand >> 32) & 0x1fff
+    val c = (hand >> 48) & 0x1fff
 
     val flush = Flush(s) | Flush(h) | Flush(d) | Flush(c)
     if (flush != 0)
@@ -65,7 +65,7 @@ trait FastHigh {
     FourKindFlag | Top1Of16(p4) | Top1Of12(p1 ^ p4)
   }
 
-  def init {
+  def init() {
     for (c5 ← 14 until 4) {
       val c4 = c5 - 1
       val c3 = c4 - 1
@@ -132,10 +132,10 @@ trait FastHigh {
               for (c6 ← c5 until 1)
                 for (c7 ← c6 until 1) {
                   val i = (1 << c1) | (1 << c2) | (1 << c3) | (1 << c4) | (1 << c5) | (1 << c6) | (1 << c7)
-                  Top1Of16(i >> 2) = (c1 << 16)
-                  Top1Of12(i >> 2) = (c1 << 12)
-                  Top1Of8(i >> 2) = (c1 << 8)
-                  Bit1(i >> 2) = (1 << (c1 - 2))
+                  Top1Of16(i >> 2) = c1 << 16
+                  Top1Of12(i >> 2) = c1 << 12
+                  Top1Of8(i >> 2) = c1 << 8
+                  Bit1(i >> 2) = 1 << (c1 - 2)
                 }
   }
 }

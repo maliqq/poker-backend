@@ -41,7 +41,7 @@ object Codec {
       mapper.writeValueAsBytes(msg)
     
     def decode[T <: Message](data: Array[Byte])(implicit manifest: Manifest[T]) =
-      mapper.readValue(data, manifest.erasure).asInstanceOf[T]
+      mapper.readValue(data, manifest.runtimeClass).asInstanceOf[T]
   }
   
   object Protobuf extends Codec {
@@ -53,7 +53,7 @@ object Codec {
     }
     
     def decode[T <: Message](data: Array[Byte])(implicit manifest: Manifest[T]) = {
-      val instance: T = manifest.erasure.newInstance.asInstanceOf[T]
+      val instance: T = manifest.runtimeClass.newInstance.asInstanceOf[T]
       IOUtil.mergeFrom(data, instance, instance.schema)
       instance
     }

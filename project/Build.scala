@@ -12,7 +12,8 @@ object PokernoBuild extends Build {
     organization := "de.pokerno",
     scalaVersion := "2.10.3",
     exportJars := true,
-    javacOptions ++= Seq("-source", "1.7", "-target", "1.7")
+    javacOptions ++= Seq("-source", "1.7", "-target", "1.7"),
+    scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-language:implicitConversions", "-language:postfixOps")
     //,resolvers += "spray repo" at "http://repo.spray.io"
     //,resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
   )

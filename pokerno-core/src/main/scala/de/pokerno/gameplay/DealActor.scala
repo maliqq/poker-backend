@@ -21,9 +21,10 @@ class DealActor(val gameplay: GameplayContext) extends Actor
     gameplay.events.playStart
     beforeStreets(stageContext) match {
       case Stage.Next => self ! Streets.Next
+      case Stage.Exit => // TODO
     }
   }
-    
+  
   def receive = handleStreets
 
   override def postStop {

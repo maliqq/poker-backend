@@ -17,6 +17,7 @@ object Stage {
   case object Next extends Control
   case object Skip extends Control
   case object Wait extends Control
+  case object Exit extends Control
   
 }
 
@@ -29,19 +30,19 @@ class Stage(val name: String, f: StageContext => Stage.Control) {
   
   def apply(ctx: StageContext) =
     f(ctx)
+  
+  override def toString = f"#[stage:$name]"
 }
 
 class StageChain(stage: Stage) {
   var stages = List[Stage](stage)
-  
-  private var i = 0
   
   def chain(stage: Stage): StageChain = {
     stages :+= stage
     this
   }
   
-  def current: Stage = stages(i)
+  def current = stages.headOption
   
   def apply(ctx: StageContext) = {
     var result: Stage.Control = Stage.Next
@@ -58,10 +59,11 @@ class StageChain(stage: Stage) {
   
   override def toString = {
     val b = new StringBuilder
+    b.append("#[StageChain")
     for(stage <- stages) {
-      b.append("%s" format(stage))
+      b.append(" " + stage.toString)
     }
-    b.toString
+    b.append("]").toString
   }
   
 }

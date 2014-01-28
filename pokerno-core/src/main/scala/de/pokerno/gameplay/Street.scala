@@ -38,6 +38,8 @@ object Chain {
 
 case class Street(val value: Street.Value, val stages: StageChain) {
   def apply(ctx: StageContext) = stages(ctx)
+  
+  override def toString = f"#[Street $value]"
 }
 
 class StreetChain(ctx: StageContext, streets: List[Street]) {
@@ -61,4 +63,12 @@ class StreetChain(ctx: StageContext, streets: List[Street]) {
   
   } else ctx.ref ! Streets.Done
   
+  override def toString = {
+    val b = new StringBuilder
+    b.append("#[StreetChain")
+    for (street <- streets) {
+      b.append(" " + street.toString)
+    }
+    b.append("]").toString
+  }
 }

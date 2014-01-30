@@ -3,8 +3,9 @@ package de.pokerno.replay
 import akka.actor.Actor
 import de.pokerno.protocol.{msg, rpc}
 import de.pokerno.protocol.Conversions._
-import de.pokerno.gameplay.{Replay, Street}
-import de.pokerno.model.{Player, Table, Stake, Variation, Game, Bet, Seat}
+import de.pokerno.poker.{Card, Deck}
+import de.pokerno.gameplay.{Replay, GameplayContext, Street, Streets}
+import de.pokerno.model.{Dealer, Player, Table, Stake, Variation, Game, Bet, Seat}
 import akka.actor.{Actor, ActorSystem, ActorLogging, ActorRef, Props}
 import de.pokerno.backend.gateway.{Http, http}
 
@@ -27,12 +28,14 @@ object Replayer {
       }
     """)
 
-  val system = ActorSystem("poker-replayer", ConfigFactory.load(config))
-  val es = system.actorOf(Props(classOf[Http.Gateway]), "http-dispatcher")
+  val actorSystemConfig = ConfigFactory.load(config)
+  
+  val system = ActorSystem("poker-replayer", actorSystemConfig)
+  val gw = system.actorOf(Props(classOf[Http.Gateway]), "http-dispatcher")
 
   def startHttpServer = {
-    val server = new http.Server(es,
-      http.Config(port = 8080, eventSource = Right(true))
+    val server = new http.Server(gw,
+      http.Config(port = 8080, webSocket = Right(true))
     )
     server.start
   }
@@ -42,28 +45,36 @@ object Replayer {
   import collection.JavaConversions._
 
   def start(scenario: Scenario) {
-    if (!scenario.table.isDefined) throw ReplayError("table not defined")
-    if (!scenario.variation.isDefined) throw ReplayError("game not defined")
-    if (!scenario.stake.isDefined) throw ReplayError("stake not defined")
+    val table = scenario.table.getOrElse(
+        throw ReplayError("table not defined"))
+    val variation = scenario.variation.getOrElse(
+        throw ReplayError("game not defined"))
+    val stake = scenario.stake.getOrElse(
+        throw ReplayError("stake not defined"))
 
     def sleep = Thread.sleep(scenario.speed * 1000)
+    
+    val dealer = if (scenario.deck.isDefined) new Dealer(new Deck(scenario.deck.get))
+    else new Dealer
+    
+    val t = new Table(table.size)
+    val gameplay = new GameplayContext(t, variation, stake, dealer = dealer)
 
-    val replay = system.actorOf(Props(classOf[Replay], scenario.variation.get, scenario.stake.get), "replay")
-    replay ! Replay.Subscribe(es)
+    val replay = system.actorOf(Props(classOf[Replay], gameplay), "replay")
+    replay ! Replay.Subscribe(gw)
 
-    scenario.table.get.seatsAsList.zipWithIndex foreach { case (seat, pos) =>
-      if (!seat.isEmpty) {
+    table.seatsAsList.zipWithIndex foreach { case (seat, pos) =>
+      if (!seat.isEmpty)
         replay ! rpc.JoinPlayer(pos, seat.player.get, seat.stack)
-      }
     }
 
     var started = false
     for (street <- scenario.streets) {
       if (!started) {
-        replay ! Street.Start
+        replay ! Streets.Next
         started = true
       }
-      else replay ! Street.Next
+      else replay ! Streets.Next
 
       val actions = scenario.actions.get(street)
       for (action <- actions) {

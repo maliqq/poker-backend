@@ -1,7 +1,8 @@
 package de.pokerno.replay
 
-import de.pokerno.format.text.Lexer.{Token, Tags => tags}
+import de.pokerno.format.text.Lexer.{Token, BettingSemantic, Tags => tags}
 import de.pokerno.model.{Player, Table, Stake, Variation, Game, Bet, Seat}
+import de.pokerno.poker.Card
 import de.pokerno.protocol._
 import de.pokerno.protocol.Conversions._
 import de.pokerno.protocol.wire.Conversions._
@@ -14,6 +15,7 @@ class Scenario {
   var variation: Option[Variation] = None
   var id: Option[String] = None
   var speed: Int = 1
+  var deck: Option[List[Card]] = None
   val streets = new java.util.ArrayList[String]()
 
   def currentStreet = {
@@ -40,38 +42,57 @@ class Scenario {
       streets.add(name)
       actions.put(name, new java.util.ArrayList[rpc.Request]())
       processor = processStreet
+    
+    case tags.Deck(cards) =>
+      deck = Some(cards)
       
     case x =>
       Console printf("UNHANDLED: %s\n", x)
   }
   
-  def bet(player: String, bet: Bet): Unit = table.map { t =>
+  def bet(player: String, bet: Bet): Unit = {
+    val t = table.getOrElse(throw ReplayError("betting before TABLE"))
+    
     t.seat(player).map { case (seat, pos) =>
       actions.get(currentStreet).add(rpc.AddBet(seat.player.get, bet))
     }
   }
 
-  def processStreet(t: Token) = t match {
-    case tags.Sb(player) =>
-      bet(player.unquote, Bet.sb(stake.get.smallBlind))
-      
-    case tags.Bb(player) =>
-      bet(player.unquote, Bet.bb(stake.get.bigBlind))
-      
+  def processStreet(tok: Token) = tok match {
     case tags.Ante(player) =>
       bet(player.unquote, Bet.ante(stake.get.smallBlind))
-      
-    case tags.Raise(player, amount) =>
-      bet(player.unquote, Bet.raise(amount))
-      
-    case tags.AllIn(player) =>
-      bet(player.unquote, Bet.allin)
-      
-    case tags.Call(player, amount) =>
-      bet(player.unquote, Bet.call(amount))
-      
-    case tags.Fold(player) =>
-      bet(player.unquote, Bet.fold)
+    
+    case _: BettingSemantic =>
+      val t = table.getOrElse(throw ReplayError("betting before TABLE"))
+      val s = stake.getOrElse(throw ReplayError("STAKE is required"))
+      tok match {
+        case _: tags.Antes =>
+          t.seatsAsList.map { seat =>
+            if (!seat.isEmpty) {
+              val ante = Bet.ante(s.smallBlind)
+              actions.get(currentStreet).add(rpc.AddBet(seat.player.get, ante))
+            }
+          }
+          
+        case tags.Sb(player) =>
+          bet(player.unquote, Bet.sb(s.smallBlind))
+          
+        case tags.Bb(player) =>
+          val s = stake.getOrElse(throw ReplayError("STAKE is required"))
+          bet(player.unquote, Bet.bb(s.bigBlind))
+          
+        case tags.Raise(player, amount) =>
+          bet(player.unquote, Bet.raise(amount))
+          
+        case tags.AllIn(player) =>
+          bet(player.unquote, Bet.allin)
+          
+        case tags.Call(player, amount) =>
+          bet(player.unquote, Bet.call(amount))
+          
+        case tags.Fold(player) =>
+          bet(player.unquote, Bet.fold)
+      }
       
     case tags.Deal(player, cards, cardsNum) =>
       actions.get(currentStreet).add(rpc.DealCards(wire.DealType.HOLE, player.unquote, cards, cardsNum))
@@ -87,13 +108,12 @@ class Scenario {
 
   def processTable(t: Token) = t match {
     case tags.Seat(uuid, stack) =>
-      table.map { t =>
-        val player = Player(uuid.unquote)
-        val pos = t.button
-        t.addPlayer(pos, player, Some(stack))
-        //node ! rpc.JoinPlayer(player, t.button, Some(stack))
-        t.button.move()
-      }
+      val t = table.getOrElse(throw ReplayError("SEAT is declared before TABLE"))
+      val player = Player(uuid.unquote)
+      val pos: Int = t.button
+      t.addPlayer(pos, player, Some(stack))
+      //node ! rpc.JoinPlayer(player, t.button, Some(stack))
+      t.button.move()
       
     case tags.Stake(sb, bb, ante) =>
       stake = Some(Stake(sb,
@@ -104,13 +124,13 @@ class Scenario {
           }))
           
     case tags.Game(game, limit) =>
-      if (game.isDefined)
-        variation = Some(Game(game.get, limit, Some(table.get.size)))
-      else
-        throw ReplayError("game unknown")
-
+      val t = table.getOrElse(throw ReplayError("GAME is declared before TABLE"))
+      val g = game.getOrElse(throw ReplayError("Unknown game"))
+      variation = Some(Game(g, limit, Some(t.size)))
+      
     case tags.Button(pos) =>
-      table.map(_.button.current = pos)
+      val t = table.getOrElse(throw ReplayError("BUTTON is declared before TABLE"))
+      t.button.current = pos
       
     case x: Any =>
       processor = processMain

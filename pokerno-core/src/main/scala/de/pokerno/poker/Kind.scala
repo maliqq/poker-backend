@@ -10,7 +10,7 @@ object Kind {
 
     private def Kind(name: String) = new Kind(nextId, name)
 
-    val Deuce = Kind("ace")
+    val Deuce = Kind("deuce")
     val Three = Kind("three")
     val Four = Kind("four")
     val Five = Kind("five")

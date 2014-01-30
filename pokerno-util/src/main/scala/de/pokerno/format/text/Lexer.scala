@@ -31,6 +31,7 @@ object Lexer {
   }
   
   trait Token
+  trait BettingSemantic
   
   object Tags {
     import Conversions._
@@ -91,42 +92,49 @@ object Lexer {
     }
     
     @Tag(name = "SB")
-    case class Sb(player: QuotedString) extends Token {
+    case class Sb(player: QuotedString) extends Token
+                                           with BettingSemantic {
       def this(params: Array[String]) = this(params(0))
     }
     
     @Tag(name = "BB")
-    case class Bb(player: QuotedString) extends Token {
+    case class Bb(player: QuotedString) extends Token
+                                           with BettingSemantic {
       def this(params: Array[String]) = this(params(0))
     }
     
     @Tag(name = "ANTE")
-    case class Ante(player: QuotedString) extends Token {
+    case class Ante(player: QuotedString) extends Token
+                                             with BettingSemantic {
       def this(params: Array[String]) = this(params(0))
     }
     
     @Tag(name = "ANTES")
-    case class Antes extends Token {
+    case class Antes extends Token with BettingSemantic {
       def this(params: Array[String]) = this()
     }
     
     @Tag(name = "RAISE")
-    case class Raise(player: QuotedString, amount: Int) extends Token {
+    case class Raise(player: QuotedString, amount: Int) extends Token
+                                                           with BettingSemantic {
       def this(params: Array[String]) = this(params(0), params(1))
     }
     
     @Tag(name = "ALLIN")
-    case class AllIn(player: QuotedString) extends Token {
+    case class AllIn(player: QuotedString) extends Token
+                                              with BettingSemantic {
       def this(params: Array[String]) = this(params(0))
     }
     
     @Tag(name = "CALL")
-    case class Call(player: QuotedString, amount: Int) extends Token {
+    case class Call(player: QuotedString, amount: Int) extends Token
+                                                          with BettingSemantic {
       def this(params: Array[String]) = this(params(0), params(1))
     }
     
     @Tag(name = "FOLD")
-    case class Fold(player: QuotedString) extends Token {
+    case class Fold(player: QuotedString) extends Token
+                                             with BettingSemantic {
       def this(params: Array[String]) = this(params(0))
     }
     

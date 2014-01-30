@@ -8,10 +8,12 @@ object Gameplay {
 }
 
 class GameplayContext(
-    val events: GameplayEvents,
+    val table: Table,
     val variation: Variation,
     val stake: Stake,
-    val table: Table) extends GameplayLike
+    val events: GameplayEvents = new GameplayEvents,
+    val dealer: Dealer = new Dealer
+    ) extends GameplayLike
                          with GameRotation
                          with Antes
                          with Blinds
@@ -19,7 +21,6 @@ class GameplayContext(
                          with BringIn
                          with Showdown {
 
-  lazy val dealer: Dealer = new Dealer
   val round = new BettingRound(this)
 
   def prepareSeats(ctx: StageContext) {

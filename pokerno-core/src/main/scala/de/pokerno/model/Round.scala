@@ -5,7 +5,7 @@ class Round(size: Int) {
 
   def current = _current
   def current_=(at: Int) {
-    _current = at
+    _current = if (at < 0) size + at else at
     _current %= size
   }
 

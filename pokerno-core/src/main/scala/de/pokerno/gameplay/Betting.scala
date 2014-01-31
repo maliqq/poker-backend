@@ -89,6 +89,9 @@ object Betting {
       
       def nextTurn(bets: List[rpc.AddBet]) {
         val round = gameplay.round
+        
+        def active = round.seats.filter(_._1.isActive)
+        
         val gameOptions = gameplay.game.options
         val stake = gameplay.stake
         val table = gameplay.table
@@ -126,29 +129,65 @@ object Betting {
             postingAnte.foreach { case (seat, pos) =>
               round.forceBet((seat, pos), Bet.Ante)
             }
-            round.complete
           }
+          round.complete
         }
         
         // пассивные ставки игроков - блайнды
         val postBlinds = firstStreet && gameOptions.hasBlinds
         
-        val active = round.seats.filter(_._1.isActive)
-        if (postBlinds && active.size >= 2) {
-          val sbOption = forcedBets.find { addBet =>
+        val activeBeforeButtonMove = active
+        if (postBlinds && activeBeforeButtonMove.size >= 2) {
+          var sb: Option[Tuple2[Seat, Int]] = None
+          var bb: Option[Tuple2[Seat, Int]] = None
+          
+          val sbBetOption = forcedBets.find { addBet =>
             (addBet.bet.getType: Bet.Value) == Bet.SmallBlind
           }
           
-          val bbOption = forcedBets.find { addBet =>
-            (addBet.bet.getType: Bet.Value) == Bet.BigBlind
+          sbBetOption map { sbBet =>
+            activeBeforeButtonMove.find { case (seat, pos) =>
+              seat.player.isDefined && sbBet.player == seat.player.get.id
+            } map { _sb =>
+              sb = Some(_sb)
+            }
           }
           
-          val List(sb, bb, _*) = active
+          if (sb.isDefined) {
+            val (sbPlayer, sbPos) = sb.get
+            gameplay.setButton(sbPos - 1) // put button before SB
+            
+            forcedBets.find { addBet =>
+              (addBet.bet.getType: Bet.Value) == Bet.BigBlind
+            } map { bbBet =>
+              activeBeforeButtonMove.find { case (seat, pos) =>
+                val found = seat.player.isDefined && bbBet.player == seat.player.get.id
+                
+                if (!found && seat.player != sbPlayer)
+                  seat.idle() // помечаем все места от SB до BB как неактивные 
+                
+                found
+              } map { _bb =>
+                bb = Some(_bb)
+              }
+            }
+            
+          } else {
+            gameplay.moveButton
+            
+            // default blind positions
+            val List(_sb, _bb, _*) = active
+            sb = Some(_sb)
+            bb = Some(_bb)
+          }
+          
+          sb.map { sb => round.forceBet(sb, Bet.SmallBlind) }
+          bb.map { bb => round.forceBet(bb, Bet.SmallBlind) }
         }
         
         // активные ставки игроков
         if (!activeBets.isEmpty) {
-          val active = round.seats.filter(_._1.isActive)
+          
         }
       }
   }

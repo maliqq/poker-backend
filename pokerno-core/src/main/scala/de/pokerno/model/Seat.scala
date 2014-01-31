@@ -68,6 +68,10 @@ class Seat {
   def playing() {
     _state = Seat.State.Play
   }
+  
+  def idle() {
+    _state = Seat.State.Idle
+  }
 
   def check() {
     _state = Seat.State.Bet

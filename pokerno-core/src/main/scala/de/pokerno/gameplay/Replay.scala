@@ -2,25 +2,29 @@ package de.pokerno.gameplay
 
 import de.pokerno.protocol
 import de.pokerno.protocol.{msg, rpc}
+import protocol.Conversions._
+import protocol.wire.Conversions._
+import protocol.msg.Conversions._
 import de.pokerno.model._
 import akka.actor.{Actor, Props, ActorRef, ActorLogging}
 
 object Replay {
   case class Subscribe(out: ActorRef)
+  case class Street(actions: List[rpc.Request], speed: Int)
 }
 
-class Replay(_gameplay: GameplayContext) extends DealActor(_gameplay) {
+class Replay(val gameplay: GameplayContext) extends Actor
+      with ActorLogging
+      with Dealing.ReplayContext
+      with Streets.ReplayContext {
   
-  import protocol.Conversions._
-  import protocol.wire.Conversions._
-  import protocol.msg.Conversions._
+  lazy val stageContext = StageContext(gameplay, self)
+  def e = gameplay.events
+  def t = gameplay.table
   
   override def preStart {
     log.info("starting replay with gameplay {}", gameplay)
   }
-  
-  def e = gameplay.events
-  def t = gameplay.table
 
   override def receive = {
     case Replay.Subscribe(out) =>
@@ -44,32 +48,20 @@ class Replay(_gameplay: GameplayContext) extends DealActor(_gameplay) {
         gameplay.round.forceBet((seat, pos), bet.betType.asInstanceOf[Bet.ForcedBet])
 
       } else gameplay.round.addBet(bet)
+      
       e.addBet(t.box(player).get, bet)
 
     case s @ rpc.ShowCards(cards, player, muck) =>
+      
       log.debug("got: {}", s)
-
+      
       e.showCards(t.box(player).get, cards, muck)
 
     case d @ rpc.DealCards(_type, player, cards, cardsNum) =>
+      
       log.debug("got: {}", d)
-
-      (_type: DealCards.Value) match {
-        case DealCards.Hole =>
-          log.debug(" | deal {} -> {}", cards, player)
-          gameplay.dealer.dealPocket(cards, player)
-          e.dealCards(_type, cards, t.box(player))
-
-        case DealCards.Door =>
-          log.debug(" | deal door {} -> {}", cards, player)
-          gameplay.dealer.dealPocket(cards, player)
-          e.dealCards(_type, cards, t.box(player))
-
-        case DealCards.Board =>
-          log.debug(" | deal board {}", cards)
-          gameplay.dealer.dealBoard(cards)
-          e.dealCards(_type, cards)
-      }
+      
+      dealCards(_type, player, cards, cardsNum)
 
     case Streets.Next =>
       log.debug("streets next")

@@ -103,6 +103,7 @@ object Game {
   case object TripleDraw extends Group
 
   final val MaxTableSize = 10
+  final val FullBoardSize = 5
 
   case class Options(
     group: Group = Holdem,
@@ -122,7 +123,16 @@ object Game {
     hiRanking: Option[Hand.Ranking] = None,
     loRanking: Option[Hand.Ranking] = None,
 
-    defaultLimit: Limit = NoLimit)
+    defaultLimit: Limit = NoLimit) {
+    
+    // на случай когда колода задается вручную
+    def minDeckSize = {
+      var n = maxTableSize * pocketSize
+      if (hasBoard) n += 5
+      if (discards) n += pocketSize
+      n
+    }
+  }
 }
 
 case class Game(game: Game.Limited, var Limit: Option[Game.Limit] = None, var TableSize: Option[Int] = None) extends Variation {

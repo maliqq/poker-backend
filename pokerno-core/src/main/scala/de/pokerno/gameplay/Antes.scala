@@ -8,12 +8,17 @@ import akka.actor.ActorRef
  */
 trait Antes {
   
-  def postAntes(ctx: StageContext) = if (ctx.gameplay.stake.ante.isDefined) {
-    val seats = ctx.gameplay.round.seats filter (_._1 isActive)
-    seats foreach { seat =>
-      ctx.gameplay.round.forceBet(seat, Bet.Ante)
+  def postAntes(ctx: StageContext) = {
+    val gameOptions = ctx.gameplay.game.options
+    val stake = ctx.gameplay.stake
+    
+    if (gameOptions.hasAnte || stake.ante.isDefined) {
+      val seats = ctx.gameplay.round.seats filter (_._1 isActive)
+      seats foreach { seat =>
+        ctx.gameplay.round.forceBet(seat, Bet.Ante)
+      }
+      ctx.gameplay.round.complete
     }
-    ctx.gameplay.round.complete
   }
   
 }

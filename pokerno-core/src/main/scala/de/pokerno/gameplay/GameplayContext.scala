@@ -17,7 +17,7 @@ class GameplayContext(
                          with GameRotation
                          with Antes
                          with Blinds
-                         with Dealing
+                         with Dealing.DealContext
                          with BringIn
                          with Showdown {
 

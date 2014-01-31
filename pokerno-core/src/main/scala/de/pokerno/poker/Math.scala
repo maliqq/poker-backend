@@ -2,7 +2,6 @@ package de.pokerno.poker
 
 object Math {
   final val DefaultSamplesNum: Int = 1000
-  final val FullBoardLen: Int = 5
 
   class Sample {
     var total: Int = 0
@@ -55,7 +54,7 @@ object Math {
 
       val sample = new Sample
       for {
-        boardVariant ← cardsLeft.combinations(FullBoardLen - board.size);
+        boardVariant ← cardsLeft.combinations(Deck.FullBoardSize - board.size);
         other ← cardsLeft.combinations(hole.size)
       } {
         if ((boardVariant.toSet & other.toSet).size == 0) {
@@ -71,7 +70,7 @@ object Math {
     def withBoard(board: List[Card]) = {
       val deck = new Deck without a without b without board
       val cardsLeft = deck.cards
-      val cardsNumToCompleteBoard = FullBoardLen - board.size
+      val cardsNumToCompleteBoard = Deck.FullBoardSize - board.size
 
       val sample = new Sample
       (0 to samplesNum) foreach { _ ⇒
@@ -110,7 +109,7 @@ object Math {
         throw new Error("board invalid")
 
       val holeCardsNum = hole.size
-      val cardsNumToCompleteBoard = FullBoardLen - board.size
+      val cardsNumToCompleteBoard = Deck.FullBoardSize - board.size
 
       val deck = new Deck without hole without board
       val cardsLeft = deck.cards

@@ -18,7 +18,7 @@ case class Stake(
 
   def amount(t: Bet.Value): Decimal = t match {
     case Bet.BringIn    ⇒ bringIn.get
-    case Bet.Ante       ⇒ ante.get
+    case Bet.Ante       ⇒ ante.getOrElse(rate(Bet.Ante))
     case Bet.SmallBlind ⇒ smallBlind
     case Bet.BigBlind   ⇒ bigBlind
     case _              ⇒ throw new Error("no amount for %s" format t)

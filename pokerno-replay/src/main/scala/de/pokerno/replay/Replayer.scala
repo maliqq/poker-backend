@@ -51,8 +51,6 @@ object Replayer {
         throw ReplayError("game not defined"))
     val stake = scenario.stake.getOrElse(
         throw ReplayError("stake not defined"))
-
-    def sleep = Thread.sleep(scenario.speed * 1000)
     
     val dealer = if (scenario.deck.isDefined) new Dealer(new Deck(scenario.deck.get))
     else new Dealer
@@ -68,19 +66,8 @@ object Replayer {
         replay ! rpc.JoinPlayer(pos, seat.player.get, seat.stack)
     }
 
-    var started = false
     for (street <- scenario.streets) {
-      if (!started) {
-        replay ! Streets.Next
-        started = true
-      }
-      else replay ! Streets.Next
-
-      val actions = scenario.actions.get(street)
-      for (action <- actions) {
-        sleep
-        replay ! action
-      }
+      replay ! Replay.Street(street, scenario.speed)
     }
   }
 }

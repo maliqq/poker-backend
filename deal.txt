@@ -1,0 +1,22 @@
+TABLE "1" 6-max
+ 
+BUTTON 1
+ 
+SEAT "player-1" 1000
+SEAT "player-2" 1000
+SEAT "player-3" 1000
+SEAT "player-4" 1000
+SEAT "player-5" 1000
+SEAT "player-6" 1000
+ 
+GAME texas no-limit
+STAKE 10/10
+ 
+STREET preflop
+ 
+SB "player-1"
+BB "player-2"
+ 
+FOLD "player-3"
+FOLD "player-4"
+FOLD "player-5"

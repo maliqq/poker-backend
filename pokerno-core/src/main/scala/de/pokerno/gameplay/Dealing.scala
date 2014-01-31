@@ -6,8 +6,9 @@ import de.pokerno.protocol.{msg => message}
 
 object Dealing {
   
-  trait DealContext { 
-    g: GameplayLike ⇒
+  trait DealContext {
+    
+    g: ContextLike ⇒
     
     def dealCards(_type: DealCards.Value, cardsNum: Option[Int] = None) {
       _type match {

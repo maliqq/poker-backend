@@ -63,21 +63,23 @@ object Betting {
     }
     
     protected def nextTurn() {
-      gameplay.round.move
-      gameplay.round.seats filter (_._1 inPlay) foreach {
+      val round = gameplay.round
+      
+      round.move
+      round.seats filter (_._1 inPlay) foreach {
         case (seat, pos) ⇒
-          if (!seat.isCalled(gameplay.round.call)) seat.playing
+          if (!seat.isCalled(round.call)) seat.playing()
       }
   
-      if (gameplay.round.seats.filter(_._1 inPot).size < 2)
+      if (round.seats.filter(_._1 inPot).size < 2)
         self ! Betting.Stop
       else {
-        val active = gameplay.round.seats filter (_._1 isPlaying)
+        val active = round.seats filter (_._1 isPlaying)
   
         if (active.size == 0)
           self ! Betting.Done
         else
-          gameplay.round requireBet active.head
+          round requireBet active.head
       }
     }
   }
@@ -186,9 +188,35 @@ object Betting {
         }
         
         // активные ставки игроков
-        if (!activeBets.isEmpty) {
+        if (!activeBets.isEmpty)
+          activeBets.takeWhile { addBet =>
+            val acting = round.acting
+            var done = false
+            
+            if (acting._1.player.isDefined && acting._1.player.get.id == addBet.player) {
+              // FIXME: remove copy&paste
+              round.addBet(addBet.bet)
+              round.move
+              round.seats filter (_._1 inPlay) foreach {
+                case (seat, pos) ⇒
+                  if (!seat.isCalled(round.call)) seat.playing()
+              }
           
-        }
+              if (round.seats.filter(_._1 inPot).size < 2) {
+                self ! Betting.Stop
+                done = true
+              } else {
+                val active = round.seats filter (_._1 isPlaying)
+          
+                if (active.size == 0) {
+                  self ! Betting.Done
+                  done = true
+                }
+              }
+            }
+            
+            !done
+          }
       }
   }
 

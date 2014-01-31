@@ -8,7 +8,7 @@ object Stages {
   }
 }
 
-case class StageContext(gameplay: GameplayContext, ref: ActorRef)
+case class StageContext(gameplay: Context, ref: ActorRef)
 
 object Stage {
   

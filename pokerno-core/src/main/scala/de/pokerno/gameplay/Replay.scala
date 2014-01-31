@@ -13,7 +13,7 @@ object Replay {
   case class Street(actions: List[rpc.Request], speed: Int)
 }
 
-class Replay(val gameplay: GameplayContext) extends Actor
+class Replay(val gameplay: Context) extends Actor
       with ActorLogging
       with Dealing.ReplayContext
       with Streets.ReplayContext {

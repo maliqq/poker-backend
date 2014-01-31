@@ -7,7 +7,7 @@ import de.pokerno.poker.{Card, Hand}
 
 import math.{BigDecimal => Decimal}
 
-class GameplayEvents {
+class Events {
 
   import protocol.Conversions._
   import protocol.wire.Conversions._

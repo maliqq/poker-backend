@@ -33,7 +33,7 @@ class Instance(val variation: Variation, val stake: Stake) extends Actor with Ac
   import context._
   import context.dispatcher
 
-  val events = new GameplayEvents
+  val events = new Events
   val table = new Table(variation.tableSize)
 
   startWith(Instance.Created, Instance.Empty)
@@ -65,8 +65,8 @@ class Instance(val variation: Variation, val stake: Stake) extends Actor with Ac
       goto(Instance.Closed)
 
     case Event(Deal.Start, _) ⇒
-      val gameplay = new GameplayContext(table, variation, stake, events)
-      val running = actorOf(Props(classOf[DealActor], gameplay), name = "gameplay-process")
+      val gameplay = new Context(table, variation, stake, events)
+      val running = actorOf(Props(classOf[Deal], gameplay), name = "gameplay-process")
       stay using Instance.Run(running)
 
     case Event(Deal.Done, _) ⇒

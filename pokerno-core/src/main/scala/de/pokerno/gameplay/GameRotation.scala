@@ -5,7 +5,7 @@ import de.pokerno.protocol.{msg => message}
 
 trait GameRotation {
 
-  g: GameplayLike ⇒
+  g: ContextLike ⇒
 
   def rotateGame(ctx: StageContext) = if (variation isMixed)
     rotateNext { g ⇒

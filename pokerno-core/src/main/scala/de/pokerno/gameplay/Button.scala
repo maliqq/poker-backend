@@ -4,7 +4,7 @@ import de.pokerno.protocol.{msg => message}
 
 trait Button {
   
-  g: GameplayLike =>
+  g: ContextLike =>
     
   def setButton(pos: Int) {
     table.button.current = pos

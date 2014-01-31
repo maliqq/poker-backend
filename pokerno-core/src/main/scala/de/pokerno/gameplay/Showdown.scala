@@ -10,7 +10,7 @@ import de.pokerno.protocol.{msg => message}
  */
 trait Showdown {
 
-  g: GameplayLike ⇒
+  g: ContextLike ⇒
   
   // FIXME: equal hands
   def best(pot: SidePot, hands: Map[Player, Hand]): Tuple2[Player, Hand] = {

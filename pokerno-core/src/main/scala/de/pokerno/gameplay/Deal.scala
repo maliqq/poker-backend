@@ -17,7 +17,7 @@ object Deal {
   
 }
 
-class Deal(val gameplay: GameplayContext) extends Actor
+class Deal(val gameplay: Context) extends Actor
                                                with ActorLogging
                                                with Betting.DealContext
                                                with Streets.DealContext {

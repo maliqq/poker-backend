@@ -14,11 +14,11 @@ class StreetsSpec(_system: ActorSystem) extends TestKit(_system) with FunSpecLik
   def this() = this(ActorSystem("test"))
   
   val variation = new Game(Game.Texas, Some(Game.NoLimit), Some(10))
-  val events = new GameplayEvents
+  val events = new Events
   val stake = new Stake(100)
   val table = new Table(variation.tableSize)
   
-  val gameplay = new GameplayContext(
+  val gameplay = new Context(
       events,
       variation,
       stake,

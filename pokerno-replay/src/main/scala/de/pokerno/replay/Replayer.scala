@@ -4,7 +4,7 @@ import akka.actor.Actor
 import de.pokerno.protocol.{msg, rpc}
 import de.pokerno.protocol.Conversions._
 import de.pokerno.poker.{Card, Deck}
-import de.pokerno.gameplay.{Replay, GameplayContext, Street, Streets}
+import de.pokerno.gameplay.{Replay, Context => GameplayContext, Street, Streets}
 import de.pokerno.model.{Dealer, Player, Table, Stake, Variation, Game, Bet, Seat}
 import akka.actor.{Actor, ActorSystem, ActorLogging, ActorRef, Props}
 import de.pokerno.backend.gateway.{Http, http}

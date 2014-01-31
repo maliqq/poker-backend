@@ -94,7 +94,7 @@ class Instance(val variation: Variation, val stake: Stake) extends Actor with Ac
       stay()
 
     case Event(addBet: rpc.AddBet, Instance.Run(running)) ⇒
-      running ! Betting.Add(addBet.bet)
+      running ! Betting.Add(addBet.player, addBet.bet)
       stay()
     
     case Event(Instance.Subscribe(ref, name), _) =>

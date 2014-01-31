@@ -38,18 +38,18 @@ class Replay(val gameplay: Context) extends Actor
 
       t.addPlayer(pos, player, Some(amount))
       e.joinTable((player, pos), amount)
-
-    case addBet @ rpc.AddBet(player, bet) =>
-      log.info("got: {}", addBet)
-
-      if (bet.isForced) {
-
-        val (seat, pos) = t.seat(player).get
-        gameplay.round.forceBet((seat, pos), bet.betType.asInstanceOf[Bet.ForcedBet])
-
-      } else gameplay.round.addBet(bet)
-      
-      e.addBet(t.box(player).get, bet)
+//
+//    case addBet @ rpc.AddBet(player, bet) =>
+//      log.info("got: {}", addBet)
+//
+//      if (bet.isForced) {
+//
+//        val (seat, pos) = t.seat(player).get
+//        gameplay.round.forceBet((seat, pos), bet.betType.asInstanceOf[Bet.ForcedBet])
+//
+//      } else gameplay.round.addBet(bet)
+//      
+//      e.addBet(t.box(player).get, bet)
 
     case s @ rpc.ShowCards(cards, player, muck) =>
       
@@ -62,18 +62,18 @@ class Replay(val gameplay: Context) extends Actor
       log.debug("got: {}", d)
       
       dealCards(_type, player, cards, cardsNum)
-
-    case Streets.Next =>
-      log.debug("streets next")
-
-      gameplay.prepareSeats(stageContext)
-      streets(stageContext)
-      
-    case Streets.Done =>
-      log.debug("showdown")
-
-      gameplay.showdown
-      context.stop(self)
+//
+//    case Streets.Next =>
+//      log.debug("streets next")
+//
+//      gameplay.prepareSeats(stageContext)
+//      streets(stageContext)
+//      
+//    case Streets.Done =>
+//      log.debug("showdown")
+//
+//      gameplay.showdown
+//      context.stop(self)
 
     case x =>
       log.warning("unandled: {}", x)

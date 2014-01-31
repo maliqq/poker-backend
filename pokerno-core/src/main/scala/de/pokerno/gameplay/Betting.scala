@@ -16,7 +16,7 @@ object Betting {
   case class Require(amount: Decimal, limit: Game.Limit)
   // force bet
   case class Force(amount: Decimal)
-  case class Add(bet: Bet)
+  case class Add(player: Player, bet: Bet)
 
   // go to next seat
   case object NextTurn
@@ -33,10 +33,14 @@ object Betting {
     deal: Deal =>
   
     def handleBetting: Receive = {
-      case Betting.Add(bet) ⇒
-        log.info("[betting] add {}", bet)
-        gameplay.round.addBet(bet)
-        nextTurn()
+      case Betting.Add(player, bet) ⇒
+        val (seat, pos) = gameplay.round.acting
+        if (seat.player == player) {
+          log.info("[betting] add {}", bet)
+          gameplay.round.addBet(bet)
+          nextTurn()
+        } else
+          log.warning("[betting] not a turn of {}", player)
   
       case Betting.NextTurn ⇒
         log.info("[betting] next turn")

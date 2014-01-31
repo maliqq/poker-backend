@@ -19,13 +19,13 @@ class StreetsSpec(_system: ActorSystem) extends TestKit(_system) with FunSpecLik
   val table = new Table(variation.tableSize)
   
   val gameplay = new Context(
-      events,
+      table,
       variation,
       stake,
-      table
+      events
   )
   
-  val context = new StageContext(gameplay, system.actorOf(Props(classOf[DealActor], gameplay)))
+  val context = new StageContext(gameplay, system.actorOf(Props(classOf[Deal], gameplay)))
   
   describe("Streets") {
     it("") {

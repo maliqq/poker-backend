@@ -105,7 +105,7 @@ object PokernoBuild extends Build {
       version := "0.0.2",
       libraryDependencies ++= Seq(
         "com.github.scopt" %% "scopt" % "3.1.0"
-      )
+      ) ++ testDeps
     ) ++ assemblySettings
   ) dependsOn(core, backend)
 
@@ -114,7 +114,8 @@ object PokernoBuild extends Build {
     base = file("pokerno-util"),
     settings = Project.defaultSettings ++ Seq(
       name := "pokerno-util",
-      version := "0.0.1"
+      version := "0.0.1",
+      libraryDependencies ++= testDeps
     ) ++ assemblySettings
   ) dependsOn(core)
   
@@ -150,7 +151,7 @@ object PokernoBuild extends Build {
       libraryDependencies ++= Seq(
         "jline" % "jline" % "2.11",
         "com.github.scopt" %% "scopt" % "3.1.0"
-      )
+      ) ++ testDeps
     ) ++ assemblySettings
   ) dependsOn(core)
   

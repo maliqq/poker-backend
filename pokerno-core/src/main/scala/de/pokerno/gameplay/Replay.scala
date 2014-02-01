@@ -89,7 +89,11 @@ class Replay(val gameplay: Context) extends Actor
         
         val options = streetOptions(street)
 
+        /**
+         * DEALING
+         * */
         options.dealing.map { dealOptions =>
+          log.info("[dealing] started")
           val dealer = gameplay.dealer
           
           val dealActions = actions.filter { action =>
@@ -140,7 +144,40 @@ class Replay(val gameplay: Context) extends Actor
                 }
             }
           }
+          
+          log.info("[dealing] done")
         }
+        
+        /**
+         * BRING IN
+         * */
+        if (options.bringIn) {
+          log.info("[bring-in] started")
+          gameplay.bringIn(stageContext)
+          log.info("[bring-in] done")
+        }
+        
+        /**
+         * BIG BETS
+         * */
+        
+        if (options.bigBets) {
+          log.info("[big-bets] handled")
+          gameplay.round.bigBets = true // TODO notify
+        }
+        
+        /**
+         * BETTING
+         * */
+        
+        if (options.betting) {
+          log.info("[betting] started")
+          log.info("[betting] done")
+        }
+        
+        /**
+         * DISCARDING
+         * */
       }
       
     case x =>

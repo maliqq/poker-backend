@@ -5,10 +5,7 @@ import akka.actor.{ Actor, Props, ActorLogging, ActorRef }
 import de.pokerno.protocol.{msg => proto}
 
 object Street extends Enumeration {
-    
-  class StreetVal(i: Int, name: String) extends Val(i, name)
-  
-  private def value(name: String) = new StreetVal(nextId, name)
+  private def value(name: String) = new Val(nextId, name)
   
   val Preflop = value("preflop")
   val Flop = value("flop")
@@ -28,6 +25,7 @@ object Street extends Enumeration {
   val SecondDraw = value("second-draw")
   val ThirdDraw = value("third-draw")
   
+  implicit def string2streetValueOption(s: String): Option[Value] = values.find(_.toString == s)
 }
 
 object Chain {
@@ -36,11 +34,61 @@ object Chain {
   case object Stop extends Result
 }
 
-case class Street(value: Street.Value, stages: StageChain) {
+case class Street(value: Street.Value, options: StreetOptions) {
+  import Stages._
+  
+  var stages = new StageChain
+  
+  options.dealing.map { o =>
+    Console printf("dealing=%s", o)
+    val dealing = stage("dealing") { ctx =>
+      ctx.gameplay.dealCards(o.dealType, o.cardsNum)
+      Stage.Next
+    }
+    stages chain dealing
+  }
+  
+  if (options.bringIn) {
+    val bringIn = stage("bring-in") { ctx =>
+      ctx.gameplay.bringIn(ctx)
+      Stage.Next
+    }
+    stages chain bringIn
+  }
+  
+  if (options.bigBets) {
+    val bigBets = stage("big-bets") { ctx =>
+      ctx.ref ! Betting.BigBets
+      Stage.Next
+    }
+    stages chain bigBets
+  }
+  
+  if (options.betting) {
+    val betting = stage("betting") { ctx =>
+      ctx.ref ! Betting.Start
+      Stage.Wait
+    }
+    stages chain betting
+  }
+  
+  if (options.discarding) {
+    val discarding = stage("discarding") { ctx => Stage.Next }
+    stages chain discarding
+  }
+  
   def apply(ctx: StageContext) = stages(ctx)
   
   override def toString = f"#[Street $value]"
 }
+
+case class StreetOptions(
+    dealing: Option[DealingOptions] = None,
+    bringIn: Boolean = false,
+    betting: Boolean = false,
+    bigBets: Boolean = false,
+    discarding: Boolean = false
+)
 
 class StreetChain(ctx: StageContext, streets: List[Street]) {
   private val iterator = streets.iterator

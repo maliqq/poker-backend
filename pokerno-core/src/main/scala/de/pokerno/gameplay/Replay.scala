@@ -10,7 +10,7 @@ import akka.actor.{Actor, Props, ActorRef, ActorLogging}
 
 object Replay {
   case class Subscribe(out: ActorRef)
-  case class Street(actions: List[rpc.Request], speed: Int)
+  case class StreetActions(street: Street.Value, actions: List[rpc.Request], speed: Int)
 }
 
 class Replay(val gameplay: Context) extends Actor
@@ -74,6 +74,9 @@ class Replay(val gameplay: Context) extends Actor
 //
 //      gameplay.showdown
 //      context.stop(self)
+    
+    case a @ Replay.StreetActions(street, actions, speed) =>
+      log.debug("got: {}", a)
 
     case x =>
       log.warning("unandled: {}", x)

@@ -34,8 +34,13 @@ class Stage(val name: String, f: StageContext => Stage.Control) {
   override def toString = f"#[stage:$name]"
 }
 
-class StageChain(stage: Stage) {
-  var stages = List[Stage](stage)
+class StageChain() {
+  var stages = List[Stage]()
+  
+  def this(stage: Stage) = {
+    this()
+    this.chain(stage)
+  }
   
   def chain(stage: Stage): StageChain = {
     stages :+= stage

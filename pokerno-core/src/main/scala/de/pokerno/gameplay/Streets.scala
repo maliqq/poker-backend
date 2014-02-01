@@ -61,135 +61,118 @@ object Streets {
     replay: Replay =>
   }
   
-  val bringIn = stage("bring-in") { ctx =>
-    ctx.gameplay.bringIn(ctx)
-    Stage.Next
-  }
-  
-  val discarding = stage("discarding") { ctx => Stage.Next }
-  
-  val bigBets = stage("big-bets") { ctx =>
-    ctx.ref ! Betting.BigBets
-    Stage.Next
-  }
-  
-  val betting = stage("betting") { ctx =>
-    ctx.ref ! Betting.Start
-    Stage.Wait
-  }
-  
-  implicit def int2option(n: Int): Option[Int] = Some(n)
-  
-  def dealing(dealType: DealCards.Value, cardsNum: Option[Int] = None) =
-    stage("dealing") { ctx =>
-      ctx.gameplay.dealCards(dealType, cardsNum)
-      Stage.Next
-    }
-  
   def apply(ctx: StageContext) = {
-    val gameGroup = ctx.gameplay.game.options.group
-    
-    val b = new Builder(ctx)
-    gameGroup match {
-      case Game.Holdem =>
-        b.holdem()
-      
-      case Game.SevenCard =>
-        b.sevenCard()
-      
-      case Game.SingleDraw =>
-        b.singleDraw()
-      
-      case Game.TripleDraw =>
-        b.tripleDraw()
-      
-      case _ => throw new IllegalArgumentException("unknown game group %s" format gameGroup)
-    }
-    
-    b.build
+    val gameOptions = ctx.gameplay.game.options
+    val streets = Mapping.byGameGroup(gameOptions.group)
+    new StreetChain(ctx, streets)
   }
   
-  class Builder(ctx: StageContext) {
+  object Mapping {
     import Street._
     
-    private var result: List[Street] = List()
-    
-    private def street(value: Street.Value)(u: => StageChain) {
-      result :+= Street(value, u)
-    }
-    
-    def build = new StreetChain(ctx, result)
-    
-    def holdem() {
-      street(Preflop) {
-        dealing(DealCards.Hole) chain betting
-      }
+    private def street(value: Street.Value,
+        dealing: Option[DealingOptions] = None,
+        bringIn: Boolean = false,
+        bigBets: Boolean = false,
+        betting: Boolean = false,
+        discarding: Boolean = false
+        ) = {
       
-      street(Flop) {
-        dealing(DealCards.Board, 3) chain betting
-      }
-  
-      street(Turn) {
-        dealing(DealCards.Board, 1) chain bigBets chain betting
-      }
+      val options = StreetOptions(
+          dealing = dealing,
+          bringIn = bringIn,
+          bigBets = bigBets,
+          betting = betting,
+          discarding = discarding)
     
-      street(River) {
-        dealing(DealCards.Board, 1) chain betting
-      }
+      Street(value, options)
     }
     
-    def sevenCard() {
-      street(Second) {
-        dealing(DealCards.Hole, 2).chain
-      }
+    implicit def dealingCards2dealingOptions(v: DealCards.Value): DealingOptions = DealingOptions(v)
+    implicit def dealingOptions2option(v: DealCards.Value): Option[DealingOptions] = Some(v)
+    implicit def dealingOptions2option(v: DealingOptions): Option[DealingOptions] = Some(v)
     
-      street(Third) {
-        dealing(DealCards.Door, 1) chain bringIn chain betting
-      }
+    final val byGameGroup = Map[Game.Group, List[Street]](
+        Game.Holdem -> List(
+            street(Preflop,
+                dealing = DealCards.Hole,
+                betting = true),
+        
+            street(Flop,
+                dealing = DealCards.Board(3),
+                betting = true),
     
-      street(Fourth) {
-        dealing(DealCards.Door, 1) chain betting
-      }
-    
-      street(Fifth) {
-        dealing(DealCards.Door, 1) chain bigBets chain betting
-      }
-    
-      street(Sixth) {
-        dealing(DealCards.Door, 1) chain betting
-      }
-    
-      street(Seventh) {
-        dealing(DealCards.Hole, 1) chain betting
-      }
-    }
-    
-    def singleDraw() {
-      street(Predraw) {
-        dealing(DealCards.Hole, 5) chain betting chain discarding
-      }
-  
-      street(Draw) {
-        bigBets chain betting chain discarding
-      }
-    }
-    
-    def tripleDraw() {
-      street(Predraw) {
-        dealing(DealCards.Hole) chain betting chain discarding
-      }
-    
-      street(FirstDraw) {
-        betting chain discarding
-      }
-      
-      street(SecondDraw) {
-        bigBets chain betting chain discarding
-      }
-    
-      street(ThirdDraw) {
-        betting chain discarding
-      }
-    }
+            street(Turn,
+                dealing = DealCards.Board(1),
+                bigBets = true,
+                betting = true),
+          
+            street(River,
+                dealing = DealCards.Board(1),
+                betting = true)
+        ),
+        
+        Game.SevenCard -> List(
+            street(Second,
+                dealing = DealCards.Hole(2)
+            ),
+          
+            street(Third,
+                dealing = DealCards.Door(1),
+                bringIn = true,
+                betting = true),
+            
+            street(Fourth,
+                dealing = DealCards.Door(1),
+                betting = true),
+            
+            street(Fifth,
+                dealing = DealCards.Door(1),
+                bigBets = true,
+                betting = true),
+          
+            street(Sixth,
+                dealing = DealCards.Door(1),
+                betting = true),
+            
+            street(Seventh,
+                dealing = DealCards.Hole(1),
+                betting = true)
+        ),
+        
+        Game.SingleDraw -> List(
+            street(Predraw,
+                dealing = DealCards.Hole(5),
+                betting = true,
+                discarding = true),
+            
+            street(Draw,
+                bigBets = true,
+                betting = true,
+                discarding = true)
+        ),
+        
+        Game.TripleDraw -> List(
+            street(Predraw,
+                dealing = DealCards.Hole,
+                betting = true,
+                discarding = true),
+            
+            street(FirstDraw,
+                betting = true,
+                discarding = true),
+            
+            street(SecondDraw,
+                bigBets = true,
+                betting = true,
+                discarding = true),
+            
+            street(ThirdDraw,
+                betting = true,
+                discarding = true)
+        )
+    )
   }
+  
+  
 }

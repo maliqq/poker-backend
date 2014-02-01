@@ -132,6 +132,30 @@ object Game {
       if (discards) n += pocketSize
       n
     }
+    
+    override def toString = {
+      val b = new StringBuilder
+      
+      b.append(" group=%s max-table-size=%d pocket-size=%d streets-num=%d default-limit=%s".format(
+          group,
+          maxTableSize,
+          pocketSize,
+          streetsNum,
+          defaultLimit))
+      
+      if (hiRanking.isDefined) b.append(" hi-ranking=%s", hiRanking.get)
+      if (loRanking.isDefined) b.append(" lo-ranking=%s", loRanking.get)
+      
+      if (hasBlinds) b.append(" ✓blinds")
+      if (hasAnte) b.append(" ✓ante")
+      if (hasBringIn) b.append(" ✓bring-in")
+      if (hasBoard) b.append(" ✓board")
+      if (hasVela) b.append(" ✓vela")
+      if (discards) b.append(" ✓discards")
+      if (reshuffle) b.append(" ✓reshuffle")
+      
+      b.toString
+    }
   }
 }
 

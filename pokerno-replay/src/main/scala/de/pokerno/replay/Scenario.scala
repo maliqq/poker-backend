@@ -95,7 +95,13 @@ class Scenario {
       }
       
     case tags.Deal(player, cards, cardsNum) =>
-      actions.get(currentStreet).add(rpc.DealCards(wire.DealType.HOLE, player.unquote, cards, cardsNum))
+      
+      val action = if (player != null)
+        rpc.DealCards(wire.DealType.HOLE, player.unquote, cards, cardsNum)
+      else
+        rpc.DealCards(wire.DealType.BOARD, null, cards, null)
+        
+      actions.get(currentStreet).add(action)
 
     case s @ tags.Street(name) =>
       processor = processMain

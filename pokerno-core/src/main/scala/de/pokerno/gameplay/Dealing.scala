@@ -54,7 +54,7 @@ object Dealing {
           
           val (_player: Player, pos: Int) =
             if (player.isDefined)
-              t.box(player.get)
+              t.box(player.get).get
             else {
               val (seat, pos) = gameplay.round.acting
               (seat.player.get, pos)
@@ -63,18 +63,17 @@ object Dealing {
           val pocketSize = gameOptions.pocketSize
           
           def dealPocket(cards: Either[Int, List[Card]], player: Player): List[Card] = {
-            val cardsNum = cards match {
-              case Left(n) => n
-              case Right(cards) => cards.size
+            val max = pocketSize - dealer.pocketOption(_player).map(_.size).getOrElse(0)
+            
+            cards match {
+              case Left(n) if n > 0 =>
+                dealer.dealPocket(List(n, max).min, _player)
+              
+              case Right(cards) if !cards.isEmpty =>
+                dealer.dealPocket(cards.take(max), _player)
+              
+              case _ => List.empty
             }
-            if (cardsNum <= 0 || cardsNum > pocketSize)
-              cards match {
-                case Left(n) =>
-                  dealer.dealPocket(pocketSize, _player)
-                case Right(cards) =>
-                  dealer.dealPocket(cards.take(pocketSize), _player)
-              }
-            else List.empty
           }
           
           val cardsDealt: List[Card] = if (cards.isDefined && !cards.get.isEmpty)
@@ -88,16 +87,17 @@ object Dealing {
         case DealCards.Board if gameOptions.hasBoard =>
           
           def dealBoard(cards: Either[Int, List[Card]]): List[Card] = {
-            val cardsNum = cards match {
-              case Left(n) => n
-              case Right(cards) => cards.size
+            val max = Deck.FullBoardSize - dealer.board.size
+            
+            cards match {
+              case Left(n) if n > 0=>
+                dealer.dealBoard(List(n, max).min)
+                
+              case Right(cards) if !cards.isEmpty =>
+                dealer.dealBoard(cards.take(max))
+              
+              case _ => List.empty
             }
-            if (cardsNum > 0 && dealer.board.size + cardsNum <= Deck.FullBoardSize)
-              cards match {
-                case Left(n) => dealer.dealBoard(n)
-                case Right(cards) => dealer.dealBoard(cards)
-              }
-            else List.empty
           }
           
           val cardsDealt: List[Card] = if (cards.isDefined && !cards.get.isEmpty)

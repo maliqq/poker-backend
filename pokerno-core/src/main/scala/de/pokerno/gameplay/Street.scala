@@ -98,10 +98,20 @@ case class Street(value: Street.Value, options: StreetOptions) {
 case class StreetOptions(
     dealing: Option[DealingOptions] = None,
     bringIn: Boolean = false,
-    betting: Boolean = false,
     bigBets: Boolean = false,
+    betting: Boolean = false,
     discarding: Boolean = false
-)
+) {
+  override def toString = {
+    val b = new StringBuilder
+    if (dealing.isDefined) b.append(" dealing=%s" format dealing.get)
+    if (bringIn) b.append(" ✓bring-in")
+    if (bigBets) b.append(" ✓big-bets")
+    if (betting) b.append(" ✓betting")
+    if (discarding) b.append(" ✓discarding")
+    b.toString
+  }
+}
 
 class StreetChain(
     ctx: StageContext,

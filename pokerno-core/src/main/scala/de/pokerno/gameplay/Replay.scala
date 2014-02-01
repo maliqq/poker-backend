@@ -29,7 +29,10 @@ class Replay(val gameplay: Context) extends Actor
   
   override def preStart {
     log.info("starting replay with gameplay {}", gameplay)
+//    gameplay.rotateGame(stageContext)
   }
+  
+  var firstStreet = true
 
   override def receive = {
     case Replay.Subscribe(out) =>
@@ -81,6 +84,12 @@ class Replay(val gameplay: Context) extends Actor
 //      context.stop(self)
     
     case a @ Replay.StreetActions(street, actions, speed) =>
+      
+      if (firstStreet) {
+        gameplay.prepareSeats(stageContext)
+        firstStreet = false // FIXME
+      }
+      
       log.debug("got: {}", a)
       
       if (streets.head == street) {
@@ -88,6 +97,8 @@ class Replay(val gameplay: Context) extends Actor
         streets = streets.drop(1)
         
         val options = streetOptions(street)
+        
+        log.info("|--- street: {} options: {}", street, options)
 
         /**
          * DEALING
@@ -118,16 +129,16 @@ class Replay(val gameplay: Context) extends Actor
             
           case DealCards.Door | DealCards.Hole =>
             
-            val dealing = collection.mutable.HashMap[Player, rpc.DealCards]()
+            val dealActionsByPlayer = collection.mutable.HashMap[Player, rpc.DealCards]()
             dealActions.foreach { action =>
-              dealing(action.player) = action
+              dealActionsByPlayer(action.player) = action
             }
             
             t.seatsAsList.zipWithIndex filter (_._1 isActive) foreach {
               case (seat, pos) ⇒
                 val player = seat.player.get
-                if (dealing.contains(player)) {
-                  val dealPocket = dealing(player)
+                if (dealActionsByPlayer.contains(player)) {
+                  val dealPocket = dealActionsByPlayer(player)
                   
                   dealCards(_type,
                       player = Some(player),

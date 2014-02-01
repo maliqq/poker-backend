@@ -29,6 +29,7 @@ class Dealer(private var _deck: Deck = new Deck) {
 
   private var _pockets: Map[Player, List[Card]] = Map.empty
   def pocket(p: Player): List[Card] = _pockets(p)
+  def pocketOption(p: Player): Option[List[Card]] = _pockets.get(p)
 
   def dealPocket(cards: List[Card], p: Player) = {
     val pocket = _pockets getOrElse (p, List.empty)

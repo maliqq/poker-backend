@@ -46,7 +46,7 @@ object Lexer {
       def this(params: Array[String]) = this(params(0), params(1))
     }
     
-    object StakeUtil {
+    object Stake {
       def fromParams(params: Array[String]): Tuple3[Int, Int, Option[Int]] = {
         val d = params(0).split("/")
         d.length match {
@@ -63,7 +63,7 @@ object Lexer {
     @Tag(name = "STAKE")
     case class Stake(sb: Int, bb: Int, ante: Option[Int]) extends Token {
       def this(args: Tuple3[Int, Int, Option[Int]]) = this(args._1, args._2, args._3)
-      def this(params: Array[String]) = this(StakeUtil.fromParams(params))
+      def this(params: Array[String]) = this(Stake.fromParams(params))
     }
     
     @Tag(name = "GAME")
@@ -110,7 +110,7 @@ object Lexer {
     }
     
     @Tag(name = "ANTES")
-    case class Antes extends Token with BettingSemantic {
+    case class Antes() extends Token with BettingSemantic {
       def this(params: Array[String]) = this()
     }
     
@@ -138,9 +138,20 @@ object Lexer {
       def this(params: Array[String]) = this(params(0))
     }
     
+    object Deal {
+      def fromParams(params: Array[String]): Tuple3[QuotedString, List[poker.Card], Integer] = {
+        if (params.length == 1) // board
+          return (null, params(1), null)
+        if (params.length == 2 && params(1).matches("^\\d+$"))
+          return (params(0), null, Integer.parseInt(params(1)))
+        (null, null, null)
+      }
+    }
+    
     @Tag(name = "DEAL")
     case class Deal(player: QuotedString, cards: List[poker.Card], cardsNum: Integer) extends Token {
-      def this(params: Array[String]) = this(params(0), params(1), null)
+      def this(args: Tuple3[QuotedString, List[poker.Card], Integer]) = this(args._1, args._2, args._3)
+      def this(params: Array[String]) = this(Deal.fromParams(params))
     }
     
     @Tag(name = "JSON")

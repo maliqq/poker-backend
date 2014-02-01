@@ -63,8 +63,8 @@ object Streets {
   
   def apply(ctx: StageContext) = {
     val gameOptions = ctx.gameplay.game.options
-    val streets = Mapping.byGameGroup(gameOptions.group)
-    new StreetChain(ctx, streets)
+    val streetOptions = Mapping.byGameGroup(gameOptions.group)
+    new StreetChain(ctx, streetOptions)
   }
   
   object Mapping {
@@ -78,21 +78,19 @@ object Streets {
         discarding: Boolean = false
         ) = {
       
-      val options = StreetOptions(
+      StreetOptions(value,
           dealing = dealing,
           bringIn = bringIn,
           bigBets = bigBets,
           betting = betting,
           discarding = discarding)
-    
-      Street(value, options)
     }
     
     implicit def dealingCards2dealingOptions(v: DealCards.Value): DealingOptions = DealingOptions(v)
     implicit def dealingOptions2option(v: DealCards.Value): Option[DealingOptions] = Some(v)
     implicit def dealingOptions2option(v: DealingOptions): Option[DealingOptions] = Some(v)
     
-    final val byGameGroup = Map[Game.Group, List[Street]](
+    final val byGameGroup = Map[Game.Group, List[StreetOptions]](
         Game.Holdem -> List(
             street(Preflop,
                 dealing = DealCards.Hole,

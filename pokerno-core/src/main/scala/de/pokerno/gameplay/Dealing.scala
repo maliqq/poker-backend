@@ -24,12 +24,15 @@ object Dealing {
               events.dealCards(_type, cards, Some((seat.player.get, pos)))
           }
   
-        case DealCards.Board ⇒
+        case DealCards.Board if cardsNum.isDefined ⇒
   
           Console printf ("dealing board %d cards\n", cardsNum.get)
   
           val cards = dealer dealBoard (cardsNum.get)
           events.dealCards(_type, cards)
+        
+        case _ =>
+          // TODO
       }
     }
   }

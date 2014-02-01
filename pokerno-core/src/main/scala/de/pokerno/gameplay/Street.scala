@@ -34,13 +34,12 @@ object Chain {
   case object Stop extends Result
 }
 
-case class Street(value: Street.Value, options: StreetOptions) {
+case class Street(options: StreetOptions) {
   import Stages._
   
   var stages = new StageChain
   
   options.dealing.map { o =>
-    Console printf("dealing=%s", o)
     val dealing = stage("dealing") { ctx =>
       ctx.gameplay.dealCards(o.dealType, o.cardsNum)
       Stage.Next
@@ -79,10 +78,11 @@ case class Street(value: Street.Value, options: StreetOptions) {
   
   def apply(ctx: StageContext) = stages(ctx)
   
-  override def toString = f"#[Street $value]"
+  override def toString = f"#[Street ${options.value}]"
 }
 
 case class StreetOptions(
+    value: Street.Value,
     dealing: Option[DealingOptions] = None,
     bringIn: Boolean = false,
     betting: Boolean = false,
@@ -90,16 +90,16 @@ case class StreetOptions(
     discarding: Boolean = false
 )
 
-class StreetChain(ctx: StageContext, streets: List[Street]) {
-  private val iterator = streets.iterator
+class StreetChain(ctx: StageContext, val streetOptions: List[StreetOptions]) {
+  private val iterator = streetOptions.iterator
   private var _current: Street = null
   
   def current = _current
   
   def apply(ctx: StageContext) = if (iterator.hasNext) {
-    _current = iterator.next()
+    _current = new Street(iterator.next())
     
-    current(ctx) match {
+    _current(ctx) match {
       case Stage.Next | Stage.Skip =>
         ctx.ref ! Streets.Next
         
@@ -114,8 +114,8 @@ class StreetChain(ctx: StageContext, streets: List[Street]) {
   override def toString = {
     val b = new StringBuilder
     b.append("#[StreetChain")
-    for (street <- streets) {
-      b.append(" " + street.toString)
+    for (streetOption <- streetOptions) {
+      b.append(" " + streetOption.toString)
     }
     b.append("]").toString()
   }

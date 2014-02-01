@@ -35,12 +35,12 @@ object Betting {
     def handleBetting: Receive = {
       case Betting.Add(player, bet) ⇒
         val (seat, pos) = gameplay.round.acting
-        if (seat.player == player) {
+        if (seat.player.isDefined && seat.player.get == player) {
           log.info("[betting] add {}", bet)
           gameplay.round.addBet(bet)
           nextTurn()
         } else
-          log.warning("[betting] not a turn of {}", player)
+          log.warning("[betting] not a turn of {}; current acting is {}", player, seat.player)
   
       case Betting.NextTurn ⇒
         log.info("[betting] next turn")

@@ -82,7 +82,7 @@ object Dealing {
           else
             dealPocket(Left(cardsNum.getOrElse(pocketSize)), _player)
           
-          log.debug(" | deal {} -> {}", cardsDealt, _player)
+          log.info(" | deal {} -> {}", cardsDealt, _player)
           e.dealCards(_type, cardsDealt, Some(_player, pos))
     
         case DealCards.Board if gameOptions.hasBoard =>
@@ -105,7 +105,7 @@ object Dealing {
           else
             dealBoard(Left(cardsNum.getOrElse(0)))
 
-          log.debug(" | deal board {}", cardsDealt)
+          log.info(" | deal board {}", cardsDealt)
           e.dealCards(_type, cardsDealt)
           
       }

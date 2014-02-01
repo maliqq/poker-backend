@@ -4,7 +4,7 @@ import de.pokerno.protocol
 import de.pokerno.protocol.{msg, rpc, wire}
 import protocol.Conversions._
 import protocol.wire.Conversions._
-import protocol.msg.Conversions._
+//import protocol.msg.Conversions._
 import de.pokerno.model._
 import akka.actor.{Actor, Props, ActorRef, ActorLogging}
 
@@ -16,6 +16,7 @@ object Replay {
 class Replay(val gameplay: Context) extends Actor
       with ActorLogging
       with Dealing.ReplayContext
+      with Betting.ReplayContext
       with Streets.ReplayContext {
   
   val stageContext = StageContext(gameplay, self)
@@ -105,7 +106,6 @@ class Replay(val gameplay: Context) extends Actor
          * */
         options.dealing.map { dealOptions =>
           log.info("[dealing] started")
-          val dealer = gameplay.dealer
           
           val dealActions = actions.filter { action =>
             action match {
@@ -115,46 +115,7 @@ class Replay(val gameplay: Context) extends Actor
             }
           }.asInstanceOf[List[rpc.DealCards]]
           
-          val _type = dealOptions.dealType
-          
-          _type match {
-          case DealCards.Board =>
-            
-            val dealBoard = dealActions.head.asInstanceOf[rpc.DealCards]
-            dealCards(_type,
-                cards = if (dealBoard.cards != null) Some(dealBoard.cards)
-                        else None,
-                cardsNum = dealOptions.cardsNum
-            )
-            
-          case DealCards.Door | DealCards.Hole =>
-            
-            val dealActionsByPlayer = collection.mutable.HashMap[Player, rpc.DealCards]()
-            dealActions.foreach { action =>
-              dealActionsByPlayer(action.player) = action
-            }
-            
-            t.seatsAsList.zipWithIndex filter (_._1 isActive) foreach {
-              case (seat, pos) ⇒
-                val player = seat.player.get
-                if (dealActionsByPlayer.contains(player)) {
-                  val dealPocket = dealActionsByPlayer(player)
-                  
-                  dealCards(_type,
-                      player = Some(player),
-                      cards = if (dealPocket.cards != null) Some(dealPocket.cards)
-                              else None,
-                      cardsNum = if (dealPocket.cardsNum != null) Some(dealPocket.cardsNum)
-                                 else None
-                      )
-                } else {
-                  val pocketSize = gameOptions.pocketSize
-                  val n = dealOptions.cardsNum.getOrElse(pocketSize)
-                  val cards = dealer.dealPocket(n, player)
-                  e.dealCards(_type, cards, Some((seat.player.get, pos)))
-                }
-            }
-          }
+          dealing(dealActions, dealOptions)
           
           log.info("[dealing] done")
         }
@@ -171,7 +132,6 @@ class Replay(val gameplay: Context) extends Actor
         /**
          * BIG BETS
          * */
-        
         if (options.bigBets) {
           log.info("[big-bets] handled")
           gameplay.round.bigBets = true // TODO notify
@@ -180,9 +140,15 @@ class Replay(val gameplay: Context) extends Actor
         /**
          * BETTING
          * */
-        
         if (options.betting) {
           log.info("[betting] started")
+          
+          val betActions = actions.filter { action =>
+            action.isInstanceOf[rpc.AddBet]
+          }.asInstanceOf[List[rpc.AddBet]]
+          
+          nextTurn(betActions)
+          
           log.info("[betting] done")
         }
         

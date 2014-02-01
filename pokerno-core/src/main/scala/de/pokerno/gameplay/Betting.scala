@@ -91,9 +91,9 @@ object Betting {
   trait ReplayContext {
     replay: Replay =>
       
-      def firstStreet: Boolean = false
+      def firstStreet: Boolean
       
-      def nextTurn(bets: List[rpc.AddBet]) {
+      def nextTurn(betActions: List[rpc.AddBet]) {
         val round = gameplay.round
         
         def active = round.seats.filter(_._1.isActive)
@@ -102,7 +102,7 @@ object Betting {
         val stake = gameplay.stake
         val table = gameplay.table
         
-        val (forcedBets, activeBets) = bets.span { addBet =>
+        val (forcedBets, activeBets) = betActions.span { addBet =>
           (addBet.bet.getType: Bet.Value).isInstanceOf[Bet.ForcedBet]
         }
         

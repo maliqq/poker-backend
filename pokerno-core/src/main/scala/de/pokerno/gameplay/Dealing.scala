@@ -81,9 +81,11 @@ object Dealing {
                   )
             } else {
               val pocketSize = gameOptions.pocketSize
-              val n = dealOptions.cardsNum.getOrElse(pocketSize)
-              val cards = dealer.dealPocket(n, player)
-              e.dealCards(_type, cards, Some((seat.player.get, pos)))
+              
+              dealCards(_type,
+                  player = Some(player),
+                  cardsNum = Some(pocketSize)
+                  )
             }
         }
       }

@@ -66,8 +66,10 @@ object Replayer {
         replay ! rpc.JoinPlayer(pos, seat.player.get, seat.stack)
     }
 
-    for (street <- scenario.streets) {
-      replay ! Replay.Street(street, scenario.speed)
+    for (streetName <- scenario.streets) {
+      val street: Option[Street.Value] = streetName
+      if (street.isDefined)
+        replay ! Replay.StreetActions(street.get, scenario.actions.get(streetName).toList, scenario.speed)
     }
   }
 }

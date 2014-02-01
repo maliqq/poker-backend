@@ -40,48 +40,71 @@ object Dealing {
   trait ReplayContext {
     replay: Replay =>
       
-    def dealCards(_type: DealCards.Value, player: Player, cards: List[Card], cardsNum: Int) {
+    def dealCards(
+        _type: DealCards.Value,
+        player: Option[Player] = None,
+        cards: Option[List[Card]] = None,
+        cardsNum: Option[Int] = None) {
+      
       val gameOptions = gameplay.game.options
       val dealer = gameplay.dealer
       
       (_type: DealCards.Value) match {
         case DealCards.Hole | DealCards.Door =>
           
-          val (_player: Player, pos: Int) = if (player == null) {
-            val (seat, pos) = gameplay.round.acting
-            (seat.player.get, pos)
-          } else t.box(player)
+          val (_player: Player, pos: Int) =
+            if (player.isDefined)
+              t.box(player.get)
+            else {
+              val (seat, pos) = gameplay.round.acting
+              (seat.player.get, pos)
+            }
           
-          val cardsDealt: List[Card] = if (cards == null || cards.isEmpty) {
-            // check number of cards to deal
-            val _cardsNum = if (cardsNum == null ||
-                                cardsNum <= 0 ||
-                                cardsNum > gameOptions.pocketSize)
-              gameOptions.pocketSize
-            else
-              cardsNum
-            
-            dealer.dealPocket(_cardsNum, _player)
-          } else {
-            dealer.dealPocket(cards, _player)
-            cards
+          val pocketSize = gameOptions.pocketSize
+          
+          def dealPocket(cards: Either[Int, List[Card]], player: Player): List[Card] = {
+            val cardsNum = cards match {
+              case Left(n) => n
+              case Right(cards) => cards.size
+            }
+            if (cardsNum <= 0 || cardsNum > pocketSize)
+              cards match {
+                case Left(n) =>
+                  dealer.dealPocket(pocketSize, _player)
+                case Right(cards) =>
+                  dealer.dealPocket(cards.take(pocketSize), _player)
+              }
+            else List.empty
           }
+          
+          val cardsDealt: List[Card] = if (cards.isDefined && !cards.get.isEmpty)
+            dealPocket(Right(cards.get), _player)
+          else
+            dealPocket(Left(cardsNum.getOrElse(pocketSize)), _player)
           
           log.debug(" | deal {} -> {}", cardsDealt, _player)
           e.dealCards(_type, cardsDealt, Some(_player, pos))
     
         case DealCards.Board if gameOptions.hasBoard =>
-          val cardsDealt: List[Card] = if (cards == null) {
-            
-            if (dealer.board.size + cardsNum <= Deck.FullBoardSize)
-              dealer.dealBoard(cardsNum)
+          
+          def dealBoard(cards: Either[Int, List[Card]]): List[Card] = {
+            val cardsNum = cards match {
+              case Left(n) => n
+              case Right(cards) => cards.size
+            }
+            if (cardsNum > 0 && dealer.board.size + cardsNum <= Deck.FullBoardSize)
+              cards match {
+                case Left(n) => dealer.dealBoard(n)
+                case Right(cards) => dealer.dealBoard(cards)
+              }
             else List.empty
-            
-          } else {
-            dealer.dealBoard(cards)
-            cards
           }
           
+          val cardsDealt: List[Card] = if (cards.isDefined && !cards.get.isEmpty)
+            dealBoard(Right(cards.get))
+          else
+            dealBoard(Left(cardsNum.getOrElse(0)))
+
           log.debug(" | deal board {}", cardsDealt)
           e.dealCards(_type, cardsDealt)
           

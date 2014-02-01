@@ -7,11 +7,13 @@ import de.pokerno.protocol.{msg => proto}
 object Street extends Enumeration {
   private def value(name: String) = new Val(nextId, name)
   
+  // holdem poker
   val Preflop = value("preflop")
   val Flop = value("flop")
   val Turn = value("turn")
   val River = value("river")
  
+  // seven card stud
   val Second = value("second")
   val Third = value("third")
   val Fourth = value("fourth")
@@ -19,6 +21,7 @@ object Street extends Enumeration {
   val Sixth = value("sixth")
   val Seventh = value("seventh")
  
+  // draw poker
   val Predraw = value("predraw")
   val Draw = value("draw")
   val FirstDraw = value("first-draw")
@@ -26,6 +29,17 @@ object Street extends Enumeration {
   val ThirdDraw = value("third-draw")
   
   implicit def string2streetValueOption(s: String): Option[Value] = values.find(_.toString == s)
+  
+  final val byGameGroup = Map[Game.Group, List[Value]](
+      Game.Holdem ->
+        List(Preflop, Flop, Turn, River),
+      Game.SevenCard ->
+        List(Second, Third, Fourth, Fifth, Sixth, Seventh),
+      Game.SingleDraw ->
+        List(Predraw, Draw),
+      Game.TripleDraw ->
+        List(Predraw, FirstDraw, SecondDraw, ThirdDraw)
+  )
 }
 
 object Chain {
@@ -34,7 +48,7 @@ object Chain {
   case object Stop extends Result
 }
 
-case class Street(options: StreetOptions) {
+case class Street(value: Street.Value, options: StreetOptions) {
   import Stages._
   
   var stages = new StageChain
@@ -78,11 +92,10 @@ case class Street(options: StreetOptions) {
   
   def apply(ctx: StageContext) = stages(ctx)
   
-  override def toString = f"#[Street ${options.value}]"
+  override def toString = f"#[Street ${value}]"
 }
 
 case class StreetOptions(
-    value: Street.Value,
     dealing: Option[DealingOptions] = None,
     bringIn: Boolean = false,
     betting: Boolean = false,
@@ -90,14 +103,18 @@ case class StreetOptions(
     discarding: Boolean = false
 )
 
-class StreetChain(ctx: StageContext, val streetOptions: List[StreetOptions]) {
-  private val iterator = streetOptions.iterator
+class StreetChain(
+    ctx: StageContext,
+    val streetOptions: Map[Street.Value, StreetOptions]) {
+  private val streets = Street.byGameGroup(ctx.gameplay.game.options.group) 
+  private val iterator = streets.iterator
   private var _current: Street = null
   
   def current = _current
   
   def apply(ctx: StageContext) = if (iterator.hasNext) {
-    _current = new Street(iterator.next())
+    val _street = iterator.next()
+    _current = new Street(_street, streetOptions(_street))
     
     _current(ctx) match {
       case Stage.Next | Stage.Skip =>

@@ -1,7 +1,7 @@
 package de.pokerno.gameplay
 
 import de.pokerno.protocol
-import de.pokerno.protocol.{msg, rpc}
+import de.pokerno.protocol.{msg, rpc, wire}
 import protocol.Conversions._
 import protocol.wire.Conversions._
 import protocol.msg.Conversions._
@@ -18,9 +18,14 @@ class Replay(val gameplay: Context) extends Actor
       with Dealing.ReplayContext
       with Streets.ReplayContext {
   
-  lazy val stageContext = StageContext(gameplay, self)
+  val stageContext = StageContext(gameplay, self)
+  
   def e = gameplay.events
   def t = gameplay.table
+  
+  val gameOptions = gameplay.game.options
+  val streetOptions = Streets.Options(gameOptions.group)
+  var streets = Street.byGameGroup(gameOptions.group)
   
   override def preStart {
     log.info("starting replay with gameplay {}", gameplay)
@@ -56,12 +61,12 @@ class Replay(val gameplay: Context) extends Actor
       log.debug("got: {}", s)
       
       e.showCards(t.box(player).get, cards, muck)
-
-    case d @ rpc.DealCards(_type, player, cards, cardsNum) =>
-      
-      log.debug("got: {}", d)
-      
-      dealCards(_type, player, cards, cardsNum)
+//
+//    case d @ rpc.DealCards(_type, player, cards, cardsNum) =>
+//      
+//      log.debug("got: {}", d)
+//      
+//      dealCards(_type, player, cards, cardsNum)
 //
 //    case Streets.Next =>
 //      log.debug("streets next")
@@ -77,7 +82,67 @@ class Replay(val gameplay: Context) extends Actor
     
     case a @ Replay.StreetActions(street, actions, speed) =>
       log.debug("got: {}", a)
+      
+      if (streets.head == street) {
+        // нужный стрит
+        streets = streets.drop(1)
+        
+        val options = streetOptions(street)
 
+        options.dealing.map { dealOptions =>
+          val dealer = gameplay.dealer
+          
+          val dealActions = actions.filter { action =>
+            action match {
+              case a: rpc.DealCards =>
+                (a.getType: DealCards.Value) == dealOptions.dealType 
+              case _ => false
+            }
+          }.asInstanceOf[List[rpc.DealCards]]
+          
+          val _type = dealOptions.dealType
+          
+          _type match {
+          case DealCards.Board =>
+            
+            val dealBoard = dealActions.head.asInstanceOf[rpc.DealCards]
+            dealCards(_type,
+                cards = if (dealBoard.cards != null) Some(dealBoard.cards)
+                        else None,
+                cardsNum = dealOptions.cardsNum
+            )
+            
+          case DealCards.Door | DealCards.Hole =>
+            
+            val dealing = collection.mutable.HashMap[Player, rpc.DealCards]()
+            dealActions.foreach { action =>
+              dealing(action.player) = action
+            }
+            
+            t.seatsAsList.zipWithIndex filter (_._1 isActive) foreach {
+              case (seat, pos) ⇒
+                val player = seat.player.get
+                if (dealing.contains(player)) {
+                  val dealPocket = dealing(player)
+                  
+                  dealCards(_type,
+                      player = Some(player),
+                      cards = if (dealPocket.cards != null) Some(dealPocket.cards)
+                              else None,
+                      cardsNum = if (dealPocket.cardsNum != null) Some(dealPocket.cardsNum)
+                                 else None
+                      )
+                } else {
+                  val pocketSize = gameOptions.pocketSize
+                  val n = dealOptions.cardsNum.getOrElse(pocketSize)
+                  val cards = dealer.dealPocket(n, player)
+                  e.dealCards(_type, cards, Some((seat.player.get, pos)))
+                }
+            }
+          }
+        }
+      }
+      
     case x =>
       log.warning("unandled: {}", x)
   }

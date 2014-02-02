@@ -137,8 +137,8 @@ class Scenario {
       t.button.move()
       
     case tags.Stake(sb, bb, ante) =>
-      stake = Some(Stake(sb,
-          Some(bb),
+      stake = Some(Stake(bb,
+          Some(sb),
           Ante = ante match {
             case Some(n) => Left(n)
             case None => Right(false)

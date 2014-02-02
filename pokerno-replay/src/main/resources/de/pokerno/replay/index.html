@@ -94,6 +94,8 @@
           var scenario = editor.getValue()
           localStorage.setItem('scenario', scenario)
 
+          $('#log').html('')
+
           $.ajax({
             type: 'POST',
             dataType: 'json',

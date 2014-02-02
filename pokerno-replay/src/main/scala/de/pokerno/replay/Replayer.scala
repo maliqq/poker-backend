@@ -6,6 +6,7 @@ import de.pokerno.poker.{Card, Deck}
 import de.pokerno.gameplay.{Replay, Context => GameplayContext, Street, Streets}
 import de.pokerno.model.{Dealer, Player, Table, Stake, Variation, Game, Bet, Seat}
 import akka.actor.{Actor, ActorSystem, ActorLogging, ActorRef, Props, Kill}
+import de.pokerno.format.text
 
 
 object Replayer {

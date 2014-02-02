@@ -120,10 +120,13 @@ object Betting {
   trait ReplayContext extends NextTurn {
     
     replay: Replay =>
+      import concurrent.duration.Duration
       
       def firstStreet: Boolean
       
-      def betting(betActions: List[rpc.AddBet]) {
+      def betting(betActions: List[rpc.AddBet], speed: Duration) {
+        def sleep() = Thread.sleep(speed.toMillis)
+        
         val round = gameplay.round
         
         def active = round.seats.filter(_._1.isActive)
@@ -167,6 +170,7 @@ object Betting {
             }
           }
           round.complete
+          sleep()
         }
         
         // пассивные ставки игроков - блайнды
@@ -221,7 +225,10 @@ object Betting {
           log.info("sb={} bb={}", sb, bb)
           
           sb.map { sb => gameplay.forceBet(stageContext, sb, Bet.SmallBlind) }
+          sleep()
+          
           bb.map { bb => gameplay.forceBet(stageContext, bb, Bet.SmallBlind) }
+          sleep()
           
           //gameplay.round.reset
           nextTurn()//.foreach { x => self ! x }
@@ -241,6 +248,7 @@ object Betting {
             if (isOurTurn) {
               log.info("| --- player {} bet {}", player, addBet.bet)
               gameplay.addBet(stageContext, addBet.bet)
+              sleep()
               nextTurn().forall { x => self ! x; false }
             } else true
           }

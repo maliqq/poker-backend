@@ -34,6 +34,8 @@ class Replay(val gameplay: Context) extends Actor
   }
   
   var firstStreet = true
+  
+  import concurrent.duration._
 
   override def receive = {
     case Replay.Subscribe(out) =>
@@ -70,6 +72,8 @@ class Replay(val gameplay: Context) extends Actor
       if (streets.head == street) {
         // нужный стрит
         streets = streets.drop(1)
+        // notify street started
+        e.streetStart(street)
         
         val options = streetOptions(street)
         
@@ -89,7 +93,7 @@ class Replay(val gameplay: Context) extends Actor
             }
           }.asInstanceOf[List[rpc.DealCards]]
           
-          dealing(dealActions, dealOptions)
+          dealing(dealActions, dealOptions, (speed seconds))
           
           log.info("[dealing] done")
         }
@@ -121,7 +125,7 @@ class Replay(val gameplay: Context) extends Actor
             action.isInstanceOf[rpc.AddBet]
           }.asInstanceOf[List[rpc.AddBet]]
           
-          betting(betActions)
+          betting(betActions, (speed seconds))
           
           log.info("[betting] done")
         }

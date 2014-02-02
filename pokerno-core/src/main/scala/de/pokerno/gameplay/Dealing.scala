@@ -43,8 +43,12 @@ object Dealing {
   
   trait ReplayContext {
     replay: Replay =>
+    
+    import concurrent.duration.Duration
       
-    def dealing(dealActions: List[rpc.DealCards], dealOptions: DealingOptions) {
+    def dealing(dealActions: List[rpc.DealCards], dealOptions: DealingOptions, speed: Duration) {
+      def sleep() = Thread.sleep(speed.toMillis)
+      
       val dealer = gameplay.dealer
       
       val _type = dealOptions.dealType
@@ -58,6 +62,7 @@ object Dealing {
                     else None,
             cardsNum = dealOptions.cardsNum
         )
+        sleep()
         
       case DealCards.Door | DealCards.Hole =>
         
@@ -87,6 +92,7 @@ object Dealing {
                   cardsNum = Some(pocketSize)
                   )
             }
+            sleep()
         }
       }
     } 

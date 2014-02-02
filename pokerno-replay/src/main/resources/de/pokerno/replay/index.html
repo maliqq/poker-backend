@@ -1,13 +1,17 @@
 <!DOCTYPE html>
+
 <html lang="en">
   <head>
     <title>Pokerno replayer</title>
+
+    <meta charset="utf-8" />
 
     <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
 
     <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap-theme.min.css">
 
     <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
+    <script type="text/javascript" src="http://ajaxorg.github.io/ace-builds/src-min-noconflict/ace.js" charset="utf-8"></script>
   </head>
 
   <body>
@@ -25,7 +29,7 @@
           <div id="error" class="alert alert-danger" style="display: none"></div>
 
           <div class="form-group">
-            <textarea rows="20" class="form-control" id="scenario"></textarea>
+            <div id="scenario" style="height: 400px;"></div>
           </div>
           
         </form>
@@ -36,11 +40,21 @@
 
           <h3>Output</h3>
 
-          <pre id="log"></pre>
+          <button class="btn btn-sm btn-warning" onclick="$('#log').html('')">Clear</button>
+
+          <div id="log" class="list-group">
+            
+          </div>
         </div>
 
       </div>
     </div>
+
+    <template id="log-item">
+      <a href="javascript: void(0)" onclick="$(this).next().next().toggle()">[+]</a>
+      <span class="label label-info"></span>
+      <pre style="display: none"></pre>
+    </template>
 
     <script type="text/javascript">
       var host = 'localhost'//location.host
@@ -57,18 +71,35 @@
         $('#connection').text('Error').removeClass('label-default').addClass('label-danger')
       }
       ws.onmessage = function(e) {
-        $('#log').append(e.data + "\n")
+        var data = JSON.parse(e.data)
+        var text = JSON.stringify(data, undefined, 2)
+        var el = $('<div>').html($('#log-item').html())
+        
+        el.find('.label').text(data.$type)
+        el.find('pre').text(text)
+
+        //var el = $('<pre>').addClass('list-group-item').text(text)
+        $('#log').append(el)
       }
 
       $(function() {
-        //var ws = new WebSocket('ws://' + host + ':')
+
+        var editor = ace.edit("scenario");
+        editor.setTheme("ace/theme/monokai");
+        editor.getSession().setUseWorker(false)
+        editor.getSession().setMode("ace/mode/sh");
+        editor.setValue(localStorage.getItem('scenario'))
+
         $('form button').click(function() {
+          var scenario = editor.getValue()
+          localStorage.setItem('scenario', scenario)
+
           $.ajax({
             type: 'POST',
             dataType: 'json',
             contentType: 'text/plain',
             url: 'http://' + host + ':8080/_api/scenario',
-            data: $('#scenario').val(),
+            data: scenario,
             error: function(xhr, status, error) {
               data = JSON.parse(xhr.responseText)
               $('#error').text(data.error).fadeIn()

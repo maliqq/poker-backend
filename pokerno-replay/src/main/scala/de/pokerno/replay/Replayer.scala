@@ -62,16 +62,16 @@ class Replayer(gw: ActorRef) extends Actor {
     val dealer = if (scenario.deck.isDefined) new Dealer(new Deck(scenario.deck.get))
     else new Dealer
     
-    val t = new Table(table.size)
-    val gameplay = new GameplayContext(t, variation, stake, dealer = dealer)
+    //val t = new Table(table.size)
+    val gameplay = new GameplayContext(table, variation, stake, dealer = dealer)
 
     val replay = system.actorOf(Props(classOf[Replay], gameplay))
     replay ! Replay.Subscribe(gw)
 
-    table.seatsAsList.zipWithIndex foreach { case (seat, pos) =>
-      if (!seat.isEmpty)
-        replay ! rpc.JoinPlayer(pos, seat.player.get, seat.stack)
-    }
+//    table.seatsAsList.zipWithIndex foreach { case (seat, pos) =>
+//      if (!seat.isEmpty)
+//        replay ! rpc.JoinPlayer(pos, seat.player.get, seat.stack)
+//    }
 
     for (streetName <- scenario.streets) {
       val street: Option[Street.Value] = streetName
@@ -79,7 +79,6 @@ class Replayer(gw: ActorRef) extends Actor {
         replay ! Replay.StreetActions(street.get, scenario.actions.get(streetName).toList, scenario.speed)
     }
     
-    // TODO
-    //replay ! Kill
+    replay ! Kill
   }
 }

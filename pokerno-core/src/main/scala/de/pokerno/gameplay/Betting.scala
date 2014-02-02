@@ -150,6 +150,7 @@ object Betting {
         val postBlinds = firstStreet && gameOptions.hasBlinds
         
         val activeBeforeButtonMove = active
+        //log.info("postBlinds={} firstStreet={} activeBeforeButtonMove={}", postBlinds, firstStreet, activeBeforeButtonMove)
         if (postBlinds && activeBeforeButtonMove.size >= 2) {
           var sb: Option[Tuple2[Seat, Int]] = None
           var bb: Option[Tuple2[Seat, Int]] = None
@@ -194,23 +195,35 @@ object Betting {
             bb = Some(_bb)
           }
           
+          log.info("sb={} bb={}", sb, bb)
+          
           sb.map { sb => round.forceBet(sb, Bet.SmallBlind) }
           bb.map { bb => round.forceBet(bb, Bet.SmallBlind) }
+          
+          //gameplay.round.reset
+          nextTurn()//.foreach { x => self ! x }
         }
         
         // активные ставки игроков
-        if (!activeBets.isEmpty)
+        if (!activeBets.isEmpty) {
+          //gameplay.round.reset
+          
           activeBets.takeWhile { addBet =>
             val acting = round.acting
+            log.info("| -- acting {}", acting)
             val player = acting._1.player
             
             def isOurTurn = player.isDefined && player.get.id == addBet.player
             
             if (isOurTurn) {
+              log.info("| --- player {} bet {}", player, addBet.bet)
               round.addBet(addBet.bet)
               nextTurn().forall { x => self ! x; false }
             } else true
           }
+          
+          // TODO complete bets
+        }
       }
   }
 

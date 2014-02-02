@@ -63,7 +63,6 @@ class Replay(val gameplay: Context) extends Actor
       
       if (firstStreet) {
         gameplay.prepareSeats(stageContext)
-        firstStreet = false // FIXME
       }
       
       log.debug("got: {}", a)
@@ -130,6 +129,9 @@ class Replay(val gameplay: Context) extends Actor
         /**
          * DISCARDING
          * */
+        //
+        
+        if (firstStreet) firstStreet = false
       }
       
     case x =>

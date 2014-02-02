@@ -144,7 +144,7 @@ object Lexer {
           return (null, params(1), null)
         if (params.length == 2 && params(1).matches("^\\d+$"))
           return (params(0), null, Integer.parseInt(params(1)))
-        (null, null, null)
+        (params(0), params(1), null)
       }
     }
     

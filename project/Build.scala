@@ -126,7 +126,8 @@ object PokernoBuild extends Build {
       name := "pokerno-replay",
       version := "0.0.2",
       libraryDependencies ++= Seq(
-        "jline" % "jline" % "2.11"
+        "jline" % "jline" % "2.11",
+        "com.github.scopt" %% "scopt" % "3.1.0"
       )
     ) ++ assemblySettings ++ Seq(
       assemblyOption in assembly ~= { _.copy(includeBin = true, includeScala = false, includeDependency = false) }

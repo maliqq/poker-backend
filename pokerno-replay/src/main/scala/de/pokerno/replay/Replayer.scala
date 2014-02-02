@@ -1,50 +1,57 @@
 package de.pokerno.replay
 
-import akka.actor.Actor
 import de.pokerno.protocol.{msg, rpc}
 import de.pokerno.protocol.Conversions._
 import de.pokerno.poker.{Card, Deck}
 import de.pokerno.gameplay.{Replay, Context => GameplayContext, Street, Streets}
 import de.pokerno.model.{Dealer, Player, Table, Stake, Variation, Game, Bet, Seat}
-import akka.actor.{Actor, ActorSystem, ActorLogging, ActorRef, Props}
-import de.pokerno.backend.gateway.{Http, http}
+import akka.actor.{Actor, ActorSystem, ActorLogging, ActorRef, Props, Kill}
 
-import com.typesafe.config.ConfigFactory
 
 object Replayer {
-  case class Start(scenario: Scenario)
+  case class Replay(scenario: Scenario)
+}
 
-  val config = ConfigFactory.parseString(
-    """
-      akka {
-        loglevel = "DEBUG"
-        actor {
-          debug {
-            //receive = on
-            //unhandled = on
-            //lifecycle = on
-          }
-        }
-      }
-    """)
+case class ReplayError(msg: String) extends Exception(msg)
 
-  val actorSystemConfig = ConfigFactory.load(config)
+class Replayer(gw: ActorRef) extends Actor {
+  import io.netty.handler.codec.http
+  import io.netty.channel.{ChannelHandlerContext, ChannelFutureListener}
+  import http.HttpHeaders._
   
-  val system = ActorSystem("poker-replayer", actorSystemConfig)
-  val gw = system.actorOf(Props(classOf[Http.Gateway]), "http-dispatcher")
-
-  def startHttpServer = {
-    val server = new http.Server(gw,
-      http.Config(port = 8080, webSocket = Right(true))
-    )
-    server.start
+  def receive = {
+    // http request
+    case (content: String, ctx: ChannelHandlerContext, resp: http.DefaultFullHttpResponse) =>
+      resp.headers().add(Names.CONTENT_TYPE, "application/json")
+      try {
+        val src = scala.io.Source.fromString(content)
+        val scenario = Scenario.parse(src)
+        replay(scenario)
+        resp.content().writeBytes("""{"status": "ok"}""".getBytes)
+      } catch {
+        case err: ReplayError =>
+          resp.setStatus(http.HttpResponseStatus.UNPROCESSABLE_ENTITY)
+          resp.content().writeBytes(
+              """{"status": "error", "error": "%s"}""".format(err.getMessage).getBytes)
+      }
+      ctx.channel.writeAndFlush(resp).addListener(ChannelFutureListener.CLOSE)
+    
+    // console request
+    case Replayer.Replay(scenario) =>
+      try {
+        replay(scenario)
+      } catch {
+        case err: ReplayError =>
+          Console printf("[ERROR] %s%s%s\n", Console.RED, err.getMessage, Console.RESET)
+      }
+      
+    case _ =>
   }
-
-  startHttpServer
-
+  
+  import context._
   import collection.JavaConversions._
-
-  def start(scenario: Scenario) {
+  
+  def replay(scenario: Scenario) {
     val table = scenario.table.getOrElse(
         throw ReplayError("table not defined"))
     val variation = scenario.variation.getOrElse(
@@ -58,7 +65,7 @@ object Replayer {
     val t = new Table(table.size)
     val gameplay = new GameplayContext(t, variation, stake, dealer = dealer)
 
-    val replay = system.actorOf(Props(classOf[Replay], gameplay), "replay")
+    val replay = system.actorOf(Props(classOf[Replay], gameplay))
     replay ! Replay.Subscribe(gw)
 
     table.seatsAsList.zipWithIndex foreach { case (seat, pos) =>
@@ -71,7 +78,8 @@ object Replayer {
       if (street.isDefined)
         replay ! Replay.StreetActions(street.get, scenario.actions.get(streetName).toList, scenario.speed)
     }
+    
+    // TODO
+    //replay ! Kill
   }
 }
-
-case class ReplayError(msg: String) extends Exception(msg)

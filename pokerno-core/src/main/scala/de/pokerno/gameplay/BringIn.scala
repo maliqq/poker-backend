@@ -16,7 +16,7 @@ trait BringIn {
     }
     ctx.gameplay.setButton(pos)
     ctx.gameplay.round.acting = (seat, pos)
-
+    // FIXME wtf?
     ctx.ref ! Betting.Require(ctx.gameplay.stake.bringIn get, ctx.gameplay.game.limit)
   }
   

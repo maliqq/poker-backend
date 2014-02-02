@@ -5,19 +5,20 @@ import de.pokerno.protocol.{msg => message}
 
 import math.{ BigDecimal ⇒ Decimal }
 
-class BettingRound(val gameplay: Context) extends Round(gameplay.table.size) {
-  current = gameplay.table.button
+class BettingRound(val table: Table, val game: Game, val stake: Stake) extends Round(table.size) {
+  current = table.button
 
-  def seats = gameplay.table.seats.slice(current)
+  def seats = table.seats.slice(current)
   private var _acting: Tuple2[Seat, Int] = null
-
   def acting = _acting
   def acting_=(act: Tuple2[Seat, Int]) {
     _acting = act
     current = act._2
   }
+  
   def seat = _acting._1
   def pos = _acting._2
+  def box = (seat.player.get, pos)
 
   val pot = new Pot
   var bigBets: Boolean = false
@@ -34,14 +35,13 @@ class BettingRound(val gameplay: Context) extends Round(gameplay.table.size) {
     raiseCount = 0
     _call = .0
     _raise = (.0, .0)
-    current = gameplay.table.button
+    current = table.button
   }
   
-  val e = gameplay.events
-  def forceBet(act: Tuple2[Seat, Int], betType: Bet.ForcedBet) {
+  def forceBet(act: Tuple2[Seat, Int], betType: Bet.ForcedBet): Bet = {
     acting = act
 
-    _call = gameplay.stake amount betType
+    _call = stake amount betType
 
     val stack = seat.amount
     val bet = Bet.forced(betType, List(stack, _call) min)
@@ -51,8 +51,7 @@ class BettingRound(val gameplay: Context) extends Round(gameplay.table.size) {
 
   def requireBet(act: Tuple2[Seat, Int]) {
     acting = act
-    val stake = gameplay.stake
-    val limit = gameplay.game.limit
+    val limit = game.limit
 
     val bb = if (bigBets) stake.bigBlind * 2 else stake.bigBlind
     val stack = seat.stack
@@ -63,12 +62,9 @@ class BettingRound(val gameplay: Context) extends Round(gameplay.table.size) {
       var (min, max) = limit raise (stack, bb + _call, pot.total)
       _raise = Range(List(stack, min) min, List(stack, max) min)
     }
-    val player = seat.player.get
-
-    e.requireBet((player, pos), _call, _raise)
   }
   
-  def addBet(bet: Bet) {
+  def addBet(bet: Bet): Bet = {
     val (seat, pos) = _acting
     val player = seat.player.get
     
@@ -90,17 +86,15 @@ class BettingRound(val gameplay: Context) extends Round(gameplay.table.size) {
         pot.main add (player, left)
     }
     
-    e.addBet((player, pos), if (bet.isValid(seat.amount, seat.put, _call, _raise)) {
+    if (bet.isValid(seat.amount, seat.put, _call, _raise)) {
       postBet()
       bet
-    } else Bet.fold)
+    } else Bet.fold
   }
 
   def complete() {
     clear()
-
-    (gameplay.table.seats: List[Seat]).filter(_ inPlay) map (_ play)
-    e.declarePot(pot total)
+    table.seatsAsList.filter(_ inPlay) map (_ play)
   }
 
 }

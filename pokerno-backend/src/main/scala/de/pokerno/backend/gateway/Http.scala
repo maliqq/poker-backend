@@ -34,17 +34,20 @@ object Http {
         }
       
       case http.Event.Message(channel, data) =>
-        val msg = codec.Json.decode(data.getBytes)
+        //val msg = codec.Json.decode(data.getBytes)
       
       case msg: Message =>
+        log.info("broadcasting {}", msg)
         broadcast(codec.Json.encode(msg))
       
-      case _ =>
+      case x =>
+        log.warning("unhandled: {}", x)
     }
     
-    def broadcast(msg: Any) = channelConnections.foreach { case (channel, conn) =>
-      conn.send(msg)
-    }
+    def broadcast(msg: Any) =
+      channelConnections.foreach { case (channel, conn) =>
+        conn.send(msg)
+      }
     
     override def postStop {
     }

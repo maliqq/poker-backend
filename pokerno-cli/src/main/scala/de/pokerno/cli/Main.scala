@@ -13,7 +13,7 @@ case class Config(
 
 object Main {
 
-  val parser = new scopt.OptionParser[Config]("poker-console") {
+  val parser = new scopt.OptionParser[Config]("poker-replay") {
     opt[Int]('t', "table-size") text "Table size" action { (value, c) ⇒
       c.copy(tableSize = value)
     }

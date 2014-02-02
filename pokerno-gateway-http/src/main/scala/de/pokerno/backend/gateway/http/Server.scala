@@ -3,7 +3,7 @@ package de.pokerno.backend.gateway.http
 import akka.actor.{Actor, ActorRef}
 
 import io.netty.bootstrap.ServerBootstrap
-import io.netty.channel.{Channel, ChannelOption, ChannelInitializer}
+import io.netty.channel.{Channel, ChannelOption, ChannelInitializer, ChannelHandlerAdapter}
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.handler.codec.http.{HttpObjectAggregator, HttpRequestDecoder, HttpResponseEncoder}
@@ -14,7 +14,8 @@ import io.netty.util.CharsetUtil
 case class Config(
     port: Int = Server.defaultPort,
     eventSource: Either[EventSource.Config, Boolean] = Right(false),
-    webSocket: Either[WebSocket.Config, Boolean] = Right(false)
+    webSocket: Either[WebSocket.Config, Boolean] = Right(false),
+    handlers: List[Tuple2[String, () => ChannelHandlerAdapter]] = List.empty
   ) {
   
   def eventSourceConfig: Option[EventSource.Config] = eventSource match {
@@ -31,7 +32,7 @@ case class Config(
 }
 
 object Server {
-  final val defaultPort = 8082
+  final val defaultPort = 8080
 }
 
 case class Server(gw: ActorRef, config: Config) {
@@ -58,6 +59,10 @@ case class Server(gw: ActorRef, config: Config) {
       
       config.eventSourceConfig.foreach { es =>
           p.addLast(EventSource.Handler.Name, new EventSource.Handler(es.path, gw))
+      }
+      
+      config.handlers.map { case (name, handler) =>
+        p.addLast(name, handler())
       }
     }
   }

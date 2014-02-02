@@ -10,10 +10,13 @@ import akka.actor.ActorRef
  */
 trait Blinds {
   
+  t: Betting =>
+  
   def postBlinds(ctx: StageContext) = if (ctx.gameplay.game.options.hasBlinds) {
     ctx.gameplay.moveButton
+    val round = ctx.gameplay.round
 
-    val seats = ctx.gameplay.round.seats
+    val seats = round.seats
     val active = seats filter (_._1 isActive)
     val waiting = seats filter (_._1 isWaitingBB)
 
@@ -22,8 +25,9 @@ trait Blinds {
     } else {
       val List(sb, bb, _*) = active
 
-      ctx.gameplay.round.forceBet(sb, Bet.SmallBlind)
-      ctx.gameplay.round.forceBet(bb, Bet.BigBlind)
+      forceBet(ctx, sb, Bet.SmallBlind)
+      
+      forceBet(ctx, bb, Bet.BigBlind)
     }
   }
   

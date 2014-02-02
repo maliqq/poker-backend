@@ -9,6 +9,28 @@ import wire.Conversions._
 import de.pokerno.protocol.Conversions._
 import akka.actor.Actor
 
+trait Betting {
+  
+  def requireBet(ctx: StageContext, acting: Tuple2[Seat, Int]) {
+    val round = ctx.gameplay.round  
+    round requireBet acting
+    ctx.gameplay.events.requireBet(round.box, round.call, round.raise)
+  }
+  
+  def addBet(ctx: StageContext, bet: Bet) {
+    val round = ctx.gameplay.round
+    val posted = round.addBet(bet)
+    ctx.gameplay.events.addBet(round.box, posted)
+  }
+  
+  def forceBet(ctx: StageContext, acting: Tuple2[Seat, Int], _type: Bet.ForcedBet) {
+    val round = ctx.gameplay.round
+    val posted = round.forceBet(acting, _type)
+    ctx.gameplay.events.addBet(round.box, posted)
+  }
+  
+}
+
 object Betting {
 
   // start new round
@@ -33,7 +55,8 @@ object Betting {
   
   trait NextTurn {
     
-    def gameplay: ContextLike
+    def gameplay: Context
+    def stageContext: StageContext
     
     protected def nextTurn(): Option[Transition] = {
       val round = gameplay.round
@@ -51,7 +74,7 @@ object Betting {
       if (active.size == 0)
         return Some(Betting.Done)
       
-      round requireBet active.head
+      gameplay.requireBet(stageContext, active.head)
       
       None
     }
@@ -67,7 +90,7 @@ object Betting {
         val (seat, pos) = gameplay.round.acting
         if (seat.player.isDefined && seat.player.get == player) {
           log.info("[betting] add {}", bet)
-          gameplay.round.addBet(bet)
+          gameplay.addBet(stageContext, bet)
           nextTurn().foreach(self ! _)
         } else
           log.warning("[betting] not a turn of {}; current acting is {}", player, seat.player)
@@ -134,13 +157,13 @@ object Betting {
               if (seatOption.isDefined) {
                 val (seat, pos) = seatOption.get
                 // process ante bet if seat is active
-                if (seat.isActive) round.forceBet((seat, pos), Bet.Ante)
+                if (seat.isActive) gameplay.forceBet(stageContext, (seat, pos), Bet.Ante)
               }
             }
           } else {
             val postingAnte = round.seats.filter(_._1.isActive)
             postingAnte.foreach { case (seat, pos) =>
-              round.forceBet((seat, pos), Bet.Ante)
+              gameplay.forceBet(stageContext, (seat, pos), Bet.Ante)
             }
           }
           round.complete
@@ -197,8 +220,8 @@ object Betting {
           
           log.info("sb={} bb={}", sb, bb)
           
-          sb.map { sb => round.forceBet(sb, Bet.SmallBlind) }
-          bb.map { bb => round.forceBet(bb, Bet.SmallBlind) }
+          sb.map { sb => gameplay.forceBet(stageContext, sb, Bet.SmallBlind) }
+          bb.map { bb => gameplay.forceBet(stageContext, bb, Bet.SmallBlind) }
           
           //gameplay.round.reset
           nextTurn()//.foreach { x => self ! x }
@@ -208,7 +231,7 @@ object Betting {
         if (!activeBets.isEmpty) {
           //gameplay.round.reset
           
-          activeBets.takeWhile { addBet =>
+          val betsLeft = activeBets.dropWhile { addBet =>
             val acting = round.acting
             log.info("| -- acting {}", acting)
             val player = acting._1.player
@@ -217,7 +240,7 @@ object Betting {
             
             if (isOurTurn) {
               log.info("| --- player {} bet {}", player, addBet.bet)
-              round.addBet(addBet.bet)
+              gameplay.addBet(stageContext, addBet.bet)
               nextTurn().forall { x => self ! x; false }
             } else true
           }

@@ -43,13 +43,15 @@ object HttpHandler {
 class PathHandler(path: String, handler: ChannelInboundHandlerAdapter) extends ChannelInboundHandlerAdapter {
   override def channelRead(ctx: ChannelHandlerContext, msg: Object): Unit = msg match {
     case req: http.FullHttpRequest =>
-      val q = new http.QueryStringDecoder(req.getUri)
-      if (q.path != path) {
+      
+      if (req.getUri.startsWith(path)) {
+        Console printf("req starts with path")
+        handler.channelRead(ctx, req)
+      } else {
         ctx.pipeline.remove(handler)
         ctx.fireChannelRead(req)
       }
-      else handler.channelRead(ctx, req)
-    
+      
     case _ => ctx.fireChannelRead(msg)
   }
 }

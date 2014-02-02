@@ -35,13 +35,14 @@ class Context(
     val dealer: Dealer = new Dealer
                     ) extends ContextLike
                          with GameRotation
+                         with Betting
                          with Antes
                          with Blinds
                          with Dealing.DealContext
                          with BringIn
                          with Showdown {
 
-  val round = new BettingRound(Context.this)
+  val round = new BettingRound(table, game, stake)
 
   def prepareSeats(ctx: StageContext) {
     (table.seats: List[Seat]).filter (_ isReady) map (_ play)

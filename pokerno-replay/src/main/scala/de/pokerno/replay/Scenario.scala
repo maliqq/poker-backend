@@ -9,6 +9,20 @@ import de.pokerno.protocol.wire.Conversions._
 import de.pokerno.gameplay.Street
 import wire.Conversions._
 
+import de.pokerno.format.text
+
+object Scenario {
+  def parse(src: scala.io.Source) = {
+    val scenario = new Scenario()
+
+    text.Parser.parse(src).foreach { case (line, lineno, tag) =>
+      scenario.process(tag)
+    }
+    
+    scenario
+  }
+}
+
 class Scenario {
   var table: Option[Table] = None
   var stake: Option[Stake] = None

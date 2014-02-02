@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Pokerno replayer</title>
+
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap-theme.min.css">
+
+    <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="row">
+
+        <form class="col-lg-6">
+
+          <h3>Enter scenario</h3>
+
+          <div class="form-group">
+            <button class="btn btn-lg btn-success" style="width: 100%">Send</button>
+          </div>
+
+          <div id="error" class="alert alert-danger" style="display: none"></div>
+
+          <div class="form-group">
+            <textarea rows="20" class="form-control" id="scenario"></textarea>
+          </div>
+          
+        </form>
+
+        <div class="col-lg-6">
+          <h3>Connection</h3>
+          <span id="connection" class="label label-default">Connecting...</span>
+
+          <h3>Output</h3>
+
+          <pre id="log"></pre>
+        </div>
+
+      </div>
+    </div>
+
+    <script type="text/javascript">
+      var host = 'localhost'//location.host
+
+      var ws = new WebSocket('ws://' + host + ':8080/_ws')
+
+      ws.onopen = function() {
+        $('#connection').text("Connected").removeClass('label-default').addClass('label-success')
+      }
+      ws.onclose = function() {
+        $('#connection').text("Disconnected").removeClass('label-success').addClass('label-danger')
+      }
+      ws.onerror = function(e) {
+        $('#connection').text('Error').removeClass('label-default').addClass('label-danger')
+      }
+      ws.onmessage = function(e) {
+        $('#log').append(e.data + "\n")
+      }
+
+      $(function() {
+        //var ws = new WebSocket('ws://' + host + ':')
+        $('form button').click(function() {
+          $.ajax({
+            type: 'POST',
+            dataType: 'json',
+            contentType: 'text/plain',
+            url: 'http://' + host + ':8080/_api/scenario',
+            data: $('#scenario').val(),
+            error: function(xhr, status, error) {
+              data = JSON.parse(xhr.responseText)
+              $('#error').text(data.error).fadeIn()
+              setTimeout(function() {
+                $('#error').fadeOut()
+              }, 5000)
+            },
+            success: function(data) {
+
+            }
+          })
+          return false
+        })
+      })
+    </script>
+  </body>
+</html>

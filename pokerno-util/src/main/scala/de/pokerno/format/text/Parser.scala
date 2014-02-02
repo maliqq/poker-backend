@@ -2,6 +2,8 @@ package de.pokerno.format.text
 
 import util.matching.Regex
 
+case class ParseError(msg: String) extends Exception(msg)
+
 object Parser {
   
   def parseTagAndParams(line: String): Tuple2[String, Array[String]] = {
@@ -33,11 +35,11 @@ object Parser {
         val m = decl.get.typeSignature.declaration(ru.nme.CONSTRUCTOR).asTerm.alternatives.last
         val result = cm.reflectClass(decl.get.asClass).reflectConstructor(m.asMethod)(params)
         Some((line, lineno, result.asInstanceOf[Lexer.Token]))
+      
       } catch {
+      
       case e: Throwable =>
-        e.printStackTrace()
-        Console printf("can't parse: %s with type: %s\n", line, decl.get)
-        None
+        throw ParseError("Can't parse; error at line %d type %s: %s".format(lineno, decl, e.getMessage))
       }
     } else None
   }

@@ -23,6 +23,13 @@ class Replayer(gw: ActorRef) extends Actor {
     // http request
     case (content: String, ctx: ChannelHandlerContext, resp: http.DefaultFullHttpResponse) =>
       resp.headers().add(Names.CONTENT_TYPE, "application/json")
+      
+      def sendError(err: Throwable) {
+        resp.setStatus(http.HttpResponseStatus.UNPROCESSABLE_ENTITY)
+        resp.content().writeBytes(
+            """{"status": "error", "error": "%s"}""".format(err.getMessage).getBytes)
+      }
+      
       try {
         val src = scala.io.Source.fromString(content)
         val scenario = Scenario.parse(src)
@@ -30,10 +37,16 @@ class Replayer(gw: ActorRef) extends Actor {
         resp.content().writeBytes("""{"status": "ok"}""".getBytes)
       } catch {
         case err: ReplayError =>
-          resp.setStatus(http.HttpResponseStatus.UNPROCESSABLE_ENTITY)
-          resp.content().writeBytes(
-              """{"status": "error", "error": "%s"}""".format(err.getMessage).getBytes)
+          sendError(err)
+        
+        case err: text.ParseError =>
+          sendError(err)
+        
+        case err: Throwable =>
+          err.printStackTrace()
+          sendError(new Exception("something went wrong"))
       }
+      
       ctx.channel.writeAndFlush(resp).addListener(ChannelFutureListener.CLOSE)
     
     // console request
@@ -41,7 +54,7 @@ class Replayer(gw: ActorRef) extends Actor {
       try {
         replay(scenario)
       } catch {
-        case err: ReplayError =>
+        case err: Throwable =>
           Console printf("[ERROR] %s%s%s\n", Console.RED, err.getMessage, Console.RESET)
       }
       

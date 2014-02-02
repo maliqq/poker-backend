@@ -51,9 +51,11 @@ object Lexer {
         val d = params(0).split("/")
         d.length match {
           case 2 =>
-            (d(0), d(1), None)
+            val b = List(d(0), d(1))
+            (b.min, b.max, None)
           case 3 =>
-            (d(0), d(1), Some(d(2)))
+            val b = List(d(0), d(1))
+            (b.max, b.max, Some(d(2)))
           case _ =>
             throw new IllegalArgumentException("STAKE requires 2 or 3 arguments")
         }

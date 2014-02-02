@@ -227,7 +227,7 @@ object Betting {
           sb.map { sb => gameplay.forceBet(stageContext, sb, Bet.SmallBlind) }
           sleep()
           
-          bb.map { bb => gameplay.forceBet(stageContext, bb, Bet.SmallBlind) }
+          bb.map { bb => gameplay.forceBet(stageContext, bb, Bet.BigBlind) }
           sleep()
           
           //gameplay.round.reset

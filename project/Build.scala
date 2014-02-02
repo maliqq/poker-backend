@@ -130,7 +130,13 @@ object PokernoBuild extends Build {
         "com.github.scopt" %% "scopt" % "3.1.0"
       )
     ) ++ assemblySettings ++ Seq(
-      assemblyOption in assembly ~= { _.copy(includeBin = true, includeScala = false, includeDependency = false) }
+      excludedJars in packageDependency <<= (fullClasspath in assembly) map { cp => 
+        cp filter { !_.data.getName.startsWith("pokerno-") }
+      },
+
+      excludedJars in assembly <<= (fullClasspath in assembly) map { cp => 
+        cp filter { !_.data.getName.startsWith("pokerno-") }
+      }
     )
   ) dependsOn(util, core, backend)
   

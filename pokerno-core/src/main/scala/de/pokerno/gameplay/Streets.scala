@@ -42,8 +42,9 @@ object Streets {
     def handleStreets: Receive = {
       case Betting.Start =>
         log.info("[betting] start")
-        gameplay.round.reset
-        nextTurn()
+        // FIXME
+        //gameplay.round.reset()
+        nextTurn()//.foreach(self ! _)
         context.become(handleBetting)
       
       case Streets.Next ⇒

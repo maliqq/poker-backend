@@ -38,7 +38,7 @@ object Betting {
     protected def nextTurn(): Option[Transition] = {
       val round = gameplay.round
       
-      round.move
+      round.move()
       round.seats filter (_._1 inPlay) foreach {
         case (seat, pos) ⇒
           if (!seat.isCalled(round.call)) seat.playing()

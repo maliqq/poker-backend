@@ -1,5 +1,6 @@
 package de.pokerno.gameplay
 
+import akka.actor.ActorRef
 import math.{ BigDecimal ⇒ Decimal }
 import de.pokerno.model._
 import de.pokerno.protocol.{msg => message}
@@ -18,55 +19,23 @@ object Betting {
   case class Force(amount: Decimal)
   case class Add(player: Player, bet: Bet)
 
-  // go to next seat
-  case object NextTurn
+
+  trait Transition
+  case object Next extends Transition
   // stop current deal
-  case object Stop
+  case object Stop extends Transition
   // betting done - wait for next street to occur
-  case object Done
+  case object Done extends Transition
   // betting timeout - go to next seat
   case object Timeout
   // turn on big bet mode
   case object BigBets
-
-  trait DealContext { 
-    deal: Deal =>
   
-    def handleBetting: Receive = {
-      case Betting.Add(player, bet) ⇒
-        val (seat, pos) = gameplay.round.acting
-        if (seat.player.isDefined && seat.player.get == player) {
-          log.info("[betting] add {}", bet)
-          gameplay.round.addBet(bet)
-          nextTurn()
-        } else
-          log.warning("[betting] not a turn of {}; current acting is {}", player, seat.player)
-  
-      case Betting.NextTurn ⇒
-        log.info("[betting] next turn")
-        nextTurn()
-  
-      case Betting.Stop ⇒
-        log.info("[betting] stop")
-        context.become(handleStreets)
-        self ! Streets.Done
-        
-      case Betting.Timeout ⇒
-        log.info("[betting] timeout")
-        nextTurn()
-  
-      case Betting.Done ⇒
-        log.info("[betting] done")
-        gameplay.round.complete
-        context.become(handleStreets)
-        streets(stageContext)
-  
-      case Betting.BigBets ⇒
-        log.info("[betting] big bets")
-        gameplay.round.bigBets = true
-    }
+  trait NextTurn {
     
-    protected def nextTurn() {
+    def gameplay: ContextLike
+    
+    protected def nextTurn(): Option[Transition] = {
       val round = gameplay.round
       
       round.move
@@ -76,24 +45,62 @@ object Betting {
       }
   
       if (round.seats.filter(_._1 inPot).size < 2)
-        self ! Betting.Stop
-      else {
-        val active = round.seats filter (_._1 isPlaying)
-  
-        if (active.size == 0)
-          self ! Betting.Done
-        else
-          round requireBet active.head
-      }
+        return Some(Betting.Stop)
+      val active = round.seats filter (_._1 isPlaying)
+
+      if (active.size == 0)
+        return Some(Betting.Done)
+      
+      round requireBet active.head
+      
+      None
     }
+    
+  }
+
+  trait DealContext extends NextTurn {
+    deal: Deal =>
+      
+  
+    def handleBetting: Receive = {
+      case Betting.Add(player, bet) ⇒
+        val (seat, pos) = gameplay.round.acting
+        if (seat.player.isDefined && seat.player.get == player) {
+          log.info("[betting] add {}", bet)
+          gameplay.round.addBet(bet)
+          nextTurn().foreach(self ! _)
+        } else
+          log.warning("[betting] not a turn of {}; current acting is {}", player, seat.player)
+  
+      case Betting.Stop ⇒
+        log.info("[betting] stop")
+        context.become(handleStreets)
+        self ! Streets.Done
+        
+      case Betting.Timeout ⇒
+        log.info("[betting] timeout")
+        nextTurn().foreach(self ! _)
+  
+      case Betting.Done ⇒
+        log.info("[betting] done")
+        gameplay.round.complete()
+        context.become(handleStreets)
+        streets(stageContext)
+  
+      case Betting.BigBets ⇒
+        log.info("[betting] big bets")
+        gameplay.round.bigBets = true
+    }
+    
   }
   
-  trait ReplayContext {
+  trait ReplayContext extends NextTurn {
+    
     replay: Replay =>
       
       def firstStreet: Boolean
       
-      def nextTurn(betActions: List[rpc.AddBet]) {
+      def betting(betActions: List[rpc.AddBet]) {
         val round = gameplay.round
         
         def active = round.seats.filter(_._1.isActive)
@@ -151,10 +158,10 @@ object Betting {
             (addBet.bet.getType: Bet.Value) == Bet.SmallBlind
           }
           
-          sbBetOption map { sbBet =>
+          sbBetOption foreach { sbBet =>
             activeBeforeButtonMove.find { case (seat, pos) =>
               seat.player.isDefined && sbBet.player == seat.player.get.id
-            } map { _sb =>
+            } foreach { _sb =>
               sb = Some(_sb)
             }
           }
@@ -165,7 +172,7 @@ object Betting {
             
             forcedBets.find { addBet =>
               (addBet.bet.getType: Bet.Value) == Bet.BigBlind
-            } map { bbBet =>
+            } foreach { bbBet =>
               activeBeforeButtonMove.find { case (seat, pos) =>
                 val found = seat.player.isDefined && bbBet.player == seat.player.get.id
                 
@@ -195,31 +202,14 @@ object Betting {
         if (!activeBets.isEmpty)
           activeBets.takeWhile { addBet =>
             val acting = round.acting
-            var done = false
+            val player = acting._1.player
             
-            if (acting._1.player.isDefined && acting._1.player.get.id == addBet.player) {
-              // FIXME: remove copy&paste
+            def isOurTurn = player.isDefined && player.get.id == addBet.player
+            
+            if (isOurTurn) {
               round.addBet(addBet.bet)
-              round.move
-              round.seats filter (_._1 inPlay) foreach {
-                case (seat, pos) ⇒
-                  if (!seat.isCalled(round.call)) seat.playing()
-              }
-          
-              if (round.seats.filter(_._1 inPot).size < 2) {
-                self ! Betting.Stop
-                done = true
-              } else {
-                val active = round.seats filter (_._1 isPlaying)
-          
-                if (active.size == 0) {
-                  self ! Betting.Done
-                  done = true
-                }
-              }
-            }
-            
-            !done
+              nextTurn().forall { x => self ! x; false }
+            } else true
           }
       }
   }

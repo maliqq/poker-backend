@@ -40,7 +40,7 @@ class Deal(val gameplay: Context) extends Actor
   override def postStop() {
     log.info("stop deal")
     //afterStreets(stageContext)
-    gameplay.events.playStop
+    gameplay.events.playStop()
     parent ! Deal.Done
   }
   

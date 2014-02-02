@@ -27,10 +27,10 @@ class Events {
         message.Start(table, variation, stake)
     )
   
-  def playStart =
+  def playStart() =
     broker.publish(message.PlayStart())
   
-  def playStop =
+  def playStop() =
     broker.publish(message.PlayStop())
   
   def streetStart(name: Street.Value) =

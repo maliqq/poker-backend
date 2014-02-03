@@ -47,5 +47,13 @@ class Context(
   def prepareSeats(ctx: StageContext) {
     (table.seats: List[Seat]).filter (_ isReady) map (_ play)
   }
+  
+  override def toString = {
+    val b = new StringBuilder
+    b.append("table:\n%s\n" format table)
+    b.append("stake: %s\n" format stake)
+    b.append("game: %s\n" format game)
+    b.toString
+  }
 
 }

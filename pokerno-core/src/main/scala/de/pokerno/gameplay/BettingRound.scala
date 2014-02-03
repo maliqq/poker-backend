@@ -36,6 +36,8 @@ class BettingRound(val table: Table, val game: Game, val stake: Stake) extends R
     _call = .0
     _raise = (.0, .0)
     current = table.button
+    // FIXME
+    _acting = seats.find(_._1.isActive).getOrElse(null)
   }
   
   def forceBet(act: Tuple2[Seat, Int], betType: Bet.ForcedBet): Bet = {
@@ -93,8 +95,8 @@ class BettingRound(val table: Table, val game: Game, val stake: Stake) extends R
   }
 
   def complete() {
-    clear()
     table.seatsAsList.filter(_ inPlay) map (_ play)
+    clear()
   }
 
 }

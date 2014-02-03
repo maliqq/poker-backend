@@ -105,6 +105,12 @@ object Lexer {
       def this(params: Array[String]) = this(params(0))
     }
     
+    @Tag(name = "BLINDS")
+    case class Blinds() extends Token
+                                           with BettingSemantic {
+      def this(params: Array[String]) = this()
+    }
+    
     @Tag(name = "ANTE")
     case class Ante(player: QuotedString) extends Token
                                              with BettingSemantic {
@@ -125,6 +131,12 @@ object Lexer {
     @Tag(name = "ALLIN")
     case class AllIn(player: QuotedString) extends Token
                                               with BettingSemantic {
+      def this(params: Array[String]) = this(params(0))
+    }
+    
+    @Tag(name = "CHECK")
+    case class Check(player: QuotedString) extends Token
+                                                          with BettingSemantic {
       def this(params: Array[String]) = this(params(0))
     }
     
@@ -184,6 +196,11 @@ object Lexer {
     @Tag(name = "SLEEP")
     case class Sleep(time: Int) extends Token {
       def this(params: Array[String]) = this(params(0))
+    }
+    
+    @Tag(name = "SHOWDOWN")
+    case class Showdown() extends Token {
+      def this(params: Array[String]) = this()
     }
     
     @Tag(name = "TIMER")

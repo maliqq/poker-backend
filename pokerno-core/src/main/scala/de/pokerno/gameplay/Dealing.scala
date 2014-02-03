@@ -56,10 +56,14 @@ object Dealing {
       _type match {
       case DealCards.Board =>
         
-        val dealBoard = dealActions.head.asInstanceOf[rpc.DealCards]
+        val dealBoardFound = dealActions.headOption
+        var cardsDealt: Option[List[Card]] = if (dealBoardFound.isDefined) {
+          val dealBoard = dealBoardFound.get.asInstanceOf[rpc.DealCards]
+          if (dealBoard.cards != null) Some(dealBoard.cards) else None
+        } else None
+        
         dealCards(_type,
-            cards = if (dealBoard.cards != null) Some(dealBoard.cards)
-                    else None,
+            cards = cardsDealt,
             cardsNum = dealOptions.cardsNum
         )
         sleep()

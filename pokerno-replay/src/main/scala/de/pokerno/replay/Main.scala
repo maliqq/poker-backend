@@ -58,6 +58,8 @@ object Main {
       if (c.http)
         startHttpServer(gw)
       else {
+        startHttpServer(gw)
+        
         if (c.file.isDefined)
           parse(c.file.get)
         else {

@@ -104,6 +104,9 @@ class Scenario {
           
         case tags.Call(player, amount) =>
           bet(player.unquote, Bet.call(amount))
+        
+        case tags.Check(player) =>
+          bet(player.unquote, Bet.check)
           
         case tags.Fold(player) =>
           bet(player.unquote, Bet.fold)

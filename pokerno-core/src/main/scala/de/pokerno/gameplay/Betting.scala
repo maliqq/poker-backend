@@ -29,6 +29,12 @@ trait Betting {
     ctx.gameplay.events.addBet(round.box, posted)
   }
   
+  def completeBetting(ctx: StageContext) {
+    val round = ctx.gameplay.round
+    round.complete()
+    ctx.gameplay.events.declarePot(round.pot.total)
+  }
+  
 }
 
 object Betting {
@@ -128,6 +134,7 @@ object Betting {
         def sleep() = Thread.sleep(speed.toMillis)
         
         val round = gameplay.round
+        log.info("button={}", round.current)
         
         def active = round.seats.filter(_._1.isActive)
         
@@ -176,9 +183,9 @@ object Betting {
         // пассивные ставки игроков - блайнды
         val postBlinds = firstStreet && gameOptions.hasBlinds
         
-        val activeBeforeButtonMove = active
-        //log.info("postBlinds={} firstStreet={} activeBeforeButtonMove={}", postBlinds, firstStreet, activeBeforeButtonMove)
-        if (postBlinds && activeBeforeButtonMove.size >= 2) {
+        val activeOnBlinds = active
+        //log.info("postBlinds={} firstStreet={} activeOnBlinds={}", postBlinds, firstStreet, activeOnBlinds)
+        if (postBlinds && activeOnBlinds.size >= 2) {
           var sb: Option[Tuple2[Seat, Int]] = None
           var bb: Option[Tuple2[Seat, Int]] = None
           
@@ -187,7 +194,7 @@ object Betting {
           }
           
           sbBetOption foreach { sbBet =>
-            activeBeforeButtonMove.find { case (seat, pos) =>
+            activeOnBlinds.find { case (seat, pos) =>
               seat.player.isDefined && sbBet.player == seat.player.get.id
             } foreach { _sb =>
               sb = Some(_sb)
@@ -196,12 +203,13 @@ object Betting {
           
           if (sb.isDefined) {
             val (sbPlayer, sbPos) = sb.get
-            gameplay.setButton(sbPos - 1) // put button before SB
+            // FIXME
+            //gameplay.setButton(sbPos - 1) // put button before SB
             
             forcedBets.find { addBet =>
               (addBet.bet.getType: Bet.Value) == Bet.BigBlind
             } foreach { bbBet =>
-              activeBeforeButtonMove.find { case (seat, pos) =>
+              activeOnBlinds.find { case (seat, pos) =>
                 val found = seat.player.isDefined && bbBet.player == seat.player.get.id
                 
                 if (!found && seat.player != sbPlayer)
@@ -214,7 +222,8 @@ object Betting {
             }
             
           } else {
-            gameplay.moveButton
+            // FIXME
+            //gameplay.moveButton
             
             // default blind positions
             val List(_sb, _bb, _*) = active
@@ -238,6 +247,8 @@ object Betting {
         if (!activeBets.isEmpty) {
           //gameplay.round.reset
           
+          log.info("activeBets={}", activeBets)
+          
           val betsLeft = activeBets.dropWhile { addBet =>
             val acting = round.acting
             log.info("| -- acting {}", acting)
@@ -254,6 +265,7 @@ object Betting {
           }
           
           // TODO complete bets
+          gameplay.completeBetting(stageContext)
         }
       }
   }

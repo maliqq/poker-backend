@@ -37,7 +37,7 @@ object Http {
         //val msg = codec.Json.decode(data.getBytes)
       
       case msg: Message =>
-        log.info("broadcasting {}", msg)
+        //log.info("broadcasting {}", msg)
         broadcast(codec.Json.encode(msg))
       
       case x =>

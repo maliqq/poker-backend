@@ -7,6 +7,43 @@ import de.pokerno.backend.gateway.{Http, http}
 
 case class Config(file: Option[String] = None, http: Boolean = false)
 
+class Main {
+  val system = ActorSystem("poker-replayer")
+  val gw = system.actorOf(Props(classOf[Http.Gateway]), "http-dispatcher")
+  val replayer = system.actorOf(Props(classOf[Replayer], gw), "replayer")
+  
+  def startHttpServer() {
+    val server = new http.Server(gw,
+      http.Config(
+          port = 8080,
+          webSocket = Right(true),
+          handlers = List(("api-handler", () => new ApiHandler(replayer)))
+      )
+    )
+    server.start
+  }
+  
+  import de.pokerno.util.ConsoleUtils._
+  
+  def parse(filename: String) {
+    try {
+      val src = scala.io.Source.fromFile(filename)
+      val scenario = Scenario.parse(src)
+      replayer ! Replayer.Replay(scenario)
+
+    } catch {
+      case err: java.io.FileNotFoundException =>
+        error(err)
+
+      case err: ReplayError =>
+        error(err)
+      
+      case err: Throwable =>
+        fatal(err)
+    }
+  }
+}
+
 object Main {
 //
 //  val config = ConfigFactory.parseString(
@@ -38,62 +75,25 @@ object Main {
   
   val config = Config()
   
-  val system = ActorSystem("poker-replayer")
-  val gw = system.actorOf(Props(classOf[Http.Gateway]), "http-dispatcher")
-  val replayer = system.actorOf(Props(classOf[Replayer], gw), "replayer")
-  
-  def startHttpServer(gw: ActorRef) = {
-    val server = new http.Server(gw,
-      http.Config(
-          port = 8080,
-          webSocket = Right(true),
-          handlers = List(("api-handler", () => new ApiHandler(replayer)))
-      )
-    )
-    server.start
-  }
-
   def main(args: Array[String]) {
     parser.parse(args, config) foreach { c =>
-      if (c.http)
-        startHttpServer(gw)
+      val app = new Main
+      app.startHttpServer()
+      
+      if (c.http) {}
       else {
-        startHttpServer(gw)
-        
         if (c.file.isDefined)
-          parse(c.file.get)
+          app.parse(c.file.get)
         else {
           val consoleReader = new ConsoleReader
           consoleReader.setExpandEvents(false)
           while (true) {
             val filename = consoleReader.readLine("Enter path to scenario >>> ")
             if (filename == "exit") System.exit(0)
-            if (filename != "") parse(filename)
+            if (filename != "") app.parse(filename)
           }
         }
       }
-    }
-    //system.shutdown()
-  }
-  
-  def parse(filename: String) {
-    try {
-      val src = scala.io.Source.fromFile(filename)
-      val scenario = Scenario.parse(src)
-      replayer ! Replayer.Replay(scenario)
-
-    } catch {
-      case _: java.io.FileNotFoundException =>
-        Console printf("[ERROR] file not found\n")
-
-      case err: ReplayError =>
-        Console printf("[ERROR] %s%s%s\n", Console.RED, err.getMessage, Console.RESET)
-      
-      case err: Exception =>
-        Console print("[ERROR]: ")
-        Console printf("%s", Console.RED)
-        err.printStackTrace
-        Console printf("%s\n", Console.RESET)
     }
   }
   

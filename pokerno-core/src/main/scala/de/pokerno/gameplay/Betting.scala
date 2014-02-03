@@ -127,6 +127,7 @@ object Betting {
     
     replay: Replay =>
       import concurrent.duration.Duration
+      import de.pokerno.util.ConsoleUtils._
       
       def firstStreet: Boolean
       
@@ -134,7 +135,7 @@ object Betting {
         def sleep() = Thread.sleep(speed.toMillis)
         
         val round = gameplay.round
-        log.info("button={}", round.current)
+        debug("button=%s", round.current)
         
         def active = round.seats.filter(_._1.isActive)
         
@@ -231,7 +232,7 @@ object Betting {
             bb = Some(_bb)
           }
           
-          log.info("sb={} bb={}", sb, bb)
+          debug("sb=%s bb=%s", sb, bb)
           
           sb.map { sb => gameplay.forceBet(stageContext, sb, Bet.SmallBlind) }
           sleep()
@@ -247,17 +248,17 @@ object Betting {
         if (!activeBets.isEmpty) {
           //gameplay.round.reset
           
-          log.info("activeBets={}", activeBets)
+          debug("activeBets=%s", activeBets)
           
           val betsLeft = activeBets.dropWhile { addBet =>
             val acting = round.acting
-            log.info("| -- acting {}", acting)
+            debug(" | acting %s", acting)
             val player = acting._1.player
             
             def isOurTurn = player.isDefined && player.get.id == addBet.player
             
             if (isOurTurn) {
-              log.info("| --- player {} bet {}", player, addBet.bet)
+              debug(" |-- player %s bet %s", player.get, addBet.bet)
               gameplay.addBet(stageContext, addBet.bet)
               sleep()
               nextTurn().forall { x => self ! x; false }

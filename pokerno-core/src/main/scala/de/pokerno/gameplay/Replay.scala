@@ -28,36 +28,35 @@ class Replay(val gameplay: Context) extends Actor
   val streetOptions = Streets.Options(gameOptions.group)
   var streets = Street.byGameGroup(gameOptions.group)
   
+  import concurrent.duration._
+  import de.pokerno.util.ConsoleUtils._
+  
   override def preStart {
-    log.info("starting replay with gameplay {}", gameplay)
+    info("starting replay with gameplay {}", gameplay)
 //    gameplay.rotateGame(stageContext)
   }
-  
+
   var firstStreet = true
-  
-  import concurrent.duration._
 
   override def receive = {
     case Replay.Subscribe(out) =>
-      log.info("subscribe")
-
       e.broker.subscribe(out, "replay-out")
       e.start(t, gameplay.variation, gameplay.stake)
 
     case join @ rpc.JoinPlayer(pos, player, amount) =>
-      log.info("got: {}", join)
+      debug("got: %s", join)
 
       t.addPlayer(pos, player, Some(amount))
       e.joinTable((player, pos), amount)
 
     case s @ rpc.ShowCards(cards, player, muck) =>
       
-      log.debug("got: {}", s)
+      debug("got: %s", s)
       
       e.showCards(t.box(player).get, cards, muck)
     
     case Betting.Stop => // идем до шоудауна
-      log.info("streets done")
+      info("streets done")
       gameplay.showdown()
       context.stop(self)
 
@@ -67,7 +66,7 @@ class Replay(val gameplay: Context) extends Actor
         gameplay.prepareSeats(stageContext)
       }
       
-      log.debug("got: {}", a)
+      debug("got: %s", a)
       
       if (streets.head == street) {
         // нужный стрит
@@ -77,13 +76,13 @@ class Replay(val gameplay: Context) extends Actor
         
         val options = streetOptions(street)
         
-        log.info("|--- street: {} options: {}", street, options)
+        debug(" | street: %s options: %s", street, options)
 
         /**
          * DEALING
          * */
         options.dealing.map { dealOptions =>
-          log.info("[dealing] started")
+          info("[dealing] started")
           
           val dealActions = actions.filter { action =>
             action match {
@@ -95,23 +94,23 @@ class Replay(val gameplay: Context) extends Actor
           
           dealing(dealActions, dealOptions, (speed seconds))
           
-          log.info("[dealing] done")
+          info("[dealing] done")
         }
         
         /**
          * BRING IN
          * */
         if (options.bringIn) {
-          log.info("[bring-in] started")
+          info("[bring-in] started")
           gameplay.bringIn(stageContext)
-          log.info("[bring-in] done")
+          info("[bring-in] done")
         }
         
         /**
          * BIG BETS
          * */
         if (options.bigBets) {
-          log.info("[big-bets] handled")
+          info("[big-bets] handled")
           gameplay.round.bigBets = true // TODO notify
         }
         
@@ -119,7 +118,7 @@ class Replay(val gameplay: Context) extends Actor
          * BETTING
          * */
         if (options.betting) {
-          log.info("[betting] started")
+          info("[betting] started")
           
           val betActions = actions.filter { action =>
             action.isInstanceOf[rpc.AddBet]
@@ -127,7 +126,7 @@ class Replay(val gameplay: Context) extends Actor
           
           betting(betActions, (speed seconds))
           
-          log.info("[betting] done")
+          info("[betting] done")
         }
         
         /**
@@ -139,11 +138,10 @@ class Replay(val gameplay: Context) extends Actor
       }
       
     case x =>
-      log.warning("unandled: {}", x)
+      warn("unandled: %s", x)
   }
 
   override def postStop {
-    log.info("actor stopped!")
     e.playStop()
   }
   

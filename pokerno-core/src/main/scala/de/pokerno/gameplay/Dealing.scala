@@ -14,13 +14,15 @@ object Dealing {
     
     g: ContextLike ⇒
     
+    import de.pokerno.util.ConsoleUtils._
+    
     def dealCards(_type: DealCards.Value, cardsNum: Option[Int] = None) {
       _type match {
         case DealCards.Hole | DealCards.Door ⇒
           var n: Int = cardsNum getOrElse (0)
           if (n <= 0 || n > game.options.pocketSize) n = game.options.pocketSize
   
-          Console printf ("dealing %s %d cards\n", _type, n)
+          info("dealing %s %d cards\n", _type, n)
   
           (table.seats: List[Seat]).zipWithIndex filter (_._1 isActive) foreach {
             case (seat, pos) ⇒
@@ -30,7 +32,7 @@ object Dealing {
   
         case DealCards.Board if cardsNum.isDefined ⇒
   
-          Console printf ("dealing board %d cards\n", cardsNum.get)
+          info("dealing board %d cards\n", cardsNum.get)
   
           val cards = dealer dealBoard (cardsNum.get)
           events.dealCards(_type, cards)
@@ -45,6 +47,7 @@ object Dealing {
     replay: Replay =>
     
     import concurrent.duration.Duration
+    import de.pokerno.util.ConsoleUtils._
       
     def dealing(dealActions: List[rpc.DealCards], dealOptions: DealingOptions, speed: Duration) {
       def sleep() = Thread.sleep(speed.toMillis)
@@ -142,7 +145,7 @@ object Dealing {
           else
             dealPocket(Left(cardsNum.getOrElse(pocketSize)), _player)
           
-          log.info(" | deal {} -> {}", cardsDealt, _player)
+          debug(" | deal %s -> %s", cardsDealt, _player)
           e.dealCards(_type, cardsDealt, Some(_player, pos))
     
         case DealCards.Board if gameOptions.hasBoard =>
@@ -166,7 +169,7 @@ object Dealing {
           else
             dealBoard(Left(cardsNum.getOrElse(0)))
 
-          log.info(" | deal board {}", cardsDealt)
+          debug(" | deal board %s", cardsDealt)
           e.dealCards(_type, cardsDealt)
           
       }

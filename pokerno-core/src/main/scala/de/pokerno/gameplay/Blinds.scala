@@ -10,7 +10,7 @@ import akka.actor.ActorRef
  */
 trait Blinds {
   
-  t: Betting =>
+  betting: Betting =>
   
   def postBlinds(ctx: StageContext) = if (ctx.gameplay.game.options.hasBlinds) {
     ctx.gameplay.moveButton

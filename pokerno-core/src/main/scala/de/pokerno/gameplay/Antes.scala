@@ -8,8 +8,8 @@ import akka.actor.ActorRef
  */
 trait Antes {
   
-  t: Betting =>
-    
+  betting: Betting =>
+  
   def postAntes(ctx: StageContext) = {
     val gameOptions = ctx.gameplay.game.options
     val stake = ctx.gameplay.stake
@@ -20,7 +20,7 @@ trait Antes {
       
       seats foreach(forceBet(ctx, _, Bet.Ante))
       
-      round.complete
+      ctx.gameplay.completeBetting(ctx)
     }
   }
   

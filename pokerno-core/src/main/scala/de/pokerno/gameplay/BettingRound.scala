@@ -97,7 +97,7 @@ class BettingRound(val table: Table, val game: Game, val stake: Stake) extends R
         pot.main add (player, left)
     }
   
-    if (bet.amount != null) postBet()
+    if (bet.amount != 0) postBet()
     
     bet
   }

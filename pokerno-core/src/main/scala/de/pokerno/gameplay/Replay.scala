@@ -32,7 +32,7 @@ class Replay(val gameplay: Context) extends Actor
   import de.pokerno.util.ConsoleUtils._
   
   override def preStart {
-    info("starting replay with gameplay {}", gameplay)
+    info("starting replay with gameplay %s", gameplay)
 //    gameplay.rotateGame(stageContext)
   }
 

@@ -31,7 +31,7 @@ import com.fasterxml.jackson.annotation.{JsonInclude, JsonTypeInfo, JsonSubTypes
   new JsonSubTypes.Type(value = classOf[StakeChange], name="gameplay:"),
   new JsonSubTypes.Type(value = classOf[PlayStart], name="stage:"),
   new JsonSubTypes.Type(value = classOf[PlayStop], name="stage:"),
-  new JsonSubTypes.Type(value = classOf[StreetStart], name="street:start"),
+  new JsonSubTypes.Type(value = classOf[StreetStart], name="stage:"),
   new JsonSubTypes.Type(value = classOf[PlayerJoin], name="player:join"),
   new JsonSubTypes.Type(value = classOf[Chat], name="msg:"),
   new JsonSubTypes.Type(value = classOf[Dealer], name="msg:"),

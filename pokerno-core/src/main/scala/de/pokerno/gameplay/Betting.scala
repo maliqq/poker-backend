@@ -75,12 +75,12 @@ object Betting {
   
       if (round.seats.filter(_._1 inPot).size < 2)
         return Some(Betting.Stop)
-      val active = round.seats filter (_._1 isPlaying)
-
-      if (active.size == 0)
+      
+      val playing = round.seats filter (_._1 isPlaying)
+      if (playing.size == 0)
         return Some(Betting.Done)
       
-      gameplay.requireBet(stageContext, active.head)
+      gameplay.requireBet(stageContext, playing.head)
       
       None
     }
@@ -203,18 +203,22 @@ object Betting {
           }
           
           if (sb.isDefined) {
-            val (sbPlayer, sbPos) = sb.get
+            val (sbSeat, sbPos) = sb.get
             // FIXME
             //gameplay.setButton(sbPos - 1) // put button before SB
             
-            forcedBets.find { addBet =>
+            val bbBetOption = forcedBets.find { addBet =>
               (addBet.bet.getType: Bet.Value) == Bet.BigBlind
-            } foreach { bbBet =>
+            }
+            
+            bbBetOption foreach { bbBet =>
               activeOnBlinds.find { case (seat, pos) =>
                 val found = seat.player.isDefined && bbBet.player == seat.player.get.id
                 
-                if (!found && seat.player != sbPlayer)
-                  seat.idle() // помечаем все места от SB до BB как неактивные 
+                if (!found && seat.player.get != sbSeat.player.get) {
+                  warn("%s: missing big blind", seat)
+                  seat.idle() // помечаем все места от SB до BB как неактивные
+                }
                 
                 found
               } map { _bb =>
@@ -241,11 +245,12 @@ object Betting {
           sleep()
           
           //gameplay.round.reset
-          nextTurn()//.foreach { x => self ! x }
+          //nextTurn()//.foreach { x => self ! x }
         }
         
         // активные ставки игроков
         if (!activeBets.isEmpty) {
+          nextTurn()
           //gameplay.round.reset
           
           debug("activeBets=%s", activeBets)
@@ -262,7 +267,10 @@ object Betting {
               gameplay.addBet(stageContext, addBet.bet)
               sleep()
               nextTurn().forall { x => self ! x; false }
-            } else true
+            } else {
+              warn("not our turn, dropping: %s %s", addBet, acting)
+              true
+            }
           }
           
           // TODO complete bets

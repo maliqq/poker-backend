@@ -66,6 +66,8 @@ class BettingRound(val table: Table, val game: Game, val stake: Stake) extends R
     }
   }
   
+  import de.pokerno.util.ConsoleUtils._
+  
   def addBet(bet: Bet): Bet = {
     val (seat, pos) = _acting
     val player = seat.player.get
@@ -91,7 +93,10 @@ class BettingRound(val table: Table, val game: Game, val stake: Stake) extends R
     if (bet.isValid(seat.amount, seat.put, _call, _raise)) {
       postBet()
       bet
-    } else Bet.fold
+    } else {
+      warn("bet %s is not valid; call=%.2f raise=%s", bet, _call, _raise)
+      Bet.fold
+    }
   }
 
   def complete() {

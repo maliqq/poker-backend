@@ -5,12 +5,14 @@ import util.matching.Regex
 case class ParseError(msg: String) extends Exception(msg)
 
 object Parser {
+  private final val lineAndThenParams = """^([A-Z]+)(?:\s+(.+))?$""".r
+  private final val shellWords = "[^\\s\"]+|\"([^']*)\"".r
   
   def parseTagAndParams(line: String): Tuple2[String, Array[String]] = {
-    val p = """^([A-Z]+)(?:\s+(.+))?$""".r
     line.stripLineEnd match {
-      case p(t: String, s: String) =>
-        (t, """\s+""".r.split(s))
+      case lineAndThenParams(t: String, s: String) =>
+        (t, shellWords.findAllIn(s).toArray)
+        
       case s: String =>
         (s, null)
       case _ =>
@@ -39,7 +41,8 @@ object Parser {
       } catch {
       
       case e: Throwable =>
-        throw ParseError("Can't parse; error at line %d type %s: %s".format(lineno, decl, e.getMessage))
+        e.printStackTrace()
+        throw ParseError("Can't parse %s; error at line %d: %s".format(decl.get, lineno, e.getMessage))
       }
     } else None
   }

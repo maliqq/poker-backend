@@ -51,10 +51,10 @@ object Lexer {
         val d = params(0).split("/")
         d.length match {
           case 2 =>
-            val b = List(d(0), d(1))
+            val b = List[Int](d(0), d(1))
             (b.min, b.max, None)
           case 3 =>
-            val b = List(d(0), d(1))
+            val b = List[Int](d(0), d(1))
             (b.max, b.max, Some(d(2)))
           case _ =>
             throw new IllegalArgumentException("STAKE requires 2 or 3 arguments")
@@ -155,7 +155,7 @@ object Lexer {
     object Deal {
       def fromParams(params: Array[String]): Tuple3[QuotedString, List[poker.Card], Integer] = {
         if (params.length == 1) // board
-          return (null, params(1), null)
+          return (null, params(0), null)
         if (params.length == 2 && params(1).matches("^\\d+$"))
           return (params(0), null, Integer.parseInt(params(1)))
         (params(0), params(1), null)

@@ -13,7 +13,7 @@ trait Blinds {
   betting: Betting =>
   
   def postBlinds(ctx: StageContext) = if (ctx.gameplay.game.options.hasBlinds) {
-    ctx.gameplay.moveButton
+    ctx.gameplay.moveButton // FIXME
     val round = ctx.gameplay.round
 
     val seats = round.seats
@@ -21,7 +21,7 @@ trait Blinds {
     val waiting = seats filter (_._1 isWaitingBB)
 
     if (active.size + waiting.size < 2) {
-      //
+      // TODO
     } else {
       val List(sb, bb, _*) = active
 

@@ -36,6 +36,7 @@ class Context(
                     ) extends ContextLike
                          with GameRotation
                          with Betting
+                         with Seating
                          //with Antes
                          //with Blinds
                          with Dealing.DealContext
@@ -43,10 +44,6 @@ class Context(
                          with Showdown {
 
   val round = new BettingRound(table, game, stake)
-
-  def prepareSeats(ctx: StageContext) {
-    (table.seats: List[Seat]).filter (_ isReady) map (_ play)
-  }
   
   override def toString = {
     val b = new StringBuilder

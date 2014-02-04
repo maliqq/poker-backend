@@ -5,6 +5,8 @@ import collection.mutable
 
 class SidePot(val cap: Option[Decimal] = None) {
   var members: Map[Player, Decimal] = Map.empty
+  
+  import de.pokerno.util.ConsoleUtils._
 
   def total: Decimal = members.values.sum
 
@@ -23,6 +25,7 @@ class SidePot(val cap: Option[Decimal] = None) {
     
     val capAmount = cap.get
     if (capAmount > value) {
+      warn("player %s capAmount (%s) > value(%s)", member, capAmount, value)
       members += (member -> capAmount)
       return newValue - capAmount
     }
@@ -45,7 +48,9 @@ class SidePot(val cap: Option[Decimal] = None) {
       case (key, _value) ⇒
         (key, List(_value, bet).min)
     }
-
+    
+    warn("_old=%s _new=%s", _old, _new)
+    
     (_new, _old)
   }
 

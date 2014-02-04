@@ -27,11 +27,7 @@ class Bet(val betType: Bet.Value, val amount: Decimal = .0) {
         false
   }
   
-  def isForced: Boolean = betType match {
-    case Bet.Ante | Bet.BringIn | Bet.SmallBlind | Bet.BigBlind | Bet.GuestBlind | Bet.Straddle =>
-      true
-    case _ => false
-  }
+  def isForced: Boolean = betType.isInstanceOf[Bet.ForcedBet]
   
   override def equals(other: Any): Boolean = {
     other match {
@@ -57,12 +53,12 @@ object Bet {
 
   abstract class PassiveBet extends Value
   case object Fold extends PassiveBet
-  case object Call extends PassiveBet
+  case object Check extends PassiveBet
 
   abstract class ActiveBet extends Value
   case object Raise extends ActiveBet
   case object AllIn extends ActiveBet
-  case object Check extends ActiveBet
+  case object Call extends ActiveBet
 
   abstract class CardAction extends Value
 

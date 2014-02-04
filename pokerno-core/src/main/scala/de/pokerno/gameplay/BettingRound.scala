@@ -37,7 +37,7 @@ class BettingRound(val table: Table, val game: Game, val stake: Stake) extends R
     _raise = (.0, .0)
     current = table.button
     // FIXME
-    _acting = seats.find(_._1.isActive).getOrElse(null)
+    //_acting = seats.find(_._1.isActive).getOrElse(null)
   }
   
   def forceBet(act: Tuple2[Seat, Int], betType: Bet.ForcedBet): Bet = {
@@ -68,15 +68,22 @@ class BettingRound(val table: Table, val game: Game, val stake: Stake) extends R
   
   import de.pokerno.util.ConsoleUtils._
   
-  def addBet(bet: Bet): Bet = {
+  def addBet(_bet: Bet): Bet = {
     val (seat, pos) = _acting
     val player = seat.player.get
     
+    var bet = if (_bet.isValid(seat.amount, seat.put, _call, _raise))
+      _bet
+    else {
+      warn("bet %s is not valid; call=%.2f raise=%s", _bet, _call, _raise)
+      Bet.fold
+    }
+      
+    seat post bet
+  
     def postBet() {
       val diff = bet.amount - seat.put
-  
-      seat post bet
-  
+      
       if (bet.betType == Bet.Raise)
         raiseCount += 1
   
@@ -89,19 +96,10 @@ class BettingRound(val table: Table, val game: Game, val stake: Stake) extends R
       else
         pot.main add (player, left)
     }
+  
+    if (bet.amount != null) postBet()
     
-    if (bet.isValid(seat.amount, seat.put, _call, _raise)) {
-      postBet()
-      bet
-    } else {
-      warn("bet %s is not valid; call=%.2f raise=%s", bet, _call, _raise)
-      Bet.fold
-    }
-  }
-
-  def complete() {
-    table.seatsAsList.filter(_ inPlay) map (_ play)
-    clear()
+    bet
   }
 
 }

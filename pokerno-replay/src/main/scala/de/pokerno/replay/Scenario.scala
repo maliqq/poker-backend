@@ -131,10 +131,10 @@ class Scenario {
   }
 
   def processTable(t: Token) = t match {
-    case tags.Seat(uuid, stack) =>
+    case tags.Seat(pos, uuid, stack) =>
       val t = table.getOrElse(throw ReplayError("SEAT is declared before TABLE"))
       val player = Player(uuid.unquote)
-      val pos: Int = t.button
+      //val pos: Int = t.button
       t.addPlayer(pos, player, Some(stack))
       //node ! rpc.JoinPlayer(player, t.button, Some(stack))
       t.button.move()

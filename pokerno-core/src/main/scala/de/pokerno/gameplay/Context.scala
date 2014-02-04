@@ -36,8 +36,8 @@ class Context(
                     ) extends ContextLike
                          with GameRotation
                          with Betting
-                         with Antes
-                         with Blinds
+                         //with Antes
+                         //with Blinds
                          with Dealing.DealContext
                          with BringIn
                          with Showdown {

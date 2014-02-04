@@ -93,6 +93,7 @@ class Replayer(gw: ActorRef) extends Actor {
         replay ! Replay.StreetActions(street.get, scenario.actions.get(streetName).toList, scenario.speed)
     }
     
-    replay ! Kill
+    if (scenario.showdown) replay ! Replay.Showdown()
+    else replay ! Kill
   }
 }

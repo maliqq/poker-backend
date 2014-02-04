@@ -78,11 +78,12 @@ class BettingRound(val table: Table, val game: Game, val stake: Stake) extends R
       warn("bet %s is not valid; call=%.2f raise=%s", _bet, _call, _raise)
       Bet.fold
     }
-      
+    
+    val _put = seat.put // before posting
     seat post bet
-  
+
     def postBet() {
-      val diff = bet.amount - seat.put
+      val diff = bet.amount - _put
       
       if (bet.betType == Bet.Raise)
         raiseCount += 1

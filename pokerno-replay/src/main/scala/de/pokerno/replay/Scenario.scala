@@ -38,6 +38,7 @@ class Scenario {
   }
   
   val actions = new java.util.HashMap[String, java.util.ArrayList[rpc.Request]]()
+  var showdown: Boolean = false
   
   var processor: Function1[Token, Unit] = processMain
   
@@ -58,6 +59,9 @@ class Scenario {
       actions.put(name, new java.util.ArrayList[rpc.Request]())
       processor = processStreet
     
+    case tags.Showdown() =>
+      showdown = true
+      
     case tags.Deck(cards) =>
       deck = Some(cards)
       

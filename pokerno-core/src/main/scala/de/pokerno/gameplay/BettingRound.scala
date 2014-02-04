@@ -37,7 +37,7 @@ class BettingRound(val table: Table, val game: Game, val stake: Stake) extends R
     _raise = (.0, .0)
     current = table.button
     // FIXME
-    //_acting = seats.find(_._1.isActive).getOrElse(null)
+    //pot.complete()
   }
   
   def forceBet(act: Tuple2[Seat, Int], betType: Bet.ForcedBet): Bet = {
@@ -95,7 +95,7 @@ class BettingRound(val table: Table, val game: Game, val stake: Stake) extends R
       if (seat.isAllIn)
         pot split (player, left)
       else
-        pot.main add (player, left)
+        pot.current add (player, left)
     }
   
     if (bet.amount != 0) postBet()

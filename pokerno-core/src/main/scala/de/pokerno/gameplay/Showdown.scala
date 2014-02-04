@@ -12,6 +12,8 @@ trait Showdown {
 
   g: ContextLike ⇒
   
+  import de.pokerno.util.ConsoleUtils._
+  
   // FIXME: equal hands
   def best(pot: SidePot, hands: Map[Player, Hand]): Tuple2[Player, Hand] = {
     var winner: Option[Player] = None
@@ -38,6 +40,7 @@ trait Showdown {
 
   def declareWinners(pot: Pot, hi: Option[Map[Player, Hand]], lo: Option[Map[Player, Hand]]) = {
     val split: Boolean = hi.isDefined && lo.isDefined
+    
     pot.sidePots foreach { side ⇒
       val total = side.total
       var winnerLow: Option[Player] = None
@@ -67,7 +70,7 @@ trait Showdown {
       winners foreach {
         case (winner, amount) ⇒
           val pos = 0
-          val seat = new Seat
+          val seat = new Seat // FIXME wtf?
           seat wins amount
           events.declareWinner((winner, pos), amount)
       }
@@ -92,7 +95,7 @@ trait Showdown {
   def showHands(ranking: Hand.Ranking): Map[Player, Hand] = {
     var hands: Map[Player, Hand] = Map.empty
 
-    (table.seats: List[Seat]).zipWithIndex filter (_._1 inPot) foreach {
+    table.seatsAsList.zipWithIndex filter (_._1 inPot) foreach {
       case (seat, pos) ⇒
         val (pocket, hand) = rank(seat.player get, ranking)
         val player = seat.player.get
@@ -104,7 +107,7 @@ trait Showdown {
   }
 
   def showdown() {
-    val stillInPot = (table.seats: List[Seat]).zipWithIndex filter (_._1 inPot)
+    val stillInPot = table.seatsAsList.zipWithIndex filter (_._1 inPot)
     if (stillInPot.size == 1) {
       declareWinner(round.pot, stillInPot head)
     } else if (stillInPot.size > 1) {

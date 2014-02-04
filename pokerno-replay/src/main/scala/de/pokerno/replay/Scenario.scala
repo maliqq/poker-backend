@@ -51,7 +51,7 @@ class Scenario {
       processor = processTable
       
     case tags.Speed(duration) =>
-      if (duration > 0 && duration <= 10)
+      if (duration >= 0 && duration <= 10)
         speed = duration
       
     case tags.Street(name) =>

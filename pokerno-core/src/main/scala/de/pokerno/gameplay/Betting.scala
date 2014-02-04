@@ -78,7 +78,7 @@ object Betting {
     protected def nextTurn(): Option[Transition] = {
       val round = gameplay.round
       
-      //Console printf("%s%s%s", Console.MAGENTA, gameplay.table, Console.RESET)
+      //Console printf("%s%s%s\n", Console.MAGENTA, gameplay.table, Console.RESET)
       
       round.seats filter (_._1 inPlay) foreach {
         case (seat, pos) ⇒

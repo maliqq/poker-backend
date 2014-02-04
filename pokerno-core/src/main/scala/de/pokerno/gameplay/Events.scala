@@ -72,9 +72,12 @@ class Events {
         message.RequireBet(pos = box._2, player = box._1, call = call, raise = raise)
       )
   
-  def declarePot(total: Decimal) =
-    broker.publish(message.DeclarePot(total))
-
+  def declarePot(total: Decimal, side: List[Decimal] = null) = {
+    val result = new java.util.ArrayList[java.lang.Double]()
+    for (amt <- side) result.add(amt.toDouble)
+    broker.publish(message.DeclarePot(total, result))
+  }
+  
   def declareWinner(box: Box, amount: Decimal) =
     broker.publish(
         message.DeclareWinner(pos = box._2, player = box._1, amount = amount)

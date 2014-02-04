@@ -42,7 +42,9 @@ trait Betting
     val round = ctx.gameplay.round
     round.clear()
     
-    ctx.gameplay.events.declarePot(round.pot.total)
+    ctx.gameplay.events.declarePot(
+        round.pot.current.total,
+        round.pot.active.map(_.total))
   }
   
 }

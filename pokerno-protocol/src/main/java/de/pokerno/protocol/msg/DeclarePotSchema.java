@@ -4,6 +4,8 @@
 package de.pokerno.protocol.msg;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.dyuproject.protostuff.Input;
 import com.dyuproject.protostuff.Output;
@@ -22,7 +24,8 @@ public class DeclarePotSchema
 
     public static final int FIELD_NONE = 0;
     public static final int FIELD_POT = 1;
-    public static final int FIELD_RAKE = 2;
+    public static final int FIELD_SIDE = 2;
+    public static final int FIELD_RAKE = 3;
 
     public DeclarePotSchema() {}
 
@@ -62,6 +65,11 @@ public class DeclarePotSchema
             case FIELD_POT:
                 message.setPot(input.readDouble());
                 break;
+            case FIELD_SIDE:
+                if (message.getSide() == null)
+                    message.setSide(new ArrayList<Double>());
+                message.getSide().add(input.readDouble());
+                break;
             case FIELD_RAKE:
                 message.setRake(input.readDouble());
                 break;
@@ -71,7 +79,7 @@ public class DeclarePotSchema
     }
 
 
-    private static int[] FIELDS_TO_WRITE = { FIELD_POT, FIELD_RAKE };
+    private static int[] FIELDS_TO_WRITE = { FIELD_POT, FIELD_SIDE, FIELD_RAKE };
 
     public int[] getWriteFields() { return FIELDS_TO_WRITE; }
 
@@ -89,6 +97,14 @@ public class DeclarePotSchema
             case FIELD_POT:
                 output.writeDouble(FIELD_POT, message.getPot(), false);
                 break;
+            case FIELD_SIDE:
+                if (message.getSide() != null) {
+                    for (Double sideEntry : message.getSide()) {
+                        if (sideEntry != null)
+                            output.writeDouble(FIELD_SIDE, sideEntry, true);
+                    }
+                }
+                break;
             case FIELD_RAKE:
                 if (message.getRake() != null)
                     output.writeDouble(FIELD_RAKE, message.getRake(), false);
@@ -101,6 +117,7 @@ public class DeclarePotSchema
     public String getFieldName(int number) {
         switch(number) {
             case FIELD_POT: return "pot";
+            case FIELD_SIDE: return "side";
             case FIELD_RAKE: return "rake";
             default: return null;
         }
@@ -113,6 +130,7 @@ public class DeclarePotSchema
 
     final java.util.Map<String, Integer> fieldMap = new java.util.HashMap<String, Integer>(); {
         fieldMap.put("pot", FIELD_POT);
+        fieldMap.put("side", FIELD_SIDE);
         fieldMap.put("rake", FIELD_RAKE);
     }
 }

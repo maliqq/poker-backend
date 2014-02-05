@@ -27,7 +27,7 @@ trait ContextLike extends Button {
   val round: BettingRound
 }
 
-class Context(
+private[gameplay] class Context(
     val table: Table, 
     val variation: Variation, 
     val stake: Stake, 

@@ -1,7 +1,9 @@
 package de.pokerno.poker
 
 private[poker] trait BadugiHand {
-  self: Hand.Cards ⇒
+  
+  self: CardSet ⇒
+  
   def isBadugiOne: Option[Hand] =
     if (groupKind.size == 1) {
       new Hand(self, value = value take (1)) ranked Rank.Badugi.BadugiOne

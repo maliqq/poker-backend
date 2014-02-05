@@ -2,12 +2,12 @@ package de.pokerno.poker
 
 private[poker] trait HighHand {
   
-  self: Hand.Cards ⇒
+  self: CardSet ⇒
 
   def isStraightFlush: Option[Hand] = isFlush match {
     case None ⇒ isFourKind orElse isFullHouse orElse isStraight
     case Some(flush) ⇒
-      val cards = new Hand.Cards(flush.value) with HighHand
+      val cards = new CardSet(flush.value) with HighHand
       cards.isStraight match {
         case Some(hand) ⇒ flush ranked Rank.High.StraightFlush
         case None       ⇒ isFourKind orElse isFullHouse orElse Some(flush)

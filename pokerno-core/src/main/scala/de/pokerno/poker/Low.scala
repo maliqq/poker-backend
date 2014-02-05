@@ -2,7 +2,7 @@ package de.pokerno.poker
 
 private[poker] trait Low {
   
-  self: Hand.Cards ⇒
+  self: CardSet ⇒
 
   private[poker] def isLow: Option[Hand] = {
     val uniq: List[Card] = groupKind.values.map(_(0)).toList
@@ -19,7 +19,7 @@ private[poker] trait Low {
   }
 
   def isGapLow: Option[Hand] = {
-    val hand = (new Hand.Cards(value) with HighHand).isHigh
+    val hand = (new CardSet(value) with HighHand).isHigh
     if (hand.get.rank == Rank.High.HighCard) isLow
     else hand
   }

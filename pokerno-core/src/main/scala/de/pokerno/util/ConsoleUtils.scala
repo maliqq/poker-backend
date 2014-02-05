@@ -9,7 +9,7 @@ object ConsoleUtils {
   }
   
   private def tagify(tag: String, format: String, args: Any*) {
-    Console printf("[" + tag + "]" + format + "\n", args:_*)
+    Console printf("[" + tag + "] " + format + "\n", args:_*)
   }
   
   def fatal(err: Throwable) {

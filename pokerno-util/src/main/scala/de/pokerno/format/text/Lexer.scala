@@ -46,8 +46,8 @@ object Lexer {
       def this(params: Array[String]) = this(params(0).replace(":", ""), params(1), params(2))
     }
     
-    private object Stake {
-      def fromParams(params: Array[String]): Tuple3[Int, Int, Option[Int]] = {
+    object Stake {
+      private[text] def fromParams(params: Array[String]): Tuple3[Int, Int, Option[Int]] = {
         val d = params(0).split("/")
         d.length match {
           case 2 =>
@@ -152,8 +152,8 @@ object Lexer {
       def this(params: Array[String]) = this(params(0))
     }
     
-    private object Deal {
-      def fromParams(params: Array[String]): Tuple3[QuotedString, List[poker.Card], Integer] = {
+    object Deal {
+      private[text] def fromParams(params: Array[String]): Tuple3[QuotedString, List[poker.Card], Integer] = {
         if (params.length == 1) // board
           return (null, params(0), null)
         if (params.length == 2 && params(1).matches("^\\d+$"))

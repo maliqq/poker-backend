@@ -58,7 +58,7 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
     case msg.StreetStart(name) ⇒
       street = name.toString()
 
-    case msg.DeclarePot(total, _rake) ⇒
+    case msg.DeclarePot(total, _side, _rake) ⇒
       pot = total
       bet = .0
 

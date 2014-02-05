@@ -2,7 +2,7 @@ package de.pokerno.util
 
 object ConsoleUtils {
   
-  private val useColor = (System.getProperty("color") != null)
+  private val useColor = (System.getProperty("log.text") == null)
   
   private def colorify(color: String, format: String, args: Any*) {
     Console printf(color + format + "\n" + Console.RESET, args:_*)

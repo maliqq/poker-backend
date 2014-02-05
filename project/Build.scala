@@ -4,6 +4,44 @@ import Process._
 // sbt-assembly
 import sbtassembly.Plugin._ 
 import AssemblyKeys._
+import com.typesafe.sbt.SbtGit._
+
+object GitVersionStrategy extends Plugin {
+
+  def gitVersion: Seq[Setting[_]] = Seq(
+    version in ThisBuild <<= (Default.gitCurrentBranch, Default.gitHeadCommit) apply Default.makeVersion
+  )
+
+  object Default {
+    val gitHeadCommit = GitKeys.gitHeadCommit in ThisBuild
+    val gitCurrentTags = GitKeys.gitCurrentTags in ThisBuild
+    val gitCurrentBranch = GitKeys.gitCurrentBranch in ThisBuild
+
+    def makeVersion(currentBranch: String, headCommit: Option[String]) = {
+      def rcVersion: Option[String] = {
+        val releasePattern = "release-((?:\\d+\\.)+(?:\\d+))".r
+        currentBranch match {
+          case releasePattern(rcVersion) =>
+            Some(rcVersion + "-" + dateVersionPart + "-" + headCommitPart.get)
+          case _ =>
+            Some("SNAPSHOT")
+        }
+      }
+
+      def headCommitPart: Option[String] = headCommit map (sha => sha take 7)
+
+      def dateVersionPart = {
+        val df = new java.text.SimpleDateFormat("yyyyMMdd")
+        df setTimeZone java.util.TimeZone.getTimeZone("GMT")
+        df format (new java.util.Date)
+      }
+      
+      rcVersion.get
+    }
+  }
+}
+
+import GitVersionStrategy._
 
 object PokernoBuild extends Build {
   val pokernoVersion = "0.0.1"
@@ -122,18 +160,13 @@ object PokernoBuild extends Build {
   lazy val replay = Project(
     id = "pokerno-replay",
     base = file("pokerno-replay"),
-    settings = Project.defaultSettings ++ Seq(
+    settings = Project.defaultSettings ++ gitVersion ++ Seq(
       name := "pokerno-replay",
-      version := "0.0.2",
       libraryDependencies ++= Seq(
         "jline" % "jline" % "2.11",
         "com.github.scopt" %% "scopt" % "3.1.0"
       )
     ) ++ assemblySettings ++ Seq(
-      excludedJars in packageDependency <<= (fullClasspath in assembly) map { cp => 
-        cp filter { !_.data.getName.startsWith("pokerno-") }
-      },
-
       excludedJars in assembly <<= (fullClasspath in assembly) map { cp => 
         cp filter { !_.data.getName.startsWith("pokerno-") }
       }

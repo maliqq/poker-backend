@@ -46,7 +46,7 @@ object Lexer {
       def this(params: Array[String]) = this(params(0).replace(":", ""), params(1), params(2))
     }
     
-    object Stake {
+    private object Stake {
       def fromParams(params: Array[String]): Tuple3[Int, Int, Option[Int]] = {
         val d = params(0).split("/")
         d.length match {
@@ -152,7 +152,7 @@ object Lexer {
       def this(params: Array[String]) = this(params(0))
     }
     
-    object Deal {
+    private object Deal {
       def fromParams(params: Array[String]): Tuple3[QuotedString, List[poker.Card], Integer] = {
         if (params.length == 1) // board
           return (null, params(0), null)
@@ -213,9 +213,9 @@ object Lexer {
   import reflect.runtime.{ universe => ru }
   import reflect.runtime.{ currentMirror => cm }
   
-  val tagsReflection = cm.reflect(Tags)
-  val tags = tagsReflection.symbol.typeSignature.declarations.filter(_.isClass)
-  val tagClasses = tags.map { decl =>
+  private val tagsReflection = cm.reflect(Tags)
+  private val tags = tagsReflection.symbol.typeSignature.declarations.filter(_.isClass)
+  private[text] val tagClasses = tags.map { decl =>
     val name = decl.annotations.head.scalaArgs(0).asInstanceOf[ru.Literal]
     name match {
       case ru.Literal(ru.Constant(s: String)) =>

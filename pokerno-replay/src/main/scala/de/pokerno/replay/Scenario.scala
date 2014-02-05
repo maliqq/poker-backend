@@ -11,7 +11,7 @@ import wire.Conversions._
 
 import de.pokerno.format.text
 
-object Scenario {
+private[replay] object Scenario {
   def parse(src: scala.io.Source) = {
     val scenario = new Scenario()
 
@@ -23,7 +23,7 @@ object Scenario {
   }
 }
 
-class Scenario {
+private[replay] class Scenario {
   var table: Option[Table] = None
   var stake: Option[Stake] = None
   var variation: Option[Variation] = None

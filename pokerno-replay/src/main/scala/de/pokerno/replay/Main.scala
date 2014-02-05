@@ -5,9 +5,9 @@ import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import com.typesafe.config.ConfigFactory
 import de.pokerno.backend.gateway.{Http, http}
 
-case class Config(file: Option[String] = None, http: Boolean = false)
+private[replay] case class Config(file: Option[String] = None, http: Boolean = false)
 
-class Main {
+private[replay] class Main {
   val system = ActorSystem("poker-replayer")
   val gw = system.actorOf(Props(classOf[Http.Gateway]), "http-dispatcher")
   val replayer = system.actorOf(Props(classOf[Replayer], gw), "replayer")

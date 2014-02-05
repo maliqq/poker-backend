@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 
 import concurrent.duration._
 
-class ApiHandler(gw: ActorRef) extends SimpleChannelInboundHandler[FullHttpRequest] {
+private[replay] class ApiHandler(gw: ActorRef) extends SimpleChannelInboundHandler[FullHttpRequest] {
 
   import http.HttpHeaders._
   import http.HttpMethod

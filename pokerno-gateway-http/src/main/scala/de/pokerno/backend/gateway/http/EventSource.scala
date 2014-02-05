@@ -42,7 +42,7 @@ object EventSource {
       write(new Packet(s))
   }
   
-  object Handshaker extends DefaultHttpResponder {
+  private object Handshaker extends DefaultHttpResponder {
     import HttpHandler.ok
     
     override val includeCorsHeaders = true

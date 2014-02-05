@@ -9,13 +9,13 @@ import akka.actor.{Actor, ActorSystem, ActorLogging, ActorRef, Props, Kill}
 import de.pokerno.format.text
 
 
-object Replayer {
+private[replay] object Replayer {
   case class Replay(scenario: Scenario)
 }
 
-case class ReplayError(msg: String) extends Exception(msg)
+private[replay] case class ReplayError(msg: String) extends Exception(msg)
 
-class Replayer(gw: ActorRef) extends Actor {
+private[replay] class Replayer(gw: ActorRef) extends Actor {
   import io.netty.handler.codec.http
   import io.netty.channel.{ChannelHandlerContext, ChannelFutureListener}
   import http.HttpHeaders._
@@ -65,7 +65,7 @@ class Replayer(gw: ActorRef) extends Actor {
   import context._
   import collection.JavaConversions._
   
-  def replay(scenario: Scenario) {
+  private def replay(scenario: Scenario) {
     val table = scenario.table.getOrElse(
         throw ReplayError("table not defined"))
     val variation = scenario.variation.getOrElse(

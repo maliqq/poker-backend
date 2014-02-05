@@ -42,8 +42,8 @@ object Lexer {
     }
     
     @Tag(name = "SEAT")
-    case class Seat(playerUuid: QuotedString, stack: Int) extends Token {
-      def this(params: Array[String]) = this(params(0), params(1))
+    case class Seat(pos: Int, playerUuid: QuotedString, stack: Int) extends Token {
+      def this(params: Array[String]) = this(params(0).replace(":", ""), params(1), params(2))
     }
     
     object Stake {

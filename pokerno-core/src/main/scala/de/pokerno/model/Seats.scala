@@ -11,9 +11,11 @@ class Seats(val seats: List[Seat]) {
   
   type Slice = List[Tuple2[Seat, Int]]
   
+  import de.pokerno.util.ConsoleUtils._
+  
   def slice(pos: Int): Slice = {
-    val (left, right) = seats.zipWithIndex span (_._2 != pos)
-    right ++ left
+    val (before, after) = seats.zipWithIndex span (_._2 <= pos)
+    after ++ before
   }
   
   override def toString = seats.zipWithIndex map {

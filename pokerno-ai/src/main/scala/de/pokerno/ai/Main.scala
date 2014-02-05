@@ -24,7 +24,7 @@ object Main {
   def main(args: Array[String]) {
     val gw = system.actorOf(Props(classOf[Http.Gateway]))
     val httpServer = new http.Server(gw,
-        http.Config(port = 8080, eventSource = Right(true))
+        http.Config(port = 8080, webSocket = Right(true))
     )
     httpServer.start
 

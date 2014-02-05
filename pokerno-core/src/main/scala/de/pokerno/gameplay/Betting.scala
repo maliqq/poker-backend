@@ -9,30 +9,42 @@ import wire.Conversions._
 import de.pokerno.protocol.Conversions._
 import akka.actor.Actor
 
-trait Betting {
+trait Betting
+            extends Antes
+               with Blinds {
   
+  // require bet
   def requireBet(ctx: StageContext, acting: Tuple2[Seat, Int]) {
     val round = ctx.gameplay.round  
     round requireBet acting
     ctx.gameplay.events.requireBet(round.box, round.call, round.raise)
   }
   
+  // add bet
   def addBet(ctx: StageContext, bet: Bet) {
     val round = ctx.gameplay.round
     val posted = round.addBet(bet)
     ctx.gameplay.events.addBet(round.box, posted)
   }
   
+  // force bet
   def forceBet(ctx: StageContext, acting: Tuple2[Seat, Int], _type: Bet.ForcedBet) {
     val round = ctx.gameplay.round
     val posted = round.forceBet(acting, _type)
     ctx.gameplay.events.addBet(round.box, posted)
   }
   
+  // current betting round finished
   def completeBetting(ctx: StageContext) {
+    val table = ctx.gameplay.table
+    table.seatsAsList.filter(_ inPlay) map (_ play)
+
     val round = ctx.gameplay.round
-    round.complete()
-    ctx.gameplay.events.declarePot(round.pot.total)
+    round.clear()
+    
+    ctx.gameplay.events.declarePot(
+        round.pot.current.total,
+        round.pot.active.map(_.total))
   }
   
 }
@@ -60,6 +72,7 @@ object Betting {
   case object BigBets
   
   trait NextTurn {
+    import de.pokerno.util.ConsoleUtils._
     
     def gameplay: Context
     def stageContext: StageContext
@@ -67,19 +80,28 @@ object Betting {
     protected def nextTurn(): Option[Transition] = {
       val round = gameplay.round
       
-      round.move()
+      //Console printf("%s%s%s\n", Console.MAGENTA, gameplay.table, Console.RESET)
+      
       round.seats filter (_._1 inPlay) foreach {
         case (seat, pos) ⇒
-          if (!seat.isCalled(round.call)) seat.playing()
+          if (!seat.isCalled(round.call)) {
+            //warn("not called, still playing: %s", seat)
+            seat.playing()
+          }
       }
   
-      if (round.seats.filter(_._1 inPot).size < 2)
+      if (round.seats.filter(_._1 inPot).size < 2) {
+        info("[betting] should stop")
         return Some(Betting.Stop)
+      }
       
       val playing = round.seats filter (_._1 isPlaying)
-      if (playing.size == 0)
+      if (playing.size == 0) {
+        info("[betting] should done")
         return Some(Betting.Done)
+      }
       
+      info("[betting] require bet %s", playing.head)
       gameplay.requireBet(stageContext, playing.head)
       
       None
@@ -112,7 +134,7 @@ object Betting {
   
       case Betting.Done ⇒
         log.info("[betting] done")
-        gameplay.round.complete()
+        gameplay.completeBetting(stageContext)
         context.become(handleStreets)
         streets(stageContext)
   
@@ -177,7 +199,7 @@ object Betting {
               gameplay.forceBet(stageContext, (seat, pos), Bet.Ante)
             }
           }
-          round.complete
+          gameplay.completeBetting(stageContext)
           sleep()
         }
         
@@ -185,7 +207,7 @@ object Betting {
         val postBlinds = firstStreet && gameOptions.hasBlinds
         
         val activeOnBlinds = active
-        //log.info("postBlinds={} firstStreet={} activeOnBlinds={}", postBlinds, firstStreet, activeOnBlinds)
+        //info("postBlinds=%s firstStreet=%s activeOnBlinds=%s", postBlinds, firstStreet, activeOnBlinds)
         if (postBlinds && activeOnBlinds.size >= 2) {
           var sb: Option[Tuple2[Seat, Int]] = None
           var bb: Option[Tuple2[Seat, Int]] = None
@@ -236,13 +258,13 @@ object Betting {
             bb = Some(_bb)
           }
           
-          debug("sb=%s bb=%s", sb, bb)
-          
           sb.map { sb => gameplay.forceBet(stageContext, sb, Bet.SmallBlind) }
           sleep()
           
           bb.map { bb => gameplay.forceBet(stageContext, bb, Bet.BigBlind) }
           sleep()
+          
+          debug("sb=%s bb=%s", sb, bb)
           
           //gameplay.round.reset
           //nextTurn()//.foreach { x => self ! x }
@@ -250,8 +272,10 @@ object Betting {
         
         // активные ставки игроков
         if (!activeBets.isEmpty) {
+//          if (!postBlinds) {
+//            gameplay.round.reset()
+//          }
           nextTurn()
-          //gameplay.round.reset
           
           debug("activeBets=%s", activeBets)
           
@@ -273,7 +297,6 @@ object Betting {
             }
           }
           
-          // TODO complete bets
           gameplay.completeBetting(stageContext)
         }
       }

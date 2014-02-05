@@ -225,6 +225,9 @@ sealed case class RequireDiscard(
 sealed case class DeclarePot(
     @BeanProperty
     var pot: java.lang.Double,
+    
+    @BeanProperty
+    var side: java.util.ArrayList[java.lang.Double] = null,
 
     @BeanProperty
     var rake: java.lang.Double = null) extends Outbound {

@@ -38,6 +38,7 @@ class Scenario {
   }
   
   val actions = new java.util.HashMap[String, java.util.ArrayList[rpc.Request]]()
+  var showdown: Boolean = false
   
   var processor: Function1[Token, Unit] = processMain
   
@@ -50,7 +51,7 @@ class Scenario {
       processor = processTable
       
     case tags.Speed(duration) =>
-      if (duration > 0 && duration <= 10)
+      if (duration >= 0 && duration <= 10)
         speed = duration
       
     case tags.Street(name) =>
@@ -58,6 +59,9 @@ class Scenario {
       actions.put(name, new java.util.ArrayList[rpc.Request]())
       processor = processStreet
     
+    case tags.Showdown() =>
+      showdown = true
+      
     case tags.Deck(cards) =>
       deck = Some(cards)
       
@@ -131,10 +135,10 @@ class Scenario {
   }
 
   def processTable(t: Token) = t match {
-    case tags.Seat(uuid, stack) =>
+    case tags.Seat(pos, uuid, stack) =>
       val t = table.getOrElse(throw ReplayError("SEAT is declared before TABLE"))
       val player = Player(uuid.unquote)
-      val pos: Int = t.button
+      //val pos: Int = t.button
       t.addPlayer(pos, player, Some(stack))
       //node ! rpc.JoinPlayer(player, t.button, Some(stack))
       t.button.move()

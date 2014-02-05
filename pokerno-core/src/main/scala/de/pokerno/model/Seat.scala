@@ -88,7 +88,7 @@ class Seat {
     _state = if (_amount.toDouble == 0)
       Seat.State.AllIn
     else
-      Seat.State.Play
+      Seat.State.Bet//Seat.State.Play
   }
 
   def raise(amount: Decimal) {

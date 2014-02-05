@@ -9,8 +9,12 @@ class BetSpec extends FunSpec with ClassicMatchers {
     it("amount") {
       Bet.check.amount should equal(.0)
       Bet.fold.amount should equal(.0)
+      Bet.allin.amount should equal(.0)
       Bet.call(1.0).amount should equal(1.0)
       Bet.raise(2.0).amount should equal(2.0)
+      Bet.sb(1.0).amount should equal(1.0)
+      Bet.bb(2.0).amount should equal(2.0)
+      Bet.ante(1.0).amount should equal(1.0)
     }
 
     it("bet type") {
@@ -18,6 +22,10 @@ class BetSpec extends FunSpec with ClassicMatchers {
       Bet.fold.betType should equal(Bet.Fold)
       Bet.call(1.0).betType should equal(Bet.Call)
       Bet.raise(2.0).betType should equal(Bet.Raise)
+      Bet.sb(1.0).betType should equal(Bet.SmallBlind)
+      Bet.bb(1.0).betType should equal(Bet.BigBlind)
+      Bet.ante(1.0).betType should equal(Bet.Ante)
+      Bet.allin.betType should equal(Bet.AllIn)
     }
 
     it("bet to string") {
@@ -53,6 +61,28 @@ class BetSpec extends FunSpec with ClassicMatchers {
         Bet.raise(100).isValid(stack, put, 100, range) should be(true)
         Bet.raise(300).isValid(stack, put, 100, range) should be(false)
         Bet.raise(50).isValid(stack, put, 200, range) should be(false)
+      }
+    }
+    
+    it("type checks") {
+      Array(
+          Bet.SmallBlind, Bet.BigBlind, Bet.Ante, Bet.BringIn, Bet.GuestBlind, Bet.Straddle
+      ) foreach { b =>
+        b.isInstanceOf[Bet.ForcedBet] should be(true)
+        val bet = Bet.forced(b, 1.0)
+        bet.isForced should be(true)
+      }
+      
+      Array(
+          Bet.Check, Bet.Fold
+      ) foreach { b =>
+        b.isInstanceOf[Bet.PassiveBet] should be(true)
+      }
+      
+      Array(
+          Bet.Raise, Bet.Call, Bet.AllIn
+      ) foreach { b =>
+        b.isInstanceOf[Bet.ActiveBet] should be(true)
       }
     }
   }

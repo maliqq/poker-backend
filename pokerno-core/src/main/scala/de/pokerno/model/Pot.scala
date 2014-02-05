@@ -5,6 +5,8 @@ import collection.mutable
 
 class SidePot(val cap: Option[Decimal] = None) {
   var members: Map[Player, Decimal] = Map.empty
+  
+  import de.pokerno.util.ConsoleUtils._
 
   def total: Decimal = members.values.sum
 
@@ -20,12 +22,14 @@ class SidePot(val cap: Option[Decimal] = None) {
       members += (member -> newValue)
       return .0
     }
-
-    if (amount >= cap.get) {
-      members += (member -> cap.get)
-      return newValue - cap.get
+    
+    val capAmount = cap.get
+    if (capAmount > value) {
+      warn("player %s capAmount (%s) > value(%s)", member, capAmount, value)
+      members += (member -> capAmount)
+      return newValue - capAmount
     }
-
+    
     amount
   }
 
@@ -34,18 +38,20 @@ class SidePot(val cap: Option[Decimal] = None) {
     val bet = value + left
     members += (member -> bet)
 
-    val main = new SidePot
-    main.members = members.
+    val _new = new SidePot
+    _new.members = members.
       filter { case (key, _value) ⇒ _value > bet && key != member }.
       map { case (key, _value) ⇒ (key, _value - bet) }
 
-    val side = new SidePot(Some(bet))
-    side.members = members map {
+    val _old = new SidePot(Some(bet))
+    _old.members = members map {
       case (key, _value) ⇒
         (key, List(_value, bet).min)
     }
-
-    (main, side)
+    
+    warn("_old=%s _new=%s", _old, _new)
+    
+    (_new, _old)
   }
 
   override def toString = {
@@ -61,16 +67,17 @@ class SidePot(val cap: Option[Decimal] = None) {
 }
 
 class Pot {
-  var main: SidePot = new SidePot
-  var side: List[SidePot] = List.empty
+  var current: SidePot = new SidePot
+  var active: List[SidePot] = List.empty
+  var inactive: List[SidePot] = List.empty
 
   def total: Decimal = sidePots.map(_.total).sum
 
   def sidePots: List[SidePot] = {
     var pots = new mutable.ListBuffer[SidePot]
-    if (main.isActive)
-      pots += main
-    side foreach { side ⇒
+    if (current.isActive)
+      pots += current
+    (active ++ inactive) foreach { side ⇒
       if (side.isActive)
         pots += side
     }
@@ -78,19 +85,35 @@ class Pot {
   }
 
   def split(member: Player, amount: Decimal) {
-    val (_main, _side) = main split (member, amount)
-    side ++= List(_side)
-    main = _main
+    val (_new, _old) = current split (member, amount)
+    active :+= _old
+    current = _new
+  }
+  
+  def complete() {
+    inactive ++= active ++ List(current)
+    current = new SidePot
+    active = List.empty
   }
 
-  def add(member: Player, amount: Decimal) = side.foldRight[Decimal](amount) {
-    case (p, acc) ⇒ p add (member, acc)
-  }
-
+  def add(member: Player, amount: Decimal) =
+    active.foldRight[Decimal](amount) {
+      case (sidePot, left) ⇒
+        sidePot add (member, left)
+    }
+//    active.foldLeft[Decimal](amount) {
+//      case (left, sidePot) ⇒
+//        sidePot add (member, left)
+//    }
+  
   override def toString = {
     val s = new StringBuilder
-    s ++= main.toString
-    sidePots foreach { sidePot ⇒ s ++= sidePot.toString }
+    
+    s.append(current.toString)
+    sidePots foreach { sidePot =>
+      s.append(sidePot.toString + "\n")
+    }
+    
     s.toString()
   }
 }

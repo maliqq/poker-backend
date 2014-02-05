@@ -26,14 +26,17 @@ object Game {
 
   case object NoLimit extends Limit {
     def raise(stack: Decimal, bb: Decimal, potSize: Decimal) = (bb, stack)
+    override def toString = "no-limit"
   }
 
   case object FixedLimit extends Limit {
     def raise(stack: Decimal, bb: Decimal, potSize: Decimal) = (bb, bb)
+    override def toString = "fixed-limit"
   }
 
   case object PotLimit extends Limit {
     def raise(stack: Decimal, bb: Decimal, potSize: Decimal) = (bb, potSize)
+    override def toString = "pot-limit"
   }
 
   trait Limited
@@ -67,19 +70,41 @@ object Game {
     }
   }
 
-  case object Texas extends Limited
-  case object Omaha extends Limited
-  case object Omaha8 extends Limited
+  case object Texas extends Limited {
+    override def toString = "texas"
+  }
+  case object Omaha extends Limited {
+    override def toString = "omaha"
+  }
+  case object Omaha8 extends Limited {
+    override def toString = "omaha8"
+  }
 
-  case object Stud extends Limited
-  case object Stud8 extends Limited
-  case object Razz extends Limited
-  case object London extends Limited
+  case object Stud extends Limited {
+    override def toString = "stud"
+  }
+  case object Stud8 extends Limited {
+    override def toString = "stud8"
+  }
+  case object Razz extends Limited {
+    override def toString = "razz"
+  }
+  case object London extends Limited {
+    override def toString = "london"
+  }
 
-  case object FiveCard extends Limited
-  case object Single27 extends Limited
-  case object Triple27 extends Limited
-  case object Badugi extends Limited
+  case object FiveCard extends Limited {
+    override def toString = "five-card"
+  }
+  case object Single27 extends Limited {
+    override def toString = "single27"
+  }
+  case object Triple27 extends Limited {
+    override def toString = "triple27"
+  }
+  case object Badugi extends Limited {
+    override def toString = "badugi"
+  }
 
   trait Mixed
 
@@ -288,6 +313,7 @@ object Games {
       reshuffle = true,
       maxTableSize = 6,
       pocketSize = 4,
+      streetsNum = 3,
       hiRanking = Some(Hand.Badugi),
       defaultLimit = Game.FixedLimit))
 }

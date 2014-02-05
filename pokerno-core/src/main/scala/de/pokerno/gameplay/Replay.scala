@@ -33,7 +33,8 @@ class Replay(val gameplay: Context) extends Actor
   
   override def preStart {
     info("starting replay with gameplay %s", gameplay)
-//    gameplay.rotateGame(stageContext)
+    //e.playStart()
+    //gameplay.rotateGame(stageContext)
   }
 
   var firstStreet = true

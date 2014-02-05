@@ -1,6 +1,6 @@
 package de.pokerno.poker
 
-trait BadugiHand {
+private[poker] trait BadugiHand {
   self: Hand.Cards ⇒
   def isBadugiOne: Option[Hand] =
     if (groupKind.size == 1) {

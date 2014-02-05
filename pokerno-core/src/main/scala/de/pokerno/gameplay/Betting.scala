@@ -9,7 +9,7 @@ import wire.Conversions._
 import de.pokerno.protocol.Conversions._
 import akka.actor.Actor
 
-trait Betting
+private[gameplay] trait Betting
             extends Antes
                with Blinds {
   
@@ -49,7 +49,7 @@ trait Betting
   
 }
 
-object Betting {
+private[gameplay] object Betting {
 
   // start new round
   case object Start

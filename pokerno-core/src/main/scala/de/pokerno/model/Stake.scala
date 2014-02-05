@@ -2,7 +2,7 @@ package de.pokerno.model
 
 import math.{ BigDecimal ⇒ Decimal }
 
-object Rates {
+private[model] object Rates {
   final val Default: Map[Bet.Value, Decimal] = Map(
     Bet.Ante -> 0.1,
     Bet.BringIn -> 0.25,

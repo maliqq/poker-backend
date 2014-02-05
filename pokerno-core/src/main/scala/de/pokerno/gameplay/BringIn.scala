@@ -7,7 +7,7 @@ import akka.actor.ActorRef
 /*
  * Стадия принудительных ставок - бринг-ин
  */
-trait BringIn {
+private[gameplay] trait BringIn {
   
   def bringIn(ctx: StageContext) {
     val (seat, pos) = ctx.gameplay.round.seats filter (_._1 isActive) minBy {

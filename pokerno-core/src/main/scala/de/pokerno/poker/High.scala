@@ -1,7 +1,9 @@
 package de.pokerno.poker
 
-trait HighHand {
+private[poker] trait HighHand {
+  
   self: Hand.Cards ⇒
+
   def isStraightFlush: Option[Hand] = isFlush match {
     case None ⇒ isFourKind orElse isFullHouse orElse isStraight
     case Some(flush) ⇒

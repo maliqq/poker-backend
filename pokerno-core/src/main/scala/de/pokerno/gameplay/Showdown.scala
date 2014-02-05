@@ -8,7 +8,7 @@ import de.pokerno.protocol.{msg => message}
 /*
  * Стадия вскрытия карт
  */
-trait Showdown {
+private[gameplay] trait Showdown {
 
   g: ContextLike ⇒
   

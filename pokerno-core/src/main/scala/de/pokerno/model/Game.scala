@@ -201,7 +201,7 @@ case class Game(game: Game.Limited, var Limit: Option[Game.Limit] = None, var Ta
   override def toString = "%s %s %s-max" format (game, limit, tableSize)
 }
 
-object Games {
+private[model] object Games {
   final val Default: Map[Game.Limited, Game.Options] = Map(
 
     Game.Texas -> Game.Options(

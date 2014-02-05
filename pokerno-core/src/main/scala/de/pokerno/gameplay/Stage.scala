@@ -2,15 +2,15 @@ package de.pokerno.gameplay
 
 import akka.actor.ActorRef
 
-object Stages {
+private[gameplay] object Stages {
   def stage(name: String)(f: StageContext => Stage.Control): Stage = {
     new Stage(name, f)
   }
 }
 
-case class StageContext(gameplay: Context, ref: ActorRef)
+private[gameplay] case class StageContext(gameplay: Context, ref: ActorRef)
 
-object Stage {
+private[gameplay] object Stage {
   
   trait Control
   
@@ -21,7 +21,7 @@ object Stage {
   
 }
 
-class Stage(val name: String, f: StageContext => Stage.Control) {
+private[gameplay] class Stage(val name: String, f: StageContext => Stage.Control) {
   def chain(f: Stage): StageChain =
     new StageChain(this) chain f
   
@@ -34,7 +34,7 @@ class Stage(val name: String, f: StageContext => Stage.Control) {
   override def toString = f"#[stage:$name]"
 }
 
-class StageChain() {
+private[gameplay] class StageChain() {
   var stages = List[Stage]()
   
   def this(stage: Stage) = {

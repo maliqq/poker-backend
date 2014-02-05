@@ -42,13 +42,13 @@ object Street extends Enumeration {
   )
 }
 
-object Chain {
+private[gameplay] object Chain {
   trait Result
   case object Next extends Result
   case object Stop extends Result
 }
 
-case class Street(value: Street.Value, options: StreetOptions) {
+private[gameplay] case class Street(value: Street.Value, options: StreetOptions) {
   import Stages._
   
   var stages = new StageChain
@@ -95,7 +95,7 @@ case class Street(value: Street.Value, options: StreetOptions) {
   override def toString = f"#[Street ${value}]"
 }
 
-case class StreetOptions(
+private[gameplay] case class StreetOptions(
     dealing: Option[DealingOptions] = None,
     bringIn: Boolean = false,
     bigBets: Boolean = false,
@@ -113,7 +113,7 @@ case class StreetOptions(
   }
 }
 
-class StreetChain(
+private[gameplay] class StreetChain(
     ctx: StageContext,
     val streetOptions: Map[Street.Value, StreetOptions]) {
   private val streets = Street.byGameGroup(ctx.gameplay.game.options.group) 

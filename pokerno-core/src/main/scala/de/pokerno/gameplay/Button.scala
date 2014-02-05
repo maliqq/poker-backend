@@ -2,7 +2,7 @@ package de.pokerno.gameplay
 
 import de.pokerno.protocol.{msg => message}
 
-trait Button {
+private[gameplay] trait Button {
   
   g: ContextLike =>
     

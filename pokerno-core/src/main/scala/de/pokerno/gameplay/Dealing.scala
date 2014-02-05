@@ -8,7 +8,7 @@ import protocol.Conversions._
 //import protocol.wire.Conversions._
 //import protocol.msg.Conversions._
 
-object Dealing {
+private[gameplay] object Dealing {
   
   trait DealContext {
     

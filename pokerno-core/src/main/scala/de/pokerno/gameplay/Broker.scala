@@ -6,7 +6,7 @@ import de.pokerno.protocol.msg
 import akka.event.{ ActorEventBus, ScanningClassification }
 import akka.actor.actorRef2Scala
 
-class Broker extends ActorEventBus
+private[gameplay] class Broker extends ActorEventBus
                 with ScanningClassification {
   
   type Classifier = String

@@ -1,6 +1,6 @@
 package de.pokerno.poker
 
-class CardSet(
+private[poker] class CardSet(
     var cards: List[Card],
     val ordering: Ordering[Card] = AceHigh,
     qualifier: Option[Kind.Value.Kind] = None) {

@@ -5,7 +5,7 @@ import de.pokerno.protocol.{msg => message}
 
 import math.{ BigDecimal ⇒ Decimal }
 
-class BettingRound(val table: Table, val game: Game, val stake: Stake) extends Round(table.size) {
+private[gameplay] class BettingRound(val table: Table, val game: Game, val stake: Stake) extends Round(table.size) {
   current = table.button
 
   def seats = table.seats.slice(current)

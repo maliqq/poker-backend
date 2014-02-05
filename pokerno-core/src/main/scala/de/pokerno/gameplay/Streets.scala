@@ -4,7 +4,7 @@ import de.pokerno.model._
 import akka.actor.{ Actor, Props, ActorLogging, ActorRef }
 import de.pokerno.protocol.{msg => proto}
 
-object Streets {
+private[gameplay] object Streets {
   case object Next
   case object Done
   

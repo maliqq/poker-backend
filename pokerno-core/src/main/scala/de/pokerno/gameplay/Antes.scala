@@ -6,7 +6,7 @@ import akka.actor.ActorRef
 /*
  * Стадия принудительных ставок-анте
  */
-trait Antes {
+private [gameplay] trait Antes {
   
   betting: Betting =>
   

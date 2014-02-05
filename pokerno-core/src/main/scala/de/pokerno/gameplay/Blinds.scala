@@ -8,7 +8,7 @@ import akka.actor.ActorRef
 /*
  * Стадия принудительных ставок-блайндов
  */
-trait Blinds {
+private[gameplay] trait Blinds {
   
   betting: Betting =>
   

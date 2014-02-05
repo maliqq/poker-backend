@@ -1,6 +1,6 @@
 package de.pokerno.gameplay
 
-trait Seating {
+private[gameplay] trait Seating {
   ctx: ContextLike =>
     
     def prepareSeats(ctx: StageContext) {

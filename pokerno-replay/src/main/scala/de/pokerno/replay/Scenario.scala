@@ -24,6 +24,8 @@ private[replay] object Scenario {
 
 private[replay] class Scenario {
   
+  implicit def arrayByte2byteString(a: Array[Byte]) = com.dyuproject.protostuff.ByteString.copyFrom(a)
+  
   var table: Option[wire.Table] = None
   var stake: Option[wire.Stake] = None
   var variation: Option[wire.Variation] = None
@@ -38,6 +40,7 @@ private[replay] class Scenario {
   }
   
   val actions = new java.util.HashMap[String, java.util.ArrayList[rpc.Request]]()
+  
   var showdown: Boolean = false
   
   var processor: Function1[Token, Unit] = processMain
@@ -48,8 +51,13 @@ private[replay] class Scenario {
     case tags.Table(_id, size) =>
       val t = new wire.Table(
           size,
-          seats = new java.util.ArrayList[wire.Seat](size)
+          seats = new java.util.ArrayList[wire.Seat]()
           )
+      
+      (0 until size) foreach { i =>
+        t.seats.add(null)
+      }
+      
       table = Some(t)
       id = Some(_id.unquote)
       processor = processTable

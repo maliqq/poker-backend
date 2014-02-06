@@ -6,13 +6,57 @@ import protocol.Conversions._
 import protocol.wire.Conversions._
 //import protocol.msg.Conversions._
 import de.pokerno.model._
-import de.pokerno.poker.{Deck, Card}
+import de.pokerno.poker.{Deck, Card, Cards}
 import akka.actor.{Actor, Props, ActorRef, ActorLogging}
 
 object Replay {
   case class Subscribe(out: ActorRef)
   case class StreetActions(street: Street.Value, actions: List[rpc.Request], speed: Int)
   case class Showdown()
+  
+  import collection.JavaConversions._
+  
+  private[gameplay] def createTable(_table: wire.Table): Table = {
+    val table = new Table(_table.size)
+    var pos = 0
+    for (seat <- _table.seats) {
+      if (seat.player != null && seat.stackAmount != null)
+        table.addPlayer(pos, seat.player, Some(seat.stackAmount))
+      pos += 1
+    }
+    table.button.current = _table.button
+    table
+  }
+  
+  private[gameplay] def createVariation(_variation: wire.Variation): Variation = {
+    _variation.`type` match {
+      case wire.VariationSchema.VariationType.GAME =>
+        new Game(
+            _variation.game.`type`,
+            Some(_variation.game.limit),
+            _variation.game.tableSize match {
+              case null => None
+              case n => Some(n)
+            }
+          )
+      case wire.VariationSchema.VariationType.MIX =>
+        // TODO
+        null
+    }
+  }
+  
+  private[gameplay] def createStake(_stake: wire.Stake): Stake = {
+    new Stake(_stake.bigBlind,
+        _stake.smallBlind match {
+          case null => None
+          case n => Some(n)
+        },
+        _stake.ante match {
+          case null => Right(false)
+          case n => Left(n)
+        }
+    )
+  }
 }
 
 class Replay(
@@ -27,12 +71,15 @@ class Replay(
                           with Betting.ReplayContext
                           with Streets.ReplayContext {
   
-  
-  
-  private val dealer = if (deck.isDefined) new Dealer(new Deck(deck.get))
-  else new Dealer
-  
-  val gameplay = new Context(table, variation, stake, dealer)
+  val gameplay = new Context(
+      Replay.createTable(_table),
+      Replay.createVariation(_variation),
+      Replay.createStake(_stake),
+      dealer =
+        if (deck.isDefined)
+          new Dealer(new Deck(Cards(deck.get)))
+        else
+          new Dealer)
   
   val stageContext = StageContext(gameplay, self)
   

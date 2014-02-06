@@ -8,7 +8,20 @@ object Lexer {
   
   object Conversions {
     implicit def string2int(s: String) = Integer.parseInt(s)
-    implicit def string2cards(s: String): Array[Byte] = Array() // FIXME
+    // FIXME remove this shit
+    final val a = "23456789TJQKA"
+    final val b = "shdc"
+    implicit def string2cards(s: String): Array[Byte] = {
+      val tuples = for {
+        m <- "(..)".r findAllIn s
+      } yield((m.charAt(0), m.charAt(1)))
+      tuples.map[Integer] { case (chr1, chr2) =>
+        val k = a.indexOf(chr1)
+        val s = b.indexOf(chr2)
+        if (k != -1 && s != -1) (k << 2) + s + 1
+        else null
+      } filter (_ != null) map(_.toByte) toArray
+    }
     implicit def string2quotedString(s: String) = new QuotedString(s)
     
     implicit def string2gametype(s: String): wire.GameSchema.GameType = s match {

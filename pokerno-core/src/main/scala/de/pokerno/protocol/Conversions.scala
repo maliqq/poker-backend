@@ -25,7 +25,10 @@ object Conversions {
   }
 
   implicit def wire2bet(w: wire.Bet) =
-    new model.Bet(w.getType, w.getAmount)
+    new model.Bet(w.getType, w.getAmount match {
+      case null => .0
+      case n => n
+    })
 
   implicit def decimal2wire(d: Decimal): java.lang.Double = d.toDouble
 

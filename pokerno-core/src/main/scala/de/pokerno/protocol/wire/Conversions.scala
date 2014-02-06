@@ -47,6 +47,12 @@ object Conversions {
     case model.Game.FixedLimit => GameSchema.GameLimit.FL
   }
   
+  implicit def wire2limit(limit: GameSchema.GameLimit): model.Game.Limit = limit match {
+    case GameSchema.GameLimit.NL => model.Game.NoLimit 
+    case GameSchema.GameLimit.PL => model.Game.PotLimit 
+    case GameSchema.GameLimit.FL => model.Game.FixedLimit
+  }
+  
   implicit def stake2wire(stake: model.Stake) = new Stake(
       bigBlind = stake.bigBlind.toDouble,
       smallBlind = stake.smallBlind.toDouble,
@@ -82,6 +88,20 @@ object Conversions {
     case model.Game.Badugi => GameSchema.GameType.BADUGI
     
     case _ => throw new IllegalArgumentException(f"Unknown limited game: ${g.toString}")
+  }
+  
+  implicit def wire2limitedGame(g: GameSchema.GameType): model.Game.Limited = g match {
+    case GameSchema.GameType.TEXAS => model.Game.Texas
+    case GameSchema.GameType.OMAHA => model.Game.Omaha
+    case GameSchema.GameType.OMAHA_8 => model.Game.Omaha8
+    case GameSchema.GameType.STUD => model.Game.Stud
+    case GameSchema.GameType.STUD_8 => model.Game.Stud8
+    case GameSchema.GameType.RAZZ => model.Game.Razz
+    case GameSchema.GameType.LONDON => model.Game.London
+    case GameSchema.GameType.FIVE_CARD => model.Game.FiveCard
+    case GameSchema.GameType.SINGLE_27 => model.Game.Single27
+    case GameSchema.GameType.TRIPLE_27 => model.Game.Triple27
+    case GameSchema.GameType.BADUGI => model.Game.Badugi
   }
 
   implicit def game2wire(g: model.Game): Game = new Game(g.game, g.limit, g.tableSize)
@@ -119,6 +139,7 @@ object Conversions {
     case BetSchema.BetType.BB => model.Bet.BigBlind
     case BetSchema.BetType.GUEST_BLIND => model.Bet.GuestBlind
     case BetSchema.BetType.STRADDLE => model.Bet.Straddle
+    case BetSchema.BetType.ALLIN => model.Bet.AllIn
   }
   
   implicit def seatState2wire(v: model.Seat.State): SeatSchema.SeatState = v match {

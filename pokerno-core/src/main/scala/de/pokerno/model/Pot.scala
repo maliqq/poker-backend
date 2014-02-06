@@ -38,28 +38,20 @@ class SidePot(val cap: Option[Decimal] = None) {
     amount
   }
 
-  def split(member: Player, left: Decimal, cap: Option[Decimal] = None): Tuple2[SidePot, SidePot] = {
-    // TODO process when left < 0
-    val value: Decimal = members getOrElse (member, .0) // 12,000
-    if (member.id == "Infante" && value != 12000) {
-      warn("members=%s", members)
-      warn("assert failed! 1")
-    }
-    val bet = value + left // 11,000
-    if (member.id == "Infante" && bet != 11000) {
-      warn("assert failed! 2")
-    }
+  def split(member: Player, left: Decimal): Tuple2[SidePot, SidePot] = {
+    val value: Decimal = members getOrElse (member, .0)
+    val bet = value + left
     members += (member -> bet)
 
-    val _new = new SidePot(cap map { amt => amt - bet })
-    _new.members = members.
-      filter { case (key, _value) ⇒ _value > bet && key != member }. // [12,000]
-      map { case (key, _value) ⇒ (key, _value - bet) } // [Fukutu -> 1,000]
+    val _new = new SidePot
+    _new.members = members
+      .filter { case (key, _value) ⇒ _value > bet && key != member }
+      .map { case (key, _value) ⇒ (key, _value - bet) }
 
     val _old = new SidePot(Some(bet))
     _old.members = members map {
       case (key, _value) ⇒
-        (key, List(_value, bet).min) // [Bond -> 6,000; Fukutu -> 11,000, Infante -> 11,000, LeChiffre -> 11,000]
+        (key, List(_value, bet).min)
     }
     
     warn("_old: %s\n_new: %s", _old, _new)
@@ -104,21 +96,11 @@ class Pot {
   import de.pokerno.util.ConsoleUtils._
 
   def split(member: Player, amount: Decimal) {
-    if (!current.isActive) {
-      warn("main is not active; using %s", active.head)
-      current = active.head
-      active = active.drop(1)
-      
-      val (_new, _old) = current split (member, amount, current.cap)
-      
-      active ++= List(_new, _old)
-    } else {
-      info("splitting current=%s for member %s with amount %s", current, member, amount)
-      val (_new, _old) = current split (member, amount, None)
-      
-      active :+= _old
-      current = _new
-    }
+    info("splitting current=%s for member %s with amount %s", current, member, amount)
+    val (_new, _old) = current split (member, amount)
+    
+    active :+= _old
+    current = _new
   }
   
   def complete() {
@@ -127,14 +109,16 @@ class Pot {
     active = List.empty
   }
   
-  def allocate(member: Player, amount: Decimal) = {
+  private def allocate(member: Player, amount: Decimal) = {
     active.foldRight[Decimal](amount) {
       case (sidePot, left) ⇒
-        val l = sidePot add (member, left)
-        warn("left=%s leftAfter=%s for member %s in pot %s", left, l, member, sidePot)
-        l
+        sidePot add (member, left)
     }
   }
+//    active.foldLeft[Decimal](amount) {
+//      case (left, sidePot) ⇒
+//        sidePot add (member, left)
+//    }
   
   def add(member: Player, amount: Decimal, isAllIn: Boolean = false): Decimal = {
     val left = allocate (member, amount)
@@ -144,10 +128,6 @@ class Pot {
       0
     } else current add (member, left)
   }
-//    active.foldLeft[Decimal](amount) {
-//      case (left, sidePot) ⇒
-//        sidePot add (member, left)
-//    }
   
   override def toString = {
     val s = new StringBuilder

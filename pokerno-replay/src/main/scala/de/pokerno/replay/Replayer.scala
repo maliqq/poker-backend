@@ -3,7 +3,7 @@ package de.pokerno.replay
 import de.pokerno.protocol.{msg, rpc}
 import de.pokerno.protocol.Conversions._
 import de.pokerno.poker.{Card, Deck}
-import de.pokerno.gameplay.{Replay, Context => GameplayContext, Street, Streets}
+import de.pokerno.gameplay.{Replay, Street, Streets}
 import de.pokerno.model.{Dealer, Player, Table, Stake, Variation, Game, Bet, Seat}
 import akka.actor.{Actor, ActorSystem, ActorLogging, ActorRef, Props, Kill}
 import de.pokerno.format.text
@@ -73,13 +73,9 @@ private[replay] class Replayer(gw: ActorRef) extends Actor {
     val stake = scenario.stake.getOrElse(
         throw ReplayError("stake not defined"))
     
-    val dealer = if (scenario.deck.isDefined) new Dealer(new Deck(scenario.deck.get))
-    else new Dealer
+    val deck = scenario.deck
     
-    //val t = new Table(table.size)
-    val gameplay = new GameplayContext(table, variation, stake, dealer = dealer)
-
-    val replay = system.actorOf(Props(classOf[Replay], gameplay))
+    val replay = system.actorOf(Props(classOf[Replay], table, variation, stake, deck))
     replay ! Replay.Subscribe(gw)
 
 //    table.seatsAsList.zipWithIndex foreach { case (seat, pos) =>

@@ -108,7 +108,7 @@ class Pot {
       side :+= _old
       main = _new
     }
-    error("main=%s\nside=%s", main, side)
+    //error("main=%s\nside=%s", main, side)
   }
   
   def complete() {

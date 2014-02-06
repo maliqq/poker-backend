@@ -6,6 +6,7 @@ import protocol.Conversions._
 import protocol.wire.Conversions._
 //import protocol.msg.Conversions._
 import de.pokerno.model._
+import de.pokerno.poker.{Deck, Card}
 import akka.actor.{Actor, Props, ActorRef, ActorLogging}
 
 object Replay {
@@ -14,11 +15,24 @@ object Replay {
   case class Showdown()
 }
 
-class Replay(val gameplay: Context) extends Actor
-      with ActorLogging
-      with Dealing.ReplayContext
-      with Betting.ReplayContext
-      with Streets.ReplayContext {
+class Replay(
+    _table: wire.Table,
+    _variation: wire.Variation,
+    _stake: wire.Stake,
+    deck: Option[List[Byte]]
+    )
+                       extends Actor
+                          with ActorLogging
+                          with Dealing.ReplayContext
+                          with Betting.ReplayContext
+                          with Streets.ReplayContext {
+  
+  
+  
+  private val dealer = if (deck.isDefined) new Dealer(new Deck(deck.get))
+  else new Dealer
+  
+  val gameplay = new Context(table, variation, stake, dealer)
   
   val stageContext = StageContext(gameplay, self)
   

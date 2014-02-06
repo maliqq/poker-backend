@@ -1,7 +1,6 @@
 package de.pokerno.format.text
 
-import de.pokerno.model
-import de.pokerno.poker
+import de.pokerno.protocol.wire
 import util.matching.Regex
 
 object Lexer {
@@ -9,8 +8,23 @@ object Lexer {
   
   object Conversions {
     implicit def string2int(s: String) = Integer.parseInt(s)
-    implicit def string2cards(s: String): List[poker.Card] = poker.Cards(s)
+    implicit def string2cards(s: String): Array[Byte] = Array() // FIXME
     implicit def string2quotedString(s: String) = new QuotedString(s)
+    
+    implicit def string2gametype(s: String): wire.GameSchema.GameType = s match {
+      case "texas" => wire.GameSchema.GameType.TEXAS
+      case "omaha" => wire.GameSchema.GameType.OMAHA
+      // ...
+      case x => throw ParseError("unknown game: %s" format x)
+    }
+    
+    implicit def string2gamelimit(s: String): wire.GameSchema.GameLimit = s match {
+      case "NL" | "no-limit" => wire.GameSchema.GameLimit.NL
+      case "FL" | "fixed-limit" => wire.GameSchema.GameLimit.FL
+      // FIXME turn on later
+      //case "PL" | "pot-limit" => wire.GameSchema.GameLimit.PL
+      case x => throw ParseError("unknown limit: %s" format x)
+    }
   }
   
   class QuotedString(v: String) {
@@ -69,7 +83,7 @@ object Lexer {
     }
     
     @Tag(name = "GAME")
-    case class Game(game: Option[model.Game.Limited], limit: Option[model.Game.Limit]) extends Token {
+    case class Game(game: wire.GameSchema.GameType, limit: wire.GameSchema.GameLimit) extends Token {
       def this(params: Array[String]) = this(params(0), params(1))
     }
     
@@ -79,7 +93,7 @@ object Lexer {
     }
     
     @Tag(name = "DECK")
-    case class Deck(cards: List[poker.Card]) extends Token {
+    case class Deck(cards: Array[Byte]) extends Token {
       def this(params: Array[String]) = this(new QuotedString(params(0)).unquote)
     }
 
@@ -153,7 +167,7 @@ object Lexer {
     }
     
     object Deal {
-      private[text] def fromParams(params: Array[String]): Tuple3[QuotedString, List[poker.Card], Integer] = {
+      private[text] def fromParams(params: Array[String]): Tuple3[QuotedString, Array[Byte], Integer] = {
         if (params.length == 1) // board
           return (null, params(0), null)
         if (params.length == 2 && params(1).matches("^\\d+$"))
@@ -163,8 +177,8 @@ object Lexer {
     }
     
     @Tag(name = "DEAL")
-    case class Deal(player: QuotedString, cards: List[poker.Card], cardsNum: Integer) extends Token {
-      def this(args: Tuple3[QuotedString, List[poker.Card], Integer]) = this(args._1, args._2, args._3)
+    case class Deal(player: QuotedString, cards: Array[Byte], cardsNum: Integer) extends Token {
+      def this(args: Tuple3[QuotedString, Array[Byte], Integer]) = this(args._1, args._2, args._3)
       def this(params: Array[String]) = this(Deal.fromParams(params))
     }
     
@@ -179,17 +193,17 @@ object Lexer {
     }
     
     @Tag(name = "DISCARD")
-    case class Discard(player: QuotedString, cards: List[poker.Card]) extends Token {
+    case class Discard(player: QuotedString, cards: Array[Byte]) extends Token {
       def this(params: Array[String]) = this(params(0), params(1))
     }
     
     @Tag(name = "SHOW")
-    case class Show(player: String, cards: List[poker.Card]) extends Token {
+    case class Show(player: String, cards: Array[Byte]) extends Token {
       def this(params: Array[String]) = this(params(0), params(1))
     }
     
     @Tag(name = "MUCK")
-    case class Muck(player: QuotedString, cards: List[poker.Card]) extends Token {
+    case class Muck(player: QuotedString, cards: Array[Byte]) extends Token {
       def this(params: Array[String]) = this(params(0), params(1))
     }
     

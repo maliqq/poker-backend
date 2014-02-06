@@ -134,7 +134,7 @@ class HighSpec extends FunSpec with ClassicMatchers {
         (0 to 6) foreach {
           case i ⇒
             val cards = deck.slice(i, i + 7)
-            val hc = new Hand.Cards(cards) with HighHand
+            val hc = new CardSet(cards) with HighHand
             val hand: Option[Hand] = hc.isFlush
             hand should beFlush
             if (hc.isStraight.isEmpty) {

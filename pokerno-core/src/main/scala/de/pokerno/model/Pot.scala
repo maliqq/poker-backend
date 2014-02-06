@@ -7,6 +7,8 @@ import java.util.Locale
 class SidePot(val cap: Option[Decimal] = None) {
   var members: Map[Player, Decimal] = Map.empty
   
+  def isMember(member: Player) = members.contains(member)
+
   import de.pokerno.util.ConsoleUtils._
   
   info("| --- side pot with cap %s created", cap)
@@ -125,13 +127,22 @@ class Pot {
     active = List.empty
   }
   
-  def add(member: Player, amount: Decimal) = {
+  def allocate(member: Player, amount: Decimal) = {
     active.foldRight[Decimal](amount) {
       case (sidePot, left) ⇒
         val l = sidePot add (member, left)
         warn("left=%s leftAfter=%s for member %s in pot %s", left, l, member, sidePot)
         l
     }
+  }
+  
+  def add(member: Player, amount: Decimal, isAllIn: Boolean = false): Decimal = {
+    val left = allocate (member, amount)
+    
+    if (isAllIn) {
+      split (member, left)
+      0
+    } else current add (member, left)
   }
 //    active.foldLeft[Decimal](amount) {
 //      case (left, sidePot) ⇒

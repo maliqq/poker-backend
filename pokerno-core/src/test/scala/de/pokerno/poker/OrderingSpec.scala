@@ -26,7 +26,7 @@ class OrderingSpec extends FunSpec with ClassicMatchers {
   
   describe("Ranking") {
     it("by rank") {
-      val cards = new Hand.Cards(List.empty)
+      val cards = new CardSet(List.empty)
       
       val h1 = new Hand(cards, rank = Some(Rank.High.Flush))
       val h2 = new Hand(cards, rank = Some(Rank.High.StraightFlush))
@@ -37,7 +37,7 @@ class OrderingSpec extends FunSpec with ClassicMatchers {
     }
     
     it("by high") {
-      val cards = new Hand.Cards(List.empty)
+      val cards = new CardSet(List.empty)
       
       val h1 = new Hand(cards, rank = Some(Rank.High.Flush), High = Left(List('_2d)))
       val h2 = new Hand(cards, rank = Some(Rank.High.Flush), High = Left(List('Kd)))
@@ -48,7 +48,7 @@ class OrderingSpec extends FunSpec with ClassicMatchers {
     }
     
     it("by value") {
-      val cards = new Hand.Cards(List.empty)
+      val cards = new CardSet(List.empty)
       
       val h1 = new Hand(cards, rank = Some(Rank.High.Flush), High = Left(List(1)), value = List(1, 2, '_2d))
       val h2 = new Hand(cards, rank = Some(Rank.High.Flush), High = Left(List(1)), value = List(1, 2, 'Kd))
@@ -59,7 +59,7 @@ class OrderingSpec extends FunSpec with ClassicMatchers {
     }
     
     it("by kicker") {
-      val cards = new Hand.Cards(List.empty)
+      val cards = new CardSet(List.empty)
       
       val h1 = new Hand(cards, rank = Some(Rank.High.Flush), High = Left(List(1)), value = List(1, 2, 3), Kicker = Left(List('_2d)))
       val h2 = new Hand(cards, rank = Some(Rank.High.Flush), High = Left(List(1)), value = List(1, 2, 3), Kicker = Left(List('Kd)))
@@ -70,7 +70,7 @@ class OrderingSpec extends FunSpec with ClassicMatchers {
     }
     
     it("same hands") {
-      val cards = new Hand.Cards(List.empty)
+      val cards = new CardSet(List.empty)
       
       val h1 = new Hand(cards, rank = Some(Rank.High.Flush), High = Left(List(1)), value = List(1, 2, 3), Kicker = Left(List(1)))
       val h2 = new Hand(cards, rank = Some(Rank.High.Flush), High = Left(List(1)), value = List(1, 2, 3), Kicker = Left(List(1)))

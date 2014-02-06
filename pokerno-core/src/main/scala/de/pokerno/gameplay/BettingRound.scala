@@ -91,11 +91,7 @@ private[gameplay] class BettingRound(val table: Table, val game: Game, val stake
       if (bet.betType != Bet.Call && bet.amount > _call)
         _call = bet.amount
   
-      val left = pot add (player, diff)
-      if (seat.isAllIn)
-        pot split (player, left)
-      else
-        pot.current add (player, left)
+      pot add (player, diff, seat.isAllIn)
     }
   
     if (bet.amount != 0) postBet()

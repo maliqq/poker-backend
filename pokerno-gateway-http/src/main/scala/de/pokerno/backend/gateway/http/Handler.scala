@@ -45,7 +45,6 @@ class PathHandler(path: String, handler: ChannelInboundHandlerAdapter) extends C
     case req: http.FullHttpRequest =>
       
       if (req.getUri.startsWith(path)) {
-        Console printf("req starts with path")
         handler.channelRead(ctx, req)
       } else {
         ctx.pipeline.remove(handler)

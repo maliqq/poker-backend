@@ -72,11 +72,14 @@ private[gameplay] class BettingRound(val table: Table, val game: Game, val stake
     val (seat, pos) = _acting
     val player = seat.player.get
     
-    var bet = if (_bet.isValid(seat.amount, seat.put, _call, _raise))
-      _bet
-    else {
+    // alias for raise whole stack
+    var bet = if (_bet.betType == Bet.AllIn)
+      Bet.raise(seat.stack)
+    else _bet
+    
+    if (!bet.isValid(seat.amount, seat.put, _call, _raise)) {
       warn("bet %s is not valid; call=%.2f raise=%s", _bet, _call, _raise)
-      Bet.fold
+      bet = Bet.fold
     }
     
     val _put = seat.put // before posting

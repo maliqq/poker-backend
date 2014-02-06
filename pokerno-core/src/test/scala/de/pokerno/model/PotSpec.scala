@@ -331,6 +331,23 @@ class PotSpec extends FunSpec with ClassicMatchers {
       side2.isMember(d) should be(true)
     }
     
+    
+    it("all in - 4 players, 1 allin raise, 1 allin call, 1 allin re-raise") {
+      val pot = new Pot
+      
+      val a = Player("A")
+      val b = Player("B")
+      val c = Player("C")
+      val d = Player("D")
+      
+      pot.add(a, 17, true) should equal(0)
+      pot.add(b, 7, true) should equal(0)
+      pot.add(c, 34, true) should equal(0)
+      pot.add(d, 34) should equal(0)
+      
+      pot.total should equal(92)
+    }
+    
     it("total") {
       val pot = new Pot
       val a = Player("A")

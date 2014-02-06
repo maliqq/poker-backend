@@ -2,11 +2,14 @@ package de.pokerno.model
 
 import math.{ BigDecimal ⇒ Decimal }
 import collection.mutable
+import java.util.Locale
 
 class SidePot(val cap: Option[Decimal] = None) {
   var members: Map[Player, Decimal] = Map.empty
   
   import de.pokerno.util.ConsoleUtils._
+  
+  info("| --- side pot with cap %s created", cap)
 
   def total: Decimal = members.values.sum
 
@@ -33,35 +36,47 @@ class SidePot(val cap: Option[Decimal] = None) {
     amount
   }
 
-  def split(member: Player, left: Decimal): Tuple2[SidePot, SidePot] = {
-    val value: Decimal = members getOrElse (member, .0)
-    val bet = value + left
+  def split(member: Player, left: Decimal, cap: Option[Decimal] = None): Tuple2[SidePot, SidePot] = {
+    // TODO process when left < 0
+    val value: Decimal = members getOrElse (member, .0) // 12,000
+    if (member.id == "Infante" && value != 12000) {
+      warn("members=%s", members)
+      warn("assert failed! 1")
+    }
+    val bet = value + left // 11,000
+    if (member.id == "Infante" && bet != 11000) {
+      warn("assert failed! 2")
+    }
     members += (member -> bet)
 
-    val _new = new SidePot
+    val _new = new SidePot(cap map { amt => amt - bet })
     _new.members = members.
-      filter { case (key, _value) ⇒ _value > bet && key != member }.
-      map { case (key, _value) ⇒ (key, _value - bet) }
+      filter { case (key, _value) ⇒ _value > bet && key != member }. // [12,000]
+      map { case (key, _value) ⇒ (key, _value - bet) } // [Fukutu -> 1,000]
 
     val _old = new SidePot(Some(bet))
     _old.members = members map {
       case (key, _value) ⇒
-        (key, List(_value, bet).min)
+        (key, List(_value, bet).min) // [Bond -> 6,000; Fukutu -> 11,000, Infante -> 11,000, LeChiffre -> 11,000]
     }
     
-    warn("_old=%s _new=%s", _old, _new)
+    warn("_old: %s\n_new: %s", _old, _new)
     
     (_new, _old)
   }
 
   override def toString = {
     val s = new StringBuilder
-    members foreach {
-      case (member, amount) ⇒
-        s ++= "%s: %.2f\n" format (member, amount)
-    }
-    s ++= "-- Total: %.2f" format total
-    if (cap.isDefined) s ++= " Cap: %.2f" format (cap get)
+    
+    s.append(
+        members.map { case (member, amount) ⇒
+          "%.2f (%s)" formatLocal (Locale.US, amount, member)
+        }.mkString(" + ")
+      )
+    s.append(" = %.2f" formatLocal (Locale.US, total))
+    if (cap.isDefined)
+      s.append(" (cap: %.2f)" formatLocal (Locale.US, cap.get))
+    
     s.toString()
   }
 }
@@ -84,10 +99,24 @@ class Pot {
     pots.toList
   }
 
+  import de.pokerno.util.ConsoleUtils._
+
   def split(member: Player, amount: Decimal) {
-    val (_new, _old) = current split (member, amount)
-    active :+= _old
-    current = _new
+    if (!current.isActive) {
+      warn("main is not active; using %s", active.head)
+      current = active.head
+      active = active.drop(1)
+      
+      val (_new, _old) = current split (member, amount, current.cap)
+      
+      active ++= List(_new, _old)
+    } else {
+      info("splitting current=%s for member %s with amount %s", current, member, amount)
+      val (_new, _old) = current split (member, amount, None)
+      
+      active :+= _old
+      current = _new
+    }
   }
   
   def complete() {
@@ -95,12 +124,15 @@ class Pot {
     current = new SidePot
     active = List.empty
   }
-
-  def add(member: Player, amount: Decimal) =
+  
+  def add(member: Player, amount: Decimal) = {
     active.foldRight[Decimal](amount) {
       case (sidePot, left) ⇒
-        sidePot add (member, left)
+        val l = sidePot add (member, left)
+        warn("left=%s leftAfter=%s for member %s in pot %s", left, l, member, sidePot)
+        l
     }
+  }
 //    active.foldLeft[Decimal](amount) {
 //      case (left, sidePot) ⇒
 //        sidePot add (member, left)

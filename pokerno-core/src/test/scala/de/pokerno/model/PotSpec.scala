@@ -66,12 +66,12 @@ class PotSpec extends FunSpec with ClassicMatchers {
       val b = Player("B")
       pot.add(a, 100) should equal(0)
       pot.add(b, 60, true) should equal(0)
-      pot.current.total should equal(40)
-      pot.current.isMember(a) should be(true)
-      pot.current.isMember(b) should be(false)
-      pot.active.head.total should equal(120)
-      pot.active.head.isMember(a) should be(true)
-      pot.active.head.isMember(b) should be(true)
+      pot.main.total should equal(40)
+      pot.main.isMember(a) should be(true)
+      pot.main.isMember(b) should be(false)
+      pot.side.head.total should equal(120)
+      pot.side.head.isMember(a) should be(true)
+      pot.side.head.isMember(b) should be(true)
     }
     
     it("all in - three players, 1 allin") {
@@ -82,14 +82,14 @@ class PotSpec extends FunSpec with ClassicMatchers {
       pot.add(a, 100) should equal(0)
       pot.add(b, 100) should equal(0)
       pot.add(c, 60, true) should equal(0)
-      pot.current.total should equal(80)
-      pot.current.isMember(a) should be(true)
-      pot.current.isMember(b) should be(true)
-      pot.current.isMember(c) should be(false)
-      pot.active.head.total should equal(180)
-      pot.active.head.isMember(a) should be(true)
-      pot.active.head.isMember(b) should be(true)
-      pot.active.head.isMember(c) should be(true)
+      pot.main.total should equal(80)
+      pot.main.isMember(a) should be(true)
+      pot.main.isMember(b) should be(true)
+      pot.main.isMember(c) should be(false)
+      pot.side.head.total should equal(180)
+      pot.side.head.isMember(a) should be(true)
+      pot.side.head.isMember(b) should be(true)
+      pot.side.head.isMember(c) should be(true)
     }
     
     it("all in - three players, middle player allin") {
@@ -102,16 +102,16 @@ class PotSpec extends FunSpec with ClassicMatchers {
       pot.add(b, 60, true) should equal(0)
       pot.add(c, 100) should equal(0)
       
-      pot.current.total should equal(80)
+      pot.main.total should equal(80)
       
-      pot.current.isMember(a) should be(true)
-      pot.current.isMember(b) should be(false)
-      pot.current.isMember(c) should be(true)
+      pot.main.isMember(a) should be(true)
+      pot.main.isMember(b) should be(false)
+      pot.main.isMember(c) should be(true)
       
-      pot.active.head.total should equal(180)
-      pot.active.head.isMember(a) should be(true)
-      pot.active.head.isMember(b) should be(true)
-      pot.active.head.isMember(c) should be(true)
+      pot.side.head.total should equal(180)
+      pot.side.head.isMember(a) should be(true)
+      pot.side.head.isMember(b) should be(true)
+      pot.side.head.isMember(c) should be(true)
     }
     
     it("all in - 4 players, 2 allins") {
@@ -127,21 +127,21 @@ class PotSpec extends FunSpec with ClassicMatchers {
       pot.add(a, 250, true) should equal(0)
       pot.add(c, 400) should equal(0)
       
-      val side1 = pot.active.head
+      val side1 = pot.side.head
       side1.total should equal(240)
       side1.isMember(a) should be(true)
       side1.isMember(b) should be(true)
       side1.isMember(c) should be(true)
       side1.isMember(d) should be(true)
       
-      val side2 = pot.active(1)
+      val side2 = pot.side(1)
       side2.total should equal(870)
       side2.isMember(a) should be(true)
       side2.isMember(b) should be(false)
       side2.isMember(c) should be(true)
       side2.isMember(d) should be(true)
       
-      val side3 = pot.current
+      val side3 = pot.main
       side3.total should equal(300)
       side3.isMember(a) should be(false)
       side3.isMember(b) should be(false)
@@ -164,14 +164,14 @@ class PotSpec extends FunSpec with ClassicMatchers {
       pot.add(b, 20) should equal(0)
       pot.add(d, 10) should equal(0)
       
-      val side1 = pot.active.last
+      val side1 = pot.side.last
       side1.total should equal(28)
       side1.isMember(a) should be(true)
       side1.isMember(b) should be(true)
       side1.isMember(c) should be(true)
       side1.isMember(d) should be(true)
       
-      val side2 = pot.current
+      val side2 = pot.main
       side2.total should equal(59)
       side2.isMember(a) should be(true)
       side2.isMember(b) should be(true)
@@ -194,21 +194,21 @@ class PotSpec extends FunSpec with ClassicMatchers {
       pot.add(b, 20) should equal(0)
       pot.add(d, 10) should equal(0)
       
-      val side1 = pot.active.head
+      val side1 = pot.side.head
       side1.total should equal(28)
       side1.isMember(a) should be(true)
       side1.isMember(b) should be(true)
       side1.isMember(c) should be(true)
       side1.isMember(d) should be(true)
       
-      val side2 = pot.active(1)
+      val side2 = pot.side(1)
       side2.total should equal(15)
       side2.isMember(a) should be(true)
       side2.isMember(b) should be(true)
       side2.isMember(c) should be(false)
       side2.isMember(d) should be(true)
       
-      val side3 = pot.current
+      val side3 = pot.main
       side3.total should equal(36)
       side3.isMember(a) should be(false)
       side3.isMember(b) should be(true)
@@ -228,21 +228,21 @@ class PotSpec extends FunSpec with ClassicMatchers {
       pot.add(c, 8, true) should equal(0)
       pot.add(d, 10) should equal(0)
       
-      val side1 = pot.active.head
+      val side1 = pot.side.head
       side1.total should equal(20)
       side1.isMember(a) should be(true)
       side1.isMember(b) should be(true)
       side1.isMember(c) should be(true)
       side1.isMember(d) should be(true)
       
-      val side2 = pot.active(1)
+      val side2 = pot.side(1)
       side2.total should equal(9)
       side2.isMember(a) should be(false)
       side2.isMember(b) should be(true)
       side2.isMember(c) should be(true)
       side2.isMember(d) should be(true)
       
-      val side3 = pot.current
+      val side3 = pot.main
       side3.total should equal(4)
       side3.isMember(a) should be(false)
       side3.isMember(b) should be(true)
@@ -262,14 +262,14 @@ class PotSpec extends FunSpec with ClassicMatchers {
       pot.add(c, 7, true) should equal(0)
       pot.add(d, 10) should equal(0)
       
-      val side1 = pot.active.head
+      val side1 = pot.side.head
       side1.total should equal(28)
       side1.isMember(a) should be(true)
       side1.isMember(b) should be(true)
       side1.isMember(c) should be(true)
       side1.isMember(d) should be(true)
       
-      val side2 = pot.current
+      val side2 = pot.main
       side2.total should equal(9)
       side2.isMember(a) should be(true)
       side2.isMember(b) should be(true)
@@ -292,14 +292,14 @@ class PotSpec extends FunSpec with ClassicMatchers {
       pot.add(a, 7) should equal(0)
       pot.add(b, 7) should equal(0)
       
-      val side1 = pot.active.head
+      val side1 = pot.side.head
       side1.total should equal(68)
       side1.isMember(a) should be(true)
       side1.isMember(b) should be(true)
       side1.isMember(c) should be(true)
       side1.isMember(d) should be(true)
       
-      val side2 = pot.current
+      val side2 = pot.main
       side2.total should equal(0)
     }
     
@@ -316,21 +316,20 @@ class PotSpec extends FunSpec with ClassicMatchers {
       pot.add(c, 17) should equal(0)
       pot.add(d, 17) should equal(0)
       
-      val side1 = pot.active.head
+      val side1 = pot.side.head
       side1.total should equal(28)
       side1.isMember(a) should be(true)
       side1.isMember(b) should be(true)
       side1.isMember(c) should be(true)
       side1.isMember(d) should be(true)
       
-      val side2 = pot.current
+      val side2 = pot.side.last
       side2.total should equal(30)
       side2.isMember(a) should be(true)
       side2.isMember(b) should be(false)
       side2.isMember(c) should be(true)
       side2.isMember(d) should be(true)
     }
-    
     
     it("all in - 4 players, 1 allin raise, 1 allin call, 1 allin re-raise") {
       val pot = new Pot
@@ -348,8 +347,7 @@ class PotSpec extends FunSpec with ClassicMatchers {
       pot.total should equal(92)
     }
     
-    
-    it("all in - 4 players, 1 allin raise, 1 allin call, 1 allin re-raise") {
+    it("all in - 4 players, 1 allin raise, 1 allin call, raise, raise under allin") {
       val pot = new Pot
       
       val a = Player("A")
@@ -363,7 +361,7 @@ class PotSpec extends FunSpec with ClassicMatchers {
       pot.add(d, 68) should equal(0)
       pot.add(c, 6, true) should equal(0)
       
-      pot.total should equal(0) // FIXME
+      pot.total should equal(97)
     }
     
     it("total") {

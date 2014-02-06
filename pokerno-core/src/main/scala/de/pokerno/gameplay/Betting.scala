@@ -43,8 +43,8 @@ private[gameplay] trait Betting
     round.clear()
     
     ctx.gameplay.events.declarePot(
-        round.pot.current.total,
-        round.pot.active.map(_.total))
+        round.pot.main.total,
+        round.pot.side.map(_.total))
   }
   
 }

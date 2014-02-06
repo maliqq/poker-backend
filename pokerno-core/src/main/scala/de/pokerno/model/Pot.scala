@@ -38,12 +38,12 @@ class SidePot(val cap: Option[Decimal] = None) {
     amount
   }
 
-  def split(member: Player, left: Decimal): Tuple2[SidePot, SidePot] = {
+  def split(member: Player, left: Decimal, cap: Option[Decimal] = None): Tuple2[SidePot, SidePot] = {
     val value: Decimal = members getOrElse (member, .0)
     val bet = value + left
     members += (member -> bet)
 
-    val _new = new SidePot
+    val _new = new SidePot(cap map { amt => amt - bet })
     _new.members = members
       .filter { case (key, _value) ⇒ _value > bet && key != member }
       .map { case (key, _value) ⇒ (key, _value - bet) }
@@ -76,17 +76,17 @@ class SidePot(val cap: Option[Decimal] = None) {
 }
 
 class Pot {
-  var current: SidePot = new SidePot
-  var active: List[SidePot] = List.empty
+  var main: SidePot = new SidePot
+  var side: List[SidePot] = List.empty
   var inactive: List[SidePot] = List.empty
 
   def total: Decimal = sidePots.map(_.total).sum
 
   def sidePots: List[SidePot] = {
     var pots = new mutable.ListBuffer[SidePot]
-    if (current.isActive)
-      pots += current
-    (active ++ inactive) foreach { side ⇒
+    if (main.isActive)
+      pots += main
+    (side ++ inactive) foreach { side ⇒
       if (side.isActive)
         pots += side
     }
@@ -96,29 +96,32 @@ class Pot {
   import de.pokerno.util.ConsoleUtils._
 
   def split(member: Player, amount: Decimal) {
-    info("splitting current=%s for member %s with amount %s", current, member, amount)
-    val (_new, _old) = current split (member, amount)
-    
-    active :+= _old
-    current = _new
+    if (amount < 0) {
+      info("splitting side=%s for member %s with amount %s", side.head, member, amount)
+      val current = side.head
+      side = side drop 1
+      val (_new, _old) = current split (member, amount, current.cap)
+      side ++= List(_old, _new)
+    } else {
+      info("splitting main=%s for member %s with amount %s", main, member, amount)
+      val (_new, _old) = main split (member, amount)
+      side :+= _old
+      main = _new
+    }
+    error("main=%s\nside=%s", main, side)
   }
   
   def complete() {
-    inactive ++= active ++ List(current)
-    current = new SidePot
-    active = List.empty
+    inactive ++= side ++ List(main)
+    main = new SidePot
+    side = List.empty
   }
   
-  private def allocate(member: Player, amount: Decimal) = {
-    active.foldRight[Decimal](amount) {
-      case (sidePot, left) ⇒
+  private def allocate(member: Player, amount: Decimal) =
+    side.foldLeft[Decimal](amount) {
+      case (left, sidePot) ⇒
         sidePot add (member, left)
     }
-  }
-//    active.foldLeft[Decimal](amount) {
-//      case (left, sidePot) ⇒
-//        sidePot add (member, left)
-//    }
   
   def add(member: Player, amount: Decimal, isAllIn: Boolean = false): Decimal = {
     val left = allocate (member, amount)
@@ -126,13 +129,13 @@ class Pot {
     if (isAllIn) {
       split (member, left)
       0
-    } else current add (member, left)
+    } else main add (member, left)
   }
   
   override def toString = {
     val s = new StringBuilder
     
-    s.append(current.toString)
+    s.append(main.toString)
     sidePots foreach { sidePot =>
       s.append(sidePot.toString + "\n")
     }

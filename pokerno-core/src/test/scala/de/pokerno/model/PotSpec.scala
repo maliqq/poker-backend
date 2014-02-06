@@ -262,7 +262,7 @@ class PotSpec extends FunSpec with ClassicMatchers {
       pot.add(c, 7, true) should equal(0)
       pot.add(d, 10) should equal(0)
       
-      val side1 = pot.active.last
+      val side1 = pot.active.head
       side1.total should equal(28)
       side1.isMember(a) should be(true)
       side1.isMember(b) should be(true)
@@ -274,6 +274,60 @@ class PotSpec extends FunSpec with ClassicMatchers {
       side2.isMember(a) should be(true)
       side2.isMember(b) should be(true)
       side2.isMember(c) should be(false)
+      side2.isMember(d) should be(true)
+    }
+    
+    it("all in - 4 players, 1 allin raise") {
+      val pot = new Pot
+      
+      val a = Player("A")
+      val b = Player("B")
+      val c = Player("C")
+      val d = Player("D")
+      
+      pot.add(a, 10) should equal(0)
+      pot.add(b, 10) should equal(0)
+      pot.add(c, 17, true) should equal(0)
+      pot.add(d, 17) should equal(0)
+      pot.add(a, 7) should equal(0)
+      pot.add(b, 7) should equal(0)
+      
+      val side1 = pot.active.head
+      side1.total should equal(68)
+      side1.isMember(a) should be(true)
+      side1.isMember(b) should be(true)
+      side1.isMember(c) should be(true)
+      side1.isMember(d) should be(true)
+      
+      val side2 = pot.current
+      side2.total should equal(0)
+    }
+    
+    it("all in - 4 players, 1 allin raise, 1 allin call") {
+      val pot = new Pot
+      
+      val a = Player("A")
+      val b = Player("B")
+      val c = Player("C")
+      val d = Player("D")
+      
+      pot.add(a, 17, true) should equal(0)
+      pot.add(b, 7, true) should equal(0)
+      pot.add(c, 17) should equal(0)
+      pot.add(d, 17) should equal(0)
+      
+      val side1 = pot.active.head
+      side1.total should equal(28)
+      side1.isMember(a) should be(true)
+      side1.isMember(b) should be(true)
+      side1.isMember(c) should be(true)
+      side1.isMember(d) should be(true)
+      
+      val side2 = pot.current
+      side2.total should equal(30)
+      side2.isMember(a) should be(true)
+      side2.isMember(b) should be(false)
+      side2.isMember(c) should be(true)
       side2.isMember(d) should be(true)
     }
     

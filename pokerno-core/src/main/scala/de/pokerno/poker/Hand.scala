@@ -1,6 +1,8 @@
 package de.pokerno.poker
 
 object Hand {
+  implicit def cards2CardSet(v: List[Card]): CardSet = new CardSet(v)
+  
   case class InvalidCards(str: String) extends Exception(str)
 
   sealed trait Ranking {
@@ -46,7 +48,7 @@ class Hand(
     High: Either[List[Card], Boolean] = Right(false),
     Kicker: Either[List[Card], Boolean] = Right(false)
     ) extends Ordered[Hand] {
-
+  
   val kicker: List[Card] = Kicker match {
     case Left(_cards) => _cards
     case Right(true) => cards.value.diff(value).sorted(cards.ordering).reverse.take(5 - value.size)

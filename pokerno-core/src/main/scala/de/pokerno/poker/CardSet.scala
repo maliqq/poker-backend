@@ -51,7 +51,7 @@ private[poker] class CardSetQualifier(
 
   def kick(_cards: List[Card]) =
     new CardSet(
-        _cards.diff(_cards).sorted(ordering) take (5 - _cards.size)
+        _cards.diff(_cards).sorted(_ordering) take (5 - _cards.size),
         _ordering
       )
   

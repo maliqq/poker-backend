@@ -46,8 +46,9 @@ object Conversions {
       string = h.description
     )
   
-  implicit def wire2hand(w: wire.Hand) = new poker.Hand(
-      cards = new poker.Hand.Cards(w.cards),
+  import poker.Hand._
+  
+  implicit def wire2hand(w: wire.Hand) = new poker.Hand(wire2cards(w.cards),
       rank = Some(w.rank),
       value = w.value,
       High = Left(w.high),

@@ -4,7 +4,7 @@ object PrintUtils {
 
   private val hexes = "0123456789abcdef".toCharArray
 
-  def toHex(data: Array[Byte]): Array[String] = {
+  def encodeHex(data: Array[Byte]): Array[String] = {
     val result = new Array[String](data.length)
     for (i ← 0 until data.length) {
       val b = data(i) & 0xff
@@ -13,6 +13,6 @@ object PrintUtils {
     result
   }
 
-  def hexdump(data: Array[Byte]) = toHex(data).mkString(" ")
+  def hexdump(data: Array[Byte]) = encodeHex(data).mkString(" ")
 
 }

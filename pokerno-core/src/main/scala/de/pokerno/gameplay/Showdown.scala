@@ -15,17 +15,21 @@ private[gameplay] trait Showdown {
   import de.pokerno.util.ConsoleUtils._
 
   // FIXME: equal hands
-  private def best(pot: SidePot, hands: Map[Player, Hand]): Tuple2[Player, Hand] = {
+  private def best(pot: SidePot, hands: Map[Player, Hand]): List[Tuple2[Player, Hand]] = {
     var winner: Option[Player] = None
     var best: Option[Hand] = None
 
-    hands.filter {
+    val sorted = hands.filter {
       case (player, hand) ⇒
         pot.members.contains(player)
-    }.toList maxBy {
+    }.toList sortBy {
       case (player, hand) ⇒
         hand
-    }
+    } reverse
+    
+    val max = sorted.head
+    
+    sorted.takeWhile(_._2 == max)
   }
 
   private def declareExclusiveWinner(pot: Pot, box: Tuple2[Seat, Int]) = {
@@ -43,36 +47,45 @@ private[gameplay] trait Showdown {
 
     pot.sidePots foreach { side ⇒
       val total = side.total
-      var winnerLow: Option[Player] = None
-      var winnerHigh: Option[Player] = None
+      
+      var winnersLow: List[Player] = List.empty
+      var winnersHigh: List[Player] = List.empty
       var bestLow: Option[Hand] = None
 
       if (lo.isDefined) {
-        val (_winner, _best) = best(side, lo.get)
-        winnerLow = Some(_winner)
-        bestLow = Some(_best)
+        val _best = best(side, lo.get)
+        winnersLow = _best.map(_._1)
+        bestLow = Some(_best.head._2)
       }
 
       if (hi.isDefined)
-        winnerHigh = Some(best(side, hi.get)._1)
-
-      var winners: Map[Player, Decimal] = Map.empty
-      if (split && bestLow.isDefined) {
-        winners += (winnerLow.get -> total / 2.0)
-        winners += (winnerHigh.get -> total / 2.0)
-      } else {
-        if (hi.isDefined)
-          winners += (winnerHigh.get -> total)
-        else
-          winners += (winnerLow.get -> total)
+        winnersHigh = best(side, hi.get).map(_._1)
+      
+      def splitWinners(winners: List[Player], amount: Decimal): Map[Player, Decimal] = {
+        val share = amount / winners.length
+        winners.foldLeft[Map[Player, Decimal]](Map.empty) {
+          case (result, winner) =>
+            result + (winner -> share)
+        }
       }
 
-      winners foreach {
-        case (winner, amount) ⇒
-          val pos = 0
-          val seat = new Seat // FIXME wtf?
+      var winners: Map[Player, Decimal] = Map.empty
+      
+      if (split && bestLow.isDefined) {
+        winners ++= splitWinners(winnersLow, total / 2.0)
+        winners ++= splitWinners(winnersHigh, total / 2.0)
+      } else {
+        winners ++= splitWinners(
+            if (hi.isDefined) winnersHigh
+            else winnersLow,
+          total)
+      }
+
+      winners foreach { case (winner, amount) ⇒
+        table.seat(winner) map { case (seat, pos) =>
           seat wins amount
           events.declareWinner((winner, pos), amount)
+        }
       }
     }
   }

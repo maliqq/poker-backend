@@ -31,7 +31,7 @@ object GitVersionStrategy extends Plugin {
       def headCommitPart: Option[String] = headCommit map (sha => sha take 7)
 
       def dateVersionPart = {
-        val df = new java.text.SimpleDateFormat("yyyyMMddHHmmss")
+        val df = new java.text.SimpleDateFormat("yyyyMMdd-HHmmss")
         df setTimeZone java.util.TimeZone.getTimeZone("GMT")
         df format (new java.util.Date)
       }

@@ -62,7 +62,8 @@ object PokernoBuild extends Build {
     "org.slf4j" % "slf4j-simple" % "1.7.5",
     "com.typesafe.akka" %% "akka-actor" % "2.2.3",
     //"com.twitter" % "ostrich" % "2.3.0"
-    "com.twitter" %% "util-core" % "6.10.0"
+    "com.twitter" %% "util-core" % "6.10.0",
+    "commons-codec" % "commons-codec" % "1.9"
   )
   
   lazy val testDeps = Seq(

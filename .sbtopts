@@ -1,1 +1,1 @@
--Dfile.encoding=UTF-8 -XXMaxPermGen=1024m
+-Dfile.encoding=UTF-8 -XX:MaxPermGen=1024M

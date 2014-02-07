@@ -28,8 +28,7 @@ private[gameplay] trait Showdown {
     } reverse
     
     val max = sorted.head
-    
-    sorted.takeWhile(_._2 == max)
+    sorted.takeWhile(_._2 == max._2)
   }
 
   private def declareExclusiveWinner(pot: Pot, box: Tuple2[Seat, Int]) = {
@@ -62,6 +61,9 @@ private[gameplay] trait Showdown {
         winnersHigh = best(side, hi.get).map(_._1)
       
       def splitWinners(winners: List[Player], amount: Decimal): Map[Player, Decimal] = {
+        if (winners.isEmpty)
+          return Map.empty // prevent DivisionByZero
+        
         val share = amount / winners.length
         winners.foldLeft[Map[Player, Decimal]](Map.empty) {
           case (result, winner) =>
@@ -71,6 +73,7 @@ private[gameplay] trait Showdown {
 
       var winners: Map[Player, Decimal] = Map.empty
       
+      // TODO остаток от деления
       if (split && bestLow.isDefined) {
         winners ++= splitWinners(winnersLow, total / 2.0)
         winners ++= splitWinners(winnersHigh, total / 2.0)

@@ -67,10 +67,26 @@ class Hand(
 
   def compare(other: Hand): Int = Ranking.compare(this, other)
 
-  def equals(other: Hand): Boolean = rank.get == other.rank.get &&
-    high == other.high &&
-    value == other.value &&
-    kicker == other.kicker
+  private def equalKinds(a: List[Card], b: List[Card]): Boolean = {
+    if (a.size != b.size) return false
+    
+    a.zipWithIndex foreach { case (card, i) =>
+      val otherCard = b(i)
+      if (card.kind != otherCard.kind) return false
+    }
+    
+    return true
+  }
+  
+  override def equals(o: Any): Boolean = o match {
+    case other: Hand =>
+      Console printf("%scomparing %s with%s%s", Console.BLUE, this, other, Console.RESET)
+      rank.get == other.rank.get &&
+        equalKinds(high, other.high) &&
+        equalKinds(value, other.value) &&
+        equalKinds(kicker, other.kicker)
+    case _ => false
+  } 
 
   override def toString = "rank=%s high=%s value=%s kicker=%s" format (rank, high, value, kicker)
 

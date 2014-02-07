@@ -4,7 +4,7 @@ import org.scalatest._
 import org.scalatest.matchers._
 import org.scalatest.matchers.ShouldMatchers._
 
-import akka.actor.{ActorSystem, Props}
+import akka.actor.{ ActorSystem, Props }
 import akka.testkit.TestKit
 import akka.testkit.TestActorRef
 

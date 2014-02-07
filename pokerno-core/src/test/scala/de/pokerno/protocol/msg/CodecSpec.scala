@@ -11,7 +11,7 @@ import de.pokerno.protocol
 
 class CodecSpec extends FunSpec with ClassicMatchers {
   describe("Codec") {
-    
+
     describe("MsgPack") {
       it("ButtonChange") {
         val msg = ButtonChange(6)
@@ -31,7 +31,7 @@ class CodecSpec extends FunSpec with ClassicMatchers {
     }
 
     import Conversions._
-    
+
     describe("Json") {
       /*
       it("AddBet") {
@@ -62,7 +62,7 @@ class CodecSpec extends FunSpec with ClassicMatchers {
         val recover = Codec.Json.decode[Message](data)
         recover.asInstanceOf[ButtonChange].button should equal(msg.button)
       }*/
-      
+
       it("GameChange") {}
       it("StakeChange") {}
       it("PlayStart") {}

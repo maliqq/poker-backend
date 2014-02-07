@@ -10,16 +10,16 @@ trait Variation {
 
 object Game {
   implicit def string2limit(v: String): Option[Limit] = v match {
-    case "no-limit" | "nolimit" | "no" =>
+    case "no-limit" | "nolimit" | "no" ⇒
       Some(NoLimit)
-    case "fixed-limit" | "fixedlimit" | "fixed" =>
+    case "fixed-limit" | "fixedlimit" | "fixed" ⇒
       Some(FixedLimit)
-    case "pot-limit" | "potlimit" | "pot" =>
+    case "pot-limit" | "potlimit" | "pot" ⇒
       Some(PotLimit)
-    case _ =>
+    case _ ⇒
       None
-  } 
-  
+  }
+
   trait Limit {
     def raise(stack: Decimal, bb: Decimal, potSize: Decimal): Tuple2[Decimal, Decimal]
   }
@@ -65,7 +65,7 @@ object Game {
         Some(Triple27)
       case "badugi" ⇒
         Some(Badugi)
-      case _ =>
+      case _ ⇒
         None
     }
   }
@@ -114,7 +114,7 @@ object Game {
         Some(Game.Eight)
       case "horse" ⇒
         Some(Game.Horse)
-      case _ => None
+      case _ ⇒ None
     }
   }
 
@@ -131,25 +131,25 @@ object Game {
   final val FullBoardSize = 5
 
   case class Options(
-    group: Group = Holdem,
-    hasBlinds: Boolean = false,
-    hasAnte: Boolean = false,
-    hasBringIn: Boolean = false,
-    hasBoard: Boolean = false,
-    hasVela: Boolean = false,
+      group: Group = Holdem,
+      hasBlinds: Boolean = false,
+      hasAnte: Boolean = false,
+      hasBringIn: Boolean = false,
+      hasBoard: Boolean = false,
+      hasVela: Boolean = false,
 
-    discards: Boolean = false,
-    reshuffle: Boolean = false,
+      discards: Boolean = false,
+      reshuffle: Boolean = false,
 
-    maxTableSize: Int = MaxTableSize,
+      maxTableSize: Int = MaxTableSize,
 
-    pocketSize: Int = 0,
-    streetsNum: Int = 0,
-    hiRanking: Option[Hand.Ranking] = None,
-    loRanking: Option[Hand.Ranking] = None,
+      pocketSize: Int = 0,
+      streetsNum: Int = 0,
+      hiRanking: Option[Hand.Ranking] = None,
+      loRanking: Option[Hand.Ranking] = None,
 
-    defaultLimit: Limit = NoLimit) {
-    
+      defaultLimit: Limit = NoLimit) {
+
     // на случай когда колода задается вручную
     def minDeckSize = {
       var n = maxTableSize * pocketSize
@@ -157,20 +157,20 @@ object Game {
       if (discards) n += pocketSize
       n
     }
-    
+
     override def toString = {
       val b = new StringBuilder
-      
+
       b.append(" group=%s max-table-size=%d pocket-size=%d streets-num=%d default-limit=%s".format(
-          group,
-          maxTableSize,
-          pocketSize,
-          streetsNum,
-          defaultLimit))
-      
+        group,
+        maxTableSize,
+        pocketSize,
+        streetsNum,
+        defaultLimit))
+
       if (hiRanking.isDefined) b.append(" hi-ranking=%s", hiRanking.get)
       if (loRanking.isDefined) b.append(" lo-ranking=%s", loRanking.get)
-      
+
       if (hasBlinds) b.append(" ✓blinds")
       if (hasAnte) b.append(" ✓ante")
       if (hasBringIn) b.append(" ✓bring-in")
@@ -178,7 +178,7 @@ object Game {
       if (hasVela) b.append(" ✓vela")
       if (discards) b.append(" ✓discards")
       if (reshuffle) b.append(" ✓reshuffle")
-      
+
       b.toString
     }
   }
@@ -195,8 +195,8 @@ case class Game(game: Game.Limited, var Limit: Option[Game.Limit] = None, var Ta
         size
   }
   val limit: Game.Limit = Limit match {
-    case None       ⇒ options.defaultLimit
-    case Some(l)    ⇒ l
+    case None    ⇒ options.defaultLimit
+    case Some(l) ⇒ l
   }
   override def toString = "%s %s %s-max" format (game, limit, tableSize)
 }

@@ -1,7 +1,7 @@
 package de.pokerno.backend.gateway
-import akka.actor.{Actor, ActorLogging}
-import akka.{zeromq => zmq}
-import de.pokerno.protocol.{msg => message, Codec => codec}
+import akka.actor.{ Actor, ActorLogging }
+import akka.{ zeromq ⇒ zmq }
+import de.pokerno.protocol.{ msg ⇒ message, Codec ⇒ codec }
 
 object Zeromq {
 
@@ -10,9 +10,9 @@ object Zeromq {
 
   case class Config(
       var host: String = defaultHost,
-      var port: Int = defaultPort, 
+      var port: Int = defaultPort,
       var topic: String = "") {
-    
+
     def address = f"tcp://$host:$port"
 
   }
@@ -29,9 +29,9 @@ class Zeromq(config: Zeromq.Config) extends Actor with ActorLogging {
   def receive = {
     case msg: message.Message ⇒
       socket ! encode(msg)
-    case msg =>
-      log info("unhandled: %s" format(msg))
+    case msg ⇒
+      log info ("unhandled: %s" format (msg))
   }
-  
+
   private def encode(msg: message.Message) = codec.Protobuf.encode(msg)
 }

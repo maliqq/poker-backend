@@ -1,7 +1,7 @@
 package de.pokerno.gameplay
 
 import de.pokerno.model._
-import de.pokerno.protocol.{msg => message}
+import de.pokerno.protocol.{ msg ⇒ message }
 
 import math.{ BigDecimal ⇒ Decimal }
 
@@ -15,7 +15,7 @@ private[gameplay] class BettingRound(val table: Table, val game: Game, val stake
     _acting = act
     current = act._2
   }
-  
+
   def seat = _acting._1
   def pos = _acting._2
   def box = (seat.player.get, pos)
@@ -39,7 +39,7 @@ private[gameplay] class BettingRound(val table: Table, val game: Game, val stake
     // FIXME
     //pot.complete()
   }
-  
+
   def forceBet(act: Tuple2[Seat, Int], betType: Bet.ForcedBet): Bet = {
     acting = act
 
@@ -65,40 +65,40 @@ private[gameplay] class BettingRound(val table: Table, val game: Game, val stake
       _raise = Range(List(stack, min) min, List(stack, max) min)
     }
   }
-  
+
   import de.pokerno.util.ConsoleUtils._
-  
+
   def addBet(_bet: Bet): Bet = {
     val (seat, pos) = _acting
     val player = seat.player.get
-    
+
     // alias for raise whole stack
     var bet = if (_bet.betType == Bet.AllIn)
       Bet.raise(seat.stack)
     else _bet
-    
+
     if (!bet.isValid(seat.amount, seat.put, _call, _raise)) {
       warn("bet %s is not valid; call=%.2f raise=%s", _bet, _call, _raise)
       bet = Bet.fold
     }
-    
+
     val _put = seat.put // before posting
     seat post bet
 
     def postBet() {
       val diff = bet.amount - _put
-      
+
       if (bet.betType == Bet.Raise)
         raiseCount += 1
-  
+
       if (bet.betType != Bet.Call && bet.amount > _call)
         _call = bet.amount
-  
+
       pot add (player, diff, seat.isAllIn)
     }
-  
+
     if (bet.amount != 0) postBet()
-    
+
     bet
   }
 

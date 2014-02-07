@@ -43,6 +43,6 @@ case class Stake(
       if (withBringIn) Some(rate(Bet.BringIn))
       else None
   }
-  
+
   private def rate(v: Bet.Value) = Rates.Default(v) * bigBlind
 }

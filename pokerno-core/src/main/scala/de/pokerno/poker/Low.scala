@@ -1,7 +1,7 @@
 package de.pokerno.poker
 
 private[poker] trait Low {
-  
+
   self: CardSet ⇒
 
   private[poker] def isLow: Option[Hand] = {

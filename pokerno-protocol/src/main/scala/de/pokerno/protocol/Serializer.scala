@@ -1,8 +1,8 @@
 package de.pokerno.protocol
 
 import com.dyuproject.protostuff.ByteString
-import com.fasterxml.jackson.core.{JsonParser, JsonGenerator}
-import com.fasterxml.jackson.databind.{SerializerProvider, DeserializationContext}
+import com.fasterxml.jackson.core.{ JsonParser, JsonGenerator }
+import com.fasterxml.jackson.databind.{ SerializerProvider, DeserializationContext }
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 

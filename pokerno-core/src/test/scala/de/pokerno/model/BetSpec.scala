@@ -63,27 +63,27 @@ class BetSpec extends FunSpec with ClassicMatchers {
         Bet.raise(50).isValid(stack, put, 200, range) should be(false)
       }
     }
-    
+
     it("type checks") {
       Array(
-          Bet.SmallBlind, Bet.BigBlind, Bet.Ante, Bet.BringIn, Bet.GuestBlind, Bet.Straddle
-      ) foreach { b =>
-        b.isInstanceOf[Bet.ForcedBet] should be(true)
-        val bet = Bet.forced(b, 1.0)
-        bet.isForced should be(true)
-      }
-      
+        Bet.SmallBlind, Bet.BigBlind, Bet.Ante, Bet.BringIn, Bet.GuestBlind, Bet.Straddle
+      ) foreach { b ⇒
+          b.isInstanceOf[Bet.ForcedBet] should be(true)
+          val bet = Bet.forced(b, 1.0)
+          bet.isForced should be(true)
+        }
+
       Array(
-          Bet.Check, Bet.Fold
-      ) foreach { b =>
-        b.isInstanceOf[Bet.PassiveBet] should be(true)
-      }
-      
+        Bet.Check, Bet.Fold
+      ) foreach { b ⇒
+          b.isInstanceOf[Bet.PassiveBet] should be(true)
+        }
+
       Array(
-          Bet.Raise, Bet.Call, Bet.AllIn
-      ) foreach { b =>
-        b.isInstanceOf[Bet.ActiveBet] should be(true)
-      }
+        Bet.Raise, Bet.Call, Bet.AllIn
+      ) foreach { b ⇒
+          b.isInstanceOf[Bet.ActiveBet] should be(true)
+        }
     }
   }
 }

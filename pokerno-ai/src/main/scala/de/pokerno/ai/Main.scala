@@ -20,11 +20,11 @@ object Main {
   val bots = (0 to game.tableSize - 1).map { i ⇒
     system.actorOf(Props(classOf[bot.Bot], instance, i, stack, game, stake))
   }
-  
+
   def main(args: Array[String]) {
     val gw = system.actorOf(Props(classOf[Http.Gateway]))
     val httpServer = new http.Server(gw,
-        http.Config(port = 8080, webSocket = Right(true))
+      http.Config(port = 8080, webSocket = Right(true))
     )
     httpServer.start
 

@@ -4,7 +4,7 @@ import util.Random
 
 object Deck {
   final val FullBoardSize = 5
-  
+
   def shuffle(cards: List[Card] = Card.All) = Random.shuffle(cards)
   def apply() = shuffle()
 

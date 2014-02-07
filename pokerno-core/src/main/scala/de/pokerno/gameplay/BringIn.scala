@@ -1,6 +1,6 @@
 package de.pokerno.gameplay
 
-import de.pokerno.protocol.{msg => message}
+import de.pokerno.protocol.{ msg ⇒ message }
 
 import akka.actor.ActorRef
 
@@ -8,7 +8,7 @@ import akka.actor.ActorRef
  * Стадия принудительных ставок - бринг-ин
  */
 private[gameplay] trait BringIn {
-  
+
   def bringIn(ctx: StageContext) {
     val (seat, pos) = ctx.gameplay.round.seats filter (_._1 isActive) minBy {
       case (_seat, _pos) ⇒
@@ -19,5 +19,5 @@ private[gameplay] trait BringIn {
     // FIXME wtf?
     ctx.ref ! Betting.Require(ctx.gameplay.stake.bringIn get, ctx.gameplay.game.limit)
   }
-  
+
 }

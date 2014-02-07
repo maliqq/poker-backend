@@ -26,13 +26,13 @@ class Bet(val betType: Bet.Value, val amount: Decimal = .0) {
       else
         false
   }
-  
+
   def isForced: Boolean = betType.isInstanceOf[Bet.ForcedBet]
-  
+
   override def equals(other: Any): Boolean = {
     other match {
-      case b: Bet => betType == b.betType && amount == b.amount
-      case _ => false
+      case b: Bet ⇒ betType == b.betType && amount == b.amount
+      case _      ⇒ false
     }
   }
 }
@@ -40,7 +40,7 @@ class Bet(val betType: Bet.Value, val amount: Decimal = .0) {
 object Bet {
   trait Value
   trait Rateable // FIXME - ?
-  
+
   object DoubleBet extends Value with Rateable
 
   abstract class ForcedBet extends Value

@@ -1,6 +1,6 @@
 package de.pokerno.replay
 
-import de.pokerno.format.text.Lexer.{Token, BettingSemantic, Tags => tags}
+import de.pokerno.format.text.Lexer.{ Token, BettingSemantic, Tags ⇒ tags }
 import de.pokerno.poker.Card
 import de.pokerno.protocol._
 import de.pokerno.protocol.Conversions._
@@ -14,18 +14,19 @@ private[replay] object Scenario {
   def parse(src: scala.io.Source) = {
     val scenario = new Scenario()
 
-    text.Parser.parse(src).foreach { case (line, lineno, tag) =>
-      scenario.process(tag)
+    text.Parser.parse(src).foreach {
+      case (line, lineno, tag) ⇒
+        scenario.process(tag)
     }
-    
+
     scenario
   }
 }
 
 private[replay] class Scenario {
-  
+
   implicit def arrayByte2byteString(a: Array[Byte]) = com.dyuproject.protostuff.ByteString.copyFrom(a)
-  
+
   var table: Option[wire.Table] = None
   var stake: Option[wire.Stake] = None
   var variation: Option[wire.Variation] = None
@@ -33,60 +34,60 @@ private[replay] class Scenario {
   var speed: Int = 1
   var deck: Option[Array[Byte]] = None
   val streets = new java.util.ArrayList[String]()
-  
+
   def currentStreet = {
     if (streets.isEmpty) throw ReplayError("street not started yet")
     streets.get(streets.size - 1)
   }
-  
+
   val actions = new java.util.HashMap[String, java.util.ArrayList[rpc.Request]]()
-  
+
   var showdown: Boolean = false
-  
+
   var processor: Function1[Token, Unit] = processMain
-  
+
   def process(t: Token) = processor(t)
 
   def processMain(t: Token): Unit = t match {
-    case tags.Table(_id, size) =>
+    case tags.Table(_id, size) ⇒
       val t = new wire.Table(
-          size,
-          seats = new java.util.ArrayList[wire.Seat]()
-          )
-      
-      (0 until size) foreach { i =>
+        size,
+        seats = new java.util.ArrayList[wire.Seat]()
+      )
+
+      (0 until size) foreach { i ⇒
         t.seats.add(null)
       }
-      
+
       table = Some(t)
       id = Some(_id.unquote)
       processor = processTable
-      
-    case tags.Speed(duration) =>
+
+    case tags.Speed(duration) ⇒
       if (duration >= 0 && duration <= 10)
         speed = duration
-      
-    case tags.Street(name) =>
+
+    case tags.Street(name) ⇒
       streets.add(name)
       actions.put(name, new java.util.ArrayList[rpc.Request]())
       processor = processStreet
-    
-    case tags.Showdown() =>
+
+    case tags.Showdown() ⇒
       showdown = true
-      
-    case tags.Deck(cards) =>
+
+    case tags.Deck(cards) ⇒
       deck = Some(cards)
-      
-    case x =>
-      Console printf("UNHANDLED: %s\n", x)
+
+    case x ⇒
+      Console printf ("UNHANDLED: %s\n", x)
   }
-  
+
   import collection.JavaConversions._
-  
+
   def bet(player: String, bet: wire.Bet): Unit = {
     val t = table.getOrElse(throw ReplayError("betting before TABLE"))
-    
-    for (seat <- t.seats) {
+
+    for (seat ← t.seats) {
       if (seat.player == player) {
         actions.get(currentStreet).add(rpc.AddBet(seat.player, bet))
       }
@@ -95,94 +96,94 @@ private[replay] class Scenario {
   }
 
   def processStreet(tok: Token) = tok match {
-    case tags.Ante(player) =>
+    case tags.Ante(player) ⇒
       bet(player.unquote,
-          wire.Bet(wire.BetSchema.BetType.ANTE, stake.get.ante))
-    
-    case _: BettingSemantic =>
+        wire.Bet(wire.BetSchema.BetType.ANTE, stake.get.ante))
+
+    case _: BettingSemantic ⇒
       val t = table.getOrElse(throw ReplayError("betting before TABLE"))
       val s = stake.getOrElse(throw ReplayError("STAKE is required"))
       tok match {
-        case _: tags.Antes =>
-          for (seat <- t.seats) {
+        case _: tags.Antes ⇒
+          for (seat ← t.seats) {
             if (seat.player != null) {
               val ante = wire.Bet(wire.BetSchema.BetType.ANTE, s.ante)
               actions.get(currentStreet).add(rpc.AddBet(seat.player, ante))
             }
           }
-          
-        case tags.Sb(player) =>
+
+        case tags.Sb(player) ⇒
           bet(player.unquote,
-              wire.Bet(wire.BetSchema.BetType.SB, s.smallBlind))
-          
-        case tags.Bb(player) =>
+            wire.Bet(wire.BetSchema.BetType.SB, s.smallBlind))
+
+        case tags.Bb(player) ⇒
           val s = stake.getOrElse(throw ReplayError("STAKE is required"))
           bet(player.unquote,
-              wire.Bet(wire.BetSchema.BetType.BB, s.bigBlind))
-          
-        case tags.Raise(player, amount) =>
+            wire.Bet(wire.BetSchema.BetType.BB, s.bigBlind))
+
+        case tags.Raise(player, amount) ⇒
           bet(player.unquote,
-              wire.Bet(wire.BetSchema.BetType.RAISE, amount))
-          
-        case tags.AllIn(player) =>
+            wire.Bet(wire.BetSchema.BetType.RAISE, amount))
+
+        case tags.AllIn(player) ⇒
           bet(player.unquote,
-              wire.Bet(wire.BetSchema.BetType.ALLIN))
-          
-        case tags.Call(player, amount) =>
+            wire.Bet(wire.BetSchema.BetType.ALLIN))
+
+        case tags.Call(player, amount) ⇒
           bet(player.unquote,
-              wire.Bet(wire.BetSchema.BetType.CALL, amount))
-        
-        case tags.Check(player) =>
+            wire.Bet(wire.BetSchema.BetType.CALL, amount))
+
+        case tags.Check(player) ⇒
           bet(player.unquote,
-              wire.Bet(wire.BetSchema.BetType.CHECK))
-          
-        case tags.Fold(player) =>
+            wire.Bet(wire.BetSchema.BetType.CHECK))
+
+        case tags.Fold(player) ⇒
           bet(player.unquote,
-              wire.Bet(wire.BetSchema.BetType.FOLD))
+            wire.Bet(wire.BetSchema.BetType.FOLD))
       }
-      
-    case tags.Deal(player, cards, cardsNum) =>
-      
+
+    case tags.Deal(player, cards, cardsNum) ⇒
+
       val action = if (player != null)
         rpc.DealCards(wire.DealType.HOLE, player.unquote, cards, cardsNum)
       else
         rpc.DealCards(wire.DealType.BOARD, null, cards, null)
-        
+
       actions.get(currentStreet).add(action)
 
-    case s @ tags.Street(name) =>
+    case s @ tags.Street(name) ⇒
       processor = processMain
       process(s)
 
-    case x =>
+    case x ⇒
       processor = processMain
       process(x)
   }
 
   def processTable(t: Token) = t match {
-    case tags.Seat(pos, name, stack) =>
+    case tags.Seat(pos, name, stack) ⇒
       val t = table.getOrElse(throw ReplayError("SEAT is declared before TABLE"))
       val player = name.unquote
       t.seats(pos) = new wire.Seat(null, player, stack)
-      
-    case tags.Stake(sb, bb, ante) =>
+
+    case tags.Stake(sb, bb, ante) ⇒
       val s = wire.Stake(bb, sb, if (ante.isDefined) ante.get else null)
       stake = Some(s)
-          
-    case tags.Game(game, limit) =>
+
+    case tags.Game(game, limit) ⇒
       val t = table.getOrElse(throw ReplayError("GAME is declared before TABLE"))
       variation = Some(
-          new wire.Variation(
-              wire.VariationSchema.VariationType.GAME,
-              game = new wire.Game(game, limit, t.size)
-              )
+        new wire.Variation(
+          wire.VariationSchema.VariationType.GAME,
+          game = new wire.Game(game, limit, t.size)
         )
-      
-    case tags.Button(pos) =>
+      )
+
+    case tags.Button(pos) ⇒
       val t = table.getOrElse(throw ReplayError("BUTTON is declared before TABLE"))
       t.button = pos
-      
-    case x: Any =>
+
+    case x: Any ⇒
       processor = processMain
       process(x)
   }

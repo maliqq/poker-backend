@@ -3,7 +3,7 @@ package de.pokerno.gameplay
 import math.{ BigDecimal ⇒ Decimal }
 import de.pokerno.model._
 import de.pokerno.poker._
-import de.pokerno.protocol.{msg => message}
+import de.pokerno.protocol.{ msg ⇒ message }
 
 /*
  * Стадия вскрытия карт
@@ -11,11 +11,11 @@ import de.pokerno.protocol.{msg => message}
 private[gameplay] trait Showdown {
 
   g: ContextLike ⇒
-  
+
   import de.pokerno.util.ConsoleUtils._
-  
+
   // FIXME: equal hands
-  def best(pot: SidePot, hands: Map[Player, Hand]): Tuple2[Player, Hand] = {
+  private def best(pot: SidePot, hands: Map[Player, Hand]): Tuple2[Player, Hand] = {
     var winner: Option[Player] = None
     var best: Option[Hand] = None
 
@@ -28,7 +28,7 @@ private[gameplay] trait Showdown {
     }
   }
 
-  def declareWinner(pot: Pot, box: Tuple2[Seat, Int]) = {
+  private def declareExclusiveWinner(pot: Pot, box: Tuple2[Seat, Int]) = {
     val (seat, pos) = box
     pot.sidePots foreach { side ⇒
       val amount = side.total
@@ -38,9 +38,9 @@ private[gameplay] trait Showdown {
     }
   }
 
-  def declareWinners(pot: Pot, hi: Option[Map[Player, Hand]], lo: Option[Map[Player, Hand]]) = {
+  private def declareWinners(pot: Pot, hi: Option[Map[Player, Hand]], lo: Option[Map[Player, Hand]]) = {
     val split: Boolean = hi.isDefined && lo.isDefined
-    
+
     pot.sidePots foreach { side ⇒
       val total = side.total
       var winnerLow: Option[Player] = None
@@ -77,7 +77,7 @@ private[gameplay] trait Showdown {
     }
   }
 
-  def rank(player: Player, ranking: Hand.Ranking): Tuple2[List[Card], Hand] = {
+  private def rank(player: Player, ranking: Hand.Ranking): Tuple2[List[Card], Hand] = {
     val pocket = dealer pocket player
     val board = dealer.board
 
@@ -92,7 +92,7 @@ private[gameplay] trait Showdown {
     (pocket, hands.toList.max(Ranking))
   }
 
-  def showHands(ranking: Hand.Ranking): Map[Player, Hand] = {
+  private def showHands(ranking: Hand.Ranking): Map[Player, Hand] = {
     var hands: Map[Player, Hand] = Map.empty
 
     table.seatsAsList.zipWithIndex filter (_._1 inPot) foreach {
@@ -109,7 +109,7 @@ private[gameplay] trait Showdown {
   def showdown() {
     val stillInPot = table.seatsAsList.zipWithIndex filter (_._1 inPot)
     if (stillInPot.size == 1) {
-      declareWinner(round.pot, stillInPot head)
+      declareExclusiveWinner(round.pot, stillInPot head)
     } else if (stillInPot.size > 1) {
       var hiHands: Option[Map[Player, Hand]] = None
       var loHands: Option[Map[Player, Hand]] = None

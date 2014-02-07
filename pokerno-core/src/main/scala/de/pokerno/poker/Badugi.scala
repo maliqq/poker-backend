@@ -1,9 +1,9 @@
 package de.pokerno.poker
 
 private[poker] trait BadugiHand {
-  
+
   self: CardSet ⇒
-  
+
   def isBadugiOne: Option[Hand] =
     if (groupKind.size == 1) {
       new Hand(self, value = value take (1)) ranked Rank.Badugi.BadugiOne
@@ -25,8 +25,8 @@ private[poker] trait BadugiHand {
     val _suited = suited get 2
 
     if (_paired.isEmpty && _suited.isEmpty ||
-        _suited.isDefined && _suited.get.size != 1 ||
-        _paired.isDefined && _paired.get.size != 1)
+      _suited.isDefined && _suited.get.size != 1 ||
+      _paired.isDefined && _paired.get.size != 1)
       return None
 
     val (a: Card, b: Card, c: Card) = if (_paired.isDefined) {
@@ -59,7 +59,7 @@ private[poker] trait BadugiHand {
       (_a, _b, _c)
 
     }
-    
+
     new Hand(self, value = List(a, b, c)) ranked Rank.Badugi.BadugiThree
   }
 
@@ -70,7 +70,7 @@ private[poker] trait BadugiHand {
       val v = sets.get.head
       val d = value diff v
       val _a = d.head
-      
+
       (_a, v.filter { card ⇒ _a.suit != card.suit }.head)
 
     } else if (suited contains 3) {

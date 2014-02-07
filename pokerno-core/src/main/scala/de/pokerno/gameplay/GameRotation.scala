@@ -1,7 +1,7 @@
 package de.pokerno.gameplay
 
 import de.pokerno.model._
-import de.pokerno.protocol.{msg => message}
+import de.pokerno.protocol.{ msg ⇒ message }
 
 private[gameplay] trait GameRotation {
 
@@ -32,5 +32,5 @@ private[gameplay] trait GameRotation {
       f(nextGame)
     }
   }
-  
+
 }

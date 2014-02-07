@@ -35,24 +35,24 @@ private[poker] class CardSet(val value: List[Card], val ordering: Ordering[Card]
     }
     _gaps ++ List(_buffer)
   }
-  
+
   override def toString = "gaps=%s paired=%s suited=%s" format (gaps, paired, suited)
 }
 
 private[poker] class CardSetQualifier(
     _cards: List[Card],
     _ordering: Ordering[Card] = AceHigh) {
-  
+
   def qualify(q: Kind.Value.Kind) =
     new CardSet(
-        _cards filter { card ⇒ card.kind.toInt <= q.toInt },
-        _ordering
-      )
+      _cards filter { card ⇒ card.kind.toInt <= q.toInt },
+      _ordering
+    )
 
   def kick(_cards: List[Card]) =
     new CardSet(
-        _cards.diff(_cards).sorted(_ordering) take (5 - _cards.size),
-        _ordering
-      )
-  
+      _cards.diff(_cards).sorted(_ordering) take (5 - _cards.size),
+      _ordering
+    )
+
 }

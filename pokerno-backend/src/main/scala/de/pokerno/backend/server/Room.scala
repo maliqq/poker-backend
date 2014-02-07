@@ -10,14 +10,14 @@ object Room {
 
 class Room extends Actor {
   override def preStart {
-    
+
   }
-  
+
   def receive = {
-    case _ =>
+    case _ ⇒
   }
-  
+
   override def postStop {
-    
+
   }
 }

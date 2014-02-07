@@ -7,8 +7,8 @@ import akka.event.{ ActorEventBus, ScanningClassification }
 import akka.actor.actorRef2Scala
 
 private[gameplay] class Broker extends ActorEventBus
-                with ScanningClassification {
-  
+    with ScanningClassification {
+
   type Classifier = String
 
   trait Route
@@ -25,7 +25,7 @@ private[gameplay] class Broker extends ActorEventBus
   def compareClassifiers(a: Classifier, b: Classifier): Int = a compare b
 
   case class ListOfPlayers(v: List[Player])
-  
+
   def matches(classifier: Classifier, event: Event): Boolean = event.to match {
     case All             ⇒ true
     case One(id)         ⇒ id == classifier

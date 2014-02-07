@@ -7,7 +7,7 @@ object Seat {
   object State extends Enumeration {
     type State = Value
     def state(name: String) = new Val(nextId, name)
-    
+
     val Empty = state("empty")
     val Taken = state("taken")
     val Ready = state("ready")
@@ -21,10 +21,10 @@ object Seat {
     val Idle = state("idle")
     val Away = state("away")
   }
-  
+
   import State._
   type State = Value
-  
+
   case class IsTaken() extends Exception("seat is taken")
 }
 
@@ -68,7 +68,7 @@ class Seat {
   def playing() {
     _state = Seat.State.Play
   }
-  
+
   def idle() {
     _state = Seat.State.Idle
   }
@@ -88,7 +88,7 @@ class Seat {
     _state = if (_amount.toDouble == 0)
       Seat.State.AllIn
     else
-      Seat.State.Bet//Seat.State.Play
+      Seat.State.Bet //Seat.State.Play
   }
 
   def raise(amount: Decimal) {

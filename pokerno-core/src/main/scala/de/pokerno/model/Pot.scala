@@ -6,11 +6,11 @@ import java.util.Locale
 
 class SidePot(val cap: Option[Decimal] = None) {
   var members: Map[Player, Decimal] = Map.empty
-  
+
   def isMember(member: Player) = members.contains(member)
 
   import de.pokerno.util.ConsoleUtils._
-  
+
   info("| --- side pot with cap %s created", cap)
 
   def total: Decimal = members.values.sum
@@ -27,14 +27,14 @@ class SidePot(val cap: Option[Decimal] = None) {
       members += (member -> newValue)
       return .0
     }
-    
+
     val capAmount = cap.get
     if (capAmount > value) {
       warn("player %s capAmount (%s) > value(%s)", member, capAmount, value)
       members += (member -> capAmount)
       return newValue - capAmount
     }
-    
+
     amount
   }
 
@@ -43,7 +43,7 @@ class SidePot(val cap: Option[Decimal] = None) {
     val bet = value + left
     members += (member -> bet)
 
-    val _new = new SidePot(cap map { amt => amt - bet })
+    val _new = new SidePot(cap map { amt ⇒ amt - bet })
     _new.members = members
       .filter { case (key, _value) ⇒ _value > bet && key != member }
       .map { case (key, _value) ⇒ (key, _value - bet) }
@@ -53,24 +53,25 @@ class SidePot(val cap: Option[Decimal] = None) {
       case (key, _value) ⇒
         (key, List(_value, bet).min)
     }
-    
+
     warn("_old: %s\n_new: %s", _old, _new)
-    
+
     (_new, _old)
   }
 
   override def toString = {
     val s = new StringBuilder
-    
+
     s.append(
-        members.map { case (member, amount) ⇒
+      members.map {
+        case (member, amount) ⇒
           "%.2f (%s)" formatLocal (Locale.US, amount, member)
-        }.mkString(" + ")
-      )
+      }.mkString(" + ")
+    )
     s.append(" = %.2f" formatLocal (Locale.US, total))
     if (cap.isDefined)
       s.append(" (cap: %.2f)" formatLocal (Locale.US, cap.get))
-    
+
     s.toString()
   }
 }
@@ -110,36 +111,36 @@ class Pot {
     }
     //error("main=%s\nside=%s", main, side)
   }
-  
+
   def complete() {
     inactive ++= side ++ List(main)
     main = new SidePot
     side = List.empty
   }
-  
+
   private def allocate(member: Player, amount: Decimal) =
     side.foldLeft[Decimal](amount) {
       case (left, sidePot) ⇒
         sidePot add (member, left)
     }
-  
+
   def add(member: Player, amount: Decimal, isAllIn: Boolean = false): Decimal = {
     val left = allocate (member, amount)
-    
+
     if (isAllIn) {
       split (member, left)
       0
     } else main add (member, left)
   }
-  
+
   override def toString = {
     val s = new StringBuilder
-    
+
     s.append(main.toString)
-    sidePots foreach { sidePot =>
+    sidePots foreach { sidePot ⇒
       s.append(sidePot.toString + "\n")
     }
-    
+
     s.toString()
   }
 }

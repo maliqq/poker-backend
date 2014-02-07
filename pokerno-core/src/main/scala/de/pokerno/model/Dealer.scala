@@ -4,26 +4,25 @@ import de.pokerno.poker.{ Card, Deck }
 import de.pokerno.protocol.wire
 
 case class DealingOptions(
-    dealType: DealCards.Value,
-    cardsNum: Option[Int] = None
-)
+  dealType: DealCards.Value,
+  cardsNum: Option[Int] = None)
 
 object DealCards {
 
   abstract class Value {
     def apply(n: Int) = DealingOptions(this, Some(n))
   }
-  
+
   case object Board extends Value
-  
+
   case object Door extends Value
-  
+
   case object Hole extends Value
-  
+
 }
 
 class Dealer(private var _deck: Deck = new Deck) {
-  
+
   private var _board: List[Card] = List.empty
   def board = _board
 
@@ -36,12 +35,12 @@ class Dealer(private var _deck: Deck = new Deck) {
     _pockets += (p -> (pocket ++ cards))
     cards
   }
-  
+
   def dealPocket(n: Int, p: Player): List[Card] = {
     val cards = _deck share n
     dealPocket(cards, p)
   }
-  
+
   def dealBoard(cards: List[Card]) = {
     _board ++= cards
     cards

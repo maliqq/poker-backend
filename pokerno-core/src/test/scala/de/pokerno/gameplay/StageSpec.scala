@@ -6,15 +6,15 @@ import org.scalatest.matchers.ShouldMatchers._
 
 class StageSpec extends FunSpec with ClassicMatchers {
   import Stages._
-  
+
   describe("Stage") {
     it("sample") {
-      val stages = stage("x") { ctx =>
+      val stages = stage("x") { ctx ⇒
         Stage.Next
-      } chain stage("y") { ctx =>
+      } chain stage("y") { ctx ⇒
         Stage.Next
       }
-      
+
       stages.stages.size should equal(2)
     }
   }

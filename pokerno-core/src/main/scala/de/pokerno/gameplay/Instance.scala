@@ -1,8 +1,8 @@
 package de.pokerno.gameplay
-import akka.actor.{Actor, ActorLogging, ActorRef, Props, FSM}
+import akka.actor.{ Actor, ActorLogging, ActorRef, Props, FSM }
 import de.pokerno.model._
-import de.pokerno.protocol.Conversions.{wire2player, wire2bet, wire2decimal}
-import de.pokerno.protocol.{msg, rpc}
+import de.pokerno.protocol.Conversions.{ wire2player, wire2bet, wire2decimal }
+import de.pokerno.protocol.{ msg, rpc }
 
 import concurrent.duration._
 
@@ -24,9 +24,9 @@ object Instance {
   case object Pause
   case object Resume
   case object Start
-  
+
   case class Subscribe(ref: ActorRef, name: String)
-  
+
 }
 
 class Instance(val variation: Variation, val stake: Stake) extends Actor with ActorLogging with FSM[Instance.State, Instance.Data] {
@@ -96,8 +96,8 @@ class Instance(val variation: Variation, val stake: Stake) extends Actor with Ac
     case Event(addBet: rpc.AddBet, Instance.Run(running)) ⇒
       running ! Betting.Add(addBet.player, addBet.bet)
       stay()
-    
-    case Event(Instance.Subscribe(ref, name), _) =>
+
+    case Event(Instance.Subscribe(ref, name), _) ⇒
       events.broker.subscribe(ref, name)
       stay()
 

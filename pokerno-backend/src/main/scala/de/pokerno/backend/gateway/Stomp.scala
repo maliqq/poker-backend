@@ -11,15 +11,14 @@ object Stomp {
   case class Config(
     var host: String = "localhost",
     var port: Int = defaultPort,
-    var heartbeat: Int = defaultHb
-  )
-  
+    var heartbeat: Int = defaultHb)
+
   class Server extends Actor with ActorLogging {
     override def preStart() {
     }
-    
+
     def receive = {
-      case _ =>
+      case _ ⇒
     }
   }
 

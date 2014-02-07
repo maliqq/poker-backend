@@ -24,9 +24,9 @@ class DealerSpec extends FunSpec with ClassicMatchers {
       val discardedCards = dealer.discard(cards, player)
       dealer.pocket(player) should equal(discardedCards)
     }
-    
+
     it("type checks") {
-      Array(DealCards.Door, DealCards.Board, DealCards.Hole) foreach { d =>
+      Array(DealCards.Door, DealCards.Board, DealCards.Hole) foreach { d ⇒
         d.isInstanceOf[DealCards.Value] should be(true)
       }
     }

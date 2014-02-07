@@ -1,7 +1,7 @@
 package de.pokerno.poker
 
 private[poker] trait HighHand {
-  
+
   self: CardSet ⇒
 
   def isStraightFlush: Option[Hand] = isFlush match {

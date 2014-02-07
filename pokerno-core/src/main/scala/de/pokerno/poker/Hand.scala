@@ -2,7 +2,7 @@ package de.pokerno.poker
 
 object Hand {
   implicit def cards2CardSet(v: List[Card]): CardSet = new CardSet(v)
-  
+
   case class InvalidCards(str: String) extends Exception(str)
 
   sealed trait Ranking {
@@ -46,32 +46,31 @@ class Hand(
     val value: List[Card] = List.empty,
     var rank: Option[Rank.Value] = None,
     High: Either[List[Card], Boolean] = Right(false),
-    Kicker: Either[List[Card], Boolean] = Right(false)
-    ) extends Ordered[Hand] {
-  
+    Kicker: Either[List[Card], Boolean] = Right(false)) extends Ordered[Hand] {
+
   val kicker: List[Card] = Kicker match {
-    case Left(_cards) => _cards
-    case Right(true) => cards.value.diff(value).sorted(cards.ordering).reverse.take(5 - value.size)
-    case Right(false) => List.empty
+    case Left(_cards) ⇒ _cards
+    case Right(true)  ⇒ cards.value.diff(value).sorted(cards.ordering).reverse.take(5 - value.size)
+    case Right(false) ⇒ List.empty
   }
-  
+
   val high: List[Card] = High match {
-    case Left(_cards) => _cards
-    case Right(true) => value.sorted(cards.ordering).reverse.take(1)
-    case Right(false) => List.empty
+    case Left(_cards) ⇒ _cards
+    case Right(true)  ⇒ value.sorted(cards.ordering).reverse.take(1)
+    case Right(false) ⇒ List.empty
   }
-  
+
   def ranked(r: Rank.Value) = {
     rank = Some(r)
     Some(this)
   }
-  
+
   def compare(other: Hand): Int = Ranking.compare(this, other)
-  
+
   def equals(other: Hand): Boolean = rank.get == other.rank.get &&
-      high == other.high &&
-      value == other.value &&
-      kicker == other.kicker
+    high == other.high &&
+    value == other.value &&
+    kicker == other.kicker
 
   override def toString = "rank=%s high=%s value=%s kicker=%s" format (rank, high, value, kicker)
 
@@ -114,8 +113,8 @@ class Hand(
 
     case Rank.Badugi.BadugiFour ⇒
       "4-card badugi: %s + %s + %s + %s" format (value.head, value(1), value(2), value(3))
-    
-    case _ =>
+
+    case _ ⇒
       "(unknown: %s)" format this
   }
 }

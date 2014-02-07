@@ -2,9 +2,9 @@ package de.pokerno.ai.bot
 
 import de.pokerno.model._
 import de.pokerno.poker._
-import de.pokerno.protocol.{msg, rpc}
+import de.pokerno.protocol.{ msg, rpc }
 import de.pokerno.protocol.Conversions._
-import de.pokerno.protocol.wire.Conversions.{wire2range, wire2dealCards}
+import de.pokerno.protocol.wire.Conversions.{ wire2range, wire2dealCards }
 import math.{ BigDecimal ⇒ Decimal }
 import akka.actor.{ Actor, ActorRef }
 import util.Random
@@ -34,20 +34,20 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
     extends Actor with Context with Simple {
   val id: String = java.util.UUID.randomUUID().toString
   val player = new Player(id)
-  
+
   import context._
 
   override def preStart {
     deal ! rpc.JoinPlayer(pos = pos, amount = stack, player = player)
   }
-  
+
   def receive = {
     case msg.PlayStart() ⇒
       cards = List[Card]()
       board = List[Card]()
       pot = .0
       opponentsNum = 6
-    
+
     //case message.GameplayEvent(game: _game, stake: _stake)
     //  game = _game
     //  stake = _stake
@@ -63,28 +63,28 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
       bet = .0
 
     case msg.DealCards(_type, _cards, _pos, _player, _cardsNum) ⇒ (_type: DealCards.Value) match {
-      case DealCards.Board =>
+      case DealCards.Board ⇒
         board ++= _cards
-      case DealCards.Hole | DealCards.Door if _pos == pos =>
+      case DealCards.Hole | DealCards.Door if _pos == pos ⇒
         cards ++= _cards
-        Console printf("*** BOT #%d: %s\n", pos, Cards(cards).toConsoleString)
-      case _ =>
+        Console printf ("*** BOT #%d: %s\n", pos, Cards(cards).toConsoleString)
+      case _ ⇒
     }
-    
+
     case msg.RequireBet(_pos, _, call, raise) if _pos == pos ⇒
       system.scheduler.scheduleOnce(1 second) {
         decide(call, raise)
       }
-    
+
     case msg.BetAdd(_pos, _player, _bet) if _pos == pos ⇒
       bet = _bet.amount
-    
-    case _ =>
+
+    case _ ⇒
   }
 
   def addBet(b: Bet) {
     Console printf ("%s*** BOT #%d: %s%s\n", Console.CYAN, pos, b, Console.RESET)
-    
+
     deal ! rpc.AddBet(id, b)
   }
 
@@ -139,20 +139,20 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
     }
 
     action match {
-      case Action.Fold      ⇒ doFold()
-      
+      case Action.Fold ⇒ doFold()
+
       case Action.CheckFold ⇒
         if (call == bet)
           doCheck()
         else
           doFold()
-      
+
       case Action.CheckCall ⇒
         if (call == bet || call.toDouble == .0)
           doCheck()
         else if (call > .0)
           doCall(call)
-      
+
       case Action.Raise ⇒
         if (minRaise == maxRaise)
           doRaise(maxRaise)

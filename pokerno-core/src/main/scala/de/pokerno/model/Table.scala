@@ -15,43 +15,44 @@ object Table { // FIXME use conversions
   case object Active extends State
   case object Paused extends State
   case object Closed extends State
-  
+
 }
 
 class Table(val size: Int) {
   private val _seats = new Seats(List.fill(size) { new Seat })
   def seats = _seats
-  def seatsAsList = _seats:List[Seat]
-  
+  def seatsAsList = _seats: List[Seat]
+
   private val _button = new Round(size)
   def button = _button
-  
+
   override def toString = {
     val b = new StringBuilder
-    
+
     b.append("size=%d\n" format size)
-    b.append("button=%d\n" format(button: Int))
+    b.append("button=%d\n" format (button: Int))
     b.append(_seats toString)
-    
+
     b.toString()
   }
 
   private val _seating: mutable.Map[Player, Int] = mutable.Map.empty
-  
+
   type Box = (Player, Int)
 
-  def boxes = seatsAsList.filter(_.player.isDefined).zipWithIndex.map { case (seat, i) =>
-    (seat.player.get, i)
+  def boxes = seatsAsList.filter(_.player.isDefined).zipWithIndex.map {
+    case (seat, i) ⇒
+      (seat.player.get, i)
   }
 
   def pos(player: Player): Option[Int] =
     _seating.get(player)
 
-  def box(player: Player): Option[Box] = pos(player).map { i =>
+  def box(player: Player): Option[Box] = pos(player).map { i ⇒
     (player, i)
   }
 
-  def seat(player: Player): Option[(Seat, Int)] = pos(player).map { i =>
+  def seat(player: Player): Option[(Seat, Int)] = pos(player).map { i ⇒
     (seatsAsList(i), i)
   }
 

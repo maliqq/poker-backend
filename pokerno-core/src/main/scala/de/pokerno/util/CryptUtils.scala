@@ -12,6 +12,11 @@ object CryptUtils {
   class MessageEncryptor(secret: String) {
     private val key = generateKey(secret)
     
+    lazy val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+    lazy val mac = Mac.getInstance("HmacSHA1")
+  
+    final val delim = "--"
+    
     import collection.JavaConversions._
     
     private def generateKey(secret: String): SecretKeySpec = {
@@ -21,24 +26,47 @@ object CryptUtils {
       new SecretKeySpec(hash, "AES")
     }
     
+    def verify(value: String): Array[Byte] = {
+      val Array(data, digest) = value.split(delim, 2)
+      if (digest == generateDigest(data)) Base64.decodeBase64(data)
+      else null // TODO exception
+    }
+    
+    def decrypt_and_verify(value: String) = {
+      val data = verify(value)
+      decrypt(new String(data))
+    }
+    
     def encrypt(value: String): String = {
-      val aes = Cipher.getInstance("AES")
-      
       val iv = new Array[Byte](16)
       util.Random.nextBytes(iv)
       
-      aes.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv))
+      cipher.init(Cipher.ENCRYPT_MODE,
+          key,
+          new IvParameterSpec(iv))
       
       Base64.encodeBase64String(
-          aes.doFinal(value.getBytes("UTF-8"))
-        ) + "--" + Base64.encodeBase64String(iv)
+          cipher.doFinal(value.getBytes("UTF-8"))
+        ) + delim + Base64.encodeBase64String(iv)
+    }
+    
+    def decrypt(value: String) = {
+      val Array(msg, iv, _*) = value.split(delim, 2)
+      cipher.init(Cipher.DECRYPT_MODE,
+          key,
+          new IvParameterSpec(Base64.decodeBase64(iv)))
+      cipher.update(Base64.decodeBase64(msg))
+      cipher.doFinal()
     }
     
     def encryptWithSignature(value: String): String = {
-      val mac = Mac.getInstance("HmacSHA1")
+      Base64.encodeBase64String(encrypt(value).getBytes) + delim + generateDigest(value) 
+    }
+    
+    def generateDigest(value: String) = {
       mac.init(key)
       
-      encrypt(value) + "--" + Hex.encodeHexString(mac.doFinal(value.getBytes("UTF-8"))) 
+      Hex.encodeHexString(mac.doFinal(value.getBytes("UTF-8")))
     }
   }
   

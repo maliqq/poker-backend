@@ -118,8 +118,9 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
     _put == toCall
   }
 
-  def check() {
+  def check(): Decimal = {
     _state = Seat.State.Bet
+    .0
   }
 
   // FOLD
@@ -127,7 +128,7 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
     inPlay
   }
   
-  def fold() = {
+  def fold(): Decimal = {
     _state = Seat.State.Fold
     _put = .0
     .0
@@ -139,9 +140,10 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
     canCall(amt, toCall)
   }
   
-  def force(amt: Decimal) {
+  def force(amt: Decimal): Decimal = {
     put = amt
     if (!isAllIn) _state = Seat.State.Play
+    amt
   }
 
   // RAISE
@@ -151,12 +153,14 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
   
   private def _canRaise(amt: Decimal, toRaise: Tuple2[Decimal, Decimal]): Boolean = {
     val (min, max) = toRaise
-    amt <= amount && amt >= min && amt <= max
+    amt <= stack && amt >= min && amt <= max
   }
   
-  def raise(amt: Decimal) {
-    put = amt - _put
+  def raise(amt: Decimal): Decimal = {
+    val diff = amt - _put
+    put = diff
     if (!isAllIn) _state = Seat.State.Bet
+    diff
   }
   
   // CALL
@@ -171,9 +175,10 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
     amt + _put == toCall && amt <= amount)
   }
   
-  def call(amt: Decimal) = {
+  def call(amt: Decimal): Decimal = {
     put += amt
     if (!isAllIn) _state = Seat.State.Bet
+    amt
   }
 
   def didCall(amt: Decimal): Boolean = {
@@ -189,7 +194,7 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
     inPlay || isPostedBB
   }
   
-  def postBet(bet: Bet) =
+  def postBet(bet: Bet): Decimal =
     bet.betType match {
       case Bet.Fold             ⇒ fold
       case Bet.Raise            ⇒ raise(bet.amount)

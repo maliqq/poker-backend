@@ -13,10 +13,13 @@ private[gameplay] trait Betting
     extends Antes
     with Blinds {
 
+  import de.pokerno.util.ConsoleUtils._
+  
   // require bet
   def requireBet(ctx: StageContext, acting: Tuple2[Seat, Int]) {
     val round = ctx.gameplay.round
     round requireBet acting
+    info("[betting] require %s to call %s and raise %s", acting, round.call, round.raise)
     ctx.gameplay.events.requireBet(round.box, round.call, round.raise)
   }
 
@@ -100,7 +103,6 @@ private[gameplay] object Betting {
         return Some(Betting.Done)
       }
 
-      info("[betting] require bet %s", playing.head)
       gameplay.requireBet(stageContext, playing.head)
 
       None
@@ -278,7 +280,7 @@ private[gameplay] object Betting {
         //          }
         nextTurn()
 
-        debug("activeBets=%s", activeBets)
+        //debug("activeBets=%s", activeBets)
 
         val betsLeft = activeBets.dropWhile { addBet ⇒
           val acting = round.acting

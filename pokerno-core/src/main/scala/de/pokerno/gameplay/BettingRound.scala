@@ -74,7 +74,7 @@ private[gameplay] class BettingRound(val table: Table, val game: Game, val stake
 
     // alias for raise whole stack
     var b = if (_bet.betType == Bet.AllIn)
-      Bet.raise(seat.amount)
+      Bet.raise(seat.stack)
     else _bet
     
     val valid = b.betType match {
@@ -99,7 +99,7 @@ private[gameplay] class BettingRound(val table: Table, val game: Game, val stake
       b = Bet.fold
     }
 
-    seat postBet b
+    val diff = seat postBet b
 
     if (b.isActive) {
       if (b.isRaise)
@@ -108,7 +108,7 @@ private[gameplay] class BettingRound(val table: Table, val game: Game, val stake
       if (!b.isCall && seat.put > _call)
         _call = seat.put
 
-      pot add (player, b.amount, seat.isAllIn)
+      pot add (player, diff, seat.isAllIn)
     }
     
     b

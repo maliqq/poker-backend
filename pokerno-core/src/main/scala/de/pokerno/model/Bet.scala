@@ -8,28 +8,28 @@ class Bet(val betType: Bet.Value, val amount: Decimal = .0) {
     if (amount > .0)
       "%s %.2f" formatLocal (Locale.US, betType.toString, amount)
     else betType.toString
-
-  def isValid(left: Decimal, put: Decimal, call: Decimal, raise: Range): Boolean = betType match {
-    case Bet.Fold  ⇒
-      // all-in can't fold
-      left != .0
-      
-    case Bet.Check ⇒
-      left != .0 && call == put
-      
-    case Bet.Call | Bet.Raise ⇒
-      amount <= left &&
-        (if (betType == Bet.Call)
-          amount + put == call
-        else raise.isValid(amount, left))
-
-    case Bet.Call | _: Bet.ForcedBet ⇒
-      amount <= left &&
-        (amount + put == call ||
-        (amount < call && amount == left))
-
-    case _ ⇒ false
-  }
+//
+//  def isValid(left: Decimal, put: Decimal, call: Decimal, raise: Range): Boolean = betType match {
+//    case Bet.Fold  ⇒
+//      // all-in can't fold
+//      left != .0
+//      
+//    case Bet.Check ⇒
+//      left != .0 && call == put
+//      
+//    case Bet.Call | Bet.Raise ⇒
+//      amount <= left &&
+//        (if (betType == Bet.Call)
+//          amount + put == call
+//        else raise.isValid(amount, left))
+//
+//    case Bet.Call | _: Bet.ForcedBet ⇒
+//      amount <= left &&
+//        (amount + put == call ||
+//        (amount < call && amount == left))
+//
+//    case _ ⇒ false
+//  }
 
   def isActive: Boolean = amount > .0
   def isForced: Boolean = betType.isInstanceOf[Bet.ForcedBet]

@@ -34,35 +34,35 @@ class BetSpec extends FunSpec with ClassicMatchers {
       Bet.call(1.0).toString should equal("Call 1.00")
       Bet.raise(2.0).toString should equal("Raise 2.00")
     }
-
-    describe("isValid") {
-      it("fold") {
-        Bet.fold.isValid(1000, 10, 10, (10.0, 10.0)) should be(true)
-      }
-
-      it("check") {
-        Bet.check.isValid(1000, 10, 10, (.0, .0)) should be(true)
-        Bet.check.isValid(1000, 10, 100, (.0, .0)) should be(false)
-      }
-
-      it("call") {
-        val range: Range = (.0, .0)
-        val stack = 1000
-        val put = 10
-        Bet.call(100).isValid(stack, put, 100, range) should be(true)
-        Bet.call(2000).isValid(stack, put, 100, range) should be(false)
-        Bet.call(100).isValid(stack, put, 200, range) should be(false)
-      }
-
-      it("raise") {
-        val range: Range = (100.0, 200.0)
-        val stack = 1000
-        val put = 50
-        Bet.raise(100).isValid(stack, put, 100, range) should be(true)
-        Bet.raise(300).isValid(stack, put, 100, range) should be(false)
-        Bet.raise(50).isValid(stack, put, 200, range) should be(false)
-      }
-    }
+//
+//    describe("isValid") {
+//      it("fold") {
+//        Bet.fold.isValid(1000, 10, 10, (10.0, 10.0)) should be(true)
+//      }
+//
+//      it("check") {
+//        Bet.check.isValid(1000, 10, 10, (.0, .0)) should be(true)
+//        Bet.check.isValid(1000, 10, 100, (.0, .0)) should be(false)
+//      }
+//
+//      it("call") {
+//        val range: Range = (.0, .0)
+//        val stack = 1000
+//        val put = 10
+//        Bet.call(100).isValid(stack, put, 100, range) should be(true)
+//        Bet.call(2000).isValid(stack, put, 100, range) should be(false)
+//        Bet.call(100).isValid(stack, put, 200, range) should be(false)
+//      }
+//
+//      it("raise") {
+//        val range: Range = (100.0, 200.0)
+//        val stack = 1000
+//        val put = 50
+//        Bet.raise(100).isValid(stack, put, 100, range) should be(true)
+//        Bet.raise(300).isValid(stack, put, 100, range) should be(false)
+//        Bet.raise(50).isValid(stack, put, 200, range) should be(false)
+//      }
+//    }
 
     it("type checks") {
       Array(

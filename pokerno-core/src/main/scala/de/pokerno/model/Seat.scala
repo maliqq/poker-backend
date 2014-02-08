@@ -75,14 +75,9 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
   private var _put: Decimal = .0
   def put = _put
   
-  def put_+=(amount: Decimal) {
+  def put_=(amount: Decimal) {
     net(-amount)
     _put += amount
-  }
-  
-  def put_=(amount: Decimal) {
-    net(_put - amount)
-    _put = amount
   }
   
   // total stack
@@ -160,7 +155,7 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
   }
   
   def raise(amt: Decimal) {
-    put = amt
+    put = amt - _put
     if (!isAllIn) _state = Seat.State.Bet
   }
   

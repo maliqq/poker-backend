@@ -18,6 +18,4 @@ object Range {
 case class Range(value: Tuple2[Decimal, Decimal] = (.0, .0)) {
   def min = value._1
   def max = value._2
-
-  def isValid(amount: Decimal, available: Decimal) = amount <= max && (amount >= min || amount == available)
 }

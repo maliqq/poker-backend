@@ -83,7 +83,7 @@ private[gameplay] object Betting {
 
       round.seats filter (_._1 inPlay) foreach {
         case (seat, pos) ⇒
-          if (!seat.isCalled(round.call)) {
+          if (!seat.didCall(round.call)) {
             //warn("not called, still playing: %s", seat)
             seat.playing()
           }

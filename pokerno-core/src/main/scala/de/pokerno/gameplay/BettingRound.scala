@@ -55,13 +55,13 @@ private[gameplay] class BettingRound(val table: Table, val game: Game, val stake
     acting = act
     val limit = game.limit
 
-    val bb = if (bigBets) stake.bigBlind * 2 else stake.bigBlind
+    val blind = if (bigBets) stake.bigBlind * 2 else stake.bigBlind
     val stack = seat.stack
 
     if (stack < _call || raiseCount >= MaxRaiseCount)
       _raise = (.0, .0)
     else {
-      var (min, max) = limit raise (stack, bb + _call, pot.total)
+      val (min, max) = limit raise (stack, blind + _call, pot.total)
       _raise = Range(List(stack, min) min, List(stack, max) min)
     }
   }
@@ -73,33 +73,45 @@ private[gameplay] class BettingRound(val table: Table, val game: Game, val stake
     val player = seat.player.get
 
     // alias for raise whole stack
-    var bet = if (_bet.betType == Bet.AllIn)
-      Bet.raise(seat.stack)
+    var b = if (_bet.betType == Bet.AllIn)
+      Bet.raise(seat.amount)
     else _bet
+    
+    val valid = b.betType match {
+      case Bet.Fold =>
+        seat.canFold
 
-    if (!bet.isValid(seat.amount, seat.put, _call, _raise)) {
-      warn("bet %s is not valid; call=%.2f raise=%s", _bet, _call, _raise)
-      bet = Bet.fold
+      case Bet.Check =>
+        seat.canCheck(_call)
+      
+      case Bet.Call =>
+        seat.canCall(b.amount, _call)
+      
+      case Bet.Raise =>
+        seat.canRaise(b.amount, _raise)
+      
+      case f: Bet.ForcedBet =>
+        seat.canForce(b.amount, stake.amount(f))
     }
 
-    val _put = seat.put // before posting
-    seat post bet
+    if (!valid) {
+      warn("bet %s is not valid; call=%.2f raise=%s", _bet, _call, _raise)
+      b = Bet.fold
+    }
 
-    def postBet() {
-      val diff = bet.amount - _put
+    seat postBet b
 
-      if (bet.betType == Bet.Raise)
+    if (b.isActive) {
+      if (b.isRaise)
         raiseCount += 1
 
-      if (bet.betType != Bet.Call && bet.amount > _call)
-        _call = bet.amount
+      if (!b.isCall && seat.put > _call)
+        _call = seat.put
 
-      pot add (player, diff, seat.isAllIn)
+      pot add (player, b.amount, seat.isAllIn)
     }
-
-    if (bet.amount != 0) postBet()
-
-    bet
+    
+    b
   }
 
 }

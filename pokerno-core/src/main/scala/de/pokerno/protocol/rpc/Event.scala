@@ -5,20 +5,20 @@ import de.pokerno.protocol.{ Message ⇒ BaseMessage }
 
 case class PlayerEvent(
     @BeanProperty
-    `type`: PlayerEventSchema.EventType,
+    var `type`: PlayerEventSchema.EventType,
     @BeanProperty
-    player: String) extends BaseMessage {
+    var player: String) extends BaseMessage {
   def schema = PlayerEventSchema.SCHEMA
   def this() = this(null, null)
 }
 
 case class StackEvent(
     @BeanProperty
-    `type`: StackEventSchema.EventType,
+    var `type`: StackEventSchema.EventType,
     @BeanProperty
-    player: String,
+    var player: String,
     @BeanProperty
-    amount: java.lang.Double) extends BaseMessage {
+    var amount: java.lang.Double) extends BaseMessage {
   def schema = StackEventSchema.SCHEMA
   def this() = this(null, null, null)
 }

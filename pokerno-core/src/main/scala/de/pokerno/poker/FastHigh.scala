@@ -13,59 +13,59 @@ private[poker] trait FastHigh {
   final val FourKindFlag = 0x800000
   final val StraightFlushFlag = 0x900000
 
-  final val Flush = new Array[Int](8129)
-  final val Straight = new Array[Int](8129)
-  final val Top1Of16 = new Array[Int](8129)
-  final val Top1Of12 = new Array[Int](8129)
-  final val Top1Of8 = new Array[Int](8129)
-  final val Top2Of12 = new Array[Int](8129)
-  final val Top2Of8 = new Array[Int](8129)
-  final val Top3Of4 = new Array[Int](8129)
-  final val Top5 = new Array[Int](8129)
-  final val Bit1 = new Array[Int](8129)
-  final val Bit2 = new Array[Int](8129)
-
-  def doRank(hand: Int): Int = {
-    val s = hand & 0x1fff
-    val h = (hand >> 16) & 0x1fff
-    val d = (hand >> 32) & 0x1fff
-    val c = (hand >> 48) & 0x1fff
-
-    val flush = Flush(s) | Flush(h) | Flush(d) | Flush(c)
-    if (flush != 0)
-      return flush
-
-    var p1 = s
-    var p2 = p1 & h
-    p1 = p1 | h
-    var p3 = p2 & d
-    p2 = p2 | (p1 & d)
-    p1 = p1 | d
-    var p4 = p3 & c
-    p3 = p3 | (p2 & c)
-    p2 = p2 | (p1 & c)
-    p1 = p1 | c
-
-    if (Straight(p1) != 0)
-      return Straight(p1)
-
-    if (p2 == 0) // There are no pairs
-      return HighCardFlag | Top5(p1)
-
-    if (p3 == 0) { // There are pairs but no triplets
-      return if (Bit2(p2) == 0) OnePairFlag | Top1Of16(p2) | Top3Of4(p1 ^ Bit1(p2))
-      else TwoPairFlag | Top2Of12(p2) | Top1Of8(p1 ^ Bit2(p2))
-    }
-
-    if (p4 == 0) { // Deal with trips/sets/boats
-      return if ((p2 > p3) || ((p3 & (p3 - 1)) != 0)) FullHouseFlag | Top1Of16(p3) | Top1Of12(p2 ^ Bit1(p3))
-      else ThreeKindFlag | Top1Of16(p3) | Top2Of8(p1 ^ Bit1(p3))
-    }
-
-    FourKindFlag | Top1Of16(p4) | Top1Of12(p1 ^ p4)
-  }
-
   def init() {
+    val Flush = new Array[Int](8129)
+    val Straight = new Array[Int](8129)
+    val Top1Of16 = new Array[Int](8129)
+    val Top1Of12 = new Array[Int](8129)
+    val Top1Of8 = new Array[Int](8129)
+    val Top2Of12 = new Array[Int](8129)
+    val Top2Of8 = new Array[Int](8129)
+    val Top3Of4 = new Array[Int](8129)
+    val Top5 = new Array[Int](8129)
+    val Bit1 = new Array[Int](8129)
+    val Bit2 = new Array[Int](8129)
+
+    def doRank(hand: Int): Int = {
+      val s = hand & 0x1fff
+      val h = (hand >> 16) & 0x1fff
+      val d = (hand >> 32) & 0x1fff
+      val c = (hand >> 48) & 0x1fff
+
+      val flush = Flush(s) | Flush(h) | Flush(d) | Flush(c)
+      if (flush != 0)
+        return flush
+
+      var p1 = s
+      var p2 = p1 & h
+      p1 = p1 | h
+      var p3 = p2 & d
+      p2 = p2 | (p1 & d)
+      p1 = p1 | d
+      var p4 = p3 & c
+      p3 = p3 | (p2 & c)
+      p2 = p2 | (p1 & c)
+      p1 = p1 | c
+
+      if (Straight(p1) != 0)
+        return Straight(p1)
+
+      if (p2 == 0) // There are no pairs
+        return HighCardFlag | Top5(p1)
+
+      if (p3 == 0) { // There are pairs but no triplets
+        return if (Bit2(p2) == 0) OnePairFlag | Top1Of16(p2) | Top3Of4(p1 ^ Bit1(p2))
+        else TwoPairFlag | Top2Of12(p2) | Top1Of8(p1 ^ Bit2(p2))
+      }
+
+      if (p4 == 0) { // Deal with trips/sets/boats
+        return if ((p2 > p3) || ((p3 & (p3 - 1)) != 0)) FullHouseFlag | Top1Of16(p3) | Top1Of12(p2 ^ Bit1(p3))
+        else ThreeKindFlag | Top1Of16(p3) | Top2Of8(p1 ^ Bit1(p3))
+      }
+
+      FourKindFlag | Top1Of16(p4) | Top1Of12(p1 ^ p4)
+    }
+
     for (c5 ← 14 until 4) {
       val c4 = c5 - 1
       val c3 = c4 - 1

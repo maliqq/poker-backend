@@ -195,7 +195,7 @@ object PokernoBuild extends Build {
         "com.github.scopt" %% "scopt" % "3.1.0"
       ) ++ testDeps
     ) ++ assemblySettings
-  ) dependsOn(core)
+  ) dependsOn(core, backend)
   
   lazy val server = Project(
     id = "pokerno-server",

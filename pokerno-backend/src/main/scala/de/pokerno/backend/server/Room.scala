@@ -54,7 +54,7 @@ class Room(
   }
   
   when(Room.State.Waiting) {
-    case Event(join: rpc.JoinPlayer, NoneRunning) =>
+    case Event(Gateway.Message(gw, join: rpc.JoinPlayer), NoneRunning) =>
       joinPlayer(join)
       if (canStart) goto(Room.State.Active)
       else stay()
@@ -91,10 +91,16 @@ class Room(
       log.info("starting next deal in {}" format after)
       system.scheduler.scheduleOnce(after, self, gameplay.Deal.Start)
       stay()
-    
-    case Event(Gateway.Message(gw, msg), Running(deal)) =>
+
+    // add bet when deal is active
+    case Event(Gateway.Message(gw, addBet: rpc.AddBet), Running(deal)) =>
+      deal ! addBet // pass to deal
+      stay()
+      
+    case Event(Gateway.Message(gw, msg), _) =>
       msg match {
         case join: rpc.JoinPlayer =>
+          // TODO subscribe
           joinPlayer(join)
         
         case kick: rpc.KickPlayer =>
@@ -105,9 +111,6 @@ class Room(
         
         case chat: rpc.Chat =>
           // TODO broadcast
-        
-        case addBet: rpc.AddBet =>
-          deal ! addBet // pass to deal
           
         case rpc.PlayerEvent(event, player: String) =>
           // TODO notify
@@ -143,6 +146,10 @@ class Room(
   whenUnhandled {
     case Event(Room.Subscribe(observer, name), _) =>
       events.broker.subscribe(observer, name)
+      stay()
+    
+    case Event(x: Any, _) =>
+      log.warning("unhandled: {}", x)
       stay()
   }
   

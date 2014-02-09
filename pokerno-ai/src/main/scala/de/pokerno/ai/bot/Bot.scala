@@ -2,6 +2,7 @@ package de.pokerno.ai.bot
 
 import de.pokerno.model._
 import de.pokerno.poker._
+import de.pokerno.backend.Gateway
 import de.pokerno.protocol.{ msg, rpc }
 import de.pokerno.protocol.Conversions._
 import de.pokerno.protocol.wire.Conversions.{ wire2range, wire2dealCards }
@@ -38,7 +39,7 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
   import context._
 
   override def preStart {
-    deal ! rpc.JoinPlayer(pos = pos, amount = stack, player = player)
+    deal ! Gateway.Message(self, rpc.JoinPlayer(pos = pos, amount = stack, player = player))
   }
 
   def receive = {
@@ -85,7 +86,7 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
   def addBet(b: Bet) {
     Console printf ("%s*** BOT #%d: %s%s\n", Console.CYAN, pos, b, Console.RESET)
 
-    deal ! rpc.AddBet(id, b)
+    deal ! Gateway.Message(self, rpc.AddBet(id, b))
   }
 
   def doCheck() = addBet(Bet.check)

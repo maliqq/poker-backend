@@ -39,9 +39,9 @@ object Main {
       else
         new Game(config.limitedGame.get, Some(Game.NoLimit), Some(config.tableSize))
       val stake = new Stake(config.betSize, Ante = Right(true))
-      val instance = system.actorOf(Props(classOf[Instance], variation, stake), name = "deal-process")
-      val playing = system.actorOf(Props(classOf[play.Play], instance, config.tableSize), name = "play-process")
-      instance ! Instance.Start
+      val cycle = system.actorOf(Props(classOf[DealCycle], variation, stake), name = "deal-process")
+      val playing = system.actorOf(Props(classOf[play.Play], cycle, config.tableSize), name = "play-process")
+      cycle ! Deal.Start
     }
   }
 

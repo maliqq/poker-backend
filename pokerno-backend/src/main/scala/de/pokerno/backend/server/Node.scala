@@ -2,8 +2,10 @@ package de.pokerno.backend.server
 
 import org.slf4j.{ Logger, LoggerFactory }
 
+import de.pokerno.model
 import de.pokerno.backend.{ gateway ⇒ gw }
 import de.pokerno.protocol.rpc
+import de.pokerno.protocol.rpc.Conversions._
 import de.pokerno.backend.Connection
 
 import akka.actor.{ Actor, ActorRef, Props, ActorSystem }
@@ -16,39 +18,38 @@ class Node extends Actor {
   override def preStart {
   }
 
-  val rooms = collection.mutable.HashMap[String, Room.Params]()
-
   def receive = {
-    case Room.Start(params: Room.Params) ⇒
-      system.actorSelection(params.id).resolveOne(1 second).onComplete {
+    case create: rpc.CreateRoom ⇒
+      system.actorSelection(create.id).resolveOne(1 second).onComplete {
         case Failure(_) =>
-          spawnRoom(params)
+          spawnRoom(create)
         case _ =>
       }
 
-    case Room.Stop(id: String) ⇒
-      system.actorSelection(id).resolveOne(1 second).onComplete {
+    case action: rpc.RoomAction ⇒
+      import rpc.RoomActionSchema._
+      system.actorSelection(action.id).resolveOne(1 second).onComplete {
         case Success(room) =>
-          context.stop(room)
+          action.`type` match {
+            case ActionType.PAUSE => room ! Room.Pause
+            case ActionType.CLOSE => room ! Room.Close
+            case ActionType.RESUME => room ! Room.Resume
+            case _ => // TODO
+          }
         case _ =>
       }
     
-    case Room.Send(id: String, msg: Any) ⇒
-      system.actorSelection(id).resolveOne(1 second).onComplete {
-        case Success(room) => room ! msg
-        case _ =>
-      }
-
     case Node.Status(conn) ⇒
-      val resp = new java.util.HashMap[String, Any]()
-      resp.put("roomsCount", rooms.size)
-      conn.send(resp)
 
     case _ ⇒
   }
   
-  private def spawnRoom(params: Room.Params) {
-    context.actorOf(Props(classOf[Room], params), name = params.id)
+  private def spawnRoom(createRequest: rpc.CreateRoom): ActorRef = {
+    val id = createRequest.id
+    val variation: model.Variation = createRequest.variation
+    val stake: model.Stake = createRequest.stake
+    
+    context.actorOf(Props(classOf[Room], id, variation, stake), name = id)
   }
 
   override def postStop {

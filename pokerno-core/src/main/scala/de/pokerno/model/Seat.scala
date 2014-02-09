@@ -106,6 +106,10 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
     _state = Seat.State.Idle
   }
   
+  def ready() {
+    _state = Seat.State.Ready
+  }
+  
   def away() {
     _state = Seat.State.Away
   }

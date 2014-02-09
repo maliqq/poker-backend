@@ -8,16 +8,6 @@ case class Player(id: String) {
   override def toString = id
 }
 
-object Table { // FIXME use conversions
-  trait State
-
-  case object Waiting extends State
-  case object Active extends State
-  case object Paused extends State
-  case object Closed extends State
-
-}
-
 class Table(val size: Int) {
   private val _seats = new Seats(List.fill(size) { new Seat })
   def seats = _seats
@@ -48,11 +38,12 @@ class Table(val size: Int) {
   def pos(player: Player): Option[Int] =
     _seating.get(player)
 
-  def box(player: Player): Option[Box] = pos(player).map { i ⇒
+  def box(player: Player): Option[Box] = pos(player) map { i ⇒
     (player, i)
   }
 
-  def seat(player: Player): Option[(Seat, Int)] = pos(player).map { i ⇒
+  // TODO: seatWithPos
+  def seat(player: Player): Option[(Seat, Int)] = pos(player) map { i ⇒
     (seatsAsList(i), i)
   }
 

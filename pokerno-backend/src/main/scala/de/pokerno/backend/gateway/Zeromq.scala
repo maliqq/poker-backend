@@ -22,9 +22,7 @@ class Zeromq(config: Zeromq.Config) extends Actor with ActorLogging {
   import context._
 
   final val socketType = zmq.SocketType.Pub
-
-  val address = config.address
-  val socket = zmq.ZeroMQExtension(system).newSocket(socketType, zmq.Bind(address))
+  val socket = zmq.ZeroMQExtension(system).newSocket(socketType, zmq.Bind(config.address))
 
   def receive = {
     case msg: message.Message ⇒

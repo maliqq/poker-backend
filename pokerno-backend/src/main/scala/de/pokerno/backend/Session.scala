@@ -1,4 +1,6 @@
 package de.pokerno.backend
 
-class Session {
+import de.pokerno.model.Player
+
+class Session(conn: Connection) {
 }

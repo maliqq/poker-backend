@@ -1,3 +1,7 @@
 package de.pokerno.backend
 
-object Auth
+object Auth {
+  abstract class Method {
+    
+  }
+}

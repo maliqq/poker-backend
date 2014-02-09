@@ -9,27 +9,34 @@ import de.pokerno.backend.Connection
 import akka.actor.{ Actor, ActorRef, Props, ActorSystem }
 
 class Node extends Actor {
+  import context._
+  import concurrent.duration._
+  import util.{Success, Failure}
+  
   override def preStart {
-
   }
 
-  val rooms = collection.mutable.HashMap[String, ActorRef]()
+  val rooms = collection.mutable.HashMap[String, Room.Params]()
 
   def receive = {
-    case Room.Start(id: String) ⇒
-      if (!rooms.contains(id)) {
-        val room = context.actorOf(Props(classOf[Room]), name = f"room-$id")
-        rooms += (id -> room)
+    case Room.Start(params: Room.Params) ⇒
+      system.actorSelection(params.id).resolveOne(1 second).onComplete {
+        case Failure(_) =>
+          spawnRoom(params)
+        case _ =>
       }
 
     case Room.Stop(id: String) ⇒
-      rooms.remove(id).map { room ⇒
-        context.stop(room)
+      system.actorSelection(id).resolveOne(1 second).onComplete {
+        case Success(room) =>
+          context.stop(room)
+        case _ =>
       }
-
+    
     case Room.Send(id: String, msg: Any) ⇒
-      rooms.get(id).map { room ⇒
-        room ! msg
+      system.actorSelection(id).resolveOne(1 second).onComplete {
+        case Success(room) => room ! msg
+        case _ =>
       }
 
     case Node.Status(conn) ⇒
@@ -39,9 +46,12 @@ class Node extends Actor {
 
     case _ ⇒
   }
+  
+  private def spawnRoom(params: Room.Params) {
+    context.actorOf(Props(classOf[Room], params), name = params.id)
+  }
 
   override def postStop {
-
   }
 }
 

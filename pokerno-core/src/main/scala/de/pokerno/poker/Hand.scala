@@ -80,7 +80,6 @@ class Hand(
   
   override def equals(o: Any): Boolean = o match {
     case other: Hand =>
-      Console printf("%scomparing %s with%s%s", Console.BLUE, this, other, Console.RESET)
       rank.get == other.rank.get &&
         equalKinds(high, other.high) &&
         equalKinds(value, other.value) &&

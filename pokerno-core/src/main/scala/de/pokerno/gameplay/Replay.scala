@@ -105,17 +105,17 @@ class Replay(
       e.broker.subscribe(out, "replay-out")
       e.start(t, gameplay.variation, gameplay.stake)
 
-    case join @ rpc.JoinPlayer(pos, player, amount) ⇒
-      debug("got: %s", join)
-
-      t.addPlayer(pos, player, Some(amount))
-      e.joinTable((player, pos), amount)
-
-    case s @ rpc.ShowCards(cards, player, muck) ⇒
-
-      debug("got: %s", s)
-
-      e.showCards(t.box(player).get, cards, muck)
+//    case join @ rpc.JoinPlayer(pos, player, amount) ⇒
+//      debug("got: %s", join)
+//
+//      t.addPlayer(pos, player, Some(amount))
+//      e.joinTable((player, pos), amount)
+//
+//    case s @ rpc.ShowCards(cards, player, muck) ⇒
+//
+//      debug("got: %s", s)
+//
+//      e.showCards(t.box(player).get, cards, muck)
 
     case Betting.Stop ⇒ // идем до шоудауна
       info("streets done")
@@ -128,7 +128,7 @@ class Replay(
         gameplay.prepareSeats(stageContext)
       }
 
-      debug("got: %s", a)
+      //debug("got: %s", a)
 
       if (streets.head == street) {
         // нужный стрит
@@ -138,7 +138,7 @@ class Replay(
 
         val options = streetOptions(street)
 
-        debug(" | street: %s options: %s", street, options)
+        //debug(" | street: %s options: %s", street, options)
 
         /**
          * DEALING

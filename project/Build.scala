@@ -50,7 +50,7 @@ object PokernoBuild extends Build {
     organization := "de.pokerno",
     scalaVersion := "2.10.3",
     exportJars := true,
-    testOptions in Test += Tests.Argument("-oF"),
+    //testOptions in Test += Tests.Argument("-oF"),
     javacOptions ++= Seq("-source", "1.7", "-target", "1.7")
     //,scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-language:implicitConversions", "-language:postfixOps")
     //,resolvers += "spray repo" at "http://repo.spray.io"
@@ -62,7 +62,8 @@ object PokernoBuild extends Build {
     "org.slf4j" % "slf4j-simple" % "1.7.5",
     "com.typesafe.akka" %% "akka-actor" % "2.2.3",
     //"com.twitter" % "ostrich" % "2.3.0"
-    "com.twitter" %% "util-core" % "6.10.0"
+    "com.twitter" %% "util-core" % "6.10.0",
+    "commons-codec" % "commons-codec" % "1.9"
   )
   
   lazy val testDeps = Seq(

@@ -5,29 +5,38 @@ import java.util.Locale
 
 class Bet(val betType: Bet.Value, val amount: Decimal = .0) {
   override def toString =
-    if (amount > .0) "%s %.2f" formatLocal (Locale.US, betType.toString, amount)
+    if (amount > .0)
+      "%s %.2f" formatLocal (Locale.US, betType.toString, amount)
     else betType.toString
+//
+//  def isValid(left: Decimal, put: Decimal, call: Decimal, raise: Range): Boolean = betType match {
+//    case Bet.Fold  ⇒
+//      // all-in can't fold
+//      left != .0
+//      
+//    case Bet.Check ⇒
+//      left != .0 && call == put
+//      
+//    case Bet.Call | Bet.Raise ⇒
+//      amount <= left &&
+//        (if (betType == Bet.Call)
+//          amount + put == call
+//        else raise.isValid(amount, left))
+//
+//    case Bet.Call | _: Bet.ForcedBet ⇒
+//      amount <= left &&
+//        (amount + put == call ||
+//        (amount < call && amount == left))
+//
+//    case _ ⇒ false
+//  }
 
-  def isValid(left: Decimal, _put: Decimal, call: Decimal, _range: Range): Boolean = betType match {
-    case Bet.Fold ⇒
-      true
-
-    case Bet.Check ⇒
-      call == _put
-
-    case Bet.Call | Bet.Raise ⇒
-      val stack = left + _put
-      val range = if (betType == Bet.Call) Range(call, call) else _range
-      amount <= stack && range.isValid(amount, stack)
-
-    case _ ⇒
-      if (isForced)
-        amount == call || (amount < call && amount == left)
-      else
-        false
-  }
-
+  def isActive: Boolean = amount > .0
   def isForced: Boolean = betType.isInstanceOf[Bet.ForcedBet]
+  def isRaise: Boolean = betType == Bet.Raise
+  def isCheck: Boolean = betType == Bet.Check
+  def isCall: Boolean = betType == Bet.Call
+  def isFold: Boolean = betType == Bet.Fold
 
   override def equals(other: Any): Boolean = {
     other match {

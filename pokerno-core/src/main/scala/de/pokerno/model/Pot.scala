@@ -98,13 +98,13 @@ class Pot {
 
   def split(member: Player, amount: Decimal) {
     if (amount < 0) {
-      info("splitting side=%s for member %s with amount %s", side.head, member, amount)
+      info("splitting side: %s for member %s with amount %s", side.head, member, amount)
       val current = side.head
       side = side drop 1
       val (_new, _old) = current split (member, amount, current.cap)
       side ++= List(_old, _new)
     } else {
-      info("splitting main=%s for member %s with amount %s", main, member, amount)
+      info("splitting main: %s for member %s with amount %s", main, member, amount)
       val (_new, _old) = main split (member, amount)
       side :+= _old
       main = _new
@@ -127,7 +127,7 @@ class Pot {
   def add(member: Player, amount: Decimal, isAllIn: Boolean = false): Decimal = {
     val left = allocate (member, amount)
 
-    if (isAllIn) {
+    if (isAllIn && left != 0) {
       split (member, left)
       0
     } else main add (member, left)

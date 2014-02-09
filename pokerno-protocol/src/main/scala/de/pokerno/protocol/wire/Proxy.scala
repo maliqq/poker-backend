@@ -68,14 +68,14 @@ case class Hand(
 
 @MsgPack
 class Seat(
-    @BeanProperty var state: SeatSchema.SeatState,
+    @BeanProperty var state: SeatSchema.SeatState = null,
 
-    @BeanProperty var player: String,
+    @BeanProperty var player: String = null,
 
-    @BeanProperty var stackAmount: java.lang.Double,
+    @BeanProperty var stackAmount: java.lang.Double = null,
 
     @BeanProperty var putAmount: java.lang.Double = null) {
-  def this() = this(null, null, null)
+  def this() = this(null, null, null, null)
 }
 
 @MsgPack

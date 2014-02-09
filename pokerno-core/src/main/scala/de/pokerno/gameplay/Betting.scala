@@ -60,7 +60,6 @@ private[gameplay] object Betting {
   case class Require(amount: Decimal, limit: Game.Limit)
   // force bet
   case class Force(amount: Decimal)
-  case class Add(player: Player, bet: Bet)
 
   trait Transition
   case object Next extends Transition
@@ -114,7 +113,7 @@ private[gameplay] object Betting {
     deal: Deal ⇒
 
     def handleBetting: Receive = {
-      case Betting.Add(player, bet) ⇒
+      case rpc.AddBet(player, bet) ⇒
         val (seat, pos) = gameplay.round.acting
         if (seat.player.isDefined && seat.player.get == player) {
           log.info("[betting] add {}", bet)

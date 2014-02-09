@@ -50,13 +50,14 @@ class Table(val size: Int) {
   def addPlayer(at: Int, player: Player, amount: Option[Decimal] = None) {
     val seat = seatsAsList(at)
     seat.player = player
-    if (amount.isDefined) seat buyIn (amount get)
+    amount map(seat buyIn (_))
     _seating(player) = at
   }
 
-  def removePlayer(player: Player) {
-    val at = _seating(player)
-    seatsAsList(at).clear()
-    _seating remove player
+  def removePlayer(at: Int) {
+    val seat = seatsAsList(at)
+    seat.clear()
+    seat.player.map(_seating.remove(_))
   }
+
 }

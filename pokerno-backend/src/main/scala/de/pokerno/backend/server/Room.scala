@@ -99,7 +99,15 @@ class Room(
         
         case kick: rpc.KickPlayer =>
           // TODO notify
-          table.removePlayer(kick.player)
+          table.pos(kick.player) map { pos =>
+            table.removePlayer(pos)
+          }
+        
+        case chat: rpc.Chat =>
+          // TODO broadcast
+        
+        case addBet: rpc.AddBet =>
+          deal ! addBet // pass to deal
           
         case rpc.PlayerEvent(event, player: String) =>
           // TODO notify
@@ -107,20 +115,26 @@ class Room(
             case rpc.PlayerEventSchema.EventType.OFFLINE =>
               table.seat(player).map { case (seat, pos) =>
                 seat.away()
+                events.seatStateChanged(pos, seat.state)
               }
               
             case rpc.PlayerEventSchema.EventType.SIT_OUT =>
               table.seat(player).map { case (seat, pos) =>
                 seat.idle()
+                events.seatStateChanged(pos, seat.state)
               }
               
             case rpc.PlayerEventSchema.EventType.COME_BACK | rpc.PlayerEventSchema.EventType.ONLINE =>
               table.seat(player).map { case (seat, pos) =>
                 seat.ready()
+                events.seatStateChanged(pos, seat.state)
               }
               
             case rpc.PlayerEventSchema.EventType.LEAVE =>
-              table.removePlayer(player)
+              table.seat(player) map { case (seat, pos) =>
+                table.removePlayer(pos)
+                events.seatStateChanged(pos, seat.state)
+              }
           }
       }
       stay()

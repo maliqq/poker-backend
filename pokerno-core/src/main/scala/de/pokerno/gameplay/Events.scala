@@ -1,7 +1,7 @@
 package de.pokerno.gameplay
 
 import de.pokerno.protocol
-import de.pokerno.protocol.{ msg ⇒ message }
+import de.pokerno.protocol.{ wire, msg ⇒ message }
 import de.pokerno.model._
 import de.pokerno.poker.{ Card, Hand }
 
@@ -93,9 +93,14 @@ class Events {
       message.GameChange(_game = game)
     )
 
-  def showCards(box: Box, cards: List[Card], muck: Boolean = false) {
+  def showCards(box: Box, cards: List[Card], muck: Boolean = false) =
     broker.publish(
       message.CardsShow(pos = box._2, player = box._1, cards = cards, muck = muck)
     )
-  }
+  
+  def seatStateChanged(pos: Int, state: Seat.State.Value) =
+    broker.publish(
+      message.SeatEvent(message.SeatEventSchema.EventType.STATE, pos = pos, seat = new wire.Seat(state = state))
+    )
+    
 }

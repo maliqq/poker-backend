@@ -87,19 +87,21 @@ class TableEvent(
 
 @MsgPack
 @JsonInclude(JsonInclude.Include.NON_NULL)
-class SeatEvent(
-    @BeanProperty var `type`: SeatEventSchema.EventType) extends Outbound {
+case class SeatEvent(
+    @BeanProperty var `type`: SeatEventSchema.EventType,
+    @BeanProperty
+    var pos: Integer = null,
+  
+    @BeanProperty
+    var seat: wire.Seat = null
+) extends Outbound {
   def schema = SeatEventSchema.SCHEMA
   //def pipeSchema = SeatEventSchema.PIPE_SCHEMA
 
-  @BeanProperty
-  var pos: Integer = null
-
-  @BeanProperty
-  var seat: wire.Seat = null
-
   def this() = this(null)
 }
+
+
 
 @MsgPack
 @JsonInclude(JsonInclude.Include.NON_NULL)

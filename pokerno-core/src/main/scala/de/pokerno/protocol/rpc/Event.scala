@@ -1,9 +1,24 @@
 package de.pokerno.protocol.rpc
 
-case class PlayerEvent(`type`: PlayerEventSchema.EventType, player: String) {
+import beans._
+import de.pokerno.protocol.{ Message ⇒ BaseMessage }
+
+case class PlayerEvent(
+    @BeanProperty
+    `type`: PlayerEventSchema.EventType,
+    @BeanProperty
+    player: String) extends BaseMessage {
+  def schema = PlayerEventSchema.SCHEMA
   def this() = this(null, null)
 }
 
-case class StackEvent(`type`: StackEventSchema.EventType, player: String, amount: java.lang.Double) {
+case class StackEvent(
+    @BeanProperty
+    `type`: StackEventSchema.EventType,
+    @BeanProperty
+    player: String,
+    @BeanProperty
+    amount: java.lang.Double) extends BaseMessage {
+  def schema = StackEventSchema.SCHEMA
   def this() = this(null, null, null)
 }

@@ -50,7 +50,7 @@ object PokernoBuild extends Build {
     organization := "de.pokerno",
     scalaVersion := "2.10.3",
     exportJars := true,
-    testOptions in Test += Tests.Argument("-oF"),
+    //testOptions in Test += Tests.Argument("-oF"),
     javacOptions ++= Seq("-source", "1.7", "-target", "1.7")
     //,scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-language:implicitConversions", "-language:postfixOps")
     //,resolvers += "spray repo" at "http://repo.spray.io"

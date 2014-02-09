@@ -193,7 +193,7 @@ class Room(
   
   private def spawnDeal(): ActorRef = {
     val ctx = new gameplay.Context(table, variation, stake, events)
-    val deal = system.actorOf(Props(classOf[gameplay.Deal], ctx), name = "deal-process")
+    val deal = actorOf(Props(classOf[gameplay.Deal], ctx), name = "deal-process")
     deal
   }
 }

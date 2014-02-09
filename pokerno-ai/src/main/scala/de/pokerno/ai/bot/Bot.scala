@@ -102,8 +102,8 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
   }
 
   def doCall(amount: Decimal) {
-    stack += bet - amount
-    bet = amount
+    stack -= amount
+    bet += amount
     addBet(Bet call amount)
   }
 
@@ -152,7 +152,7 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
         if (call == bet || call.toDouble == .0)
           doCheck()
         else if (call > .0)
-          doCall(call)
+          doCall(List(stack + bet, call).min - bet) // FIXME WTF
 
       case Action.Raise ⇒
         if (minRaise == maxRaise)

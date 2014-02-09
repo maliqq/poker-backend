@@ -6,6 +6,8 @@ import de.pokerno.gameplay
 import de.pokerno.backend.Gateway
 import de.pokerno.protocol.rpc
 import de.pokerno.protocol.Conversions._
+import util.{Success, Failure}
+import scala.concurrent.{Promise, Future}
 
 object Room {
   object State extends Enumeration {
@@ -55,7 +57,7 @@ class Room(
   
   when(Room.State.Waiting) {
     case Event(Gateway.Message(gw, join: rpc.JoinPlayer), NoneRunning) =>
-      joinPlayer(join)
+      handlePlayerJoin(gw, join)
       if (canStart) goto(Room.State.Active)
       else stay()
   }
@@ -82,13 +84,13 @@ class Room(
     // previous deal stopped
     case Event(gameplay.Deal.Done, Running(deal)) =>
       val after = nextDealAfter
-      log.info("deal done; starting next deal in {}" format after)
+      log.info("deal done; starting next deal in {}", after)
       self ! gameplay.Deal.Next(after)
       stay() using(NoneRunning)
       
     // schedule next deal in *after* seconds
     case Event(gameplay.Deal.Next(after), NoneRunning) =>
-      log.info("starting next deal in {}" format after)
+      log.info("starting next deal in {}", after)
       system.scheduler.scheduleOnce(after, self, gameplay.Deal.Start)
       stay()
 
@@ -100,8 +102,7 @@ class Room(
     case Event(Gateway.Message(gw, msg), _) =>
       msg match {
         case join: rpc.JoinPlayer =>
-          // TODO subscribe
-          joinPlayer(join)
+          handlePlayerJoin(gw, join)
         
         case kick: rpc.KickPlayer =>
           // TODO notify
@@ -168,13 +169,26 @@ class Room(
     table.seatsAsList.count(_ isReady) == minimumReadyPlayersToStart
   }
   
-  private def joinPlayer(join: rpc.JoinPlayer) {
+  def handlePlayerJoin(gw: ActorRef, join: rpc.JoinPlayer) {
+    joinPlayer(join).onComplete {
+      case Success(box) =>
+        events.broker.subscribe(gw, join.player)
+        events.joinTable((join.player, join.pos), join.amount)
+      case Failure(err) =>
+        // ignore
+    }
+  }
+  
+  private def joinPlayer(join: rpc.JoinPlayer): Future[Boolean] = {
+    val promise = Promise[Boolean]()
     try {
       table.addPlayer(join.pos, join.player, Some(join.amount))
-      events.joinTable((join.player, join.pos), join.amount)
+      promise.success(true)
     } catch {
       case err: model.Seat.IsTaken =>
+        promise.failure(err)
     }
+    promise.future
   }
   
   private def spawnDeal(): ActorRef = {

@@ -115,7 +115,7 @@ private[gameplay] object Betting {
     def handleBetting: Receive = {
       case rpc.AddBet(player, bet) ⇒
         val (seat, pos) = gameplay.round.acting
-        if (seat.player.isDefined && seat.player.get == player) {
+        if (seat.player.map(_.id == player).getOrElse(false)) {
           log.info("[betting] add {}", bet)
           gameplay.addBet(stageContext, bet)
           nextTurn().foreach(self ! _)

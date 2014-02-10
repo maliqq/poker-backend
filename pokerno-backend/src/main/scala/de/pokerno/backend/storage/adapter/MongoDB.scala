@@ -53,6 +53,8 @@ object MongoDB {
       }
       b.add("known_cards", knownCards)
       
+      // TODO actions
+      
       collection.insert(b.get())
     }
   }

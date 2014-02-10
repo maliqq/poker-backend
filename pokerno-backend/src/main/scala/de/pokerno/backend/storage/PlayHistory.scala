@@ -1,5 +1,6 @@
 package de.pokerno.backend.storage
 
+import akka.actor.{Actor, ActorLogging}
 import math.{ BigDecimal ⇒ Decimal }
 import de.pokerno.poker
 import de.pokerno.protocol.msg
@@ -16,5 +17,12 @@ object PlayHistory {
     val winners: Map[String, Decimal],
     val knownCards: Map[String, List[poker.Card]]
     )
+
+  class Recorder(client: Store.Client) extends Actor {
+    def receive = {
+      case e: PlayHistory.Entry =>
+        client.write(e)
+    }
+  }
 
 }

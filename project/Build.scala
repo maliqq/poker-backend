@@ -122,6 +122,15 @@ object PokernoBuild extends Build {
       )
     ) ++ assemblySettings
   )
+  
+  lazy val rpc = Project(
+    id = "pokerno-rpc",
+    base = file("pokerno-rpc"),
+    settings = Project.defaultSettings ++ Seq(
+      name := "pokerno-rpc",
+      version := "0.0.1"
+    ) ++ assemblySettings
+  ) dependsOn(core, protocol)
 
   lazy val backend = Project(
     id = "pokerno-backend",
@@ -136,7 +145,7 @@ object PokernoBuild extends Build {
         ,"org.mongodb" % "mongo-java-driver" % "2.11.3"
       )
     ) ++ assemblySettings
-  ) dependsOn(core, protocol, httpGateway, stompGateway)
+  ) dependsOn(core, protocol, rpc, httpGateway, stompGateway)
 
   lazy val ai = Project(
     id = "pokerno-ai",

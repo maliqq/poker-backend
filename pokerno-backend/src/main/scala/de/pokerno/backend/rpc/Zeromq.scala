@@ -1,6 +1,6 @@
 package de.pokerno.backend.rpc
 
-import akka.actor.{Actor, ActorLogging}
+import akka.actor.{Actor, ActorRef, ActorLogging}
 import akka.{ zeromq ⇒ zmq }
 import de.pokerno.protocol.{ rpc, Codec ⇒ codec }
 
@@ -16,15 +16,16 @@ object Zeromq {
   }
 }
 
-class Zeromq(config: Zeromq.Config) extends Actor with ActorLogging {
+class Zeromq(node: ActorRef, config: Zeromq.Config) extends Actor with ActorLogging {
   import context._
   
-  final val socketType = zmq.SocketType.Router
-  val socket = zmq.ZeroMQExtension(system).newSocket(socketType, zmq.Bind(config.address))
+  private final val socketType = zmq.SocketType.Router
+  private val socket = zmq.ZeroMQExtension(system).newSocket(socketType, zmq.Bind(config.address))
 
   def receive = {
     case m: zmq.ZMQMessage =>
-      
+      val msg = decode(m.frames(0).toArray[Byte])
+      node ! msg
   }
   
   private def decode(msg: Array[Byte]) = codec.Protobuf.decode[rpc.Request](msg)

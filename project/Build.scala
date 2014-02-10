@@ -205,7 +205,7 @@ object PokernoBuild extends Build {
         "com.github.scopt" %% "scopt" % "3.1.0"
       ) ++ testDeps
     ) ++ assemblySettings
-  ) dependsOn(core, backend)
+  ) dependsOn(core)
   
   lazy val server = Project(
     id = "pokerno-server",
@@ -214,6 +214,19 @@ object PokernoBuild extends Build {
       name := "pokerno-server",
       version := "0.0.1",
       libraryDependencies ++= testDeps ++ Seq(
+        "com.github.scopt" %% "scopt" % "3.1.0"
+      )
+    ) ++ assemblySettings
+  ) dependsOn(core, backend)
+
+  lazy val console = Project(
+    id = "pokerno-console",
+    base = file("pokerno-console"),
+    settings = Project.defaultSettings ++ Seq(
+      name := "pokerno-console",
+      version := "0.0.1",
+      libraryDependencies ++= Seq(
+        "jline" % "jline" % "2.11",
         "com.github.scopt" %% "scopt" % "3.1.0"
       )
     ) ++ assemblySettings

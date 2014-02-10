@@ -19,7 +19,7 @@ class Play(gameplay: Context) {
   def street: Street.Value = getStreet()
   def acting = gameplay.round.acting
   def pot: Pot = gameplay.round.pot
-  def rake: Decimal = null
+  def rake: Option[Decimal] = None
   val winners: Map[Player, Decimal] = Map.empty
   val knownCards: Map[Player, List[Card]] = Map.empty
 }

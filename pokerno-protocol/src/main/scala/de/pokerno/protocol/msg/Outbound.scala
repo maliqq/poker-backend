@@ -276,9 +276,28 @@ sealed case class Start(
 
     @BeanProperty var variation: wire.Variation,
 
-    @BeanProperty var stake: wire.Stake) extends Outbound {
+    @BeanProperty var stake: wire.Stake,
+    
+    @BeanProperty var deal: Deal
+    ) extends Outbound {
 
-  def this() = this(null, null, null)
+  def this() = this(null, null, null, null)
 
   def schema = StartSchema.SCHEMA
+}
+
+@MsgPack
+sealed case class Deal(
+    @BeanProperty var id: String,
+    @BeanProperty var startAt: java.lang.Long,
+    @BeanProperty var stopAt: java.lang.Long = null,
+    @BeanProperty var street: String = null,
+    @BeanProperty var acting: RequireBet = null,
+    @BeanProperty var pot: java.lang.Double = null,
+    @BeanProperty var rake: java.lang.Double = null,
+    @BeanProperty var winners: java.util.ArrayList[DeclareWinner] = null,
+    @BeanProperty var knownCards: java.util.ArrayList[CardsShow] = null
+) {
+  def this() = this(null, null)
+  def schema = DealSchema.SCHEMA
 }

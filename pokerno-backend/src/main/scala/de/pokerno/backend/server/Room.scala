@@ -10,6 +10,7 @@ import util.{Success, Failure}
 import scala.concurrent.{Promise, Future}
 
 object Room {
+  
   object State extends Enumeration {
     type State = Value
     def state(v: String) = new Val(nextId, v)
@@ -19,14 +20,16 @@ object Room {
     val Paused = state("paused")
     val Closed = state("closed")
   }
+  
   import State._
   type State = Value
   
   case object Close
-  case class Pause(reason: String)
+  case class Pause
   case object Resume
   
   case class Subscribe(observer: ActorRef, name: String)
+  
 }
 
 sealed trait Data

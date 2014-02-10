@@ -33,7 +33,7 @@ object Action {
 
 class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var stake: Stake)
     extends Actor with Context with Simple {
-  val id: String = java.util.UUID.randomUUID().toString
+  val id: String = f"bot-${pos+1}"//java.util.UUID.randomUUID().toString
   val player = new Player(id)
 
   import context._

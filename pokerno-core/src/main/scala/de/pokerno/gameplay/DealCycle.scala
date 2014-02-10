@@ -3,7 +3,7 @@ package de.pokerno.gameplay
 import akka.actor.Actor
 
 /**
- * Deal cycle
+ * Simple deal cycle
  * */
 
 class DealCycle extends Actor {

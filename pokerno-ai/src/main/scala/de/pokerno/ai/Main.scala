@@ -8,13 +8,11 @@ import de.pokerno.model._
 import de.pokerno.backend.server.Room
 
 object Main {
-  final val stack: Decimal = 10000
-  
   case class Config(
     tableSize: Int = 9,
     botsNum: Int = 9,
     stake: Int = 10,
-    stack: Int = 1000
+    chips: Decimal = 10000.0
   )
   
   var parser = new scopt.OptionParser[Config]("poker-ai") {
@@ -32,8 +30,8 @@ object Main {
       c.copy(stake = value)
     }
     
-    opt[Int]("stack") text("Stack chips") action { (value, c) =>
-      c.copy(stack = value)
+    opt[Int]("chips") text("Stack chips") action { (value, c) =>
+      c.copy(chips = value)
     }
     
     help("help") text("Help")
@@ -47,7 +45,7 @@ object Main {
       val system = ActorSystem("poker-ai")
       val room = system.actorOf(Props(classOf[Room], "1", game, stake), name = "poker-instance")
       val bots = (1 to c.botsNum).map { i ⇒
-        system.actorOf(Props(classOf[bot.Bot], room, i - 1, stack, game, stake))
+        system.actorOf(Props(classOf[bot.Bot], room, i - 1, c.chips, game, stake))
       }
       
       val gw = system.actorOf(Props(classOf[Http.Gateway]))

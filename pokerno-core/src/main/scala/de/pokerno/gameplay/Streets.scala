@@ -13,8 +13,6 @@ private[gameplay] object Streets {
   trait DealContext {
     deal: Deal ⇒
 
-    def streets: StreetChain
-
     lazy val beforeStreets =
       stage("prepare-seats") { ctx ⇒
         ctx.gameplay.prepareSeats(ctx)
@@ -39,23 +37,6 @@ private[gameplay] object Streets {
         Stage.Next
       }.chain
 
-    def handleStreets: Receive = {
-      case Betting.Start ⇒
-        log.info("[betting] start")
-        // FIXME
-        //gameplay.round.reset()
-        nextTurn() //.foreach(self ! _)
-        context.become(handleBetting)
-
-      case Streets.Next ⇒
-        log.info("streets next")
-        streets(stageContext)
-
-      case Streets.Done ⇒
-        log.info("streets done")
-        afterStreets(stageContext)
-        context.stop(self)
-    }
   }
 
   trait ReplayContext {

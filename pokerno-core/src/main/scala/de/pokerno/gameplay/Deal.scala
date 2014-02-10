@@ -1,11 +1,12 @@
 package de.pokerno.gameplay
 
 import akka.actor.{ Actor, Props, ActorRef, ActorLogging }
-
 import de.pokerno.model._
+import de.pokerno.poker.Card
 import de.pokerno.protocol.{ msg ⇒ message }
 import concurrent._
 import concurrent.duration._
+import math.{BigDecimal => Decimal}
 
 object Deal {
 
@@ -25,6 +26,16 @@ class Deal(val gameplay: Context) extends Actor
 
   lazy val streets = Streets(stageContext)
   lazy val stageContext = StageContext(gameplay, self)
+  
+  val id: String = java.util.UUID.randomUUID().toString()
+  val startAt: java.util.Date = new java.util.Date()
+  val finishAt: java.util.Date = null
+  def currentStreet: Street = streets.current
+  def acting = gameplay.round.acting
+  def pot: Pot = gameplay.round.pot
+  def rake: Decimal = null
+  val winners: Map[Player, Decimal] = Map.empty
+  val knownCards: Map[Player, List[Card]] = Map.empty
 
   override def preStart() {
     log.info("start deal")
@@ -35,13 +46,31 @@ class Deal(val gameplay: Context) extends Actor
     }
   }
 
-  def receive = handleStreets
-
   override def postStop() {
     log.info("stop deal")
     //afterStreets(stageContext)
     gameplay.events.playStop()
     parent ! Deal.Done
   }
+  
+  def receive = handleStreets
 
+  def handleStreets: Receive = {
+    case Betting.Start ⇒
+      log.info("[betting] start")
+      // FIXME
+      //gameplay.round.reset()
+      nextTurn() //.foreach(self ! _)
+      context.become(handleBetting)
+
+    case Streets.Next ⇒
+      log.info("streets next")
+      streets(stageContext)
+
+    case Streets.Done ⇒
+      log.info("streets done")
+      afterStreets(stageContext)
+      context.stop(self)
+  }
+  
 }

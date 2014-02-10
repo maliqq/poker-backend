@@ -24,7 +24,7 @@ public class StartSchema
     public static final int FIELD_TABLE = 1;
     public static final int FIELD_VARIATION = 2;
     public static final int FIELD_STAKE = 3;
-    public static final int FIELD_DEAL = 4;
+    public static final int FIELD_PLAY = 4;
 
     public StartSchema() {}
 
@@ -73,8 +73,8 @@ public class StartSchema
                 message.setStake(input.mergeObject(message.getStake(), de.pokerno.protocol.wire.StakeSchema.getSchema()));
                 break;
 
-            case FIELD_DEAL:
-                message.setDeal(input.mergeObject(message.getDeal(), DealSchema.getSchema()));
+            case FIELD_PLAY:
+                message.setPlay(input.mergeObject(message.getPlay(), PlaySchema.getSchema()));
                 break;
 
             default:
@@ -83,7 +83,7 @@ public class StartSchema
     }
 
 
-    private static int[] FIELDS_TO_WRITE = { FIELD_TABLE, FIELD_VARIATION, FIELD_STAKE, FIELD_DEAL };
+    private static int[] FIELDS_TO_WRITE = { FIELD_TABLE, FIELD_VARIATION, FIELD_STAKE, FIELD_PLAY };
 
     public int[] getWriteFields() { return FIELDS_TO_WRITE; }
 
@@ -110,8 +110,8 @@ public class StartSchema
                 output.writeObject(FIELD_STAKE, message.getStake(), de.pokerno.protocol.wire.StakeSchema.getSchema(), false);
 
                 break;
-            case FIELD_DEAL:
-                output.writeObject(FIELD_DEAL, message.getDeal(), DealSchema.getSchema(), false);
+            case FIELD_PLAY:
+                output.writeObject(FIELD_PLAY, message.getPlay(), PlaySchema.getSchema(), false);
 
                 break;
             default:
@@ -124,7 +124,7 @@ public class StartSchema
             case FIELD_TABLE: return "table";
             case FIELD_VARIATION: return "variation";
             case FIELD_STAKE: return "stake";
-            case FIELD_DEAL: return "deal";
+            case FIELD_PLAY: return "play";
             default: return null;
         }
     }
@@ -138,6 +138,6 @@ public class StartSchema
         fieldMap.put("table", FIELD_TABLE);
         fieldMap.put("variation", FIELD_VARIATION);
         fieldMap.put("stake", FIELD_STAKE);
-        fieldMap.put("deal", FIELD_DEAL);
+        fieldMap.put("play", FIELD_PLAY);
     }
 }

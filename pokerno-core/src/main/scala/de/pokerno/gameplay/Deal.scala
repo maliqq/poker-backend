@@ -18,7 +18,7 @@ object Deal {
 
 }
 
-class Deal(val gameplay: Context) extends Actor
+class Deal(val gameplay: Context, val play: Play) extends Actor
     with ActorLogging
     with Betting.DealContext
     with Streets.DealContext {
@@ -27,19 +27,12 @@ class Deal(val gameplay: Context) extends Actor
   lazy val streets = Streets(stageContext)
   lazy val stageContext = StageContext(gameplay, self)
   
-  val id: String = java.util.UUID.randomUUID().toString()
-  val startAt: java.util.Date = new java.util.Date()
-  val finishAt: java.util.Date = null
-  def currentStreet: Street = streets.current
-  def acting = gameplay.round.acting
-  def pot: Pot = gameplay.round.pot
-  def rake: Decimal = null
-  val winners: Map[Player, Decimal] = Map.empty
-  val knownCards: Map[Player, List[Card]] = Map.empty
-
+  play.getStreet = () => streets.current.value
+  
   override def preStart() {
     log.info("start deal")
     gameplay.events.playStart
+    //play.started() // FIXME ugly
     beforeStreets(stageContext) match {
       case Stage.Next ⇒ self ! Streets.Next
       case Stage.Exit ⇒ // TODO
@@ -50,11 +43,12 @@ class Deal(val gameplay: Context) extends Actor
     log.info("stop deal")
     //afterStreets(stageContext)
     gameplay.events.playStop()
+    play.finished() // FIXME ugly
     parent ! Deal.Done
   }
   
   def receive = handleStreets
-
+  
   def handleStreets: Receive = {
     case Betting.Start ⇒
       log.info("[betting] start")

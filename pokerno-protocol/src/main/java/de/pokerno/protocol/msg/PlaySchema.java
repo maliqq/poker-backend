@@ -12,15 +12,15 @@ import com.dyuproject.protostuff.Output;
 import com.dyuproject.protostuff.Schema;
 import com.dyuproject.protostuff.UninitializedMessageException;
 
-public class DealSchema
-       implements Schema<Deal> {
+public class PlaySchema
+       implements Schema<Play> {
 
 
-    static final Deal DEFAULT_INSTANCE = new Deal();
-    static final Schema<Deal> SCHEMA = new DealSchema();
+    static final Play DEFAULT_INSTANCE = new Play();
+    static final Schema<Play> SCHEMA = new PlaySchema();
 
-    public static Deal getDefaultInstance() { return DEFAULT_INSTANCE; }
-    public static Schema<Deal> getSchema() { return SCHEMA; }
+    public static Play getDefaultInstance() { return DEFAULT_INSTANCE; }
+    public static Schema<Play> getSchema() { return SCHEMA; }
 
     public static final int FIELD_NONE = 0;
     public static final int FIELD_ID = 1;
@@ -33,38 +33,38 @@ public class DealSchema
     public static final int FIELD_WINNERS = 8;
     public static final int FIELD_KNOWN_CARDS = 9;
 
-    public DealSchema() {}
+    public PlaySchema() {}
 
 
-    public Deal newMessage() {
-        return new Deal();
+    public Play newMessage() {
+        return new Play();
     }
 
-    public Class<Deal> typeClass() {
-        return Deal.class;
+    public Class<Play> typeClass() {
+        return Play.class;
     }
 
     public String messageName() {
-        return Deal.class.getSimpleName();
+        return Play.class.getSimpleName();
     }
 
     public String messageFullName() {
-        return Deal.class.getName();
+        return Play.class.getName();
     }
 
 
-    public boolean isInitialized(Deal message) {
+    public boolean isInitialized(Play message) {
         return true;
     }
 
 
-    public void mergeFrom(Input input, Deal message) throws IOException {
+    public void mergeFrom(Input input, Play message) throws IOException {
         for (int fieldIx = input.readFieldNumber(this); fieldIx != FIELD_NONE; fieldIx = input.readFieldNumber(this)) {
             mergeFrom(input, message, fieldIx);
         }
     }
 
-    public void mergeFrom(Input input, Deal message, int fieldIx) throws IOException {
+    public void mergeFrom(Input input, Play message, int fieldIx) throws IOException {
         switch (fieldIx) {
             case FIELD_NONE:
                 return;
@@ -112,14 +112,14 @@ public class DealSchema
 
     public int[] getWriteFields() { return FIELDS_TO_WRITE; }
 
-    public void writeTo(Output output, Deal message) throws IOException {
+    public void writeTo(Output output, Play message) throws IOException {
         int[] toWrite = getWriteFields();
         for (int i = 0; i < toWrite.length; i++) {
             writeTo(output, message, toWrite[i]);
         }
     }
 
-    public void writeTo(Output output, Deal message, int fieldIx) throws IOException {
+    public void writeTo(Output output, Play message, int fieldIx) throws IOException {
         switch (fieldIx) {
             case FIELD_NONE:
                 break;

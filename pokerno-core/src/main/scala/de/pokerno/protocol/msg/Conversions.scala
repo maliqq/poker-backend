@@ -1,6 +1,7 @@
 package de.pokerno.protocol.msg
 
 import de.pokerno.gameplay
+import de.pokerno.protocol.Conversions._
 
 object Conversions {
 
@@ -21,6 +22,13 @@ object Conversions {
     case gameplay.Street.FirstDraw  ⇒ StageEventSchema.StreetType.FIRST_DRAW
     case gameplay.Street.SecondDraw ⇒ StageEventSchema.StreetType.SECOND_DRAW
     case gameplay.Street.ThirdDraw  ⇒ StageEventSchema.StreetType.THIRD_DRAW
+  }
+  
+  implicit def play2wire(v: gameplay.Play): Play = {
+    val play = new Play(v.id, v.startAt.getTime() / 1000)
+    play.pot = v.pot.total
+    play.street = v.street
+    play
   }
 
 }

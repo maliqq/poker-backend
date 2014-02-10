@@ -150,6 +150,8 @@ class Room(
   whenUnhandled {
     case Event(Room.Subscribe(observer, name), _) =>
       events.broker.subscribe(observer, name)
+      // TODO !!!!!
+      //events.start(table, variation, stake)
       stay()
     
     case Event(x: Any, _) =>

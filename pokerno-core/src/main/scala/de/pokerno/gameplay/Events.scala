@@ -22,10 +22,11 @@ class Events {
       message.PlayerJoin(box._2, box._1, amount)
     )
 
-  def start(table: Table, variation: Variation, stake: Stake) =
+  def start(table: Table, variation: Variation, stake: Stake, play: Play) = {
     broker.publish(
-      message.Start(table, variation, stake)
+      message.Start(table, variation, stake, play)
     )
+  }
 
   def playStart() =
     broker.publish(message.PlayStart())

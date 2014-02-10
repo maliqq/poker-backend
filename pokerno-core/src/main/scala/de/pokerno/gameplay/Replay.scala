@@ -32,7 +32,7 @@ class Replay(
         new Dealer(new Deck(Cards(deck.get)))
       else
         new Dealer)
-
+  
   val stageContext = StageContext(gameplay, self)
 
   def e = gameplay.events
@@ -42,6 +42,9 @@ class Replay(
   val streetOptions = Streets.Options(gameOptions.group)
   var streets = Street.byGameGroup(gameOptions.group)
 
+  val play = new Play(gameplay)
+  play.getStreet = () => streets.head
+  
   import concurrent.duration._
   import de.pokerno.util.ConsoleUtils._
 
@@ -56,7 +59,7 @@ class Replay(
   override def receive = {
     case Replay.Subscribe(out) ⇒
       e.broker.subscribe(out, "replay-out")
-      e.start(t, gameplay.variation, gameplay.stake)
+      e.start(t, gameplay.variation, gameplay.stake, play)
 
 //    case join @ rpc.JoinPlayer(pos, player, amount) ⇒
 //      debug("got: %s", join)

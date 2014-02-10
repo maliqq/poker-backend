@@ -278,7 +278,7 @@ sealed case class Start(
 
     @BeanProperty var stake: wire.Stake,
     
-    @BeanProperty var deal: Deal
+    @BeanProperty var play: Play
     ) extends Outbound {
 
   def this() = this(null, null, null, null)
@@ -287,11 +287,11 @@ sealed case class Start(
 }
 
 @MsgPack
-sealed case class Deal(
+sealed case class Play(
     @BeanProperty var id: String,
     @BeanProperty var startAt: java.lang.Long,
     @BeanProperty var stopAt: java.lang.Long = null,
-    @BeanProperty var street: String = null,
+    @BeanProperty var street: StageEventSchema.StreetType = null,
     @BeanProperty var acting: RequireBet = null,
     @BeanProperty var pot: java.lang.Double = null,
     @BeanProperty var rake: java.lang.Double = null,
@@ -299,5 +299,5 @@ sealed case class Deal(
     @BeanProperty var knownCards: java.util.ArrayList[CardsShow] = null
 ) {
   def this() = this(null, null)
-  def schema = DealSchema.SCHEMA
+  def schema = PlaySchema.SCHEMA
 }

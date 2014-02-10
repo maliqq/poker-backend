@@ -14,7 +14,7 @@ private[gameplay] trait Betting
     with Blinds {
 
   import de.pokerno.util.ConsoleUtils._
-  
+
   // require bet
   def requireBet(ctx: StageContext, acting: Tuple2[Seat, Int]) {
     val round = ctx.gameplay.round

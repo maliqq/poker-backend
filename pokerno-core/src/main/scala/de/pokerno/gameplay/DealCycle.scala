@@ -4,12 +4,12 @@ import akka.actor.Actor
 
 /**
  * Simple deal cycle
- * */
+ */
 
 class DealCycle extends Actor {
-  
+
   // TODO
   def receive = {
-    case _ =>
+    case _ ⇒
   }
 }

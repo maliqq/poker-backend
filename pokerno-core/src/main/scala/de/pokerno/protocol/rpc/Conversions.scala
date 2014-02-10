@@ -1,6 +1,6 @@
 package de.pokerno.protocol.rpc
 
-import de.pokerno.model.{Table, Game, Stake, Variation}
+import de.pokerno.model.{ Table, Game, Stake, Variation }
 import de.pokerno.protocol.wire
 import de.pokerno.protocol.wire.Conversions._
 import de.pokerno.protocol.Conversions._

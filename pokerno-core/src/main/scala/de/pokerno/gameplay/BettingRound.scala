@@ -76,21 +76,21 @@ private[gameplay] class BettingRound(val table: Table, val game: Game, val stake
     var b = if (_bet.betType == Bet.AllIn)
       Bet.raise(seat.stack)
     else _bet
-    
+
     val valid = b.betType match {
-      case Bet.Fold =>
+      case Bet.Fold ⇒
         seat.canFold
 
-      case Bet.Check =>
+      case Bet.Check ⇒
         seat.canCheck(_call)
-      
-      case Bet.Call =>
+
+      case Bet.Call ⇒
         seat.canCall(b.amount, _call)
-      
-      case Bet.Raise =>
+
+      case Bet.Raise ⇒
         seat.canRaise(b.amount, _raise)
-      
-      case f: Bet.ForcedBet =>
+
+      case f: Bet.ForcedBet ⇒
         seat.canForce(b.amount, stake.amount(f))
     }
 
@@ -110,7 +110,7 @@ private[gameplay] class BettingRound(val table: Table, val game: Game, val stake
 
       pot add (player, diff, seat.isAllIn)
     }
-    
+
     b
   }
 

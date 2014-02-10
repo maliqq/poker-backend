@@ -6,7 +6,7 @@ import de.pokerno.poker.Card
 import de.pokerno.protocol.{ msg ⇒ message }
 import concurrent._
 import concurrent.duration._
-import math.{BigDecimal => Decimal}
+import math.{ BigDecimal ⇒ Decimal }
 
 object Deal {
 
@@ -26,9 +26,9 @@ class Deal(val gameplay: Context, val play: Play) extends Actor
 
   lazy val streets = Streets(stageContext)
   lazy val stageContext = StageContext(gameplay, self)
-  
-  play.getStreet = () => streets.current.value
-  
+
+  play.getStreet = () ⇒ streets.current.value
+
   override def preStart() {
     log.info("start deal")
     gameplay.events.playStart
@@ -46,9 +46,9 @@ class Deal(val gameplay: Context, val play: Play) extends Actor
     play.finished() // FIXME ugly
     parent ! Deal.Done
   }
-  
+
   def receive = handleStreets
-  
+
   def handleStreets: Receive = {
     case Betting.Start ⇒
       log.info("[betting] start")
@@ -66,5 +66,5 @@ class Deal(val gameplay: Context, val play: Play) extends Actor
       afterStreets(stageContext)
       context.stop(self)
   }
-  
+
 }

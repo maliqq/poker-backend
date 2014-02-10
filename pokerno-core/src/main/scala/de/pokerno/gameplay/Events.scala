@@ -98,10 +98,10 @@ class Events {
     broker.publish(
       message.CardsShow(pos = box._2, player = box._1, cards = cards, muck = muck)
     )
-  
+
   def seatStateChanged(pos: Int, state: Seat.State.Value) =
     broker.publish(
       message.SeatEvent(message.SeatEventSchema.EventType.STATE, pos = pos, seat = new wire.Seat(state = state))
     )
-    
+
 }

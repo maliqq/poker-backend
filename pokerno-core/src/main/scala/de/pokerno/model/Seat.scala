@@ -62,7 +62,7 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
     if (_amount.toDouble == 0)
       _state = Seat.State.AllIn
   }
-  
+
   def buyIn(amt: Decimal) {
     net(amt)
     _state = Seat.State.Ready
@@ -74,12 +74,12 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
 
   private var _put: Decimal = .0
   def put = _put
-  
+
   def put_=(amount: Decimal) {
     net(-amount)
     _put += amount
   }
-  
+
   // total stack
   def stack = _put + _amount
 
@@ -92,7 +92,7 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
 
   /**
    * State transitions
-   * */
+   */
   def play() {
     _state = Seat.State.Play
     _put = .0
@@ -105,18 +105,18 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
   def idle() {
     _state = Seat.State.Idle
   }
-  
+
   def ready() {
     _state = Seat.State.Ready
   }
-  
+
   def away() {
     _state = Seat.State.Away
   }
-  
+
   /**
    * Action
-   * */
+   */
   // CHECK
   def canCheck(toCall: Decimal): Boolean = {
     _put == toCall
@@ -131,19 +131,19 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
   def canFold: Boolean = {
     inPlay
   }
-  
+
   def fold(): Decimal = {
     _state = Seat.State.Fold
     _put = .0
     .0
   }
-  
+
   // ANTE, BRING_IN, SMALL_BLIND, BIG_BLIND, GUEST_BLIND, STRADDLE
   def canForce(amt: Decimal, toCall: Decimal): Boolean = {
     // TODO
     canCall(amt, toCall)
   }
-  
+
   def force(amt: Decimal): Decimal = {
     put = amt
     if (!isAllIn) _state = Seat.State.Play
@@ -154,31 +154,31 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
   def canRaise(amt: Decimal, toRaise: Tuple2[Decimal, Decimal]): Boolean = {
     inPlay && _canRaise(amt, toRaise)
   }
-  
+
   private def _canRaise(amt: Decimal, toRaise: Tuple2[Decimal, Decimal]): Boolean = {
     val (min, max) = toRaise
     amt <= stack && amt >= min && amt <= max
   }
-  
+
   def raise(amt: Decimal): Decimal = {
     val diff = amt - _put
     put = diff
     if (!isAllIn) _state = Seat.State.Bet
     diff
   }
-  
+
   // CALL
   def canCall(amt: Decimal, toCall: Decimal): Boolean = {
     inPlay && _canCall(amt, toCall)
   }
-  
+
   private def _canCall(amt: Decimal, toCall: Decimal): Boolean = {
     // call all-in
     (amt + _put < toCall && amt == amount ||
-    // call exact amount
-    amt + _put == toCall && amt <= amount)
+      // call exact amount
+      amt + _put == toCall && amt <= amount)
   }
-  
+
   def call(amt: Decimal): Decimal = {
     put += amt
     if (!isAllIn) _state = Seat.State.Bet
@@ -188,50 +188,50 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
   def didCall(amt: Decimal): Boolean = {
     isAllIn || _didCall(amt)
   }
-  
+
   private def _didCall(amt: Decimal): Boolean = {
     amt <= _put
   }
-  
+
   // BET
   def canBet: Boolean = {
     inPlay || isPostedBB
   }
-  
+
   def postBet(bet: Bet): Decimal =
     bet.betType match {
-      case Bet.Fold             ⇒ fold
-      case Bet.Raise            ⇒ raise(bet.amount)
-      case Bet.Call             ⇒ call(bet.amount)
-      case Bet.Check            ⇒ check()
-      case _: Bet.ForcedBet     ⇒ force(bet.amount)
+      case Bet.Fold         ⇒ fold
+      case Bet.Raise        ⇒ raise(bet.amount)
+      case Bet.Call         ⇒ call(bet.amount)
+      case Bet.Check        ⇒ check()
+      case _: Bet.ForcedBet ⇒ force(bet.amount)
     }
 
   // STATE
   def isEmpty =
     state == Seat.State.Empty
-  
+
   def isReady =
     state == Seat.State.Ready || state == Seat.State.Play || state == Seat.State.Fold
-  
+
   def isActive =
     state == Seat.State.Play || state == Seat.State.PostBB
-  
+
   def isAllIn =
     state == Seat.State.AllIn
-  
+
   def isWaitingBB =
     state == Seat.State.WaitBB
-  
+
   def isPostedBB =
     state == Seat.State.PostBB
-    
+
   def isPlaying =
     state == Seat.State.Play
-  
+
   def inPlay =
     state == Seat.State.Play || state == Seat.State.Bet
-  
+
   def inPot =
     inPlay || state == Seat.State.AllIn
 

@@ -50,7 +50,7 @@ class Table(val size: Int) {
   def addPlayer(at: Int, player: Player, amount: Option[Decimal] = None) {
     val seat = seatsAsList(at)
     seat.player = player
-    amount map(seat buyIn (_))
+    amount map (seat buyIn (_))
     _seating(player) = at
   }
 

@@ -65,7 +65,7 @@ class SeatSpec extends FunSpec with ClassicMatchers {
 
       seat.play
     }
-    
+
     describe("state") {
       it("AllIn") {
         val seat = new Seat(Seat.State.AllIn)
@@ -79,7 +79,7 @@ class SeatSpec extends FunSpec with ClassicMatchers {
         seat.inPlay should be(false)
         seat.inPot should be(true)
       }
-      
+
       it("Auto") {
         val seat = new Seat(Seat.State.Auto)
         seat.isEmpty should be(false)
@@ -92,7 +92,7 @@ class SeatSpec extends FunSpec with ClassicMatchers {
         seat.inPlay should be(false)
         seat.inPot should be(false)
       }
-      
+
       it("Away") {
         val seat = new Seat(Seat.State.Away)
         seat.isEmpty should be(false)
@@ -105,7 +105,7 @@ class SeatSpec extends FunSpec with ClassicMatchers {
         seat.inPlay should be(false)
         seat.inPot should be(false)
       }
-      
+
       it("Bet") {
         val seat = new Seat(Seat.State.Bet)
         seat.isEmpty should be(false)
@@ -118,7 +118,7 @@ class SeatSpec extends FunSpec with ClassicMatchers {
         seat.inPlay should be(true)
         seat.inPot should be(true)
       }
-      
+
       it("Empty") {
         val seat = new Seat(Seat.State.Empty)
         seat.isEmpty should be(true)
@@ -131,7 +131,7 @@ class SeatSpec extends FunSpec with ClassicMatchers {
         seat.inPlay should be(false)
         seat.inPot should be(false)
       }
-      
+
       it("Fold") {
         val seat = new Seat(Seat.State.Fold)
         seat.isEmpty should be(false)
@@ -144,7 +144,7 @@ class SeatSpec extends FunSpec with ClassicMatchers {
         seat.inPlay should be(false)
         seat.inPot should be(false)
       }
-      
+
       it("Idle") {
         val seat = new Seat(Seat.State.Idle)
         seat.isEmpty should be(false)
@@ -157,7 +157,7 @@ class SeatSpec extends FunSpec with ClassicMatchers {
         seat.inPlay should be(false)
         seat.inPot should be(false)
       }
-      
+
       it("Play") {
         val seat = new Seat(Seat.State.Play)
         seat.isEmpty should be(false)
@@ -170,7 +170,7 @@ class SeatSpec extends FunSpec with ClassicMatchers {
         seat.inPlay should be(true)
         seat.inPot should be(true)
       }
-      
+
       it("PostBB") {
         val seat = new Seat(Seat.State.PostBB)
         seat.isEmpty should be(false)
@@ -183,7 +183,7 @@ class SeatSpec extends FunSpec with ClassicMatchers {
         seat.inPlay should be(false)
         seat.inPot should be(false)
       }
-      
+
       it("Ready") {
         val seat = new Seat(Seat.State.Ready)
         seat.isEmpty should be(false)
@@ -197,20 +197,20 @@ class SeatSpec extends FunSpec with ClassicMatchers {
         seat.inPot should be(false)
       }
     }
-    
+
     describe("can") {
-      it("bet")  {
-        
+      it("bet") {
+
       }
-      
+
       it("check") {
-        
+
       }
-      
+
       it("fold") {
-        
+
       }
-      
+
       it("call") {
         val seat = new Seat
         seat.player = new Player("1")
@@ -228,9 +228,9 @@ class SeatSpec extends FunSpec with ClassicMatchers {
         seat.fold
         seat.canCall(500, 1000) should be(false)
       }
-      
+
       it("raise") {
-        
+
       }
     }
   }

@@ -26,7 +26,7 @@ private[gameplay] trait Showdown {
       case (player, hand) ⇒
         hand
     } reverse
-    
+
     val max = sorted.head
     sorted.takeWhile(_._2 == max._2)
   }
@@ -46,7 +46,7 @@ private[gameplay] trait Showdown {
 
     pot.sidePots foreach { side ⇒
       val total = side.total
-      
+
       var winnersLow: List[Player] = List.empty
       var winnersHigh: List[Player] = List.empty
       var bestLow: Option[Hand] = None
@@ -59,36 +59,38 @@ private[gameplay] trait Showdown {
 
       if (hi.isDefined)
         winnersHigh = best(side, hi.get).map(_._1)
-      
+
       def splitWinners(winners: List[Player], amount: Decimal): Map[Player, Decimal] = {
         if (winners.isEmpty)
           return Map.empty // prevent DivisionByZero
-        
+
         val share = amount / winners.length
         winners.foldLeft[Map[Player, Decimal]](Map.empty) {
-          case (result, winner) =>
+          case (result, winner) ⇒
             result + (winner -> share)
         }
       }
 
       var winners: Map[Player, Decimal] = Map.empty
-      
+
       // TODO остаток от деления
       if (split && bestLow.isDefined) {
         winners ++= splitWinners(winnersLow, total / 2.0)
         winners ++= splitWinners(winnersHigh, total / 2.0)
       } else {
         winners ++= splitWinners(
-            if (hi.isDefined) winnersHigh
-            else winnersLow,
+          if (hi.isDefined) winnersHigh
+          else winnersLow,
           total)
       }
 
-      winners foreach { case (winner, amount) ⇒
-        table.seat(winner) map { case (seat, pos) =>
-          seat wins amount
-          events.declareWinner((winner, pos), amount)
-        }
+      winners foreach {
+        case (winner, amount) ⇒
+          table.seat(winner) map {
+            case (seat, pos) ⇒
+              seat wins amount
+              events.declareWinner((winner, pos), amount)
+          }
       }
     }
   }

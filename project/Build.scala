@@ -130,9 +130,10 @@ object PokernoBuild extends Build {
       name := "pokerno-backend",
       version := "0.0.1",
       libraryDependencies ++= testDeps ++ Seq(
-        "com.codahale.metrics" % "metrics-core" % "3.0.1",
-        "com.typesafe.akka" %% "akka-zeromq" % "2.2.3",
-        "redis.clients" % "jedis" % "2.2.1"
+        "com.codahale.metrics" % "metrics-core" % "3.0.1"
+        ,"com.typesafe.akka" %% "akka-zeromq" % "2.2.3"
+        ,"redis.clients" % "jedis" % "2.2.1"
+        ,"org.mongodb" % "mongo-java-driver" % "2.11.3"
       )
     ) ++ assemblySettings
   ) dependsOn(core, protocol, httpGateway, stompGateway)

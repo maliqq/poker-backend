@@ -1,10 +1,11 @@
 #!/usr/bin/env/ruby
 
 $:.unshift(File.dirname(__FILE__))
-$:.unshift(File.join(File.dirname(__FILE__), 'protobuf'))
+$:.unshift(File.join(File.dirname(__FILE__), 'proto'))
 
 require 'ffi-rzmq'
 require 'proto/rpc.pb'
+include Proto
 
 ctx = ZMQ::Context.new
 socket = ctx.socket ZMQ::DEALER
@@ -37,5 +38,8 @@ msg = Rpc::Request.new(
     )
   )
 
-socket.send_string msg.serialize_to_string
+bytes = msg.serialize_to_string
+puts "sending #{bytes.size} bytes"
+puts bytes.bytes.map { |b| "%02X" % b }.join(" ")
+socket.send_string bytes
 socket.close

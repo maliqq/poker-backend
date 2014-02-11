@@ -16,6 +16,7 @@ class Node extends Actor with ActorLogging {
   import context._
   import concurrent.duration._
   import util.{Success, Failure}
+  import proto.rpc.NodeActionSchema
   
   override def preStart {
   }
@@ -37,17 +38,21 @@ class Node extends Actor with ActorLogging {
           log.warning("Room not found: {}", id)
       }
 
-    case create: rpc.CreateRoom ⇒
-      val id = create.id
-      system.actorSelection(id).resolveOne(1 second).onComplete {
-        case Failure(_) =>
-          spawnRoom(create)
-        case _ =>
-          log.warning("Room exists: {}", id)
+    case action: rpc.NodeAction =>
+      action.`type` match {
+        case NodeActionSchema.ActionType.CREATE_ROOM =>
+          val create = action.createRoom
+          val id = create.id
+          system.actorSelection(id).resolveOne(1 second).onComplete {
+            case Failure(_) =>
+              spawnRoom(create)
+            case _ =>
+              log.warning("Room exists: {}", id)
+          }
       }
 
     case action: rpc.RoomAction ⇒
-      import rpc.RoomActionSchema._
+      import proto.rpc.RoomActionSchema._
       val id = action.id
       system.actorSelection(id).resolveOne(1 second).onComplete {
         case Success(room) =>
@@ -66,6 +71,7 @@ class Node extends Actor with ActorLogging {
   
   private def spawnRoom(createRequest: rpc.CreateRoom): ActorRef = {
     val id = createRequest.id
+    log.info("spawning new room with id={}", id)
     val variation: model.Variation = createRequest.variation
     val stake: model.Stake = createRequest.stake
     

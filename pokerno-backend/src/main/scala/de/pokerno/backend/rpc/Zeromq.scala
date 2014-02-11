@@ -28,13 +28,22 @@ class Zeromq(node: ActorRef) extends Actor with ActorLogging {
       zmq.Bind(config.address)
     )
   
-  import rpc.RequestSchema.RequestType
+  import proto.rpc.RequestSchema.RequestType
+  import de.pokerno.util.PrintUtils._
   
   def receive = {
     case m: zmq.Message =>
       try {
+        val id = m.frames(0)
+        val bytes = m.frames(1).toArray[Byte]
         
-        val request = decode(m.frames(0).toArray[Byte])
+//        for (frame <- m.frames) {
+//          Console printf("received %d bytes\n", frame.length)
+//          Console println(hexdump(frame.toArray[Byte]))
+//        }
+        
+        val request = decode(bytes)
+        log.info("[rpc] {}", request.`type`)
         val msg = request.`type` match {
           case RequestType.NODE_ACTION =>
             request.nodeAction
@@ -47,7 +56,6 @@ class Zeromq(node: ActorRef) extends Actor with ActorLogging {
           case m =>
             log.error("uknown request type: {}", m)
         }
-        log.info("[rpc] {}", msg)
         
         node ! msg
         

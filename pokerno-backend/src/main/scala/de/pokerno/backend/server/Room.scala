@@ -50,6 +50,7 @@ class Room(
   import context._
   import context.dispatcher
   import concurrent.duration._
+  import proto.cmd.PlayerEventSchema
   
   startWith(Room.State.Waiting, NoneRunning)
   
@@ -119,25 +120,25 @@ class Room(
         case cmd.PlayerEvent(event, player: String) =>
           // TODO notify
           event match {
-            case cmd.PlayerEventSchema.EventType.OFFLINE =>
+            case PlayerEventSchema.EventType.OFFLINE =>
               table.seat(player).map { case (seat, pos) =>
                 seat.away()
                 events.seatStateChanged(pos, seat.state)
               }
               
-            case cmd.PlayerEventSchema.EventType.SIT_OUT =>
+            case PlayerEventSchema.EventType.SIT_OUT =>
               table.seat(player).map { case (seat, pos) =>
                 seat.idle()
                 events.seatStateChanged(pos, seat.state)
               }
               
-            case cmd.PlayerEventSchema.EventType.COME_BACK | cmd.PlayerEventSchema.EventType.ONLINE =>
+            case PlayerEventSchema.EventType.COME_BACK | PlayerEventSchema.EventType.ONLINE =>
               table.seat(player).map { case (seat, pos) =>
                 seat.ready()
                 events.seatStateChanged(pos, seat.state)
               }
               
-            case cmd.PlayerEventSchema.EventType.LEAVE =>
+            case PlayerEventSchema.EventType.LEAVE =>
               table.seat(player) map { case (seat, pos) =>
                 table.removePlayer(pos)
                 events.seatStateChanged(pos, seat.state)

@@ -4,6 +4,6 @@ import org.apache.commons.codec.binary.Hex
 
 object PrintUtils {
 
-  def hexdump(data: Array[Byte]) = Hex.encodeHex(data)
+  def hexdump(data: Array[Byte]) = new String(Hex.encodeHex(data))
 
 }

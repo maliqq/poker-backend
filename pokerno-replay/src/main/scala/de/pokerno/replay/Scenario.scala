@@ -40,7 +40,7 @@ private[replay] class Scenario {
     streets.get(streets.size - 1)
   }
 
-  val actions = new java.util.HashMap[String, java.util.ArrayList[rpc.Request]]()
+  val actions = new java.util.HashMap[String, java.util.ArrayList[cmd.Cmd]]()
 
   var showdown: Boolean = false
 
@@ -145,9 +145,9 @@ private[replay] class Scenario {
     case tags.Deal(player, cards, cardsNum) ⇒
 
       val action = if (player != null)
-        rpc.DealCards(wire.DealType.HOLE, player.unquote, cards, cardsNum)
+        cmd.DealCards(wire.DealType.HOLE, player.unquote, cards, cardsNum)
       else
-        rpc.DealCards(wire.DealType.BOARD, null, cards, null)
+        cmd.DealCards(wire.DealType.BOARD, null, cards, null)
 
       actions.get(currentStreet).add(action)
 

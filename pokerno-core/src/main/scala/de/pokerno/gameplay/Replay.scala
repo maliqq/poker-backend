@@ -1,7 +1,7 @@
 package de.pokerno.gameplay
 
 import de.pokerno.protocol
-import de.pokerno.protocol.{ msg, rpc, wire }
+import de.pokerno.protocol.{ msg, rpc, wire, cmd }
 import protocol.Conversions._
 import protocol.wire.Conversions._
 import protocol.rpc.Conversions._
@@ -11,7 +11,7 @@ import akka.actor.{ Actor, Props, ActorRef, ActorLogging }
 
 object Replay {
   case class Subscribe(out: ActorRef)
-  case class StreetActions(street: Street.Value, actions: List[rpc.Request], speed: Int)
+  case class StreetActions(street: Street.Value, actions: List[cmd.Cmd], speed: Int)
   case class Showdown()
 }
 
@@ -104,11 +104,11 @@ class Replay(
 
           val dealActions = actions.filter { action ⇒
             action match {
-              case a: rpc.DealCards ⇒
+              case a: cmd.DealCards ⇒
                 (a.getType: DealCards.Value) == dealOptions.dealType
               case _ ⇒ false
             }
-          }.asInstanceOf[List[rpc.DealCards]]
+          }.asInstanceOf[List[cmd.DealCards]]
 
           dealing(dealActions, dealOptions, (speed seconds))
 
@@ -139,8 +139,8 @@ class Replay(
           info("[betting] started")
 
           val betActions = actions.filter { action ⇒
-            action.isInstanceOf[rpc.AddBet]
-          }.asInstanceOf[List[rpc.AddBet]]
+            action.isInstanceOf[cmd.AddBet]
+          }.asInstanceOf[List[cmd.AddBet]]
 
           betting(betActions, (speed seconds))
 

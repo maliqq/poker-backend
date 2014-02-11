@@ -98,19 +98,19 @@ public class DealActionSchema
                 message.setType(ActionType.valueOf(input.readEnum()));
                 break;
             case FIELD_ADD_BET:
-                message.setAddBet(input.mergeObject(message.getAddBet(), AddBetSchema.getSchema()));
+                message.setAddBet(input.mergeObject(message.getAddBet(), de.pokerno.protocol.cmd.AddBetSchema.getSchema()));
                 break;
 
             case FIELD_DEAL_CARDS:
-                message.setDealCards(input.mergeObject(message.getDealCards(), DealCardsSchema.getSchema()));
+                message.setDealCards(input.mergeObject(message.getDealCards(), de.pokerno.protocol.cmd.DealCardsSchema.getSchema()));
                 break;
 
             case FIELD_DISCARD_CARDS:
-                message.setDiscardCards(input.mergeObject(message.getDiscardCards(), DiscardCardsSchema.getSchema()));
+                message.setDiscardCards(input.mergeObject(message.getDiscardCards(), de.pokerno.protocol.cmd.DiscardCardsSchema.getSchema()));
                 break;
 
             case FIELD_SHOW_CARDS:
-                message.setShowCards(input.mergeObject(message.getShowCards(), ShowCardsSchema.getSchema()));
+                message.setShowCards(input.mergeObject(message.getShowCards(), de.pokerno.protocol.cmd.ShowCardsSchema.getSchema()));
                 break;
 
             default:
@@ -138,22 +138,22 @@ public class DealActionSchema
                 output.writeEnum(FIELD_TYPE, message.getType().number, false);    break;
             case FIELD_ADD_BET:
                 if (message.getAddBet() != null)
-                    output.writeObject(FIELD_ADD_BET, message.getAddBet(), AddBetSchema.getSchema(), false);
+                    output.writeObject(FIELD_ADD_BET, message.getAddBet(), de.pokerno.protocol.cmd.AddBetSchema.getSchema(), false);
 
                 break;
             case FIELD_DEAL_CARDS:
                 if (message.getDealCards() != null)
-                    output.writeObject(FIELD_DEAL_CARDS, message.getDealCards(), DealCardsSchema.getSchema(), false);
+                    output.writeObject(FIELD_DEAL_CARDS, message.getDealCards(), de.pokerno.protocol.cmd.DealCardsSchema.getSchema(), false);
 
                 break;
             case FIELD_DISCARD_CARDS:
                 if (message.getDiscardCards() != null)
-                    output.writeObject(FIELD_DISCARD_CARDS, message.getDiscardCards(), DiscardCardsSchema.getSchema(), false);
+                    output.writeObject(FIELD_DISCARD_CARDS, message.getDiscardCards(), de.pokerno.protocol.cmd.DiscardCardsSchema.getSchema(), false);
 
                 break;
             case FIELD_SHOW_CARDS:
                 if (message.getShowCards() != null)
-                    output.writeObject(FIELD_SHOW_CARDS, message.getShowCards(), ShowCardsSchema.getSchema(), false);
+                    output.writeObject(FIELD_SHOW_CARDS, message.getShowCards(), de.pokerno.protocol.cmd.ShowCardsSchema.getSchema(), false);
 
                 break;
             default:

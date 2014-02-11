@@ -4,7 +4,7 @@ import akka.actor.{Actor, Props, ActorLogging, ActorRef, FSM}
 import de.pokerno.model
 import de.pokerno.gameplay
 import de.pokerno.backend.Gateway
-import de.pokerno.protocol.rpc
+import de.pokerno.protocol.{rpc, cmd}
 import de.pokerno.protocol.Conversions._
 import util.{Success, Failure}
 import scala.concurrent.{Promise, Future}
@@ -59,7 +59,7 @@ class Room(
   }
   
   when(Room.State.Waiting) {
-    case Event(Gateway.Message(gw, join: rpc.JoinPlayer), NoneRunning) =>
+    case Event(Gateway.Message(gw, join: cmd.JoinPlayer), NoneRunning) =>
       handlePlayerJoin(gw, join)
       if (canStart) goto(Room.State.Active)
       else stay()
@@ -98,7 +98,7 @@ class Room(
       stay()
 
     // add bet when deal is active
-    case Event(Gateway.Message(gw, addBet: rpc.AddBet), Running(deal)) =>
+    case Event(Gateway.Message(gw, addBet: cmd.AddBet), Running(deal)) =>
       deal ! addBet // pass to deal
       stay()
       
@@ -116,28 +116,28 @@ class Room(
         case chat: rpc.Chat =>
           // TODO broadcast
           
-        case rpc.PlayerEvent(event, player: String) =>
+        case cmd.PlayerEvent(event, player: String) =>
           // TODO notify
           event match {
-            case rpc.PlayerEventSchema.EventType.OFFLINE =>
+            case cmd.PlayerEventSchema.EventType.OFFLINE =>
               table.seat(player).map { case (seat, pos) =>
                 seat.away()
                 events.seatStateChanged(pos, seat.state)
               }
               
-            case rpc.PlayerEventSchema.EventType.SIT_OUT =>
+            case cmd.PlayerEventSchema.EventType.SIT_OUT =>
               table.seat(player).map { case (seat, pos) =>
                 seat.idle()
                 events.seatStateChanged(pos, seat.state)
               }
               
-            case rpc.PlayerEventSchema.EventType.COME_BACK | rpc.PlayerEventSchema.EventType.ONLINE =>
+            case cmd.PlayerEventSchema.EventType.COME_BACK | cmd.PlayerEventSchema.EventType.ONLINE =>
               table.seat(player).map { case (seat, pos) =>
                 seat.ready()
                 events.seatStateChanged(pos, seat.state)
               }
               
-            case rpc.PlayerEventSchema.EventType.LEAVE =>
+            case cmd.PlayerEventSchema.EventType.LEAVE =>
               table.seat(player) map { case (seat, pos) =>
                 table.removePlayer(pos)
                 events.seatStateChanged(pos, seat.state)
@@ -184,7 +184,7 @@ class Room(
     }
   }
   
-  private def joinPlayer(join: rpc.JoinPlayer): Future[Boolean] = {
+  private def joinPlayer(join: cmd.JoinPlayer): Future[Boolean] = {
     val promise = Promise[Boolean]()
     try {
       table.addPlayer(join.pos, join.player, Some(join.amount))

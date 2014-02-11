@@ -28,12 +28,25 @@ class Zeromq(node: ActorRef) extends Actor with ActorLogging {
       zmq.Bind(config.address)
     )
   
+  import rpc.RequestSchema.RequestType
+  
   def receive = {
     case m: zmq.Message =>
       try {
         
-        val msg = decode(m.frames(0).toArray[Byte])
-        
+        val request = decode(m.frames(0).toArray[Byte])
+        val msg = request.`type` match {
+          case RequestType.NODE_ACTION =>
+            request.nodeAction
+          case RequestType.ROOM_ACTION =>
+            request.roomAction
+          case RequestType.TABLE_ACTION =>
+            request.tableAction
+          case RequestType.DEAL_ACTION =>
+            request.dealAction
+          case m =>
+            log.error("uknown request type: {}", m)
+        }
         log.info("[rpc] {}", msg)
         
         node ! msg
@@ -46,5 +59,5 @@ class Zeromq(node: ActorRef) extends Actor with ActorLogging {
       log.info("unhandled: {}", m)
   }
   
-  private def decode(msg: Array[Byte]) = codec.Protobuf.decode[rpc.Request](msg)
+  private def decode(msg: Array[Byte]): rpc.Request = codec.Protobuf.decode[rpc.Request](msg)
 }

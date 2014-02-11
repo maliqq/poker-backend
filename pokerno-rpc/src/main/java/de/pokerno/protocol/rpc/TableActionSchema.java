@@ -95,15 +95,15 @@ public class TableActionSchema
                 message.setType(ActionType.valueOf(input.readEnum()));
                 break;
             case FIELD_JOIN_PLAYER:
-                message.setJoinPlayer(input.mergeObject(message.getJoinPlayer(), JoinPlayerSchema.getSchema()));
+                message.setJoinPlayer(input.mergeObject(message.getJoinPlayer(), de.pokerno.protocol.cmd.JoinPlayerSchema.getSchema()));
                 break;
 
             case FIELD_KICK_PLAYER:
-                message.setKickPlayer(input.mergeObject(message.getKickPlayer(), KickPlayerSchema.getSchema()));
+                message.setKickPlayer(input.mergeObject(message.getKickPlayer(), de.pokerno.protocol.cmd.KickPlayerSchema.getSchema()));
                 break;
 
             case FIELD_CHAT:
-                message.setChat(input.mergeObject(message.getChat(), ChatSchema.getSchema()));
+                message.setChat(input.mergeObject(message.getChat(), de.pokerno.protocol.cmd.ChatSchema.getSchema()));
                 break;
 
             default:
@@ -131,17 +131,17 @@ public class TableActionSchema
                 output.writeEnum(FIELD_TYPE, message.getType().number, false);    break;
             case FIELD_JOIN_PLAYER:
                 if (message.getJoinPlayer() != null)
-                    output.writeObject(FIELD_JOIN_PLAYER, message.getJoinPlayer(), JoinPlayerSchema.getSchema(), false);
+                    output.writeObject(FIELD_JOIN_PLAYER, message.getJoinPlayer(), de.pokerno.protocol.cmd.JoinPlayerSchema.getSchema(), false);
 
                 break;
             case FIELD_KICK_PLAYER:
                 if (message.getKickPlayer() != null)
-                    output.writeObject(FIELD_KICK_PLAYER, message.getKickPlayer(), KickPlayerSchema.getSchema(), false);
+                    output.writeObject(FIELD_KICK_PLAYER, message.getKickPlayer(), de.pokerno.protocol.cmd.KickPlayerSchema.getSchema(), false);
 
                 break;
             case FIELD_CHAT:
                 if (message.getChat() != null)
-                    output.writeObject(FIELD_CHAT, message.getChat(), ChatSchema.getSchema(), false);
+                    output.writeObject(FIELD_CHAT, message.getChat(), de.pokerno.protocol.cmd.ChatSchema.getSchema(), false);
 
                 break;
             default:

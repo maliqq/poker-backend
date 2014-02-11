@@ -2,7 +2,7 @@ package de.pokerno.gameplay
 
 import de.pokerno.model._
 import de.pokerno.poker.{ Card, Deck }
-import de.pokerno.protocol.{ msg ⇒ message, rpc }
+import de.pokerno.protocol.{ msg ⇒ message, rpc, cmd }
 import de.pokerno.protocol
 import protocol.Conversions._
 //import protocol.wire.Conversions._
@@ -49,7 +49,7 @@ private[gameplay] object Dealing {
     import concurrent.duration.Duration
     import de.pokerno.util.ConsoleUtils._
 
-    def dealing(dealActions: List[rpc.DealCards], dealOptions: DealingOptions, speed: Duration) {
+    def dealing(dealActions: List[cmd.DealCards], dealOptions: DealingOptions, speed: Duration) {
       def sleep() = Thread.sleep(speed.toMillis)
 
       val dealer = gameplay.dealer
@@ -61,7 +61,7 @@ private[gameplay] object Dealing {
 
           val dealBoardFound = dealActions.headOption
           var cardsDealt: Option[List[Card]] = if (dealBoardFound.isDefined) {
-            val dealBoard = dealBoardFound.get.asInstanceOf[rpc.DealCards]
+            val dealBoard = dealBoardFound.get.asInstanceOf[cmd.DealCards]
             if (dealBoard.cards != null) Some(dealBoard.cards) else None
           } else None
 
@@ -73,7 +73,7 @@ private[gameplay] object Dealing {
 
         case DealCards.Door | DealCards.Hole ⇒
 
-          val dealActionsByPlayer = collection.mutable.HashMap[Player, rpc.DealCards]()
+          val dealActionsByPlayer = collection.mutable.HashMap[Player, cmd.DealCards]()
           dealActions.foreach { action ⇒
             dealActionsByPlayer(action.player) = action
           }

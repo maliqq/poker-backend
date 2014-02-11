@@ -2,9 +2,10 @@ package de.pokerno.protocol.rpc
 
 import beans._
 import org.msgpack.annotation.{ Message ⇒ MsgPack }
+import de.pokerno.protocol.{ wire, Message ⇒ BaseMessage, cmd }
 
 @MsgPack
-class RoomAction extends Request {
+class RoomAction extends BaseMessage {
 
   def schema = RoomActionSchema.SCHEMA
 
@@ -20,7 +21,7 @@ class RoomAction extends Request {
 }
 
 @MsgPack
-class TableAction extends Request {
+class TableAction extends BaseMessage {
 
   def schema = TableActionSchema.SCHEMA
 
@@ -28,18 +29,18 @@ class TableAction extends Request {
   var `type`: TableActionSchema.ActionType = null
 
   @BeanProperty
-  var joinPlayer: JoinPlayer = null
+  var joinPlayer: cmd.JoinPlayer = null
 
   @BeanProperty
-  var kickPlayer: KickPlayer = null
+  var kickPlayer: cmd.KickPlayer = null
 
   @BeanProperty
-  var chat: Chat = null
+  var chat: cmd.Chat = null
 
 }
 
 @MsgPack
-class DealAction extends Request {
+class DealAction extends BaseMessage {
 
   def schema = DealActionSchema.SCHEMA
 
@@ -47,21 +48,21 @@ class DealAction extends Request {
   var `type`: DealActionSchema.ActionType = null
 
   @BeanProperty
-  var addBet: AddBet = null
+  var addBet: cmd.AddBet = null
 
   @BeanProperty
-  var dealCards: DealCards = null
+  var dealCards: cmd.DealCards = null
 
   @BeanProperty
-  var discardCards: DiscardCards = null
+  var discardCards: cmd.DiscardCards = null
 
   @BeanProperty
-  var showCards: ShowCards = null
+  var showCards: cmd.ShowCards = null
 
 }
 
 @MsgPack
-class NodeAction extends Request {
+class NodeAction extends BaseMessage {
 
   def schema = NodeActionSchema.SCHEMA
 
@@ -72,5 +73,23 @@ class NodeAction extends Request {
   var createRoom: CreateRoom = null
 
   @BeanProperty
-  var addBet: AddBet = null
+  var addBet: cmd.AddBet = null
+}
+
+@MsgPack
+sealed case class Request(
+    @BeanProperty var `type`: RequestSchema.RequestType,
+    
+    @BeanProperty var nodeAction: NodeAction = null,
+    
+    @BeanProperty var roomAction: RoomAction = null,
+    
+    @BeanProperty var tableAction: TableAction = null,
+    
+    @BeanProperty var dealAction: DealAction = null
+) extends BaseMessage {
+  
+  def schema = RequestSchema.SCHEMA
+  
+  def this() = this(null)
 }

@@ -4,7 +4,7 @@ import akka.actor.ActorRef
 import math.{ BigDecimal ⇒ Decimal }
 import de.pokerno.model._
 import de.pokerno.protocol.{ msg ⇒ message }
-import de.pokerno.protocol.{ rpc, wire }
+import de.pokerno.protocol.{ rpc, wire, cmd }
 import wire.Conversions._
 import de.pokerno.protocol.Conversions._
 import akka.actor.Actor
@@ -113,7 +113,7 @@ private[gameplay] object Betting {
     deal: Deal ⇒
 
     def handleBetting: Receive = {
-      case rpc.AddBet(player, bet) ⇒
+      case cmd.AddBet(player, bet) ⇒
         val (seat, pos) = gameplay.round.acting
         if (seat.player.map(_.id == player).getOrElse(false)) {
           log.info("[betting] add {}", bet)
@@ -152,7 +152,7 @@ private[gameplay] object Betting {
 
     def firstStreet: Boolean
 
-    def betting(betActions: List[rpc.AddBet], speed: Duration) {
+    def betting(betActions: List[cmd.AddBet], speed: Duration) {
       def sleep() = Thread.sleep(speed.toMillis)
 
       val round = gameplay.round

@@ -78,7 +78,7 @@ public class PlaySchema
                 message.setStopAt(input.readInt64());
                 break;
             case FIELD_STREET:
-                message.setStreet(input.readString());
+                message.setStreet(de.pokerno.protocol.wire.StreetType.valueOf(input.readEnum()));
                 break;
             case FIELD_ACTING:
                 message.setActing(input.mergeObject(message.getActing(), RequireBetSchema.getSchema()));
@@ -134,8 +134,7 @@ public class PlaySchema
                     output.writeInt64(FIELD_STOP_AT, message.getStopAt(), false);
                 break;
             case FIELD_STREET:
-                output.writeString(FIELD_STREET, message.getStreet(), false);
-                break;
+                output.writeEnum(FIELD_STREET, message.getStreet().number, false);    break;
             case FIELD_ACTING:
                 if (message.getActing() != null)
                     output.writeObject(FIELD_ACTING, message.getActing(), RequireBetSchema.getSchema(), false);

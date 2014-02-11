@@ -94,6 +94,7 @@ class Socket(
     if (socket != null) {
       poller.unregister(socket)
       socket.close()
+      ctx.term()
     }
   }
   
@@ -127,17 +128,17 @@ class Socket(
     if (pendingSends.nonEmpty && sendMessage(pendingSends.remove(0))) flush()
   }
  
-  @tailrec def poll(mode: Mode, togo: Int = 10) {
+  @tailrec private def poll(mode: Mode, togo: Int = 10) {
     if (togo <= 0) self ! mode
     else receiveMessage(mode) match {
       case Seq() => pollWithTimeout(mode)
       case frames =>
-        listener.map { _ ! frames }
+        listener.map { _ ! Message(frames) }
         poll(mode, togo - 1)
     }
   }
  
-  def pollWithTimeout(mode: Mode) = {
+  private val pollWithTimeout = {
     (mode: Mode) => {
       poller.poll(defaultPollTimeout.toUnit(MILLISECONDS).toLong)
       self ! mode

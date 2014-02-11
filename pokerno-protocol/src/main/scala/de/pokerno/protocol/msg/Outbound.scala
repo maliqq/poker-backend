@@ -132,7 +132,7 @@ sealed case class PlayStop() extends StageEvent(StageEventSchema.EventType.STOP)
 }
 
 @MsgPack
-sealed case class StreetStart(streetName: StageEventSchema.StreetType) extends StageEvent(StageEventSchema.EventType.START) {
+sealed case class StreetStart(streetName: wire.StreetType) extends StageEvent(StageEventSchema.EventType.START) {
 
   stage = StageEventSchema.StageType.STREET
   street = streetName
@@ -291,7 +291,7 @@ sealed case class Play(
     @BeanProperty var id: String,
     @BeanProperty var startAt: java.lang.Long,
     @BeanProperty var stopAt: java.lang.Long = null,
-    @BeanProperty var street: StageEventSchema.StreetType = null,
+    @BeanProperty var street: wire.StreetType = null,
     @BeanProperty var acting: RequireBet = null,
     @BeanProperty var pot: java.lang.Double = null,
     @BeanProperty var rake: java.lang.Double = null,

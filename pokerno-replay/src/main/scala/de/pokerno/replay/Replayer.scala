@@ -1,6 +1,6 @@
 package de.pokerno.replay
 
-import de.pokerno.protocol.{ msg, rpc }
+import de.pokerno.protocol.{ msg, rpc, cmd }
 import de.pokerno.protocol.Conversions._
 import de.pokerno.poker.{ Card, Deck }
 import de.pokerno.gameplay.{ Replay, Street, Streets }

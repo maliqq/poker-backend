@@ -63,7 +63,7 @@ class StageEvent(
   var stage: StageEventSchema.StageType = null
 
   @BeanProperty
-  var street: StageEventSchema.StreetType = null
+  var street: wire.StreetType = null
 
   def this() = this(null)
 }

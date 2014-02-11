@@ -67,59 +67,6 @@ public class StageEventSchema
             }
         }
     }
-    public enum StreetType implements com.dyuproject.protostuff.EnumLite<StreetType>
-    {
-        PREFLOP(1),
-        FLOP(2),
-        TURN(3),
-        RIVER(4),
-        SECOND(5),
-        THIRD(6),
-        FOURTH(7),
-        FIFTH(8),
-        SIXTH(9),
-        SEVENTH(10),
-        PREDRAW(11),
-        DRAW(12),
-        FIRST_DRAW(13),
-        SECOND_DRAW(14),
-        THIRD_DRAW(15);
-        
-        public final int number;
-        
-        private StreetType (int number)
-        {
-            this.number = number;
-        }
-        
-        public int getNumber()
-        {
-            return number;
-        }
-        
-        public static StreetType valueOf(int number)
-        {
-            switch(number) 
-            {
-                case 1: return PREFLOP;
-                case 2: return FLOP;
-                case 3: return TURN;
-                case 4: return RIVER;
-                case 5: return SECOND;
-                case 6: return THIRD;
-                case 7: return FOURTH;
-                case 8: return FIFTH;
-                case 9: return SIXTH;
-                case 10: return SEVENTH;
-                case 11: return PREDRAW;
-                case 12: return DRAW;
-                case 13: return FIRST_DRAW;
-                case 14: return SECOND_DRAW;
-                case 15: return THIRD_DRAW;
-                default: return null;
-            }
-        }
-    }
 
 
     static final StageEvent DEFAULT_INSTANCE = new StageEvent();
@@ -175,7 +122,7 @@ public class StageEventSchema
                 message.setStage(StageType.valueOf(input.readEnum()));
                 break;
             case FIELD_STREET:
-                message.setStreet(StreetType.valueOf(input.readEnum()));
+                message.setStreet(de.pokerno.protocol.wire.StreetType.valueOf(input.readEnum()));
                 break;
             default:
                 input.handleUnknownField(fieldIx, this);

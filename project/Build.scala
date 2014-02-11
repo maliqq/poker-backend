@@ -198,9 +198,11 @@ object PokernoBuild extends Build {
     id = "pokerno-cli",
     base = file("pokerno-cli"),
     settings = Project.defaultSettings ++ Seq(
-      sbtPlugin := true,
       name := "pokerno-cli",
-      version := "0.0.1"
+      version := "0.0.1",
+      libraryDependencies ++= Seq(
+        "org.scala-sbt" % "command" % "0.12.4"
+      )
     ) ++ assemblySettings
   ) dependsOn(core)
   

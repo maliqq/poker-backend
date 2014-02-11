@@ -1,3 +1,3 @@
 [submodule "src/main/protobuf"]
 	path = src/main/protobuf
-	url = git@github.com:maliqq/poker-protobuf.git
+	url = git@github.com:pokernode/poker-protobuf.git

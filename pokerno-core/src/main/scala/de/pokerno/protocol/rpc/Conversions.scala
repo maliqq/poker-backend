@@ -4,6 +4,7 @@ import de.pokerno.model.{ Table, Game, Stake, Variation }
 import de.pokerno.protocol.wire
 import de.pokerno.protocol.wire.Conversions._
 import de.pokerno.protocol.Conversions._
+import proto.rpc._
 
 object Conversions {
 
@@ -20,10 +21,11 @@ object Conversions {
     table.button.current = _table.button
     table
   }
-
+  
+  import proto.wire.VariationSchema
   implicit def createVariation(_variation: wire.Variation): Variation =
     _variation.`type` match {
-      case wire.VariationSchema.VariationType.GAME ⇒
+      case VariationSchema.VariationType.GAME ⇒
         new Game(
           _variation.game.`type`,
           Some(_variation.game.limit),
@@ -32,7 +34,7 @@ object Conversions {
             case n    ⇒ Some(n)
           }
         )
-      case wire.VariationSchema.VariationType.MIX ⇒
+      case VariationSchema.VariationType.MIX ⇒
         // TODO
         null
     }

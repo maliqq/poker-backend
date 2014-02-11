@@ -5,13 +5,14 @@ import com.dyuproject.protostuff.ByteString
 import org.msgpack.annotation.{ Message ⇒ MsgPack }
 import com.fasterxml.jackson.annotation.{ JsonTypeInfo, JsonSubTypes }
 import de.pokerno.protocol.{ wire, Message ⇒ BaseMessage }
+import proto.cmd._
 
 abstract class Cmd extends BaseMessage
 
 case class PlayerEvent(
     @BeanProperty var `type`: PlayerEventSchema.EventType,
     @BeanProperty var player: String) extends Cmd {
-  def schema = PlayerEventSchema.SCHEMA
+  def schema = PlayerEventSchema.getSchema()
   def this() = this(null, null)
 }
 
@@ -19,7 +20,7 @@ case class StackEvent(
     @BeanProperty var `type`: StackEventSchema.EventType,
     @BeanProperty var player: String,
     @BeanProperty var amount: java.lang.Double) extends Cmd {
-  def schema = StackEventSchema.SCHEMA
+  def schema = StackEventSchema.getSchema()
   def this() = this(null, null, null)
 }
 
@@ -31,7 +32,7 @@ sealed case class JoinPlayer(
 
     @BeanProperty var amount: java.lang.Double) extends Cmd {
 
-  def schema = JoinPlayerSchema.SCHEMA
+  def schema = JoinPlayerSchema.getSchema()
   //def pipeSchema = JoinTableSchema.PIPE_SCHEMA
 
   def this() = this(null, null, null)
@@ -43,7 +44,7 @@ sealed case class KickPlayer(
 
     @BeanProperty var reason: String) extends Cmd {
 
-  def schema = KickPlayerSchema.SCHEMA
+  def schema = KickPlayerSchema.getSchema()
 
   def this() = this(null, null)
 
@@ -55,7 +56,7 @@ sealed case class Chat(
 
     @BeanProperty var body: String) extends Cmd {
 
-  def schema = ChatSchema.SCHEMA
+  def schema = ChatSchema.getSchema()
 
   def this() = this(null, null)
 
@@ -68,13 +69,14 @@ sealed case class AddBet(
 
     @BeanProperty var bet: wire.Bet) extends Cmd {
 
-  def schema = AddBetSchema.SCHEMA
+  def schema = AddBetSchema.getSchema()
   def this() = this(null, null)
 }
 
+import proto.wire.DealType
 @MsgPack
 sealed case class DealCards(
-    @BeanProperty var `type`: wire.DealType,
+    @BeanProperty var `type`: DealType,
 
     @BeanProperty var player: String = null,
 
@@ -82,7 +84,7 @@ sealed case class DealCards(
 
     @BeanProperty var cardsNum: Integer = null) extends Cmd {
 
-  def schema = DealCardsSchema.SCHEMA
+  def schema = DealCardsSchema.getSchema()
   def this() = this(null)
 }
 
@@ -92,7 +94,7 @@ sealed case class DiscardCards(
 
     @BeanProperty var player: String) extends Cmd {
 
-  def schema = DealCardsSchema.SCHEMA
+  def schema = DealCardsSchema.getSchema()
 
   def this() = this(null, null)
 
@@ -106,7 +108,7 @@ sealed case class ShowCards(
 
     @BeanProperty var muck: java.lang.Boolean = null) extends Cmd {
 
-  def schema = ShowCardsSchema.SCHEMA
+  def schema = ShowCardsSchema.getSchema()
 
   def this() = this(null, null)
 

@@ -7,6 +7,7 @@ import com.dyuproject.protostuff.ByteString
 import beans._
 import org.msgpack.annotation.{ Message ⇒ MsgPack }
 import com.fasterxml.jackson.annotation.{ JsonInclude, JsonTypeInfo, JsonSubTypes }
+import proto.msg._
 
 @JsonSubTypes(Array(
   new JsonSubTypes.Type(value = classOf[BetAdd], name = "bet:add"),
@@ -46,7 +47,7 @@ sealed case class BetAdd(
     @BeanProperty var player: String,
 
     @BeanProperty var bet: wire.Bet) extends Outbound {
-  def schema = BetAddSchema.SCHEMA
+  def schema = BetAddSchema.getSchema()
   def this() = this(null, null, null)
 }
 
@@ -60,7 +61,7 @@ sealed case class CardsDiscard(
     @BeanProperty var cards: ByteString,
 
     @BeanProperty var cardsNum: Integer = null) extends Outbound {
-  def schema = CardsDiscardSchema.SCHEMA
+  def schema = CardsDiscardSchema.getSchema()
   def this() = this(null, null, null)
 }
 
@@ -74,7 +75,7 @@ sealed case class CardsShow(
     @BeanProperty var cards: ByteString,
 
     @BeanProperty var muck: java.lang.Boolean = null) extends Outbound {
-  def schema = CardsShowSchema.SCHEMA
+  def schema = CardsShowSchema.getSchema()
   def this() = this(null, null, null)
   def isMuck = getMuck
 }
@@ -131,8 +132,9 @@ sealed case class PlayStop() extends StageEvent(StageEventSchema.EventType.STOP)
 
 }
 
+import proto.wire.StreetType
 @MsgPack
-sealed case class StreetStart(streetName: wire.StreetType) extends StageEvent(StageEventSchema.EventType.START) {
+sealed case class StreetStart(streetName: StreetType) extends StageEvent(StageEventSchema.EventType.START) {
 
   stage = StageEventSchema.StageType.STREET
   street = streetName
@@ -144,11 +146,12 @@ sealed case class StreetStart(streetName: wire.StreetType) extends StageEvent(St
  * Deal event
  */
 
+import proto.wire.DealType
 @MsgPack
 @JsonInclude(JsonInclude.Include.NON_NULL)
 sealed case class DealCards(
 
-    @BeanProperty var `type`: wire.DealType,
+    @BeanProperty var `type`: DealType,
 
     @BeanProperty var cards: ByteString = null,
 
@@ -160,7 +163,7 @@ sealed case class DealCards(
 
   def this() = this(null)
 
-  def schema = DealCardsSchema.SCHEMA
+  def schema = DealCardsSchema.getSchema()
   //def pipeSchema = DealCardsSchema.PIPE_SCHEMA
 
 }
@@ -175,7 +178,7 @@ sealed case class RequireBet(
 
     @BeanProperty var raise: wire.Range) extends Outbound {
 
-  def schema = RequireBetSchema.SCHEMA
+  def schema = RequireBetSchema.getSchema()
   //def pipeSchema = RequireBetSchema.PIPE_SCHEMA
 
   def this() = this(null, null, null, wire.Range(.0, .0))
@@ -190,7 +193,7 @@ sealed case class RequireDiscard(
 
     @BeanProperty var player: String) extends Outbound {
 
-  def schema = RequireDiscardSchema.SCHEMA
+  def schema = RequireDiscardSchema.getSchema()
   //def pipeSchema = RequireDiscardSchema.PIPE_SCHEMA
   def this() = this(null, null)
 
@@ -205,7 +208,7 @@ sealed case class DeclarePot(
 
     @BeanProperty var rake: java.lang.Double = null) extends Outbound {
 
-  def schema = DeclarePotSchema.SCHEMA
+  def schema = DeclarePotSchema.getSchema()
   //def pipeSchema = DeclarePotSchema.PIPE_SCHEMA
 
   def this() = this(null)
@@ -222,7 +225,7 @@ sealed case class DeclareHand(
 
     @BeanProperty var hand: wire.Hand) extends Outbound {
 
-  def schema = DeclareHandSchema.SCHEMA
+  def schema = DeclareHandSchema.getSchema()
   //def pipeSchema = DeclareHandSchema.PIPE_SCHEMA
   def this() = this(null, null, null, null)
 }
@@ -235,7 +238,7 @@ sealed case class DeclareWinner(
 
     @BeanProperty var amount: java.lang.Double) extends Outbound {
 
-  def schema = DeclareWinnerSchema.SCHEMA
+  def schema = DeclareWinnerSchema.getSchema()
   //def pipeSchema = DeclareWinnerSchema.PIPE_SCHEMA
   def this() = this(null, null, null)
 
@@ -252,7 +255,7 @@ sealed case class TickTimer(
     @BeanProperty var timeBank: java.lang.Boolean = false) extends Outbound {
 
   def this() = this(null, null, null)
-  def schema = TickTimerSchema.SCHEMA
+  def schema = TickTimerSchema.getSchema()
   def isTimeBank = timeBank
 
 }
@@ -265,7 +268,7 @@ sealed case class PlayerJoin(
 
     @BeanProperty var amount: java.lang.Double = null) extends Outbound {
 
-  def schema = PlayerJoinSchema.SCHEMA
+  def schema = PlayerJoinSchema.getSchema()
   def this() = this(null, null)
 
 }
@@ -283,15 +286,16 @@ sealed case class Start(
 
   def this() = this(null, null, null, null)
 
-  def schema = StartSchema.SCHEMA
+  def schema = StartSchema.getSchema()
 }
 
+import proto.wire.StreetType
 @MsgPack
 sealed case class Play(
     @BeanProperty var id: String,
     @BeanProperty var startAt: java.lang.Long,
     @BeanProperty var stopAt: java.lang.Long = null,
-    @BeanProperty var street: wire.StreetType = null,
+    @BeanProperty var street: StreetType = null,
     @BeanProperty var acting: RequireBet = null,
     @BeanProperty var pot: java.lang.Double = null,
     @BeanProperty var rake: java.lang.Double = null,
@@ -299,5 +303,5 @@ sealed case class Play(
     @BeanProperty var knownCards: java.util.ArrayList[CardsShow] = null
 ) {
   def this() = this(null, null)
-  def schema = PlaySchema.SCHEMA
+  def schema = PlaySchema.getSchema()
 }

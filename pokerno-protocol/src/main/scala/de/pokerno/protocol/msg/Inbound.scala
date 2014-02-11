@@ -7,6 +7,7 @@ import com.dyuproject.protostuff.ByteString
 import beans._
 import org.msgpack.annotation.{ Message ⇒ MsgPack }
 import com.fasterxml.jackson.annotation.{ JsonTypeInfo, JsonSubTypes, JsonIgnoreProperties }
+import proto.msg._
 
 @JsonSubTypes(Array(
   new JsonSubTypes.Type(value = classOf[JoinTable], name = "table:join"),
@@ -26,7 +27,7 @@ sealed case class JoinTable(
 
     @BeanProperty var amount: java.lang.Double) extends Inbound {
 
-  def schema = JoinTableSchema.SCHEMA
+  def schema = JoinTableSchema.getSchema()
   //def pipeSchema = JoinTableSchema.PIPE_SCHEMA
 
   def this() = this(null, null)
@@ -38,7 +39,7 @@ sealed case class JoinTable(
 @JsonIgnoreProperties(ignoreUnknown = true)
 sealed case class AddBet(
     @BeanProperty var bet: wire.Bet) extends Inbound {
-  def schema = AddBetSchema.SCHEMA
+  def schema = AddBetSchema.getSchema()
 
   def this() = this(null)
 }
@@ -47,7 +48,7 @@ sealed case class AddBet(
 @JsonIgnoreProperties(ignoreUnknown = true)
 sealed case class DiscardCards(
     @BeanProperty var cards: ByteString) extends Inbound {
-  def schema = DiscardCardsSchema.SCHEMA
+  def schema = DiscardCardsSchema.getSchema()
 
   @BeanProperty
   var cardsNum: Integer = null
@@ -65,7 +66,7 @@ sealed case class ShowCards(
     @BeanProperty var cards: ByteString,
     @BeanProperty var muck: java.lang.Boolean = null) extends Inbound {
 
-  def schema = ShowCardsSchema.SCHEMA
+  def schema = ShowCardsSchema.getSchema()
 
   @BeanProperty
   var `type`: ShowCardsSchema.ShowType = if (muck)

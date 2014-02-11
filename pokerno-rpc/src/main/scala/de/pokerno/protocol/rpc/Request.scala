@@ -5,6 +5,7 @@ import com.dyuproject.protostuff.ByteString
 import org.msgpack.annotation.{ Message ⇒ MsgPack }
 import com.fasterxml.jackson.annotation.{ JsonTypeInfo, JsonSubTypes }
 import de.pokerno.protocol.{ wire, Message ⇒ BaseMessage }
+import proto.rpc._
 
 //@JsonTypeInfo(
 //  use = JsonTypeInfo.Id.NAME,
@@ -28,7 +29,7 @@ sealed case class CreateRoom(
     @BeanProperty var variation: wire.Variation,
     @BeanProperty var stake: wire.Stake) extends BaseMessage {
 
-  def schema = CreateRoomSchema.SCHEMA
+  def schema = CreateRoomSchema.getSchema()
 
   def this() = this(null, null, null, null)
 

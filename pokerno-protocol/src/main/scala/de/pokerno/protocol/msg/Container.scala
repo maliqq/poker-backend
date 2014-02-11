@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.dyuproject.protostuff
 import com.dyuproject.protostuff.ByteString
 import org.msgpack.annotation.{ Message ⇒ MsgPack }
+import proto.msg._
 
 @MsgPack
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -31,7 +32,7 @@ class ActionEvent(
 
   def this() = this(null)
 
-  def schema = ActionEventSchema.SCHEMA
+  def schema = ActionEventSchema.getSchema()
   //def pipeSchema = ActionEventSchema.PIPE_SCHEMA
 }
 
@@ -40,7 +41,7 @@ class ActionEvent(
 class GameplayEvent(
     @BeanProperty var `type`: GameplayEventSchema.EventType) extends Outbound {
 
-  def schema = GameplayEventSchema.SCHEMA
+  def schema = GameplayEventSchema.getSchema()
   //def pipeSchema = GameplayEventSchema.PIPE_SCHEMA
 
   @BeanProperty
@@ -56,14 +57,14 @@ class GameplayEvent(
 @JsonInclude(JsonInclude.Include.NON_NULL)
 class StageEvent(
     @BeanProperty var `type`: StageEventSchema.EventType) extends Outbound {
-  def schema = StageEventSchema.SCHEMA
+  def schema = StageEventSchema.getSchema()
   //def pipeSchema = StageEventSchema.PIPE_SCHEMA
 
   @BeanProperty
   var stage: StageEventSchema.StageType = null
 
   @BeanProperty
-  var street: wire.StreetType = null
+  var street: proto.wire.StreetType = null
 
   def this() = this(null)
 }
@@ -73,7 +74,7 @@ class StageEvent(
 class TableEvent(
     @BeanProperty var `type`: TableEventSchema.EventType) extends Outbound {
 
-  def schema = TableEventSchema.SCHEMA
+  def schema = TableEventSchema.getSchema()
   //def pipeSchema = TableEventSchema.PIPE_SCHEMA
 
   @BeanProperty
@@ -95,7 +96,7 @@ case class SeatEvent(
     @BeanProperty
     var seat: wire.Seat = null
 ) extends Outbound {
-  def schema = SeatEventSchema.SCHEMA
+  def schema = SeatEventSchema.getSchema()
   //def pipeSchema = SeatEventSchema.PIPE_SCHEMA
 
   def this() = this(null)
@@ -106,7 +107,7 @@ case class SeatEvent(
 @MsgPack
 @JsonInclude(JsonInclude.Include.NON_NULL)
 class DealEvent extends Outbound {
-  def schema = DealEventSchema.SCHEMA
+  def schema = DealEventSchema.getSchema()
   //def pipeSchema = DealEventSchema.PIPE_SCHEMA
 
   @BeanProperty
@@ -137,7 +138,7 @@ class DealEvent extends Outbound {
 @MsgPack
 @JsonInclude(JsonInclude.Include.NON_NULL)
 class Msg extends Outbound {
-  def schema = MsgSchema.SCHEMA
+  def schema = MsgSchema.getSchema()
   //def pipeSchema = MsgSchema.PIPE_SCHEMA
   @BeanProperty
   var `type`: MsgSchema.MsgType = null
@@ -148,7 +149,7 @@ class Msg extends Outbound {
 @MsgPack
 @JsonInclude(JsonInclude.Include.NON_NULL)
 class Cmd extends Message {
-  def schema = CmdSchema.SCHEMA
+  def schema = CmdSchema.getSchema()
   //def pipeSchema = CmdSchema.PIPE_SCHEMA
   @BeanProperty
   var `type`: CmdSchema.CmdType = null
@@ -161,7 +162,7 @@ class Cmd extends Message {
 @MsgPack
 @JsonInclude(JsonInclude.Include.NON_NULL)
 class Evt extends Outbound {
-  def schema = EvtSchema.SCHEMA
+  def schema = EvtSchema.getSchema()
   //def pipeSchema = EventSchema.PIPE_SCHEMA
   @BeanProperty
   var `type`: EvtSchema.EventType = null

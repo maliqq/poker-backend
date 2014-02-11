@@ -3,11 +3,12 @@ package de.pokerno.protocol.rpc
 import beans._
 import org.msgpack.annotation.{ Message ⇒ MsgPack }
 import de.pokerno.protocol.{ wire, Message ⇒ BaseMessage, cmd }
+import proto.rpc._
 
 @MsgPack
 class RoomAction extends BaseMessage {
 
-  def schema = RoomActionSchema.SCHEMA
+  def schema = RoomActionSchema.getSchema()
 
   @BeanProperty
   var `type`: RoomActionSchema.ActionType = null
@@ -23,7 +24,7 @@ class RoomAction extends BaseMessage {
 @MsgPack
 class TableAction extends BaseMessage {
 
-  def schema = TableActionSchema.SCHEMA
+  def schema = TableActionSchema.getSchema()
 
   @BeanProperty
   var `type`: TableActionSchema.ActionType = null
@@ -42,7 +43,7 @@ class TableAction extends BaseMessage {
 @MsgPack
 class DealAction extends BaseMessage {
 
-  def schema = DealActionSchema.SCHEMA
+  def schema = DealActionSchema.getSchema()
 
   @BeanProperty
   var `type`: DealActionSchema.ActionType = null
@@ -64,7 +65,7 @@ class DealAction extends BaseMessage {
 @MsgPack
 class NodeAction extends BaseMessage {
 
-  def schema = NodeActionSchema.SCHEMA
+  def schema = NodeActionSchema.getSchema()
 
   @BeanProperty
   var `type`: NodeActionSchema.ActionType = null
@@ -89,7 +90,7 @@ sealed case class Request(
     @BeanProperty var dealAction: DealAction = null
 ) extends BaseMessage {
   
-  def schema = RequestSchema.SCHEMA
+  def schema = RequestSchema.getSchema()
   
   def this() = this(null)
 }

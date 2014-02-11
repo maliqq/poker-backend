@@ -6,6 +6,7 @@ import com.dyuproject.protostuff
 import beans._
 import org.msgpack.annotation.{ Message ⇒ MsgPack }
 import com.fasterxml.jackson.annotation.{ JsonTypeInfo, JsonSubTypes }
+import proto.msg._
 
 @JsonTypeInfo(
   use = JsonTypeInfo.Id.NAME,

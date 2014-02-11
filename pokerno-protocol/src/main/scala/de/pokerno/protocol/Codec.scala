@@ -13,8 +13,8 @@ object Codec {
     import org.msgpack.ScalaMessagePack._
 
     val msgpack = org.msgpack.ScalaMessagePack.messagePack
-    msgpack.register(classOf[msg.TableEventSchema.EventType])
-    msgpack.register(classOf[msg.TableEventSchema.TableState])
+    msgpack.register(classOf[proto.msg.TableEventSchema.EventType])
+    msgpack.register(classOf[proto.msg.TableEventSchema.TableState])
 
     def encode[T <: Message](msg: T) =
       pack(msg)

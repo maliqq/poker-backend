@@ -1,6 +1,7 @@
 package de.pokerno.protocol.wire
 
 import de.pokerno.{ model, poker, gameplay }
+import proto.wire._
 
 object Conversions {
 

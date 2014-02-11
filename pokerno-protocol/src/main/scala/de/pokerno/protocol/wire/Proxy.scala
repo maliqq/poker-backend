@@ -4,6 +4,7 @@ import reflect._
 
 import com.dyuproject.protostuff.ByteString
 import org.msgpack.annotation.{ Message ⇒ MsgPack }
+import proto.wire._
 
 @MsgPack
 case class Range(

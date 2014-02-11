@@ -10,7 +10,7 @@ trait ProtobufMessage {
     ByteString.copyFrom(v)
 
   def schema: Schema[Any]
-  //def pipeSchema: protostuff.Pipe.Schema[_]
+  //def pipeSchema: protostuff.Pipe.getSchema()[_]
 }
 
 abstract class Message extends ProtobufMessage

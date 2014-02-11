@@ -96,11 +96,11 @@ object PokernoBuild extends Build {
     ) ++ assemblySettings
   ) dependsOn(protocol)
 
-  lazy val core = Project(
-    id = "pokerno-core",
-    base = file("pokerno-core"),
+  lazy val engine = Project(
+    id = "pokerno-engine",
+    base = file("pokerno-engine"),
     settings = Project.defaultSettings ++ Seq(
-      name := "pokerno-core",
+      name := "pokerno-engine",
       version := "0.0.1",
       libraryDependencies ++= deps ++ testDeps
     ) ++ assemblySettings
@@ -146,7 +146,7 @@ object PokernoBuild extends Build {
         ,"org.mongodb" % "mongo-java-driver" % "2.11.3"
       )
     ) ++ assemblySettings
-  ) dependsOn(core, protocol, httpGateway, stompGateway)
+  ) dependsOn(engine, protocol, httpGateway, stompGateway)
 
   lazy val ai = Project(
     id = "pokerno-ai",
@@ -158,7 +158,7 @@ object PokernoBuild extends Build {
         "com.github.scopt" %% "scopt" % "3.1.0"
       ) ++ testDeps
     ) ++ assemblySettings
-  ) dependsOn(core, backend)
+  ) dependsOn(engine, backend)
 
   lazy val util = Project(
     id = "pokerno-util",
@@ -168,7 +168,7 @@ object PokernoBuild extends Build {
       version := "0.0.1",
       libraryDependencies ++= testDeps
     ) ++ assemblySettings
-  ) dependsOn(core)
+  ) dependsOn(engine)
   
   lazy val replay = Project(
     id = "pokerno-replay",
@@ -184,7 +184,7 @@ object PokernoBuild extends Build {
         cp filter { !_.data.getName.startsWith("pokerno-") }
       }
     )
-  ) dependsOn(util, core, backend)
+  ) dependsOn(util, engine, backend)
   
   lazy val bench = Project(
     id = "pokerno-bench",
@@ -193,7 +193,7 @@ object PokernoBuild extends Build {
       name := "pokerno-bench",
       version := "0.0.1"
     ) ++ assemblySettings
-  ) dependsOn(core)
+  ) dependsOn(engine)
   
   lazy val cli = Project(
     id = "pokerno-cli",
@@ -205,7 +205,7 @@ object PokernoBuild extends Build {
         "org.scala-sbt" % "command" % "0.12.4"
       )
     ) ++ assemblySettings
-  ) dependsOn(core)
+  ) dependsOn(engine)
   
   lazy val server = Project(
     id = "pokerno-server",
@@ -218,7 +218,7 @@ object PokernoBuild extends Build {
         "com.github.scopt" %% "scopt" % "3.1.0"
       )
     ) ++ assemblySettings
-  ) dependsOn(core, backend)
+  ) dependsOn(engine, backend)
 
   lazy val console = Project(
     id = "pokerno-console",
@@ -231,6 +231,6 @@ object PokernoBuild extends Build {
         "com.github.scopt" %% "scopt" % "3.1.0"
       ) ++ testDeps
     ) ++ assemblySettings
-  ) dependsOn(core, backend)
+  ) dependsOn(engine, backend)
   
 }

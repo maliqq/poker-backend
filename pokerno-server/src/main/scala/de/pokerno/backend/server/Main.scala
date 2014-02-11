@@ -143,7 +143,7 @@ object Main {
             None
 
           case e: com.fasterxml.jackson.core.JsonParseException ⇒
-            log.error("Invalid JSON: %s", e.getMessage)
+            log.error("Invalid JSON: {}", e.getMessage)
             None
         }
       } else Some(opts.config)

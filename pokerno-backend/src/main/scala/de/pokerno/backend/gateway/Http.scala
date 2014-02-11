@@ -1,14 +1,15 @@
 package de.pokerno.backend.gateway
 
-import akka.actor.{ Actor, ActorLogging }
+import akka.actor.{ Actor, ActorRef, ActorLogging }
 import io.netty.channel.Channel
 import io.netty.buffer.Unpooled
 import io.netty.util.CharsetUtil
 
 import de.pokerno.protocol.{ Message, Codec ⇒ codec }
+import de.pokerno.protocol.{msg => message}
 
 object Http {
-  class Gateway
+  class Gateway(node: ActorRef)
       extends Actor with ActorLogging {
 
     import concurrent.duration._
@@ -23,10 +24,13 @@ object Http {
 
     def receive = {
       case http.Event.Connect(channel, conn) ⇒
-        if (!channelConnections.contains(channel)) {
-          channelConnections.put(channel, conn)
-          log.info("{} connected", conn)
-        }
+        if (!conn.room.isDefined)
+          conn.close()
+        else
+          if (!channelConnections.contains(channel)) {
+            channelConnections.put(channel, conn)
+            log.info("{} connected", conn)
+          }
 
       case http.Event.Disconnect(channel) ⇒
         channelConnections.remove(channel).map { conn ⇒
@@ -34,7 +38,19 @@ object Http {
         }
 
       case http.Event.Message(channel, data) ⇒
-      //val msg = codec.Json.decode(data.getBytes)
+        try {
+          
+          channelConnections.get(channel) map { conn =>
+            if (conn.player.isDefined) {
+              val msg = codec.Json.decode[message.Inbound](data.getBytes)
+              node ! (conn.room.get, conn.player.get, msg)
+            }
+          }
+
+        } catch {
+          case err: Throwable =>
+            err.printStackTrace()
+        }
 
       case msg: Message ⇒
         //log.info("broadcasting {}", msg)

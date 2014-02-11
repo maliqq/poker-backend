@@ -5,12 +5,13 @@ import org.slf4j.{ Logger, LoggerFactory }
 import de.pokerno.model
 import de.pokerno.backend.{ gateway ⇒ gw }
 import de.pokerno.protocol.rpc
+import de.pokerno.protocol.{msg => message}
 import de.pokerno.protocol.rpc.Conversions._
 import de.pokerno.backend.Connection
 
-import akka.actor.{ Actor, ActorRef, Props, ActorSystem }
+import akka.actor.{ Actor, ActorLogging, ActorRef, Props, ActorSystem }
 
-class Node extends Actor {
+class Node extends Actor with ActorLogging {
   import context._
   import concurrent.duration._
   import util.{Success, Failure}
@@ -19,16 +20,35 @@ class Node extends Actor {
   }
 
   def receive = {
+    // catch player messages
+    case (player: String, id: String, msg: message.Inbound) =>
+      system.actorSelection(id).resolveOne(1 second).onComplete {
+        case Success(room) =>
+          msg match {
+            case join: message.JoinTable => 
+              room ! rpc.JoinPlayer(join.pos, player, join.amount)
+
+            case add: message.AddBet =>
+              room ! rpc.AddBet(player, add.bet)
+          }
+        
+        case Failure(_) =>
+          log.warning("Room not found: {}", id)
+      }
+
     case create: rpc.CreateRoom ⇒
-      system.actorSelection(create.id).resolveOne(1 second).onComplete {
+      val id = create.id
+      system.actorSelection(id).resolveOne(1 second).onComplete {
         case Failure(_) =>
           spawnRoom(create)
         case _ =>
+          log.warning("Room exists: {}", id)
       }
 
     case action: rpc.RoomAction ⇒
       import rpc.RoomActionSchema._
-      system.actorSelection(action.id).resolveOne(1 second).onComplete {
+      val id = action.id
+      system.actorSelection(id).resolveOne(1 second).onComplete {
         case Success(room) =>
           action.`type` match {
             case ActionType.PAUSE => room ! Room.Pause
@@ -36,11 +56,10 @@ class Node extends Actor {
             case ActionType.RESUME => room ! Room.Resume
             case _ => // TODO
           }
-        case _ =>
+        case Failure(_) =>
+          log.warning("Room not found: {}", id)
       }
     
-    case Node.Status(conn) ⇒
-
     case _ ⇒
   }
   
@@ -58,12 +77,10 @@ class Node extends Actor {
 
 object Node {
 
-  case class Status(conn: Connection)
-
   val log = LoggerFactory.getLogger(getClass)
   lazy val system = ActorSystem("node")
 
-  def start(config: Config) {
+  def start(config: Config): ActorRef = {
     log.info("starting with config: {}", config)
 
     config.rpc.map { rpc ⇒
@@ -88,6 +105,6 @@ object Node {
 
     log.info("starting node {}", config.host)
     system.actorOf(Props(classOf[Node]), name = f"node-${config.host}")
-
   }
+
 }

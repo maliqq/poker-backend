@@ -149,8 +149,10 @@ object Main {
       } else Some(opts.config)
 
       config match {
-        case Some(c) ⇒ Node.start(c)
-        case None    ⇒ System.exit(0)
+        case Some(c) ⇒
+          val node = Node.start(c)
+        case None ⇒
+          System.exit(0)
       }
     }
   }

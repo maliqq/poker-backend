@@ -5,7 +5,7 @@ import org.slf4j.{ Logger, LoggerFactory }
 import de.pokerno.model
 import de.pokerno.backend.{ gateway ⇒ gw }
 import de.pokerno.backend.{ rpc => zerorpc }
-import de.pokerno.protocol.rpc
+import de.pokerno.protocol.{rpc, cmd}
 import de.pokerno.protocol.{msg => message}
 import de.pokerno.protocol.rpc.Conversions._
 import de.pokerno.backend.Connection
@@ -27,10 +27,10 @@ class Node extends Actor with ActorLogging {
         case Success(room) =>
           msg match {
             case join: message.JoinTable => 
-              room ! rpc.JoinPlayer(join.pos, player, join.amount)
+              room ! cmd.JoinPlayer(join.pos, player, join.amount)
 
             case add: message.AddBet =>
-              room ! rpc.AddBet(player, add.bet)
+              room ! cmd.AddBet(player, add.bet)
           }
         
         case Failure(_) =>

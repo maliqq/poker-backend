@@ -104,16 +104,16 @@ class Room(
       
     case Event(Gateway.Message(gw, msg), _) =>
       msg match {
-        case join: rpc.JoinPlayer =>
+        case join: cmd.JoinPlayer =>
           handlePlayerJoin(gw, join)
         
-        case kick: rpc.KickPlayer =>
+        case kick: cmd.KickPlayer =>
           // TODO notify
           table.pos(kick.player) map { pos =>
             table.removePlayer(pos)
           }
         
-        case chat: rpc.Chat =>
+        case chat: cmd.Chat =>
           // TODO broadcast
           
         case cmd.PlayerEvent(event, player: String) =>
@@ -174,7 +174,7 @@ class Room(
     table.seatsAsList.count(_ isReady) == minimumReadyPlayersToStart
   }
   
-  def handlePlayerJoin(gw: ActorRef, join: rpc.JoinPlayer) {
+  def handlePlayerJoin(gw: ActorRef, join: cmd.JoinPlayer) {
     joinPlayer(join).onComplete {
       case Success(box) =>
         events.broker.subscribe(gw, join.player)

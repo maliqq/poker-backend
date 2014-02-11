@@ -4,6 +4,7 @@
 require 'protocol_buffers'
 
 begin; require 'src/main/protobuf/wire.pb'; rescue LoadError; end
+begin; require 'src/main/protobuf/cmd.pb'; rescue LoadError; end
 
 module De
   module Pokerno
@@ -13,17 +14,9 @@ module De
         class CreateRoom < ::ProtocolBuffers::Message; end
         class NodeAction < ::ProtocolBuffers::Message; end
         class RoomAction < ::ProtocolBuffers::Message; end
-        class JoinPlayer < ::ProtocolBuffers::Message; end
-        class PlayerEvent < ::ProtocolBuffers::Message; end
-        class StackEvent < ::ProtocolBuffers::Message; end
-        class KickPlayer < ::ProtocolBuffers::Message; end
-        class Chat < ::ProtocolBuffers::Message; end
-        class AddBet < ::ProtocolBuffers::Message; end
-        class DealCards < ::ProtocolBuffers::Message; end
-        class DiscardCards < ::ProtocolBuffers::Message; end
-        class ShowCards < ::ProtocolBuffers::Message; end
         class TableAction < ::ProtocolBuffers::Message; end
         class DealAction < ::ProtocolBuffers::Message; end
+        class Request < ::ProtocolBuffers::Message; end
 
         class CreateRoom < ::ProtocolBuffers::Message
           set_fully_qualified_name "de.pokerno.protocol.rpc.CreateRoom"
@@ -79,103 +72,6 @@ module De
           optional :int32, :Deadline, 3
         end
 
-        class JoinPlayer < ::ProtocolBuffers::Message
-          set_fully_qualified_name "de.pokerno.protocol.rpc.JoinPlayer"
-
-          required :int32, :Pos, 1
-          required :string, :Player, 2
-          required :double, :Amount, 3
-        end
-
-        class PlayerEvent < ::ProtocolBuffers::Message
-          # forward declarations
-
-          # enums
-          module EventType
-            include ::ProtocolBuffers::Enum
-
-            set_fully_qualified_name "de.pokerno.protocol.rpc.PlayerEvent.EventType"
-
-            LEAVE = 1
-            SIT_OUT = 2
-            COME_BACK = 3
-            OFFLINE = 4
-            ONLINE = 5
-          end
-
-          set_fully_qualified_name "de.pokerno.protocol.rpc.PlayerEvent"
-
-          required :string, :Player, 1
-          required ::De::Pokerno::Protocol::Rpc::PlayerEvent::EventType, :Type, 2
-        end
-
-        class StackEvent < ::ProtocolBuffers::Message
-          # forward declarations
-
-          # enums
-          module EventType
-            include ::ProtocolBuffers::Enum
-
-            set_fully_qualified_name "de.pokerno.protocol.rpc.StackEvent.EventType"
-
-            BUYIN = 1
-            REBUY = 2
-            DOUBLE_REBUY = 3
-            ADDON = 4
-          end
-
-          set_fully_qualified_name "de.pokerno.protocol.rpc.StackEvent"
-
-          required ::De::Pokerno::Protocol::Rpc::StackEvent::EventType, :Type, 1
-          required :string, :Player, 2
-          required :double, :Amount, 3
-        end
-
-        class KickPlayer < ::ProtocolBuffers::Message
-          set_fully_qualified_name "de.pokerno.protocol.rpc.KickPlayer"
-
-          required :string, :Player, 1
-          optional :string, :Reason, 2
-        end
-
-        class Chat < ::ProtocolBuffers::Message
-          set_fully_qualified_name "de.pokerno.protocol.rpc.Chat"
-
-          required :string, :Player, 1
-          required :string, :Body, 2
-        end
-
-        class AddBet < ::ProtocolBuffers::Message
-          set_fully_qualified_name "de.pokerno.protocol.rpc.AddBet"
-
-          required :string, :Player, 1
-          required ::De::Pokerno::Protocol::Wire::Bet, :Bet, 2
-        end
-
-        class DealCards < ::ProtocolBuffers::Message
-          set_fully_qualified_name "de.pokerno.protocol.rpc.DealCards"
-
-          required ::De::Pokerno::Protocol::Wire::DealType, :Type, 1
-          optional :bytes, :Cards, 2
-          optional :int32, :CardsNum, 3
-          optional :string, :Player, 4
-        end
-
-        class DiscardCards < ::ProtocolBuffers::Message
-          set_fully_qualified_name "de.pokerno.protocol.rpc.DiscardCards"
-
-          required :string, :Player, 1
-          required :bytes, :Cards, 2
-        end
-
-        class ShowCards < ::ProtocolBuffers::Message
-          set_fully_qualified_name "de.pokerno.protocol.rpc.ShowCards"
-
-          required :string, :Player, 1
-          required :bytes, :Cards, 2
-          optional :bool, :Muck, 3
-        end
-
         class TableAction < ::ProtocolBuffers::Message
           # forward declarations
 
@@ -193,9 +89,9 @@ module De
           set_fully_qualified_name "de.pokerno.protocol.rpc.TableAction"
 
           required ::De::Pokerno::Protocol::Rpc::TableAction::ActionType, :Type, 1
-          optional ::De::Pokerno::Protocol::Rpc::JoinPlayer, :JoinPlayer, 2
-          optional ::De::Pokerno::Protocol::Rpc::KickPlayer, :KickPlayer, 3
-          optional ::De::Pokerno::Protocol::Rpc::Chat, :Chat, 4
+          optional ::De::Pokerno::Protocol::Cmd::JoinPlayer, :JoinPlayer, 2
+          optional ::De::Pokerno::Protocol::Cmd::KickPlayer, :KickPlayer, 3
+          optional ::De::Pokerno::Protocol::Cmd::Chat, :Chat, 4
         end
 
         class DealAction < ::ProtocolBuffers::Message
@@ -216,10 +112,34 @@ module De
           set_fully_qualified_name "de.pokerno.protocol.rpc.DealAction"
 
           required ::De::Pokerno::Protocol::Rpc::DealAction::ActionType, :Type, 1
-          optional ::De::Pokerno::Protocol::Rpc::AddBet, :AddBet, 2
-          optional ::De::Pokerno::Protocol::Rpc::DealCards, :DealCards, 3
-          optional ::De::Pokerno::Protocol::Rpc::DiscardCards, :DiscardCards, 4
-          optional ::De::Pokerno::Protocol::Rpc::ShowCards, :ShowCards, 5
+          optional ::De::Pokerno::Protocol::Cmd::AddBet, :AddBet, 2
+          optional ::De::Pokerno::Protocol::Cmd::DealCards, :DealCards, 3
+          optional ::De::Pokerno::Protocol::Cmd::DiscardCards, :DiscardCards, 4
+          optional ::De::Pokerno::Protocol::Cmd::ShowCards, :ShowCards, 5
+        end
+
+        class Request < ::ProtocolBuffers::Message
+          # forward declarations
+
+          # enums
+          module RequestType
+            include ::ProtocolBuffers::Enum
+
+            set_fully_qualified_name "de.pokerno.protocol.rpc.Request.RequestType"
+
+            NODE_ACTION = 1
+            ROOM_ACTION = 2
+            TABLE_ACTION = 3
+            DEAL_ACTION = 4
+          end
+
+          set_fully_qualified_name "de.pokerno.protocol.rpc.Request"
+
+          required ::De::Pokerno::Protocol::Rpc::Request::RequestType, :Type, 1
+          optional ::De::Pokerno::Protocol::Rpc::NodeAction, :NodeAction, 2
+          optional ::De::Pokerno::Protocol::Rpc::RoomAction, :RoomAction, 3
+          optional ::De::Pokerno::Protocol::Rpc::TableAction, :TableAction, 4
+          optional ::De::Pokerno::Protocol::Rpc::DealAction, :DealAction, 5
         end
 
       end

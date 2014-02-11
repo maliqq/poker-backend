@@ -240,33 +240,11 @@ module De
             STREET = 2
           end
 
-          module StreetType
-            include ::ProtocolBuffers::Enum
-
-            set_fully_qualified_name "de.pokerno.protocol.msg.StageEvent.StreetType"
-
-            PREFLOP = 1
-            FLOP = 2
-            TURN = 3
-            RIVER = 4
-            SECOND = 5
-            THIRD = 6
-            FOURTH = 7
-            FIFTH = 8
-            SIXTH = 9
-            SEVENTH = 10
-            PREDRAW = 11
-            DRAW = 12
-            FIRST_DRAW = 13
-            SECOND_DRAW = 14
-            THIRD_DRAW = 15
-          end
-
           set_fully_qualified_name "de.pokerno.protocol.msg.StageEvent"
 
           required ::De::Pokerno::Protocol::Msg::StageEvent::EventType, :Type, 1
           required ::De::Pokerno::Protocol::Msg::StageEvent::StageType, :Stage, 2
-          optional ::De::Pokerno::Protocol::Msg::StageEvent::StreetType, :Street, 3
+          optional ::De::Pokerno::Protocol::Wire::StreetType, :Street, 3
         end
 
         class DealCards < ::ProtocolBuffers::Message
@@ -438,7 +416,7 @@ module De
           required :string, :Id, 1
           required :int64, :StartAt, 2
           optional :int64, :StopAt, 3
-          required :string, :Street, 4
+          required ::De::Pokerno::Protocol::Wire::StreetType, :Street, 4
           optional ::De::Pokerno::Protocol::Msg::RequireBet, :Acting, 5
           optional :double, :Pot, 6
           optional :double, :Rake, 7

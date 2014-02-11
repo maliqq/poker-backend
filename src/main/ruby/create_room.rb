@@ -1,6 +1,7 @@
 #!/usr/bin/env/ruby
 
 require 'ffi-rzmq'
+require 'protobuf/rpc.pb'
 
 ctx = ZMQ::Context.new
 socket = ctx.socket ZMQ::DEALER

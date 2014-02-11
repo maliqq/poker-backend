@@ -30,6 +30,28 @@ module De
           DOOR = 3
         end
 
+        module StreetType
+          include ::ProtocolBuffers::Enum
+
+          set_fully_qualified_name "de.pokerno.protocol.wire.StreetType"
+
+          PREFLOP = 1
+          FLOP = 2
+          TURN = 3
+          RIVER = 4
+          SECOND = 5
+          THIRD = 6
+          FOURTH = 7
+          FIFTH = 8
+          SIXTH = 9
+          SEVENTH = 10
+          PREDRAW = 11
+          DRAW = 12
+          FIRST_DRAW = 13
+          SECOND_DRAW = 14
+          THIRD_DRAW = 15
+        end
+
         class Range < ::ProtocolBuffers::Message
           set_fully_qualified_name "de.pokerno.protocol.wire.Range"
 

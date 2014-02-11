@@ -1,11 +1,32 @@
 package de.pokerno.cli
 
 import sbt._
-import Keys._
 import complete.DefaultParsers._
+import java.io.File
 
-object Cli extends Plugin {
-  commands ++= Seq(nodeCommand, roomCommand, playerCommand)
+object Main extends xsbti.AppMain {
+  val commands = Seq(nodeCommand, roomCommand, playerCommand)
+  
+  def run(configuration: xsbti.AppConfiguration): xsbti.MainResult =
+      MainLoop.runLogged(initialState(configuration))
+      
+  def initialState(configuration: xsbti.AppConfiguration): State = {
+    val commandDefinitions = commands ++ BasicCommands.allBasicCommands
+    val commandsToRun = "room" +: "iflast shell" +: configuration.arguments.map(_.trim)
+    State(
+        configuration,
+        commandDefinitions,
+        Set.empty,
+        None,
+        commandsToRun,
+        State.newHistory,
+        AttributeMap.empty,
+        initialGlobalLogging,
+        State.Continue
+      )
+  }
+
+  def initialGlobalLogging: GlobalLogging = GlobalLogging.initial(MainLogging.globalDefault _,  File.createTempFile("pokerno", "log"))
   
   lazy val host = AttributeKey[String]("node rpc address")
   lazy val roomId = AttributeKey[String]("room id")
@@ -14,6 +35,7 @@ object Cli extends Plugin {
   private val nodeCommandParser = (Space ~> StringBasic)
   lazy val nodeCommand =
     Command("node")(_ => nodeCommandParser) { (state: State, args) =>
+      println("node")
       state
     }
   
@@ -33,12 +55,14 @@ object Cli extends Plugin {
       
   lazy val roomCommand =
     Command("room")(_ => roomCommandParser) { (state: State, args) =>
+      println("room")
       state
     }
 
   private val playerCommandParser = (Space ~> StringBasic ~> "where")
   lazy val playerCommand =
     Command("player")(_ => playerCommandParser) { (state: State, args) =>
+      println("player")
       state
     }
 }

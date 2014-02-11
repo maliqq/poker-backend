@@ -198,12 +198,9 @@ object PokernoBuild extends Build {
     id = "pokerno-cli",
     base = file("pokerno-cli"),
     settings = Project.defaultSettings ++ Seq(
+      sbtPlugin := true,
       name := "pokerno-cli",
-      version := "0.0.1",
-      libraryDependencies ++= Seq(
-        "jline" % "jline" % "2.11",
-        "com.github.scopt" %% "scopt" % "3.1.0"
-      ) ++ testDeps
+      version := "0.0.1"
     ) ++ assemblySettings
   ) dependsOn(core)
   
@@ -228,7 +225,7 @@ object PokernoBuild extends Build {
       libraryDependencies ++= Seq(
         "jline" % "jline" % "2.11",
         "com.github.scopt" %% "scopt" % "3.1.0"
-      )
+      ) ++ testDeps
     ) ++ assemblySettings
   ) dependsOn(core, backend)
   

@@ -4,6 +4,7 @@ import org.slf4j.{ Logger, LoggerFactory }
 
 import de.pokerno.model
 import de.pokerno.backend.{ gateway ⇒ gw }
+import de.pokerno.backend.{ rpc => zerorpc }
 import de.pokerno.protocol.rpc
 import de.pokerno.protocol.{msg => message}
 import de.pokerno.protocol.rpc.Conversions._
@@ -83,12 +84,17 @@ object Node {
   def start(config: Config): ActorRef = {
     log.info("starting with config: {}", config)
 
-    config.rpc.map { rpc ⇒
+    log.info("starting node {}", config.host)
+    val node = system.actorOf(Props(classOf[Node]), name = f"node-${config.host}")
+    
+    config.rpc.map { rpcConfig ⇒
+      log.info("starting zmq rpc with config: {}", rpcConfig)
+      val zmqRpc = system.actorOf(Props(classOf[zerorpc.Zeromq], node))
     }
-
-    config.zeromq.map { zmq ⇒
-      log.info("starting zmq gateway with config: {}", zmq)
-      val zmqGateway = system.actorOf(Props(classOf[gw.Zeromq], zmq), name = "zeromq")
+    
+    config.zeromq.map { zmqConfig ⇒
+      log.info("starting zmq gateway with config: {}", zmqConfig)
+      val zmqGateway = system.actorOf(Props(classOf[gw.Zeromq], zmqConfig), name = "zeromq")
     }
 
     config.http.map { httpConfig ⇒
@@ -102,9 +108,8 @@ object Node {
       }
       startHttpServer
     }
-
-    log.info("starting node {}", config.host)
-    system.actorOf(Props(classOf[Node]), name = f"node-${config.host}")
+    
+    node
   }
 
 }

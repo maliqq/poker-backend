@@ -7,6 +7,8 @@ import de.pokerno.protocol.Conversions._
 import de.pokerno.protocol.wire.Conversions._
 import de.pokerno.gameplay.Street
 import wire.Conversions._
+import proto.wire.{BetSchema, DealType, VariationSchema}
+import proto.rpc._
 
 import de.pokerno.format.text
 
@@ -69,7 +71,7 @@ private[replay] class Scenario {
 
     case tags.Street(name) ⇒
       streets.add(name)
-      actions.put(name, new java.util.ArrayList[rpc.Request]())
+      actions.put(name, new java.util.ArrayList[cmd.Cmd]())
       processor = processStreet
 
     case tags.Showdown() ⇒
@@ -89,7 +91,7 @@ private[replay] class Scenario {
 
     for (seat ← t.seats) {
       if (seat.player == player) {
-        actions.get(currentStreet).add(rpc.AddBet(seat.player, bet))
+        actions.get(currentStreet).add(cmd.AddBet(seat.player, bet))
       }
     }
 
@@ -98,7 +100,7 @@ private[replay] class Scenario {
   def processStreet(tok: Token) = tok match {
     case tags.Ante(player) ⇒
       bet(player.unquote,
-        wire.Bet(wire.BetSchema.BetType.ANTE, stake.get.ante))
+        wire.Bet(BetSchema.BetType.ANTE, stake.get.ante))
 
     case _: BettingSemantic ⇒
       val t = table.getOrElse(throw ReplayError("betting before TABLE"))
@@ -107,47 +109,47 @@ private[replay] class Scenario {
         case _: tags.Antes ⇒
           for (seat ← t.seats) {
             if (seat.player != null) {
-              val ante = wire.Bet(wire.BetSchema.BetType.ANTE, s.ante)
-              actions.get(currentStreet).add(rpc.AddBet(seat.player, ante))
+              val ante = wire.Bet(BetSchema.BetType.ANTE, s.ante)
+              actions.get(currentStreet).add(cmd.AddBet(seat.player, ante))
             }
           }
 
         case tags.Sb(player) ⇒
           bet(player.unquote,
-            wire.Bet(wire.BetSchema.BetType.SB, s.smallBlind))
+            wire.Bet(BetSchema.BetType.SB, s.smallBlind))
 
         case tags.Bb(player) ⇒
           val s = stake.getOrElse(throw ReplayError("STAKE is required"))
           bet(player.unquote,
-            wire.Bet(wire.BetSchema.BetType.BB, s.bigBlind))
+            wire.Bet(BetSchema.BetType.BB, s.bigBlind))
 
         case tags.Raise(player, amount) ⇒
           bet(player.unquote,
-            wire.Bet(wire.BetSchema.BetType.RAISE, amount))
+            wire.Bet(BetSchema.BetType.RAISE, amount))
 
         case tags.AllIn(player) ⇒
           bet(player.unquote,
-            wire.Bet(wire.BetSchema.BetType.ALLIN))
+            wire.Bet(BetSchema.BetType.ALLIN))
 
         case tags.Call(player, amount) ⇒
           bet(player.unquote,
-            wire.Bet(wire.BetSchema.BetType.CALL, amount))
+            wire.Bet(BetSchema.BetType.CALL, amount))
 
         case tags.Check(player) ⇒
           bet(player.unquote,
-            wire.Bet(wire.BetSchema.BetType.CHECK))
+            wire.Bet(BetSchema.BetType.CHECK))
 
         case tags.Fold(player) ⇒
           bet(player.unquote,
-            wire.Bet(wire.BetSchema.BetType.FOLD))
+            wire.Bet(BetSchema.BetType.FOLD))
       }
 
     case tags.Deal(player, cards, cardsNum) ⇒
 
       val action = if (player != null)
-        cmd.DealCards(wire.DealType.HOLE, player.unquote, cards, cardsNum)
+        cmd.DealCards(DealType.HOLE, player.unquote, cards, cardsNum)
       else
-        cmd.DealCards(wire.DealType.BOARD, null, cards, null)
+        cmd.DealCards(DealType.BOARD, null, cards, null)
 
       actions.get(currentStreet).add(action)
 
@@ -174,7 +176,7 @@ private[replay] class Scenario {
       val t = table.getOrElse(throw ReplayError("GAME is declared before TABLE"))
       variation = Some(
         new wire.Variation(
-          wire.VariationSchema.VariationType.GAME,
+          VariationSchema.VariationType.GAME,
           game = new wire.Game(game, limit, t.size)
         )
       )

@@ -2,6 +2,7 @@ package de.pokerno.format.text
 
 import de.pokerno.protocol.wire
 import util.matching.Regex
+import proto.wire.GameSchema
 
 object Lexer {
   case class Tag(name: String) extends annotation.StaticAnnotation
@@ -25,16 +26,16 @@ object Lexer {
     }
     implicit def string2quotedString(s: String) = new QuotedString(s)
 
-    implicit def string2gametype(s: String): wire.GameSchema.GameType = s match {
-      case "texas" ⇒ wire.GameSchema.GameType.TEXAS
-      case "omaha" ⇒ wire.GameSchema.GameType.OMAHA
+    implicit def string2gametype(s: String): GameSchema.GameType = s match {
+      case "texas" ⇒ GameSchema.GameType.TEXAS
+      case "omaha" ⇒ GameSchema.GameType.OMAHA
       // ...
       case x       ⇒ throw ParseError("unknown game: %s" format x)
     }
 
-    implicit def string2gamelimit(s: String): wire.GameSchema.GameLimit = s match {
-      case "NL" | "no-limit"    ⇒ wire.GameSchema.GameLimit.NL
-      case "FL" | "fixed-limit" ⇒ wire.GameSchema.GameLimit.FL
+    implicit def string2gamelimit(s: String): GameSchema.GameLimit = s match {
+      case "NL" | "no-limit"    ⇒ GameSchema.GameLimit.NL
+      case "FL" | "fixed-limit" ⇒ GameSchema.GameLimit.FL
       // FIXME turn on later
       //case "PL" | "pot-limit" => wire.GameSchema.GameLimit.PL
       case x                    ⇒ throw ParseError("unknown limit: %s" format x)
@@ -97,7 +98,7 @@ object Lexer {
     }
 
     @Tag(name = "GAME")
-    case class Game(game: wire.GameSchema.GameType, limit: wire.GameSchema.GameLimit) extends Token {
+    case class Game(game: GameSchema.GameType, limit: GameSchema.GameLimit) extends Token {
       def this(params: Array[String]) = this(params(0), params(1))
     }
 

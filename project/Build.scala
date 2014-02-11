@@ -201,9 +201,8 @@ object PokernoBuild extends Build {
       name := "pokerno-cli",
       version := "0.0.1",
       libraryDependencies ++= Seq(
-        "jline" % "jline" % "2.11",
-        "com.github.scopt" %% "scopt" % "3.1.0"
-      ) ++ testDeps
+        "org.scala-sbt" % "command" % "0.12.4"
+      )
     ) ++ assemblySettings
   ) dependsOn(core)
   
@@ -228,7 +227,7 @@ object PokernoBuild extends Build {
       libraryDependencies ++= Seq(
         "jline" % "jline" % "2.11",
         "com.github.scopt" %% "scopt" % "3.1.0"
-      )
+      ) ++ testDeps
     ) ++ assemblySettings
   ) dependsOn(core, backend)
   

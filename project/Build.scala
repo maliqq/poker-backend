@@ -140,7 +140,8 @@ object PokernoBuild extends Build {
       version := "0.0.1",
       libraryDependencies ++= testDeps ++ Seq(
         "com.codahale.metrics" % "metrics-core" % "3.0.1"
-        ,"com.typesafe.akka" %% "akka-zeromq" % "2.2.3"
+        //,"org.zeromq" % "jzmq" % "3.0.1"
+        ,"org.zeromq" % "jeromq" % "0.3.2"
         ,"redis.clients" % "jedis" % "2.2.1"
         ,"org.mongodb" % "mongo-java-driver" % "2.11.3"
       )
@@ -213,6 +214,7 @@ object PokernoBuild extends Build {
       name := "pokerno-server",
       version := "0.0.1",
       libraryDependencies ++= testDeps ++ Seq(
+        "org.slf4j" % "slf4j-simple" % "1.7.5",
         "com.github.scopt" %% "scopt" % "3.1.0"
       )
     ) ++ assemblySettings

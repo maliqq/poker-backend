@@ -37,10 +37,10 @@ class HttpConnection(
     else None
   }
   
-  final val authKey = "u"
+  final val authKey = "auth"
   def auth = param(authKey)
   
-  final val roomKey = "r"
+  final val roomKey = "room"
   def room = param(roomKey)
 
   // FIXME

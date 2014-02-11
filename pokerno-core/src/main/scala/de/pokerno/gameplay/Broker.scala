@@ -34,7 +34,7 @@ private[gameplay] class Broker extends ActorEventBus
   }
 
   def publish(event: Event, subscriber: Subscriber) = {
-    //Console printf ("%s%s -> %s %s%s\n" format (Console.CYAN, event.to, subscriber, event.message, Console.RESET))
+    // FIXME: pass routing info
     subscriber ! event.message
   }
 

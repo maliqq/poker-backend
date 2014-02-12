@@ -47,11 +47,11 @@ object PokernoBuild extends Build {
   val pokernoVersion = "0.0.1"
 
   override lazy val settings = super.settings ++ Seq(
-    organization := "de.pokerno",
-    scalaVersion := "2.10.3",
-    exportJars := true,
+    organization := "de.pokerno"
+    ,scalaVersion := "2.10.3"
+    //,exportJars := true,
     //testOptions in Test += Tests.Argument("-oF"),
-    javacOptions ++= Seq("-source", "1.7", "-target", "1.7")
+    ,javacOptions ++= Seq("-source", "1.7", "-target", "1.7")
     //,scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-language:implicitConversions", "-language:postfixOps")
     //,resolvers += "spray repo" at "http://repo.spray.io"
     //,resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
@@ -180,9 +180,7 @@ object PokernoBuild extends Build {
         "com.github.scopt" %% "scopt" % "3.1.0"
       )
     ) ++ assemblySettings ++ Seq(
-      excludedJars in assembly <<= (fullClasspath in assembly) map { cp => 
-        cp filter { !_.data.getName.startsWith("pokerno-") }
-      }
+      assemblyOption in assembly ~= { _.copy(includeScala = false, includeDependency = false) }
     )
   ) dependsOn(util, engine, backend)
   

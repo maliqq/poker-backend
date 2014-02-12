@@ -12,7 +12,8 @@ import akka.actor.{ Actor, Props, ActorRef, ActorLogging }
 object Replay {
   case class Subscribe(out: ActorRef)
   case class StreetActions(street: Street.Value, actions: List[cmd.Cmd], speed: Int)
-  case class Showdown()
+  case object Showdown
+  case object Stop
 }
 
 class Replay(
@@ -155,10 +156,13 @@ class Replay(
         if (firstStreet) firstStreet = false
       }
 
-    case Replay.Showdown() ⇒
+    case Replay.Showdown ⇒
       info("[showdown] start")
       gameplay.showdown()
       info("[showdown] stop")
+
+    case Replay.Stop =>
+      e.playStop()
       context.stop(self)
 
     case x ⇒
@@ -166,7 +170,6 @@ class Replay(
   }
 
   override def postStop {
-    e.playStop()
   }
 
 }

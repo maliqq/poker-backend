@@ -180,7 +180,7 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
   }
 
   def call(amt: Decimal): Decimal = {
-    put += amt
+    put = amt
     if (!isAllIn) _state = Seat.State.Bet
     amt
   }

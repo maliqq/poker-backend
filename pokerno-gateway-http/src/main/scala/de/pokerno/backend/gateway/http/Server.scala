@@ -3,7 +3,7 @@ package de.pokerno.backend.gateway.http
 import akka.actor.{ Actor, ActorRef }
 
 import io.netty.bootstrap.ServerBootstrap
-import io.netty.channel.{ Channel, ChannelOption, ChannelInitializer, ChannelHandlerAdapter }
+import io.netty.channel.{ Channel, ChannelOption, ChannelInitializer, ChannelHandlerAdapter, ChannelFutureListener }
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.handler.codec.http.{ HttpObjectAggregator, HttpRequestDecoder, HttpResponseEncoder }
@@ -78,7 +78,7 @@ case class Server(gw: ActorRef, config: Config) {
 
     Console printf ("starting at :%d...\n", config.port)
 
-    channel = bootstrap.bind(config.port).sync.channel
+    channel = bootstrap.bind(config.port).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE).sync.channel
     channel.closeFuture.sync
   }
 

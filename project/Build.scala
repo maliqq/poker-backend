@@ -49,7 +49,7 @@ object PokernoBuild extends Build {
   override lazy val settings = super.settings ++ Seq(
     organization := "de.pokerno"
     ,scalaVersion := "2.10.3"
-    ,exportJars := true
+    //,exportJars := true,
     //testOptions in Test += Tests.Argument("-oF"),
     ,javacOptions ++= Seq("-source", "1.7", "-target", "1.7")
     //,scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-language:implicitConversions", "-language:postfixOps")
@@ -144,8 +144,8 @@ object PokernoBuild extends Build {
         ,"org.zeromq" % "jeromq" % "0.3.2"
         ,"redis.clients" % "jedis" % "2.2.1"
         ,"org.mongodb" % "mongo-java-driver" % "2.11.3"
-        ,"net.databinder" %% "unfiltered-netty-server" % "0.7.1"
-        ,"net.databinder.dispatch" %% "dispatch-core" % "0.10.0"
+        //,"net.databinder" %% "unfiltered-netty-server" % "0.7.1"
+        //,"net.databinder.dispatch" %% "dispatch-core" % "0.10.0"
         //,"io.spray" % "spray-routing" % "1.2.0"
       )
     ) ++ assemblySettings
@@ -183,9 +183,7 @@ object PokernoBuild extends Build {
         "com.github.scopt" %% "scopt" % "3.1.0"
       )
     ) ++ assemblySettings ++ Seq(
-      excludedJars in assembly <<= (fullClasspath in assembly) map { cp => 
-        cp filter { !_.data.getName.startsWith("pokerno-") }
-      }
+      assemblyOption in assembly ~= { _.copy(includeScala = false, includeDependency = false) }
     )
   ) dependsOn(util, engine, backend)
   

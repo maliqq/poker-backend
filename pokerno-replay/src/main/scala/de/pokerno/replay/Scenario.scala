@@ -50,39 +50,45 @@ private[replay] class Scenario {
 
   def process(t: Token) = processor(t)
 
-  def processMain(t: Token): Unit = t match {
-    case tags.Table(_id, size) ⇒
-      val t = new wire.Table(
-        size,
-        seats = new java.util.ArrayList[wire.Seat]()
-      )
+  var paused = false
 
-      (0 until size) foreach { i ⇒
-        t.seats.add(null)
-      }
+  def processMain(t: Token): Unit =
+    if (!paused) t match {
+      case tags.Table(_id, size) ⇒
+        val t = new wire.Table(
+          size,
+          seats = new java.util.ArrayList[wire.Seat]()
+        )
 
-      table = Some(t)
-      id = Some(_id.unquote)
-      processor = processTable
+        (0 until size) foreach { i ⇒
+          t.seats.add(null)
+        }
 
-    case tags.Speed(duration) ⇒
-      if (duration >= 0 && duration <= 10)
-        speed = duration
+        table = Some(t)
+        id = Some(_id.unquote)
+        processor = processTable
 
-    case tags.Street(name) ⇒
-      streets.add(name)
-      actions.put(name, new java.util.ArrayList[cmd.Cmd]())
-      processor = processStreet
+      case tags.Speed(duration) ⇒
+        if (duration >= 0 && duration <= 10)
+          speed = duration
 
-    case tags.Showdown() ⇒
-      showdown = true
+      case tags.Street(name) ⇒
+        streets.add(name)
+        actions.put(name, new java.util.ArrayList[cmd.Cmd]())
+        processor = processStreet
 
-    case tags.Deck(cards) ⇒
-      deck = Some(cards)
+      case tags.Showdown() ⇒
+        showdown = true
 
-    case x ⇒
-      Console printf ("UNHANDLED: %s\n", x)
-  }
+      case tags.Deck(cards) ⇒
+        deck = Some(cards)
+
+      case tags.Pause() =>
+        paused = true
+
+      case x ⇒
+        Console printf ("UNHANDLED: %s\n", x)
+    }
 
   import collection.JavaConversions._
 

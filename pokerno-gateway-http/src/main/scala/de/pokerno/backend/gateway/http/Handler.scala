@@ -43,7 +43,6 @@ object HttpHandler {
 class PathHandler(path: String, handler: ChannelInboundHandlerAdapter) extends ChannelInboundHandlerAdapter {
   override def channelRead(ctx: ChannelHandlerContext, msg: Object): Unit = msg match {
     case req: http.FullHttpRequest ⇒
-
       if (req.getUri.startsWith(path)) {
         handler.channelRead(ctx, req)
       } else {

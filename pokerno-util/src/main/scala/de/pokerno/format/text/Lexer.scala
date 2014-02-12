@@ -140,6 +140,11 @@ object Lexer {
       def this(params: Array[String]) = this()
     }
 
+    @Tag(name = "PAUSE")
+    case class Pause() extends Token {
+      def this(params: Array[String]) = this()
+    }
+
     @Tag(name = "ANTE")
     case class Ante(player: QuotedString) extends Token
         with BettingSemantic {

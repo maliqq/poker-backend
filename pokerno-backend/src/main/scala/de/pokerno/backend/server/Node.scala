@@ -5,6 +5,7 @@ import org.slf4j.{ Logger, LoggerFactory }
 import de.pokerno.model
 import de.pokerno.backend.{ gateway ⇒ gw }
 import de.pokerno.backend.{ rpc => zerorpc }
+import de.pokerno.backend.Gateway
 import de.pokerno.protocol.{rpc, cmd}
 import de.pokerno.protocol.{msg => message}
 import de.pokerno.protocol.rpc.Conversions._
@@ -24,15 +25,17 @@ class Node extends Actor with ActorLogging {
   def receive = {
     // catch player messages
     case (player: String, id: String, msg: message.Inbound) =>
-      system.actorSelection(id).resolveOne(1 second).onComplete {
+      val gw = sender
+      system.actorSelection(f"/user/node-localhost/$id").resolveOne(1 second).onComplete {
         case Success(room) =>
-          msg match {
+          val command = msg match {
             case join: message.JoinTable => 
-              room ! cmd.JoinPlayer(join.pos, player, join.amount)
+              cmd.JoinPlayer(join.pos, player, join.amount)
 
             case add: message.AddBet =>
-              room ! cmd.AddBet(player, add.bet)
+              cmd.AddBet(player, add.bet)
           }
+          room ! Gateway.Message(gw, command)
         
         case Failure(_) =>
           log.warning("Room not found: {}", id)
@@ -75,7 +78,8 @@ class Node extends Actor with ActorLogging {
     val variation: model.Variation = createRequest.variation
     val stake: model.Stake = createRequest.stake
     
-    context.actorOf(Props(classOf[Room], id, variation, stake), name = id)
+    val room = context.actorOf(Props(classOf[Room], id, variation, stake), name = id)
+    room
   }
 
   override def postStop {
@@ -105,7 +109,7 @@ object Node {
 
     config.http.map { httpConfig ⇒
       log.info("starting HTTP gateway")
-      val httpGateway = system.actorOf(Props(classOf[gw.Http.Gateway]), name = "http-gateway")
+      val httpGateway = system.actorOf(Props(classOf[gw.Http.Gateway], Some(node)), name = "http-gateway")
 
       def startHttpServer = {
         log.info("starting HTTP server with config: {}", httpConfig)

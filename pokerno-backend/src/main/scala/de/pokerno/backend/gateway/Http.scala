@@ -9,9 +9,11 @@ import de.pokerno.protocol.{ Message, Codec ⇒ codec }
 import de.pokerno.protocol.{msg => message}
 
 object Http {
-  class Gateway(node: ActorRef)
+  class Gateway(node: Option[ActorRef])
       extends Actor with ActorLogging {
-
+    
+    def this() = this(None)
+    
     import concurrent.duration._
     import context._
 
@@ -24,9 +26,9 @@ object Http {
 
     def receive = {
       case http.Event.Connect(channel, conn) ⇒
-        if (!conn.room.isDefined)
-          conn.close()
-        else
+        //if (!conn.room.isDefined)
+        //  conn.close()
+        //else
           if (!channelConnections.contains(channel)) {
             channelConnections.put(channel, conn)
             log.info("{} connected", conn)
@@ -43,7 +45,8 @@ object Http {
           channelConnections.get(channel) map { conn =>
             if (conn.player.isDefined) {
               val msg = codec.Json.decode[message.Inbound](data.getBytes)
-              node ! (conn.room.get, conn.player.get, msg)
+              log.info("got {} from {}", msg, conn)
+              node.map { _ ! (conn.player.get, conn.room.get, msg) }
             }
           }
 
@@ -53,7 +56,7 @@ object Http {
         }
 
       case msg: Message ⇒
-        //log.info("broadcasting {}", msg)
+        log.info("broadcasting {}", msg)
         broadcast(codec.Json.encode(msg))
 
       case x ⇒

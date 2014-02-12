@@ -6,8 +6,7 @@ import de.pokerno.model
 import de.pokerno.backend.{ gateway ⇒ gw }
 import de.pokerno.backend.{ rpc => zerorpc }
 import de.pokerno.backend.Gateway
-import de.pokerno.protocol.{rpc, cmd}
-import de.pokerno.protocol.{msg => message}
+import de.pokerno.protocol.{rpc, cmd, msg => message}
 import de.pokerno.protocol.rpc.Conversions._
 import de.pokerno.backend.Connection
 
@@ -69,7 +68,8 @@ class Node extends Actor with ActorLogging {
           log.warning("Room not found: {}", id)
       }
     
-    case _ ⇒
+    case x ⇒
+      log.warning("unhandled: {}", x)
   }
   
   private def spawnRoom(createRequest: rpc.CreateRoom): ActorRef = {

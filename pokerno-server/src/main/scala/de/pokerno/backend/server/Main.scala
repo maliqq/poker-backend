@@ -3,21 +3,28 @@ package de.pokerno.backend.server
 import org.slf4j.LoggerFactory
 import de.pokerno.gameplay._
 import de.pokerno.backend.{ gateway ⇒ gw }
-import de.pokerno.model._
+import de.pokerno.protocol.{Codec => codec, rpc}
 import akka.actor.{ ActorSystem, Props }
 //import de.pokerno.backend.server.Config
 
 case class Options(
   val configFile: Option[String] = None,
+  val restoreFile: Option[String] = None,
   val config: Config = Config())
 
 object Main {
+  import collection.JavaConversions._
   val log = LoggerFactory.getLogger(getClass)
 
   private val optionParser = new scopt.OptionParser[Options]("poker-server") {
     // -c /etc/node.json
     opt[String]('c', "config") text "Path to config file" action { (value, c) ⇒
       c.copy(configFile = Some(value))
+    }
+    
+    // -r /tmp/restore.json
+    opt[String]('r', "restore") text "restore node from json" action { (value, c) =>
+      c.copy(restoreFile = Some(value))
     }
 
     // --host node1.localhost
@@ -151,6 +158,16 @@ object Main {
       config match {
         case Some(c) ⇒
           val node = Node.start(c)
+          opts.restoreFile map { path =>
+            try {
+              val f = new java.io.FileInputStream(path)
+              val msgs = codec.Json.decodeValuesFromStream[rpc.BaseRequest](f)
+              msgs.foreach { node ! _ }
+            } catch {
+              case err: Throwable =>
+                log.warn("can't restore from {}: {}", Array[AnyRef](path, err.getMessage):_*)
+            }
+          }
         case None ⇒
           System.exit(0)
       }

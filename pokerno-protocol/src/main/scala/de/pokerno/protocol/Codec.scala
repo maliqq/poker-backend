@@ -26,6 +26,7 @@ object Codec {
   object Json extends Codec {
     import com.dyuproject.protostuff.ByteString
     import com.fasterxml.jackson.databind.ObjectMapper
+    import com.fasterxml.jackson.core.`type`.TypeReference
     import com.fasterxml.jackson.databind.module.SimpleModule
 
     val mapper = {
@@ -39,9 +40,20 @@ object Codec {
 
     def encode[T <: Message](msg: T) =
       mapper.writeValueAsBytes(msg)
+    
+    def encodeAsString[T <: Message](msg: T) =
+      mapper.writeValueAsString(msg)
 
     def decode[T <: Message](data: Array[Byte])(implicit manifest: Manifest[T]) =
       mapper.readValue(data, manifest.runtimeClass).asInstanceOf[T]
+    
+    def decodeFromStream[T <: Message](f: java.io.InputStream)(implicit manifest: Manifest[T]) =
+      mapper.readValue(f, manifest.runtimeClass).asInstanceOf[T]
+    
+    def decodeValuesFromStream[T <: Message](f: java.io.InputStream)(implicit manifest: Manifest[T]) = {
+      val t = mapper.getTypeFactory().constructCollectionType(classOf[java.util.ArrayList[_]], manifest.runtimeClass)
+      mapper.readValue(f, t).asInstanceOf[java.util.ArrayList[T]]
+    }
   }
 
   object Protobuf extends Codec {

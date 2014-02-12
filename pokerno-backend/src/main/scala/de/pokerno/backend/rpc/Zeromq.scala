@@ -44,6 +44,7 @@ class Zeromq(node: ActorRef) extends Actor with ActorLogging {
         
         val request = decode(bytes)
         log.info("[rpc] {}", request.`type`)
+        Console println(codec.Json.encodeAsString(request))
         val msg = request.`type` match {
           case RequestType.NODE_ACTION =>
             request.nodeAction

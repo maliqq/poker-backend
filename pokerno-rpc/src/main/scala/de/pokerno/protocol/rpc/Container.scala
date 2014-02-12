@@ -2,11 +2,27 @@ package de.pokerno.protocol.rpc
 
 import beans._
 import org.msgpack.annotation.{ Message ⇒ MsgPack }
+import com.fasterxml.jackson.annotation.{ JsonTypeInfo, JsonSubTypes, JsonIgnoreProperties }
 import de.pokerno.protocol.{ wire, Message ⇒ BaseMessage, cmd }
 import proto.rpc._
 
+import com.fasterxml.jackson.annotation.{ JsonTypeInfo, JsonSubTypes, JsonIgnoreProperties }
+
+@JsonTypeInfo(
+  use = JsonTypeInfo.Id.NAME,
+  include = JsonTypeInfo.As.PROPERTY,
+  property = "$type"
+)
+@JsonSubTypes(Array(
+  new JsonSubTypes.Type(value = classOf[NodeAction], name = "$node"),
+  new JsonSubTypes.Type(value = classOf[RoomAction], name = "$room"),
+  new JsonSubTypes.Type(value = classOf[TableAction], name = "$table"),
+  new JsonSubTypes.Type(value = classOf[DealAction], name = "$deal")
+))
+abstract class BaseRequest extends BaseMessage
+
 @MsgPack
-class RoomAction extends BaseMessage {
+class RoomAction extends BaseRequest {
 
   def schema = RoomActionSchema.getSchema()
 
@@ -22,7 +38,7 @@ class RoomAction extends BaseMessage {
 }
 
 @MsgPack
-class TableAction extends BaseMessage {
+class TableAction extends BaseRequest {
 
   def schema = TableActionSchema.getSchema()
 
@@ -41,7 +57,7 @@ class TableAction extends BaseMessage {
 }
 
 @MsgPack
-class DealAction extends BaseMessage {
+class DealAction extends BaseRequest {
 
   def schema = DealActionSchema.getSchema()
 
@@ -63,7 +79,7 @@ class DealAction extends BaseMessage {
 }
 
 @MsgPack
-class NodeAction extends BaseMessage {
+class NodeAction extends BaseRequest {
 
   def schema = NodeActionSchema.getSchema()
 

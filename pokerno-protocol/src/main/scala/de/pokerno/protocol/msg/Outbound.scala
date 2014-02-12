@@ -42,11 +42,14 @@ abstract class Outbound extends Message
 
 @MsgPack
 sealed case class BetAdd(
-    @BeanProperty var pos: Integer,
+    @BeanProperty
+    var pos: Integer,
 
-    @BeanProperty var player: String,
+    @BeanProperty
+    var player: String,
 
-    @BeanProperty var bet: wire.Bet) extends Outbound {
+    @BeanProperty
+    var bet: wire.Bet) extends Outbound {
   def schema = BetAddSchema.getSchema()
   def this() = this(null, null, null)
 }
@@ -54,13 +57,17 @@ sealed case class BetAdd(
 @MsgPack
 @JsonInclude(JsonInclude.Include.NON_NULL)
 sealed case class CardsDiscard(
-    @BeanProperty var pos: Integer,
+    @BeanProperty
+    var pos: Integer,
 
-    @BeanProperty var player: String,
+    @BeanProperty
+    var player: String,
 
-    @BeanProperty var cards: ByteString,
+    @BeanProperty
+    var cards: ByteString,
 
-    @BeanProperty var cardsNum: Integer = null) extends Outbound {
+    @BeanProperty
+    var cardsNum: Integer = null) extends Outbound {
   def schema = CardsDiscardSchema.getSchema()
   def this() = this(null, null, null)
 }
@@ -68,13 +75,17 @@ sealed case class CardsDiscard(
 @MsgPack
 @JsonInclude(JsonInclude.Include.NON_NULL)
 sealed case class CardsShow(
-    @BeanProperty var pos: Integer,
+    @BeanProperty
+    var pos: Integer,
 
-    @BeanProperty var player: String,
+    @BeanProperty
+    var player: String,
 
-    @BeanProperty var cards: ByteString,
+    @BeanProperty
+    var cards: ByteString,
 
-    @BeanProperty var muck: java.lang.Boolean = null) extends Outbound {
+    @BeanProperty
+    var muck: java.lang.Boolean = null) extends Outbound {
   def schema = CardsShowSchema.getSchema()
   def this() = this(null, null, null)
   def isMuck = getMuck
@@ -151,15 +162,20 @@ import proto.wire.DealType
 @JsonInclude(JsonInclude.Include.NON_NULL)
 sealed case class DealCards(
 
-    @BeanProperty var `type`: DealType,
+    @BeanProperty
+    var `type`: DealType,
 
-    @BeanProperty var cards: ByteString = null,
+    @BeanProperty
+    var cards: ByteString = null,
 
-    @BeanProperty var pos: Integer = null,
+    @BeanProperty
+    var pos: Integer = null,
 
-    @BeanProperty var player: String = null,
+    @BeanProperty
+    var player: String = null,
 
-    @BeanProperty var cardsNum: Integer = null) extends Outbound {
+    @BeanProperty
+    var cardsNum: Integer = null) extends Outbound {
 
   def this() = this(null)
 
@@ -170,13 +186,17 @@ sealed case class DealCards(
 
 @MsgPack
 sealed case class RequireBet(
-    @BeanProperty var pos: Integer,
+    @BeanProperty
+    var pos: Integer,
 
-    @BeanProperty var player: String,
+    @BeanProperty
+    var player: String,
 
-    @BeanProperty var call: java.lang.Double,
+    @BeanProperty
+    var call: java.lang.Double,
 
-    @BeanProperty var raise: wire.Range) extends Outbound {
+    @BeanProperty
+    var raise: wire.Range) extends Outbound {
 
   def schema = RequireBetSchema.getSchema()
   //def pipeSchema = RequireBetSchema.PIPE_SCHEMA
@@ -189,9 +209,11 @@ sealed case class RequireBet(
 
 @MsgPack
 sealed case class RequireDiscard(
-    @BeanProperty var pos: Integer,
+    @BeanProperty
+    var pos: Integer,
 
-    @BeanProperty var player: String) extends Outbound {
+    @BeanProperty
+    var player: String) extends Outbound {
 
   def schema = RequireDiscardSchema.getSchema()
   //def pipeSchema = RequireDiscardSchema.PIPE_SCHEMA
@@ -202,11 +224,14 @@ sealed case class RequireDiscard(
 @MsgPack
 @JsonInclude(JsonInclude.Include.NON_NULL)
 sealed case class DeclarePot(
-    @BeanProperty var pot: java.lang.Double,
+    @BeanProperty
+    var pot: java.lang.Double,
 
-    @BeanProperty var side: java.util.ArrayList[java.lang.Double] = null,
+    @BeanProperty
+    var side: java.util.ArrayList[java.lang.Double] = null,
 
-    @BeanProperty var rake: java.lang.Double = null) extends Outbound {
+    @BeanProperty
+    var rake: java.lang.Double = null) extends Outbound {
 
   def schema = DeclarePotSchema.getSchema()
   //def pipeSchema = DeclarePotSchema.PIPE_SCHEMA
@@ -217,13 +242,17 @@ sealed case class DeclarePot(
 @MsgPack
 @JsonInclude(JsonInclude.Include.NON_NULL)
 sealed case class DeclareHand(
-    @BeanProperty var pos: Integer,
+    @BeanProperty
+    var pos: Integer,
 
-    @BeanProperty var player: String,
+    @BeanProperty
+    var player: String,
 
-    @BeanProperty var cards: ByteString,
+    @BeanProperty
+    var cards: ByteString,
 
-    @BeanProperty var hand: wire.Hand) extends Outbound {
+    @BeanProperty
+    var hand: wire.Hand) extends Outbound {
 
   def schema = DeclareHandSchema.getSchema()
   //def pipeSchema = DeclareHandSchema.PIPE_SCHEMA
@@ -232,11 +261,14 @@ sealed case class DeclareHand(
 
 @MsgPack
 sealed case class DeclareWinner(
-    @BeanProperty var pos: Integer,
+    @BeanProperty
+    var pos: Integer,
 
-    @BeanProperty var player: String,
+    @BeanProperty
+    var player: String,
 
-    @BeanProperty var amount: java.lang.Double) extends Outbound {
+    @BeanProperty
+    var amount: java.lang.Double) extends Outbound {
 
   def schema = DeclareWinnerSchema.getSchema()
   //def pipeSchema = DeclareWinnerSchema.PIPE_SCHEMA
@@ -246,13 +278,17 @@ sealed case class DeclareWinner(
 
 @MsgPack
 sealed case class TickTimer(
-    @BeanProperty var pos: Integer,
+    @BeanProperty
+    var pos: Integer,
 
-    @BeanProperty var player: String,
+    @BeanProperty
+    var player: String,
 
-    @BeanProperty var timeLeft: Integer,
+    @BeanProperty
+    var timeLeft: Integer,
 
-    @BeanProperty var timeBank: java.lang.Boolean = false) extends Outbound {
+    @BeanProperty
+    var timeBank: java.lang.Boolean = false) extends Outbound {
 
   def this() = this(null, null, null)
   def schema = TickTimerSchema.getSchema()
@@ -262,11 +298,14 @@ sealed case class TickTimer(
 
 @MsgPack
 sealed case class PlayerJoin(
-    @BeanProperty var pos: Integer,
+    @BeanProperty
+    var pos: Integer,
 
-    @BeanProperty var player: String,
+    @BeanProperty
+    var player: String,
 
-    @BeanProperty var amount: java.lang.Double = null) extends Outbound {
+    @BeanProperty
+    var amount: java.lang.Double = null) extends Outbound {
 
   def schema = PlayerJoinSchema.getSchema()
   def this() = this(null, null)
@@ -275,13 +314,17 @@ sealed case class PlayerJoin(
 
 @MsgPack
 sealed case class Start(
-    @BeanProperty var table: wire.Table,
+    @BeanProperty
+    var table: wire.Table,
 
-    @BeanProperty var variation: wire.Variation,
+    @BeanProperty
+    var variation: wire.Variation,
 
-    @BeanProperty var stake: wire.Stake,
+    @BeanProperty
+    var stake: wire.Stake,
     
-    @BeanProperty var play: Play
+    @BeanProperty
+    var play: Play
     ) extends Outbound {
 
   def this() = this(null, null, null, null)
@@ -292,15 +335,32 @@ sealed case class Start(
 import proto.wire.StreetType
 @MsgPack
 sealed case class Play(
-    @BeanProperty var id: String,
-    @BeanProperty var startAt: java.lang.Long,
-    @BeanProperty var stopAt: java.lang.Long = null,
-    @BeanProperty var street: StreetType = null,
-    @BeanProperty var acting: RequireBet = null,
-    @BeanProperty var pot: java.lang.Double = null,
-    @BeanProperty var rake: java.lang.Double = null,
-    @BeanProperty var winners: java.util.ArrayList[DeclareWinner] = null,
-    @BeanProperty var knownCards: java.util.ArrayList[CardsShow] = null
+    @BeanProperty
+    var id: String,
+    
+    @BeanProperty
+    var startAt: java.lang.Long,
+    
+    @BeanProperty
+    var stopAt: java.lang.Long = null,
+    
+    @BeanProperty
+    var street: StreetType = null,
+    
+    @BeanProperty
+    var acting: RequireBet = null,
+    
+    @BeanProperty
+    var pot: java.lang.Double = null,
+    
+    @BeanProperty
+    var rake: java.lang.Double = null,
+    
+    @BeanProperty
+    var winners: java.util.ArrayList[DeclareWinner] = null,
+    
+    @BeanProperty
+    var knownCards: java.util.ArrayList[CardsShow] = null
 ) {
   def this() = this(null, null)
   def schema = PlaySchema.getSchema()

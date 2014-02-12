@@ -46,7 +46,7 @@ object Http {
             if (conn.player.isDefined) {
               val msg = codec.Json.decode[message.Inbound](data.getBytes)
               log.info("got {} from {}", msg, conn)
-              node.map { _ ! (conn.room.get, conn.player.get, msg) }
+              node.map { _ ! (conn.player.get, conn.room.get, msg) }
             }
           }
 

@@ -52,6 +52,7 @@ class Room(
   import concurrent.duration._
   import proto.cmd.PlayerEventSchema
   
+  log.info("starting node {}", id)
   startWith(Room.State.Waiting, NoneRunning)
   
   when(Room.State.Paused) {
@@ -177,7 +178,7 @@ class Room(
   
   def handlePlayerJoin(gw: ActorRef, join: cmd.JoinPlayer) {
     joinPlayer(join).onComplete {
-      case Success(box) =>
+      case Success(_) =>
         events.broker.subscribe(gw, join.player)
         events.joinTable((join.player, join.pos), join.amount)
       case Failure(err) =>

@@ -25,6 +25,7 @@ class Node extends Actor with ActorLogging {
   def receive = {
     // catch player messages
     case (player: String, id: String, msg: message.Inbound) =>
+      val gw = sender
       system.actorSelection(f"/user/node-localhost/$id").resolveOne(1 second).onComplete {
         case Success(room) =>
           val command = msg match {
@@ -34,7 +35,7 @@ class Node extends Actor with ActorLogging {
             case add: message.AddBet =>
               cmd.AddBet(player, add.bet)
           }
-          room ! Gateway.Message(sender, command)
+          room ! Gateway.Message(gw, command)
         
         case Failure(_) =>
           log.warning("Room not found: {}", id)

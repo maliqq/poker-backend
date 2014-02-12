@@ -18,7 +18,7 @@ object Deal {
 
 }
 
-class Deal(val gameplay: Context, val play: Play) extends Actor
+class Deal(val gameplay: Context) extends Actor
     with ActorLogging
     with Betting.DealContext
     with Streets.DealContext {
@@ -27,6 +27,7 @@ class Deal(val gameplay: Context, val play: Play) extends Actor
   lazy val streets = Streets(stageContext)
   lazy val stageContext = StageContext(gameplay, self)
 
+  val play = new Play(gameplay)
   play.getStreet = () ⇒ streets.current.value
 
   override def preStart() {
@@ -35,7 +36,7 @@ class Deal(val gameplay: Context, val play: Play) extends Actor
     //play.started() // FIXME ugly
     beforeStreets(stageContext) match {
       case Stage.Next ⇒ self ! Streets.Next
-      case Stage.Exit ⇒ // TODO
+      case Stage.Exit ⇒ context stop self
     }
   }
 

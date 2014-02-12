@@ -32,8 +32,8 @@ object Main {
       ))
     }
 
-    // --http-websocket
-    opt[Unit]("http-websocket") text "HTTP WebSocket path" action { (value, c) ⇒
+    // --websocket
+    opt[Unit]("websocket") text "With WebSocket" action { (value, c) ⇒
       val config = c.config.httpConfig.webSocketConfig
       if (config.isDefined) c // skip
       else c.copy(config = c.config.copy(
@@ -41,8 +41,8 @@ object Main {
       ))
     }
 
-    // --http-websocket-path /_ws
-    opt[String]("http-websocket-path") text "HTTP WebSocket path" action { (value, c) ⇒
+    // --websocket-path /_ws
+    opt[String]("websocket-path") text "WebSocket path" action { (value, c) ⇒
       val config = c.config.httpConfig.webSocketConfig
       if (config.isDefined) c.copy(config = c.config.copy(
         http = Some(c.config.httpConfig.copy(webSocket = Left(config.get.copy(path = value))))
@@ -50,8 +50,8 @@ object Main {
       else c
     }
 
-    // --http-eventsource
-    opt[Unit]("http-eventsource") text "HTTP WebSocket path" action { (value, c) ⇒
+    // --eventsource
+    opt[Unit]("eventsource") text "With EventSource" action { (value, c) ⇒
       val config = c.config.httpConfig.eventSourceConfig
       if (config.isDefined) c // skip
       else c.copy(config = c.config.copy(
@@ -59,8 +59,8 @@ object Main {
       ))
     }
 
-    // --http-eventsource-path /_es
-    opt[String]("http-eventsource-path") text "HTTP EventSource path" action { (value, c) ⇒
+    // --eventsource-path /_es
+    opt[String]("eventsource-path") text "EventSource path" action { (value, c) ⇒
       val config = c.config.httpConfig.eventSourceConfig
       if (config.isDefined) c.copy(config = c.config.copy(
         http = Some(c.config.httpConfig.copy(eventSource = Left(config.get.copy(path = value))))

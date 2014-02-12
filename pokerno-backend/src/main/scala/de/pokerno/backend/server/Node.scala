@@ -105,7 +105,7 @@ object Node {
 
     config.http.map { httpConfig ⇒
       log.info("starting HTTP gateway")
-      val httpGateway = system.actorOf(Props(classOf[gw.Http.Gateway]), name = "http-gateway")
+      val httpGateway = system.actorOf(Props(classOf[gw.Http.Gateway], Some(node)), name = "http-gateway")
 
       def startHttpServer = {
         log.info("starting HTTP server with config: {}", httpConfig)

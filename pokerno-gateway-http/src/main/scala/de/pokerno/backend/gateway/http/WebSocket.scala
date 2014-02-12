@@ -27,7 +27,7 @@ object WebSocket {
         write(new ws.TextWebSocketFrame(b))
 
       case x ⇒
-      // FIXME: logger.warn("Unknown message type: %s" format(x))
+        Console printf("Unknown message type: %s\n", x)
     }
 
     def sendString(s: String) = write(new ws.TextWebSocketFrame(s))
@@ -67,6 +67,7 @@ object WebSocket {
     override def channelRead0(ctx: ChannelHandlerContext, msg: Object): Unit = msg match {
       case frame: ws.WebSocketFrame  ⇒ handleWebSocketFrame(ctx, frame)
       case req: http.FullHttpRequest ⇒ handleHttpRequest(ctx, req)
+      //case req: http.DefaultFullHttpRequest ⇒ handleHttpRequest(ctx, req)
     }
 
     override def channelInactive(ctx: ChannelHandlerContext) {
@@ -91,30 +92,37 @@ object WebSocket {
 
     def handleHttpRequest(ctx: ChannelHandlerContext, req: http.FullHttpRequest) {
       if (!req.getDecoderResult.isSuccess) {
+        Console println("WebSocket handler: getDecoderResult is not success")
         sendHttpResponse(ctx, req, badRequest)
         return
       }
 
       if (req.getMethod != http.HttpMethod.GET) {
+        Console println("WebSocket handler: not a GET request")
         sendHttpResponse(ctx, req, forbidden)
         return
       }
 
       _handshaker = handshaker(req)
       if (_handshaker.isEmpty) {
+        Console println("WebSocket handler: handshake failed, unsupported websocket version")
         ws.WebSocketServerHandshakerFactory.sendUnsupportedWebSocketVersionResponse(ctx.channel)
         return
       }
 
       val f = _handshaker.get.handshake(ctx.channel, req)
       f.addListener(new ChannelFutureListener {
-        override def operationComplete(future: ChannelFuture) = connect(ctx.channel, req)
+        override def operationComplete(future: ChannelFuture) = {
+          connect(ctx.channel, req)
+        }
       })
     }
 
     def webSocketLocation(req: http.FullHttpRequest): String =
       "ws://" + req.headers().get(Names.HOST) + path
 
-    override def channelReadComplete(ctx: ChannelHandlerContext) = ctx.flush
+    override def channelReadComplete(ctx: ChannelHandlerContext) {
+      ctx.flush()
+    }
   }
 }

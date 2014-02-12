@@ -47,11 +47,11 @@ object PokernoBuild extends Build {
   val pokernoVersion = "0.0.1"
 
   override lazy val settings = super.settings ++ Seq(
-    organization := "de.pokerno",
-    scalaVersion := "2.10.3",
-    exportJars := true,
+    organization := "de.pokerno"
+    ,scalaVersion := "2.10.3"
+    ,exportJars := true
     //testOptions in Test += Tests.Argument("-oF"),
-    javacOptions ++= Seq("-source", "1.7", "-target", "1.7")
+    ,javacOptions ++= Seq("-source", "1.7", "-target", "1.7")
     //,scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-language:implicitConversions", "-language:postfixOps")
     //,resolvers += "spray repo" at "http://repo.spray.io"
     //,resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
@@ -113,7 +113,7 @@ object PokernoBuild extends Build {
       name := "pokerno-gateway-http",
       version := "0.0.1",
       libraryDependencies ++= deps ++ testDeps ++ Seq(
-        "io.netty" % "netty-all" % "4.0.14.Final"
+        "io.netty" % "netty-all" % "4.0.15.Final"
       )
     ) ++ assemblySettings
   )
@@ -144,6 +144,9 @@ object PokernoBuild extends Build {
         ,"org.zeromq" % "jeromq" % "0.3.2"
         ,"redis.clients" % "jedis" % "2.2.1"
         ,"org.mongodb" % "mongo-java-driver" % "2.11.3"
+        ,"net.databinder" %% "unfiltered-netty-server" % "0.7.1"
+        ,"net.databinder.dispatch" %% "dispatch-core" % "0.10.0"
+        //,"io.spray" % "spray-routing" % "1.2.0"
       )
     ) ++ assemblySettings
   ) dependsOn(engine, protocol, httpGateway, stompGateway)

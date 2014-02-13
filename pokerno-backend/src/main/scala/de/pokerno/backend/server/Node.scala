@@ -6,9 +6,9 @@ import de.pokerno.model
 import de.pokerno.backend.{ gateway ⇒ gw }
 import de.pokerno.backend.{ rpc => zerorpc }
 import de.pokerno.backend.Gateway
+import de.pokerno.backend.gateway.http
 import de.pokerno.protocol.{rpc, cmd, msg => message}
 import de.pokerno.protocol.rpc.Conversions._
-import de.pokerno.backend.Connection
 
 import akka.actor.{ Actor, ActorLogging, ActorRef, Props, ActorSystem }
 
@@ -20,12 +20,37 @@ class Node extends Actor with ActorLogging {
   
   override def preStart {
   }
-
+  
   def receive = {
+    // new connection
+    case Gateway.Connect(conn) if conn.room.isDefined =>
+      val id = conn.room.get
+      
+      actorSelection(id).resolveOne(1 second).onComplete {
+        case Success(room) =>
+          room ! Room.Watch(conn)
+          
+        case Failure(_) =>
+          log.warning("room {} not found for conn {}", id, conn)
+          conn.close()
+      }
+    
+    case Gateway.Disconnect(conn) if conn.room.isDefined =>
+      val id = conn.room.get
+      
+      actorSelection(id).resolveOne(1 second).onComplete {
+        case Success(room) =>
+          room ! Room.Unwatch(conn)
+          
+        case Failure(_) =>
+      }
+      
     // catch player messages
-    case (player: String, id: String, msg: message.Inbound) =>
-      val gw = sender
-      system.actorSelection(f"/user/node-localhost/$id").resolveOne(1 second).onComplete {
+    case Gateway.Message(conn, msg) if conn.player.isDefined && conn.room.isDefined =>
+      val player = conn.player.get
+      val id = conn.room.get
+      
+      actorSelection(id).resolveOne(1 second).onComplete {
         case Success(room) =>
           val command = msg match {
             case join: message.JoinTable => 
@@ -34,7 +59,7 @@ class Node extends Actor with ActorLogging {
             case add: message.AddBet =>
               cmd.AddBet(player, add.bet)
           }
-          room ! Gateway.Message(gw, command)
+          room ! command
         
         case Failure(_) =>
           log.warning("Room not found: {}", id)
@@ -56,7 +81,7 @@ class Node extends Actor with ActorLogging {
     case action: rpc.RoomAction ⇒
       import proto.rpc.RoomActionSchema._
       val id = action.id
-      system.actorSelection(id).resolveOne(1 second).onComplete {
+      actorSelection(id).resolveOne(1 second).onComplete {
         case Success(room) =>
           action.`type` match {
             case ActionType.PAUSE => room ! Room.Pause

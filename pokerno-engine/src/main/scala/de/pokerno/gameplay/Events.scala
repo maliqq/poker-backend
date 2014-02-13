@@ -18,30 +18,36 @@ class Events {
   type Box = Tuple2[Player, Int]
 
   def joinTable(box: Box, amount: Decimal) =
-    broker.publish(
+    broker.publish(Notification(
       message.PlayerJoin(box._2, box._1, amount)
-    )
+    ))
 
   def start(table: Table, variation: Variation, stake: Stake, play: Play) = {
-    broker.publish(
+    broker.publish(Notification(
       message.Start(table, variation, stake, play)
-    )
+    ))
   }
 
   def playStart() =
-    broker.publish(message.PlayStart())
+    broker.publish(Notification(
+        message.PlayStart()
+      ))
 
   def playStop() =
-    broker.publish(message.PlayStop())
+    broker.publish(Notification(
+        message.PlayStop()
+      ))
 
   def streetStart(name: Street.Value) =
-    broker.publish(message.StreetStart(name))
+    broker.publish(Notification(
+        message.StreetStart(name)
+      ))
 
   def dealCards(_type: DealCards.Value, cards: List[Card], box: Option[Box] = None) = _type match {
     case DealCards.Board ⇒
-      broker.publish(
+      broker.publish(Notification(
         message.DealCards(_type, cards)
-      )
+      ))
 
     case _ if box.isDefined ⇒
       if (_type == DealCards.Hole) {
@@ -49,60 +55,66 @@ class Events {
         //            message.DealCards(_type, cards, pos = pos),
         //          broker.One(seat.player.get.id))
 
-        broker.publish(
+        broker.publish(Notification(
           message.DealCards(_type, player = box.get._1, pos = box.get._2,
             cards = cards // FIXME hide later
           )
-        )
-      } else broker.publish(message.DealCards(_type, cards, player = box.get._1, pos = box.get._2))
+        ))
+      } else {
+        broker.publish(Notification(
+            message.DealCards(_type, cards, player = box.get._1, pos = box.get._2)
+          ))
+      }
     case _ ⇒
   }
 
   def buttonChange(pos: Int) =
-    broker.publish(
-      message.ButtonChange(_button = pos)
-    )
+    broker.publish(Notification(
+        message.ButtonChange(_button = pos)
+      ))
 
   def addBet(box: Box, bet: Bet) =
-    broker.publish(
-      message.BetAdd(box._2, box._1, bet),
-      broker.Except(List(box._1.id)))
+    broker.publish(Notification(
+        message.BetAdd(box._2, box._1, bet)
+      ))
 
   def requireBet(box: Box, call: Decimal, raise: Range) =
-    broker.publish(
-      message.RequireBet(pos = box._2, player = box._1, call = call, raise = raise)
-    )
+    broker.publish(Notification(
+        message.RequireBet(pos = box._2, player = box._1, call = call, raise = raise)
+      ))
 
   def declarePot(total: Decimal, side: List[Decimal] = null) = {
     val result = new java.util.ArrayList[java.lang.Double]()
     for (amt ← side) result.add(amt.toDouble)
-    broker.publish(message.DeclarePot(total, result))
+    broker.publish(Notification(
+        message.DeclarePot(total, result)
+      ))
   }
 
   def declareWinner(box: Box, amount: Decimal) =
-    broker.publish(
-      message.DeclareWinner(pos = box._2, player = box._1, amount = amount)
-    )
+    broker.publish(Notification(
+        message.DeclareWinner(pos = box._2, player = box._1, amount = amount)
+      ))
 
   def declareHand(box: Box, cards: List[Card], hand: Hand) =
-    broker.publish(
-      message.DeclareHand(pos = box._2, player = box._1, cards = cards, hand = hand)
-    )
+    broker.publish(Notification(
+        message.DeclareHand(pos = box._2, player = box._1, cards = cards, hand = hand)
+      ))
 
   def gameChange(game: Game) =
-    broker.publish(
-      message.GameChange(_game = game)
-    )
+    broker.publish(Notification(
+        message.GameChange(_game = game)
+      ))
 
   def showCards(box: Box, cards: List[Card], muck: Boolean = false) =
-    broker.publish(
-      message.CardsShow(pos = box._2, player = box._1, cards = cards, muck = muck)
-    )
+    broker.publish(Notification(
+        message.CardsShow(pos = box._2, player = box._1, cards = cards, muck = muck)
+      ))
 
   import proto.msg.SeatEventSchema
   def seatStateChanged(pos: Int, state: Seat.State.Value) =
-    broker.publish(
-      message.SeatEvent(SeatEventSchema.EventType.STATE, pos = pos, seat = new wire.Seat(state = state))
-    )
+    broker.publish(Notification(
+        message.SeatEvent(SeatEventSchema.EventType.STATE, pos = pos, seat = new wire.Seat(state = state))
+      ))
 
 }

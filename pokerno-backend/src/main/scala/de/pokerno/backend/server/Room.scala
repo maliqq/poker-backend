@@ -4,7 +4,8 @@ import akka.actor.{Actor, Props, ActorLogging, ActorRef, FSM}
 import de.pokerno.model
 import de.pokerno.gameplay
 import de.pokerno.backend.Gateway
-import de.pokerno.protocol.{rpc, cmd}
+import de.pokerno.backend.gateway.http
+import de.pokerno.protocol.{rpc, cmd, Codec => codec}
 import de.pokerno.protocol.Conversions._
 import util.{Success, Failure}
 import scala.concurrent.{Promise, Future}
@@ -25,10 +26,12 @@ object Room {
   type State = Value
   
   case object Close
-  case class Pause
+  case object Pause
   case object Resume
   
-  case class Subscribe(observer: ActorRef, name: String)
+  case class Watch(watcher: http.Connection)
+  case class Unwatch(watcher: http.Connection)
+  case class Observe(observer: ActorRef, name: String)
   
 }
 
@@ -44,6 +47,7 @@ class Room(
       with ActorLogging
       with FSM[Room.State.Value, Data] {
 
+  val watchers = collection.mutable.ListBuffer[http.Connection]()
   val table = new model.Table(variation.tableSize)
   val events = new gameplay.Events
   
@@ -55,14 +59,26 @@ class Room(
   log.info("starting node {}", id)
   startWith(Room.State.Waiting, NoneRunning)
   
+  val observer = system.actorOf(Props(new Actor {
+            def receive = {
+              case gameplay.Notification(msg, to) =>
+                import gameplay.Route._
+                val data = codec.Json.encode(msg)
+                to match {
+                  case All => watchers.map {  _.send(data) }
+                  case One(id) => watchers.find { _.player.get == id }.map {  _.send(data) }
+                }
+            }
+          }), name = "room-observer")
+  
   when(Room.State.Paused) {
     case Event(Room.Resume, _) =>
       goto(Room.State.Active)
   }
   
   when(Room.State.Waiting) {
-    case Event(Gateway.Message(gw, join: cmd.JoinPlayer), NoneRunning) =>
-      handlePlayerJoin(gw, join)
+    case Event(join: cmd.JoinPlayer, NoneRunning) =>
+      joinPlayer(join)
       if (canStart) goto(Room.State.Active)
       else stay()
   }
@@ -100,14 +116,14 @@ class Room(
       stay()
 
     // add bet when deal is active
-    case Event(Gateway.Message(gw, addBet: cmd.AddBet), Running(deal)) =>
+    case Event(addBet: cmd.AddBet, Running(deal)) =>
       deal ! addBet // pass to deal
       stay()
       
-    case Event(Gateway.Message(gw, msg), _) =>
+    case Event(msg, _) =>
       msg match {
         case join: cmd.JoinPlayer =>
-          handlePlayerJoin(gw, join)
+          joinPlayer(join)
         
         case kick: cmd.KickPlayer =>
           // TODO notify
@@ -150,12 +166,22 @@ class Room(
   }
   
   whenUnhandled {
-    case Event(Room.Subscribe(observer, name), _) =>
+    case Event(Room.Observe(observer, name), _) =>
       events.broker.subscribe(observer, name)
       // TODO !!!!!
       //events.start(table, variation, stake)
       stay()
     
+    case Event(Room.Watch(conn), _) =>
+      watchers += conn
+      events.broker.subscribe(observer, conn.player.getOrElse(conn.sessionId))
+      stay()
+      
+    case Event(Room.Unwatch(conn), _) =>
+      watchers -= conn
+      events.broker.unsubscribe(observer, conn.player.getOrElse(conn.sessionId))
+      stay()
+      
     case Event(x: Any, _) =>
       log.warning("unhandled: {}", x)
       stay()
@@ -176,26 +202,13 @@ class Room(
     table.seatsAsList.count(_ isReady) == minimumReadyPlayersToStart
   }
   
-  def handlePlayerJoin(gw: ActorRef, join: cmd.JoinPlayer) {
-    joinPlayer(join).onComplete {
-      case Success(_) =>
-        events.broker.subscribe(gw, join.player)
-        events.joinTable((join.player, join.pos), join.amount)
-      case Failure(err) =>
-        // ignore
-    }
-  }
-  
-  private def joinPlayer(join: cmd.JoinPlayer): Future[Boolean] = {
-    val promise = Promise[Boolean]()
+  private def joinPlayer(join: cmd.JoinPlayer) {
     try {
       table.addPlayer(join.pos, join.player, Some(join.amount))
-      promise.success(true)
+      events.joinTable((join.player, join.pos), join.amount)
     } catch {
       case err: model.Seat.IsTaken =>
-        promise.failure(err)
     }
-    promise.future
   }
   
   private def spawnDeal(): ActorRef = {

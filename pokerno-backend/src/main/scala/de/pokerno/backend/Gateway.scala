@@ -1,8 +1,10 @@
 package de.pokerno.backend
 
-import de.pokerno.protocol
-import akka.actor.ActorRef
+import de.pokerno.protocol.{msg => message}
+import de.pokerno.backend.gateway.http 
 
 object Gateway {
-  case class Message(self: ActorRef, msg: Any)
+  case class Connect(conn: http.Connection)
+  case class Disconnect(conn: http.Connection)
+  case class Message(conn: http.Connection, msg: message.Inbound)
 }

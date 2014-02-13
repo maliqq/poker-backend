@@ -13,6 +13,7 @@ trait Connection {
   def send(msg: Any)
   def close()
   
+  def sessionId: String
   // which room to connect
   def room: Option[String]
   // auth key from cookie/header/path/query param
@@ -36,6 +37,9 @@ class HttpConnection(
       Some(v.get(0))
     else None
   }
+  
+  private val _sessionId = java.util.UUID.randomUUID()
+  def sessionId = _sessionId.toString()
   
   final val authKey = "auth"
   def auth = param(authKey)

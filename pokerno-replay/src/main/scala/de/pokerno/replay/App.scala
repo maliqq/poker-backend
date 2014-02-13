@@ -1,6 +1,5 @@
 package de.pokerno.replay
 
-import jline.console.ConsoleReader
 import akka.actor.{ Actor, ActorRef, ActorSystem, Props }
 import com.typesafe.config.ConfigFactory
 import de.pokerno.backend.Gateway
@@ -8,7 +7,7 @@ import de.pokerno.protocol.{Codec => codec}
 import de.pokerno.gameplay.{Notification, Route => route}
 import de.pokerno.backend.gateway.{ Http, http }
 
-private[replay] class App {
+class App {
   val system = ActorSystem("poker-replayer")
 
   // node emulation

@@ -1,6 +1,8 @@
 package de.pokerno
 
-private case class Config(file: Option[String] = None, http: Boolean = false)
+import jline.console.ConsoleReader
+
+private[pokerno] case class Config(file: Option[String] = None, http: Boolean = false)
 
 object Main {
   //

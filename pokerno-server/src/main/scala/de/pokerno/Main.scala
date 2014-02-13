@@ -5,7 +5,7 @@ import de.pokerno.gameplay._
 import de.pokerno.backend.{ gateway ⇒ gw }
 import de.pokerno.protocol.{Codec => codec, rpc}
 import akka.actor.{ ActorSystem, Props }
-//import de.pokerno.backend.server.Config
+import de.pokerno.backend.server.Config
 
 private[pokerno] case class Options(
   val configFile: Option[String] = None,
@@ -157,7 +157,7 @@ object Main {
 
       config match {
         case Some(c) ⇒
-          val node = Node.start(c)
+          val node = backend.server.Node.start(c)
           opts.restoreFile map { path =>
             try {
               val f = new java.io.FileInputStream(path)

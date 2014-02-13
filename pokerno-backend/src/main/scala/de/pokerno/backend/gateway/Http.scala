@@ -5,6 +5,7 @@ import io.netty.channel.Channel
 import io.netty.buffer.Unpooled
 import io.netty.util.CharsetUtil
 
+import de.pokerno.gameplay.{Notification, Route}
 import de.pokerno.backend.Gateway
 import de.pokerno.protocol.{ Message, Codec ⇒ codec }
 import de.pokerno.protocol.{msg => message}
@@ -56,21 +57,24 @@ object Http {
           } else log.warning("skip {} from {}", data, conn)
         }
 
-      case msg: Message ⇒
+      case Notification(msg, to) ⇒
+        val data = codec.Json.encode(msg)
         log.info("broadcasting {}", msg)
-        broadcast(codec.Json.encode(msg))
-
-      case (room: String, msg: Message) =>
-        log.info("room {} broadcasting {}", room, msg)
-        
-      case (room: String, user: String, msg: Message) =>
-        log.info("room {} user {} sending {}", room, user, msg)
+        // FIXME !!!
+        to match {
+          case Route.All => broadcast(data)
+          case Route.One(id) =>
+            channelConnections.values.foreach { conn =>
+              if (conn.player.getOrElse(conn.sessionId) == id)
+                conn.send(msg)
+            }
+        }
         
       case x ⇒
         log.warning("unhandled: {}", x)
     }
 
-    def broadcast(msg: Any) =
+    private def broadcast(msg: Any) =
       channelConnections.foreach {
         case (channel, conn) ⇒
           conn.send(msg)

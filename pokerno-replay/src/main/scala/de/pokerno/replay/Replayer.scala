@@ -85,7 +85,7 @@ private[replay] class Replayer(gw: ActorRef) extends Actor {
     for (streetName ← scenario.streets) {
       val street: Option[Street.Value] = streetName
       if (street.isDefined)
-        replay ! Replay.StreetActions(street.get, scenario.actions.get(streetName).toList, scenario.speed)
+        replay ! Replay.StreetActions(street.get, scenario.actions.get(streetName).toList, scenario.speed, scenario.paused)
     }
     if (scenario.showdown) replay ! Replay.Showdown
     if (!scenario.paused) replay ! Replay.Stop

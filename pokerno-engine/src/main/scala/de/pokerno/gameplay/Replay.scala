@@ -11,7 +11,7 @@ import akka.actor.{ Actor, Props, ActorRef, ActorLogging }
 
 object Replay {
   case class Subscribe(out: ActorRef)
-  case class StreetActions(street: Street.Value, actions: List[cmd.Cmd], speed: Int)
+  case class StreetActions(street: Street.Value, actions: List[cmd.Cmd], speed: Int, paused: Boolean)
   case object Showdown
   case object Stop
 }
@@ -79,7 +79,7 @@ class Replay(
       gameplay.showdown()
       context.stop(self)
 
-    case a @ Replay.StreetActions(street, actions, speed) ⇒
+    case a @ Replay.StreetActions(street, actions, speed, paused) ⇒
 
       if (firstStreet) {
         gameplay.prepareSeats(stageContext)

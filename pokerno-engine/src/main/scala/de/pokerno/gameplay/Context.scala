@@ -33,7 +33,7 @@ class Context(
   val table: Table,
   val variation: Variation,
   val stake: Stake,
-  val events: Events = new Events,
+  val events: Events,
   val dealer: Dealer = new Dealer) extends ContextLike
     with GameRotation
     with Betting

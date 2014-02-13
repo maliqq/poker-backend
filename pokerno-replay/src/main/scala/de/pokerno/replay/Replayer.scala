@@ -14,14 +14,14 @@ private[replay] object Replayer {
 
 private[replay] case class ReplayError(msg: String) extends Exception(msg)
 
-private[replay] class Replayer(gw: ActorRef) extends Actor {
+private[replay] class Replayer(node: ActorRef) extends Actor {
   import io.netty.handler.codec.http
   import io.netty.channel.{ ChannelHandlerContext, ChannelFutureListener }
   import http.HttpHeaders._
 
   def receive = {
     // http request
-    case (content: String, ctx: ChannelHandlerContext, resp: http.DefaultFullHttpResponse) ⇒
+    case (id: String, content: String, ctx: ChannelHandlerContext, resp: http.DefaultFullHttpResponse) ⇒
       resp.headers().add(Names.CONTENT_TYPE, "application/json")
 
       def sendError(err: Throwable) {
@@ -32,7 +32,7 @@ private[replay] class Replayer(gw: ActorRef) extends Actor {
 
       try {
         val src = scala.io.Source.fromString(content)
-        val scenario = Scenario.parse(src)
+        val scenario = Scenario.parse(id, src)
         replay(scenario)
         resp.content().writeBytes("""{"status": "ok"}""".getBytes)
       } catch {
@@ -74,8 +74,8 @@ private[replay] class Replayer(gw: ActorRef) extends Actor {
 
     val deck = scenario.deck
 
-    val replay = system.actorOf(Props(classOf[Replay], table, variation, stake, deck))
-    replay ! Replay.Subscribe(gw)
+    val replay = system.actorOf(Props(classOf[Replay], scenario.name, table, variation, stake, deck))
+    replay ! Replay.Observe(node)
 
     //    table.seatsAsList.zipWithIndex foreach { case (seat, pos) =>
     //      if (!seat.isEmpty)

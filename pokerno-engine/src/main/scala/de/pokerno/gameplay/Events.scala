@@ -7,13 +7,13 @@ import de.pokerno.poker.{ Card, Hand }
 
 import math.{ BigDecimal ⇒ Decimal }
 
-class Events {
+class Events(id: String) {
 
   import protocol.Conversions._
   import protocol.wire.Conversions._
   import protocol.msg.Conversions._
 
-  lazy val broker = new Broker
+  lazy val broker = new Broker(id)
 
   type Box = Tuple2[Player, Int]
 

@@ -49,7 +49,7 @@ class Room(
 
   val watchers = collection.mutable.ListBuffer[http.Connection]()
   val table = new model.Table(variation.tableSize)
-  val events = new gameplay.Events
+  val events = new gameplay.Events(id)
   
   import context._
   import context.dispatcher
@@ -61,7 +61,7 @@ class Room(
   
   val observer = system.actorOf(Props(new Actor {
             def receive = {
-              case gameplay.Notification(msg, to) =>
+              case gameplay.Notification(msg, _, to) =>
                 import gameplay.Route._
                 val data = codec.Json.encode(msg)
                 to match {

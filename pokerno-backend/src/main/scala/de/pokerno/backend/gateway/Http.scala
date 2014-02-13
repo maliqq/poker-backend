@@ -57,7 +57,7 @@ object Http {
           } else log.warning("skip {} from {}", data, conn)
         }
 
-      case Notification(msg, to) ⇒
+      case Notification(msg, _, to) ⇒
         val data = codec.Json.encode(msg)
         log.info("broadcasting {}", msg)
         // FIXME !!!

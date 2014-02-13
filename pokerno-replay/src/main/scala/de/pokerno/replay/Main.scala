@@ -3,14 +3,48 @@ package de.pokerno.replay
 import jline.console.ConsoleReader
 import akka.actor.{ Actor, ActorRef, ActorSystem, Props }
 import com.typesafe.config.ConfigFactory
+import de.pokerno.backend.Gateway
+import de.pokerno.protocol.{Codec => codec}
+import de.pokerno.gameplay.{Notification, Route => route}
 import de.pokerno.backend.gateway.{ Http, http }
 
 private[replay] case class Config(file: Option[String] = None, http: Boolean = false)
 
 private[replay] class Main {
   val system = ActorSystem("poker-replayer")
-  val gw = system.actorOf(Props(classOf[Http.Gateway]), "http-dispatcher")
-  val replayer = system.actorOf(Props(classOf[Replayer], gw), "replayer")
+
+  // node emulation
+  val node = system.actorOf(Props(new Actor {
+    val roomConnections = collection.mutable.HashMap[String, collection.mutable.ListBuffer[http.Connection]]()
+    def receive = {
+      case Gateway.Connect(conn) =>
+        conn.room.map { id =>
+          if (!roomConnections.contains(id))
+            roomConnections(id) = collection.mutable.ListBuffer()
+          roomConnections(id) += conn
+        }
+
+      case Gateway.Disconnect(conn) =>
+        conn.room.map { id =>
+          if (roomConnections.contains(id))
+            roomConnections(id) -= conn
+        }
+
+      case Notification(msg, from, to) =>
+        from match {
+          case route.One(id) =>
+            val data = codec.Json.encode(msg)
+            roomConnections.get(id) map { conns =>
+              conns.map { _.send(data) }
+            }
+            
+          case _ =>
+        }
+    }
+  }))
+
+  val gw = system.actorOf(Props(classOf[Http.Gateway], Some(node)), "http-dispatcher")
+  val replayer = system.actorOf(Props(classOf[Replayer], node), "replayer")
 
   def startHttpServer() {
     val server = new http.Server(gw,
@@ -28,7 +62,7 @@ private[replay] class Main {
   def parse(filename: String) {
     try {
       val src = scala.io.Source.fromFile(filename)
-      val scenario = Scenario.parse(src)
+      val scenario = Scenario.parse(filename, src)
       replayer ! Replayer.Replay(scenario)
 
     } catch {

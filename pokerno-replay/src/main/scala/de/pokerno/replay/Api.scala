@@ -21,8 +21,7 @@ private[replay] class ApiHandler(gw: ActorRef) extends SimpleChannelInboundHandl
   override def channelRead0(ctx: ChannelHandlerContext, req: FullHttpRequest) {
     val q = new QueryStringDecoder(req.getUri)
     req.retain()
-
-    if (q.path == "/_api/scenario") {
+    if (q.path == "/_api/scenario" && q.parameters().containsKey("id") && q.parameters().get("id").size != 0) {
       val resp = new http.DefaultFullHttpResponse(http.HttpVersion.HTTP_1_1, http.HttpResponseStatus.OK)
       resp.headers().add(Names.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
       resp.headers().add(Names.ACCESS_CONTROL_ALLOW_HEADERS, "*")
@@ -32,7 +31,8 @@ private[replay] class ApiHandler(gw: ActorRef) extends SimpleChannelInboundHandl
           sendResp(ctx, resp)
         case HttpMethod.POST ⇒
           val content = req.content().toString(CharsetUtil.UTF_8)
-          gw ! (content, ctx, resp)
+          val id = q.parameters().get("id").get(0)
+          gw ! (id, content, ctx, resp)
         case _ ⇒
           resp.setStatus(http.HttpResponseStatus.METHOD_NOT_ALLOWED)
           sendResp(ctx, resp)

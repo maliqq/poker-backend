@@ -13,8 +13,8 @@ import proto.rpc._
 import de.pokerno.format.text
 
 private[replay] object Scenario {
-  def parse(src: scala.io.Source) = {
-    val scenario = new Scenario()
+  def parse(id: String, src: scala.io.Source) = {
+    val scenario = new Scenario(id)
 
     text.Parser.parse(src).foreach {
       case (line, lineno, tag) ⇒
@@ -25,7 +25,7 @@ private[replay] object Scenario {
   }
 }
 
-private[replay] class Scenario {
+private[replay] class Scenario(val name: String) {
 
   implicit def arrayByte2byteString(a: Array[Byte]) = com.dyuproject.protostuff.ByteString.copyFrom(a)
 

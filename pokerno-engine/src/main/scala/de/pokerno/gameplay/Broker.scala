@@ -18,9 +18,9 @@ object Route {
   case class Except(endpoints: List[String]) extends Route
 }
 
-case class Notification(message: msg.Message, to: Route = Route.All) // from: Route = Route.NoOne, 
+case class Notification(message: msg.Message, from: Route = Route.NoOne, to: Route = Route.All) // from: Route = Route.NoOne, 
 
-private[gameplay] class Broker extends ActorEventBus
+private[gameplay] class Broker(id: String) extends ActorEventBus
     with ScanningClassification {
 
   type Classifier = String
@@ -41,7 +41,7 @@ private[gameplay] class Broker extends ActorEventBus
   }
 
   def publish(event: Event, subscriber: Subscriber) = {
-    subscriber ! event
+    subscriber ! event.copy(from = One(id))
   }
   
 }

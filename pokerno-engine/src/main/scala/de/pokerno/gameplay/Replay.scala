@@ -10,13 +10,14 @@ import de.pokerno.poker.{ Deck, Card, Cards }
 import akka.actor.{ Actor, Props, ActorRef, ActorLogging }
 
 object Replay {
-  case class Subscribe(out: ActorRef)
+  case class Observe(out: ActorRef)
   case class StreetActions(street: Street.Value, actions: List[cmd.Cmd], speed: Int, paused: Boolean)
   case object Showdown
   case object Stop
 }
 
 class Replay(
+  id: String,
   _table: wire.Table,
   _variation: wire.Variation,
   _stake: wire.Stake,
@@ -27,7 +28,8 @@ class Replay(
     with Betting.ReplayContext
     with Streets.ReplayContext {
 
-  val gameplay = new Context(_table, _variation, _stake,
+  val e = new Events(id)
+  val gameplay = new Context(_table, _variation, _stake, e,
     dealer =
       if (deck.isDefined)
         new Dealer(new Deck(Cards(deck.get)))
@@ -35,8 +37,6 @@ class Replay(
         new Dealer)
 
   val stageContext = StageContext(gameplay, self)
-
-  def e = gameplay.events
   def t = gameplay.table
 
   val gameOptions = gameplay.game.options
@@ -58,7 +58,7 @@ class Replay(
   var firstStreet = true
 
   override def receive = {
-    case Replay.Subscribe(out) ⇒
+    case Replay.Observe(out) ⇒
       e.broker.subscribe(out, "replay-out")
       e.start(t, gameplay.variation, gameplay.stake, play)
 

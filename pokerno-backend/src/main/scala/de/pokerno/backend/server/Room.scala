@@ -186,6 +186,9 @@ class Room(
     case Event(Room.Unwatch(conn), _) =>
       watchers -= conn
       events.broker.unsubscribe(observer, conn.player.getOrElse(conn.sessionId))
+      conn.player map { p =>
+        table.pos(p) map { table.removePlayer(_) }
+      }
       stay()
       
     case Event(x: Any, _) =>

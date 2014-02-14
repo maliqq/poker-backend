@@ -27,10 +27,12 @@ object Conversions {
   }
 
   implicit def play2wire(v: gameplay.Play): Play = {
-    val play = new Play(v.id, v.startAt.getTime() / 1000)
-    play.pot = v.pot.total
-    play.street = v.street
-    play
+    if (v != null) {
+      val play = new Play(v.id, v.startAt.getTime() / 1000)
+      play.pot = v.pot.total
+      play.street = v.street
+      play
+    } else null
   }
 
 }

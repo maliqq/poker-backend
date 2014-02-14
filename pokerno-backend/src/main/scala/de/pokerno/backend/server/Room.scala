@@ -37,7 +37,7 @@ object Room {
 
 sealed trait Data
 case object NoneRunning extends Data
-case class Running(ref: ActorRef) extends Data
+case class Running(play: gameplay.Play, ref: ActorRef) extends Data
 
 class Room(
     id: String,
@@ -56,7 +56,7 @@ class Room(
   import concurrent.duration._
   import proto.cmd.PlayerEventSchema
   
-  log.info("starting node {}", id)
+  log.info("starting room {}", id)
   startWith(Room.State.Waiting, NoneRunning)
   
   val observer = system.actorOf(Props(new Actor {
@@ -90,20 +90,20 @@ class Room(
   }
   
   when(Room.State.Active) {
-    case Event(Room.Close, Running(deal)) =>
+    case Event(Room.Close, Running(_, deal)) =>
       context.stop(deal)
       goto(Room.State.Closed)
     
-    case Event(Room.Pause, Running(deal)) =>
+    case Event(Room.Pause, Running(_, deal)) =>
       context.stop(deal)
       goto(Room.State.Paused)
     
     // first deal in active state
     case Event(gameplay.Deal.Start, NoneRunning) =>
-      stay() using Running(spawnDeal)
+      stay() using spawnDeal
     
     // previous deal stopped
-    case Event(gameplay.Deal.Done, Running(deal)) =>
+    case Event(gameplay.Deal.Done, Running(_, deal)) =>
       val after = nextDealAfter
       log.info("deal done; starting next deal in {}", after)
       self ! gameplay.Deal.Next(after)
@@ -116,7 +116,7 @@ class Room(
       stay()
 
     // add bet when deal is active
-    case Event(addBet: cmd.AddBet, Running(deal)) =>
+    case Event(addBet: cmd.AddBet, Running(_, deal)) =>
       deal ! addBet // pass to deal
       stay()
       
@@ -169,12 +169,18 @@ class Room(
     case Event(Room.Observe(observer, name), _) =>
       events.broker.subscribe(observer, name)
       // TODO !!!!!
-      //events.start(table, variation, stake)
+      //events.start(table, variation, stake, )
       stay()
     
-    case Event(Room.Watch(conn), _) =>
+    case Event(Room.Watch(conn), running) =>
       watchers += conn
       events.broker.subscribe(observer, conn.player.getOrElse(conn.sessionId))
+      running match {
+        case NoneRunning =>
+          events.start(table, variation, stake, null)
+        case Running(play, _) =>
+          events.start(table, variation, stake, play)
+      }
       stay()
       
     case Event(Room.Unwatch(conn), _) =>
@@ -211,9 +217,10 @@ class Room(
     }
   }
   
-  private def spawnDeal(): ActorRef = {
+  private def spawnDeal(): Running = {
     val ctx = new gameplay.Context(table, variation, stake, events)
-    val deal = actorOf(Props(classOf[gameplay.Deal], ctx), name = "deal-process")
-    deal
+    val play = new gameplay.Play(ctx)
+    val deal = actorOf(Props(classOf[gameplay.Deal], ctx, play), name = "deal-process")
+    Running(play, deal)
   }
 }

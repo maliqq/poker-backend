@@ -96,7 +96,7 @@ private[replay] class Scenario(val name: String) {
     val t = table.getOrElse(throw ReplayError("betting before TABLE"))
 
     for (seat ← t.seats) {
-      if (seat.player == player) {
+      if (seat != null && seat.player == player) {
         actions.get(currentStreet).add(cmd.AddBet(seat.player, bet))
       }
     }
@@ -139,7 +139,7 @@ private[replay] class Scenario(val name: String) {
 
         case tags.Call(player, amount) ⇒
           bet(player.unquote,
-            wire.Bet(BetSchema.BetType.CALL, amount))
+            wire.Bet(BetSchema.BetType.CALL, if (amount.isDefined) amount.get else null))
 
         case tags.Check(player) ⇒
           bet(player.unquote,

@@ -75,6 +75,8 @@ private[gameplay] class BettingRound(val table: Table, val game: Game, val stake
     // alias for raise whole stack
     var b = if (_bet.betType == Bet.AllIn)
       Bet.raise(seat.stack)
+    else if (_bet.betType == Bet.Call && _bet.amount.isEmpty)
+      _bet.copy(amount = Some(List(_call, seat.stack).min - seat.put))
     else _bet
 
     val valid = b.betType match {
@@ -84,14 +86,18 @@ private[gameplay] class BettingRound(val table: Table, val game: Game, val stake
       case Bet.Check ⇒
         seat.canCheck(_call)
 
-      case Bet.Call ⇒
-        seat.canCall(b.amount, _call)
+      case Bet.Call if b.isActive ⇒
+        seat.canCall(b.amount.get, _call)
 
-      case Bet.Raise ⇒
-        seat.canRaise(b.amount, _raise)
+      case Bet.Raise if b.isActive ⇒
+        seat.canRaise(b.amount.get, _raise)
 
       case f: Bet.ForcedBet ⇒
-        seat.canForce(b.amount, stake.amount(f))
+        seat.canForce(b.amount.get, stake.amount(f))
+      
+      case _ =>
+        warn("unmatched bet validation: %s", b)
+        false
     }
 
     if (!valid) {

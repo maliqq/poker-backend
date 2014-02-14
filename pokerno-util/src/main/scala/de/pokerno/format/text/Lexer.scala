@@ -175,9 +175,11 @@ object Lexer {
     }
 
     @Tag(name = "CALL")
-    case class Call(player: QuotedString, amount: Int) extends Token
+    case class Call(player: QuotedString, amount: Option[Int]) extends Token
         with BettingSemantic {
-      def this(params: Array[String]) = this(params(0), params(1))
+      def this(params: Array[String]) = this(params(0), if (params.length >= 2)
+          Some(params(1))
+        else None)
     }
 
     @Tag(name = "FOLD")

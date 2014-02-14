@@ -201,10 +201,10 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
   def postBet(bet: Bet): Decimal =
     bet.betType match {
       case Bet.Fold         ⇒ fold
-      case Bet.Raise        ⇒ raise(bet.amount)
-      case Bet.Call         ⇒ call(bet.amount)
+      case Bet.Raise        if bet.isActive ⇒ raise(bet.amount.get)
+      case Bet.Call         if bet.isActive⇒ call(bet.amount.get)
       case Bet.Check        ⇒ check()
-      case _: Bet.ForcedBet ⇒ force(bet.amount)
+      case _: Bet.ForcedBet if bet.isActive⇒ force(bet.amount.get)
     }
 
   // STATE

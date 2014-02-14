@@ -3,10 +3,10 @@ package de.pokerno.model
 import math.{ BigDecimal ⇒ Decimal }
 import java.util.Locale
 
-class Bet(val betType: Bet.Value, val amount: Decimal = .0) {
+case class Bet(val betType: Bet.Value, val amount: Option[Decimal] = None) {
   override def toString =
-    if (amount > .0)
-      "%s %.2f" formatLocal (Locale.US, betType.toString, amount)
+    if (amount.isDefined)
+      "%s %.2f" formatLocal (Locale.US, betType.toString, amount.get)
     else betType.toString
   //
   //  def isValid(left: Decimal, put: Decimal, call: Decimal, raise: Range): Boolean = betType match {
@@ -31,7 +31,7 @@ class Bet(val betType: Bet.Value, val amount: Decimal = .0) {
   //    case _ ⇒ false
   //  }
 
-  def isActive: Boolean = amount > .0
+  def isActive: Boolean = amount.isDefined && amount.get > 0
   def isForced: Boolean = betType.isInstanceOf[Bet.ForcedBet]
   def isRaise: Boolean = betType == Bet.Raise
   def isCheck: Boolean = betType == Bet.Check
@@ -73,10 +73,10 @@ object Bet {
 
   def check = new Bet(Check)
   def fold = new Bet(Fold)
-  def call(amount: Decimal) = new Bet(Call, amount)
-  def raise(amount: Decimal) = new Bet(Raise, amount)
+  def call(amount: Decimal) = new Bet(Call, Some(amount))
+  def raise(amount: Decimal) = new Bet(Raise, Some(amount))
   def allin = new Bet(AllIn)
-  def forced(t: ForcedBet, amount: Decimal) = new Bet(t, amount)
+  def forced(t: ForcedBet, amount: Decimal) = new Bet(t, Some(amount))
   def sb(amount: Decimal) = forced(SmallBlind, amount)
   def bb(amount: Decimal) = forced(BigBlind, amount)
   def ante(amount: Decimal) = forced(Ante, amount)

@@ -2,6 +2,7 @@ package de.pokerno.protocol.msg
 
 import de.pokerno.gameplay
 import de.pokerno.protocol.wire
+import de.pokerno.protocol.wire.Conversions._
 import de.pokerno.protocol.Conversions._
 import proto.wire.StreetType
 
@@ -31,6 +32,7 @@ object Conversions {
       val play = new Play(v.id, v.startAt.getTime() / 1000)
       play.pot = v.pot.total
       play.street = v.street
+      play.acting = RequireBet(pos = v.acting._2, player = v.acting._1, call = v.require._1, raise = v.require._2)
       play
     } else null
   }

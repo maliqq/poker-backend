@@ -72,7 +72,6 @@ private[gameplay] class BettingRound(val table: Table, val game: Game, val stake
     val (seat, pos) = _acting
     val player = seat.player.get
 
-    // alias for raise whole stack
     var b = if (_bet.betType == Bet.AllIn)
       Bet.raise(seat.stack)
     else if (_bet.betType == Bet.Call && _bet.amount.isEmpty)

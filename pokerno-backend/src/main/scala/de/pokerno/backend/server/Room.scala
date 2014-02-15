@@ -70,6 +70,7 @@ class Room(
                 }
             }
           }), name = "room-observer")
+  events.broker.subscribe(observer, "room-observer")
   
   when(Room.State.Paused) {
     case Event(Room.Resume, _) =>
@@ -120,50 +121,38 @@ class Room(
       deal ! addBet // pass to deal
       stay()
       
-    case Event(msg, _) =>
-      msg match {
-        case join: cmd.JoinPlayer =>
-          joinPlayer(join)
-        
-        case kick: cmd.KickPlayer =>
-          // TODO notify
-          table.pos(kick.player) map { pos =>
-            table.removePlayer(pos)
-          }
-        
-        case chat: cmd.Chat =>
-          // TODO broadcast
+    case Event(join: cmd.JoinPlayer, _) =>
+      joinPlayer(join)
+      stay()
+    
+    case Event(kick: cmd.KickPlayer, _) =>
+      // TODO notify
+      table.removePlayer(kick.player)
+      changeSeatState(kick.player) { _ clear }
+      stay()
+    
+    case Event(chat: cmd.Chat, _) =>
+      // TODO broadcast
+      stay()
+    
+    case Event(cmd.PlayerEvent(event, player: String), _) =>
+      // TODO notify
+      event match {
+        case PlayerEventSchema.EventType.OFFLINE =>
+          changeSeatState(player) { _ away }
           
-        case cmd.PlayerEvent(event, player: String) =>
-          // TODO notify
-          event match {
-            case PlayerEventSchema.EventType.OFFLINE =>
-              table.seat(player).map { case (seat, pos) =>
-                seat.away()
-                events.seatStateChanged(pos, seat.state)
-              }
-              
-            case PlayerEventSchema.EventType.SIT_OUT =>
-              table.seat(player).map { case (seat, pos) =>
-                seat.idle()
-                events.seatStateChanged(pos, seat.state)
-              }
-              
-            case PlayerEventSchema.EventType.COME_BACK | PlayerEventSchema.EventType.ONLINE =>
-              table.seat(player).map { case (seat, pos) =>
-                seat.ready()
-                events.seatStateChanged(pos, seat.state)
-              }
-              
-            case PlayerEventSchema.EventType.LEAVE =>
-              table.seat(player) map { case (seat, pos) =>
-                table.removePlayer(pos)
-                events.seatStateChanged(pos, seat.state)
-              }
-          }
+        case PlayerEventSchema.EventType.SIT_OUT =>
+          changeSeatState(player) { _ idle }
+          
+        case PlayerEventSchema.EventType.COME_BACK | PlayerEventSchema.EventType.ONLINE =>
+          changeSeatState(player) { _ ready }
+          
+        case PlayerEventSchema.EventType.LEAVE =>
+          table.removePlayer(player)
+          changeSeatState(player) { _ clear }
       }
       stay()
-  }
+    }
   
   whenUnhandled {
     case Event(Room.Observe(observer, name), _) =>
@@ -174,20 +163,23 @@ class Room(
     
     case Event(Room.Watch(conn), running) =>
       watchers += conn
-      events.broker.subscribe(observer, conn.player.getOrElse(conn.sessionId))
+      //events.broker.subscribe(observer, conn.player.getOrElse(conn.sessionId))
       running match {
         case NoneRunning =>
           events.start(table, variation, stake, null)
         case Running(play, _) =>
           events.start(table, variation, stake, play)
       }
+      conn.player map { p =>
+        changeSeatState(p) { _ ready } // Reconnected
+      }
       stay()
       
     case Event(Room.Unwatch(conn), _) =>
       watchers -= conn
-      events.broker.unsubscribe(observer, conn.player.getOrElse(conn.sessionId))
+      //events.broker.unsubscribe(observer, conn.player.getOrElse(conn.sessionId))
       conn.player map { p =>
-        table.pos(p) map { table.removePlayer(_) }
+        changeSeatState(p) { _ away }
       }
       stay()
       
@@ -220,10 +212,17 @@ class Room(
     }
   }
   
+  private def changeSeatState(player: model.Player)(f: model.Seat => Unit) {
+    table.seat(player) map { case (seat, pos) =>
+      f(seat)
+      events.seatStateChanged(pos, seat.state)
+    }
+  }
+  
   private def spawnDeal(): Running = {
     val ctx = new gameplay.Context(table, variation, stake, events)
     val play = new gameplay.Play(ctx)
-    val deal = actorOf(Props(classOf[gameplay.Deal], ctx, play), name = "deal-process")
+    val deal = actorOf(Props(classOf[gameplay.Deal], ctx, play))
     Running(play, deal)
   }
 }

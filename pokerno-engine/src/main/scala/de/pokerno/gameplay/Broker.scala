@@ -3,7 +3,10 @@ package de.pokerno.gameplay
 import de.pokerno.model._
 import de.pokerno.protocol.msg
 
-import akka.event.{ ActorEventBus, ScanningClassification }
+import akka.event.{ ActorEventBus, EventBus, ScanningClassification }
+//import akka.util.Index
+//import java.util.concurrent.ConcurrentSkipListSet
+//import java.util.Comparator
 
 trait Route {}
 
@@ -25,21 +28,12 @@ private[gameplay] class Broker(id: String) extends ActorEventBus
 
   type Classifier = String
   type Event = Notification
-
+  
   def compareClassifiers(a: Classifier, b: Classifier): Int = a compare b
 
-  case class ListOfPlayers(v: List[Player])
-
   import Route._
-  def matches(classifier: Classifier, event: Event): Boolean = event.to match {
-    case All             ⇒ true
-    case One(id)         ⇒ id == classifier
-    case Except(ids)     ⇒ !ids.exists { _ == classifier }
-    case Where(f)        => f(classifier)
-    case Only(ids)       => ids.contains(classifier)
-    case _               ⇒ throw new Error("unknown route: %s".format(event.to))
-  }
-
+  def matches(classifier: Classifier, event: Event) = true
+  
   def publish(event: Event, subscriber: Subscriber) = {
     subscriber ! event.copy(from = One(id))
   }

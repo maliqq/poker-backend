@@ -1,5 +1,7 @@
 package de.pokerno.gameplay
 
+import de.pokerno.model.{Player, Seat}
+
 private[gameplay] trait Seating {
   ctx: ContextLike ⇒
 

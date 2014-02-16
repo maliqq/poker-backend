@@ -69,8 +69,8 @@ class Room(
                   case One(id) => watchers.find { _.player.get == id }.map {  _.send(data) }
                 }
             }
-          }), name = "room-observer")
-  events.broker.subscribe(observer, "room-observer")
+          }), name = f"room-$id-observer")
+  events.broker.subscribe(observer, f"room-$id-observer")
   
   when(Room.State.Paused) {
     case Event(Room.Resume, _) =>

@@ -21,6 +21,11 @@ class Events(id: String) {
     broker.publish(Notification(
       message.PlayerJoin(box._2, box._1, amount)
     ))
+    
+  def leaveTable(box: Box) =
+    broker.publish(Notification(
+      message.PlayerLeave(box._2, box._1)
+    ))
 
   def start(table: Table, variation: Variation, stake: Stake, play: Play) = {
     broker.publish(Notification(

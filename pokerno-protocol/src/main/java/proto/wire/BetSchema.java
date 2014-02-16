@@ -69,6 +69,7 @@ public class BetSchema
     public static final int FIELD_NONE = 0;
     public static final int FIELD_TYPE = 1;
     public static final int FIELD_AMOUNT = 2;
+    public static final int FIELD_TIMEOUT = 3;
 
     public BetSchema() {}
 
@@ -111,13 +112,16 @@ public class BetSchema
             case FIELD_AMOUNT:
                 message.setAmount(input.readDouble());
                 break;
+            case FIELD_TIMEOUT:
+                message.setTimeout(input.readBool());
+                break;
             default:
                 input.handleUnknownField(fieldIx, this);
         }
     }
 
 
-    private static int[] FIELDS_TO_WRITE = { FIELD_TYPE, FIELD_AMOUNT };
+    private static int[] FIELDS_TO_WRITE = { FIELD_TYPE, FIELD_AMOUNT, FIELD_TIMEOUT };
 
     public int[] getWriteFields() { return FIELDS_TO_WRITE; }
 
@@ -138,6 +142,10 @@ public class BetSchema
                 if (message.getAmount() != null)
                     output.writeDouble(FIELD_AMOUNT, message.getAmount(), false);
                 break;
+            case FIELD_TIMEOUT:
+                if (message.isTimeout() != null)
+                    output.writeBool(FIELD_TIMEOUT, message.isTimeout(), false);
+                break;
             default:
                 break;
         }
@@ -147,6 +155,7 @@ public class BetSchema
         switch(number) {
             case FIELD_TYPE: return "type";
             case FIELD_AMOUNT: return "amount";
+            case FIELD_TIMEOUT: return "timeout";
             default: return null;
         }
     }
@@ -159,5 +168,6 @@ public class BetSchema
     final java.util.Map<String, Integer> fieldMap = new java.util.HashMap<String, Integer>(); {
         fieldMap.put("type", FIELD_TYPE);
         fieldMap.put("amount", FIELD_AMOUNT);
+        fieldMap.put("timeout", FIELD_TIMEOUT);
     }
 }

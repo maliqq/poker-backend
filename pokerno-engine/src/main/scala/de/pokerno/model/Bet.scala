@@ -3,7 +3,7 @@ package de.pokerno.model
 import math.{ BigDecimal ⇒ Decimal }
 import java.util.Locale
 
-case class Bet(val betType: Bet.Value, val amount: Option[Decimal] = None) {
+case class Bet(val betType: Bet.Value, val amount: Option[Decimal] = None, val timeout: Option[Boolean] = None) {
   override def toString =
     if (amount.isDefined)
       "%s %.2f" formatLocal (Locale.US, betType.toString, amount.get)
@@ -71,8 +71,8 @@ object Bet {
 
   abstract class CardAction extends Value
 
-  def check = new Bet(Check)
-  def fold = new Bet(Fold)
+  def check(timeout: Boolean = false) = new Bet(Check, timeout = Some(true))
+  def fold(timeout: Boolean = false) = new Bet(Fold, timeout = Some(true))
   def call(amount: Decimal) = new Bet(Call, Some(amount))
   def raise(amount: Decimal) = new Bet(Raise, Some(amount))
   def allin = new Bet(AllIn)

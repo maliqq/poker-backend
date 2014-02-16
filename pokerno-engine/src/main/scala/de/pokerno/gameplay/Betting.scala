@@ -1,13 +1,13 @@
 package de.pokerno.gameplay
 
-import akka.actor.ActorRef
+import akka.actor.{Actor, ActorRef, Cancellable}
 import math.{ BigDecimal ⇒ Decimal }
 import de.pokerno.model._
 import de.pokerno.protocol.{ msg ⇒ message }
 import de.pokerno.protocol.{ rpc, wire, cmd }
 import wire.Conversions._
 import de.pokerno.protocol.Conversions._
-import akka.actor.Actor
+import concurrent.duration._
 
 private[gameplay] trait Betting
     extends Antes
@@ -67,6 +67,8 @@ private[gameplay] object Betting {
   case object Stop extends Transition
   // betting done - wait for next street to occur
   case object Done extends Transition
+  // start timer
+  case class StartTimer(duration: FiniteDuration) extends Transition
   // betting timeout - go to next seat
   case object Timeout
   // turn on big bet mode
@@ -78,7 +80,7 @@ private[gameplay] object Betting {
     def gameplay: Context
     def stageContext: StageContext
 
-    protected def nextTurn(): Option[Transition] = {
+    protected def nextTurn(): Transition = {
       val round = gameplay.round
 
       //Console printf("%s%s%s\n", Console.MAGENTA, gameplay.table, Console.RESET)
@@ -93,32 +95,38 @@ private[gameplay] object Betting {
 
       if (round.seats.filter(_._1 inPot).size < 2) {
         info("[betting] should stop")
-        return Some(Betting.Stop)
+        return Betting.Stop
       }
 
       val playing = round.seats filter (_._1 isPlaying)
       if (playing.size == 0) {
         info("[betting] should done")
-        return Some(Betting.Done)
+        return Betting.Done
       }
 
       gameplay.requireBet(stageContext, playing.head)
 
-      None
+      Betting.StartTimer(30 seconds)
     }
 
   }
 
   trait DealContext extends NextTurn {
     deal: Deal ⇒
+    
+    import context._
+    
+    var timer: Cancellable = null
 
     def handleBetting: Receive = {
       case cmd.AddBet(player, bet) ⇒
         val (seat, pos) = gameplay.round.acting
         if (seat.player.map(_.id == player).getOrElse(false)) {
+          if (timer != null)
+            timer.cancel()
           log.info("[betting] add {}", bet)
           gameplay.addBet(stageContext, bet)
-          nextTurn().foreach(self ! _)
+          self ! nextTurn()
         } else
           log.warning("[betting] not a turn of {}; current acting is {}", player, seat.player)
 
@@ -126,10 +134,29 @@ private[gameplay] object Betting {
         log.info("[betting] stop")
         context.become(handleStreets)
         self ! Streets.Done
+      
+      case Betting.StartTimer(duration) =>
+        timer = system.scheduler.scheduleOnce(duration, self, Betting.Timeout)
 
       case Betting.Timeout ⇒
+        val round = gameplay.round
+        val (seat, pos) = round.acting
+        
+        val bet: Bet = seat.state match {
+          case Seat.State.Away =>
+            // force fold
+            Bet.fold(timeout = true)
+          
+          case _ =>
+            // force check/fold
+            if (round.call == 0 || seat.didCall(round.call))
+              Bet.check(timeout = true)
+            else Bet.fold(timeout = true)
+        }
+        
         log.info("[betting] timeout")
-        nextTurn().foreach(self ! _)
+        gameplay.addBet(stageContext, bet)
+        self ! nextTurn()
 
       case Betting.Done ⇒
         log.info("[betting] done")
@@ -290,9 +317,15 @@ private[gameplay] object Betting {
 
           if (isOurTurn) {
             debug(" |-- player %s bet %s", player.get, addBet.bet)
+            
             gameplay.addBet(stageContext, addBet.bet)
+            
             sleep()
-            nextTurn().forall { x ⇒ self ! x; false }
+            
+            nextTurn() match {
+              case Betting.Done | Betting.Stop => false
+              case _ => true
+            }
           } else {
             warn("not our turn, dropping: %s %s", addBet, acting)
             true

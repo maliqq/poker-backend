@@ -22,6 +22,9 @@ object Conversions {
     if (b != null) return wire.Bet(b.betType, b.amount match {
       case Some(n) => n.toDouble
       case None => null
+    }, b.timeout match {
+      case Some(flag) => flag
+      case None => null
     })
     return null
   }

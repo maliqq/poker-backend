@@ -65,6 +65,8 @@ private[gameplay] object Betting {
   case object Next extends Transition
   // stop current deal
   case object Stop extends Transition
+  // go to showdown
+  case object Showdown extends Transition
   // betting done - wait for next street to occur
   case object Done extends Transition
   // start timer
@@ -102,6 +104,10 @@ private[gameplay] object Betting {
       if (playing.size == 0) {
         info("[betting] should done")
         return Betting.Done
+      }
+      if (playing.size == 1) {
+        info("[betting] go to showdown")
+        return Betting.Showdown
       }
 
       gameplay.requireBet(stageContext, playing.head)
@@ -158,6 +164,9 @@ private[gameplay] object Betting {
         gameplay.addBet(stageContext, bet)
         self ! nextTurn()
 
+      case Betting.Showdown =>
+        // TODO XXX FIXME
+        
       case Betting.Done ⇒
         log.info("[betting] done")
         gameplay.completeBetting(stageContext)

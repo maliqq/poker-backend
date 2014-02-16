@@ -65,6 +65,7 @@ class Deal(val gameplay: Context, val play: Play) extends Actor
       log.info("streets done")
       afterStreets(stageContext)
       context.stop(self)
+    
   }
 
 }

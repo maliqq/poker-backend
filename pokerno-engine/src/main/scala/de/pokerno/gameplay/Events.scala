@@ -56,20 +56,19 @@ class Events(id: String) {
 
     case _ if box.isDefined ⇒
       if (_type == DealCards.Hole) {
-        //        broker.publish(
-        //            message.DealCards(_type, cards, pos = pos),
-        //          broker.One(seat.player.get.id))
-
+        val player = box.get._1
         broker.publish(Notification(
-          message.DealCards(_type, player = box.get._1, pos = box.get._2,
-            cards = cards // FIXME hide later
-          )
-        ))
+            message.DealCards(_type, player = player, pos = box.get._2,
+                cards = cards 
+              ),
+            to = Route.One(player.id) 
+          ))
       } else {
         broker.publish(Notification(
             message.DealCards(_type, cards, player = box.get._1, pos = box.get._2)
           ))
       }
+    
     case _ ⇒
   }
 

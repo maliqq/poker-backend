@@ -65,11 +65,24 @@ class Room(
                 import gameplay.Route._
                 val data = codec.Json.encode(msg)
                 to match {
-                  case All => watchers.map {  _.send(data) }
-                  case One(id) => watchers.find { _.player.get == id }.map {  _.send(data) }
+                  // broadcast
+                  case All =>
+                    watchers.map {  _.send(data) }
+                  // skip
+                  case Except(ids) =>
+                    watchers.map { case w =>
+                      if (w.player.isDefined && !ids.contains(w.player.get))
+                        w.send(data)
+                    }
+                  // notify one
+                  case One(id) =>
+                    watchers.find { w =>
+                      w.player.isDefined && w.player.get == id
+                    }.map {  _.send(data) }
                 }
             }
           }), name = f"room-$id-observer")
+          
   events.broker.subscribe(observer, f"room-$id-observer")
   
   when(Room.State.Paused) {

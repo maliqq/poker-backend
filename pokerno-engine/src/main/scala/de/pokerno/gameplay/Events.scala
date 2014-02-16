@@ -63,6 +63,10 @@ class Events(id: String) {
               ),
             to = Route.One(player.id) 
           ))
+        broker.publish(Notification(
+          message.DealCards(_type, cardsNum = cards.size, player = box.get._1, pos = box.get._2),
+          to = Route.Except(List(player.id))
+        ))
       } else {
         broker.publish(Notification(
             message.DealCards(_type, cards, player = box.get._1, pos = box.get._2)

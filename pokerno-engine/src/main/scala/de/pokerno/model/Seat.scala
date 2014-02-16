@@ -197,6 +197,8 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
   def canBet: Boolean = {
     inPlay || isPostedBB
   }
+  
+  import de.pokerno.util.ConsoleUtils._
 
   def postBet(bet: Bet): Decimal =
     bet.betType match {
@@ -205,6 +207,9 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
       case Bet.Call         if bet.isActive⇒ call(bet.amount.get)
       case Bet.Check        ⇒ check()
       case _: Bet.ForcedBet if bet.isActive⇒ force(bet.amount.get)
+      case x =>
+        warn("unhandled postBet: %s", x)
+        0
     }
 
   // STATE

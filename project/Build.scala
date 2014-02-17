@@ -218,7 +218,9 @@ object PokernoBuild extends Build {
         "org.slf4j" % "slf4j-simple" % "1.7.5",
         "com.github.scopt" %% "scopt" % "3.1.0"
       )
-    ) ++ assemblySettings
+    ) ++ assemblySettings ++ Seq(
+      assemblyOption in assembly ~= { _.copy(includeScala = false, includeDependency = false) }
+    )
   ) dependsOn(engine, backend)
 
   lazy val console = Project(

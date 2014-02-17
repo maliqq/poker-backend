@@ -59,7 +59,7 @@ class Room(
   log.info("starting room {}", id)
   startWith(Room.State.Waiting, NoneRunning)
   
-  val observer = system.actorOf(Props(new Actor {
+  val observer = actorOf(Props(new Actor {
             def receive = {
               case gameplay.Notification(msg, _, to) =>
                 import gameplay.Route._

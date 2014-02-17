@@ -37,7 +37,7 @@ object Room {
 
 sealed trait Data
 case object NoneRunning extends Data
-case class Running(ref: ActorRef) extends Data
+case class Running(play: gameplay.Play, ref: ActorRef) extends Data
 
 class Room(
     id: String,
@@ -56,7 +56,7 @@ class Room(
   import concurrent.duration._
   import proto.cmd.PlayerEventSchema
   
-  log.info("starting node {}", id)
+  log.info("starting room {}", id)
   startWith(Room.State.Waiting, NoneRunning)
   
   val observer = system.actorOf(Props(new Actor {
@@ -65,11 +65,25 @@ class Room(
                 import gameplay.Route._
                 val data = codec.Json.encode(msg)
                 to match {
-                  case All => watchers.map {  _.send(data) }
-                  case One(id) => watchers.find { _.player.get == id }.map {  _.send(data) }
+                  // broadcast
+                  case All =>
+                    watchers.map {  _.send(data) }
+                  // skip
+                  case Except(ids) =>
+                    watchers.map { case w =>
+                      if (w.player.isDefined && !ids.contains(w.player.get))
+                        w.send(data)
+                    }
+                  // notify one
+                  case One(id) =>
+                    watchers.find { w =>
+                      w.player.isDefined && w.player.get == id
+                    }.map {  _.send(data) }
                 }
             }
-          }), name = "room-observer")
+          }), name = f"room-$id-observer")
+          
+  events.broker.subscribe(observer, f"room-$id-observer")
   
   when(Room.State.Paused) {
     case Event(Room.Resume, _) =>
@@ -90,20 +104,20 @@ class Room(
   }
   
   when(Room.State.Active) {
-    case Event(Room.Close, Running(deal)) =>
+    case Event(Room.Close, Running(_, deal)) =>
       context.stop(deal)
       goto(Room.State.Closed)
     
-    case Event(Room.Pause, Running(deal)) =>
+    case Event(Room.Pause, Running(_, deal)) =>
       context.stop(deal)
       goto(Room.State.Paused)
     
     // first deal in active state
     case Event(gameplay.Deal.Start, NoneRunning) =>
-      stay() using Running(spawnDeal)
+      stay() using spawnDeal
     
     // previous deal stopped
-    case Event(gameplay.Deal.Done, Running(deal)) =>
+    case Event(gameplay.Deal.Done, Running(_, deal)) =>
       val after = nextDealAfter
       log.info("deal done; starting next deal in {}", after)
       self ! gameplay.Deal.Next(after)
@@ -116,70 +130,70 @@ class Room(
       stay()
 
     // add bet when deal is active
-    case Event(addBet: cmd.AddBet, Running(deal)) =>
+    case Event(addBet: cmd.AddBet, Running(_, deal)) =>
       deal ! addBet // pass to deal
       stay()
       
-    case Event(msg, _) =>
-      msg match {
-        case join: cmd.JoinPlayer =>
-          joinPlayer(join)
-        
-        case kick: cmd.KickPlayer =>
-          // TODO notify
-          table.pos(kick.player) map { pos =>
-            table.removePlayer(pos)
-          }
-        
-        case chat: cmd.Chat =>
-          // TODO broadcast
+    case Event(join: cmd.JoinPlayer, _) =>
+      joinPlayer(join)
+      stay()
+    
+    case Event(kick: cmd.KickPlayer, _) =>
+      // TODO notify
+      table.removePlayer(kick.player)
+      changeSeatState(kick.player) { _ clear }
+      stay()
+    
+    case Event(chat: cmd.Chat, _) =>
+      // TODO broadcast
+      stay()
+    
+    case Event(cmd.PlayerEvent(event, player: String), _) =>
+      // TODO notify
+      event match {
+        case PlayerEventSchema.EventType.OFFLINE =>
+          changeSeatState(player) { _ away }
           
-        case cmd.PlayerEvent(event, player: String) =>
-          // TODO notify
-          event match {
-            case PlayerEventSchema.EventType.OFFLINE =>
-              table.seat(player).map { case (seat, pos) =>
-                seat.away()
-                events.seatStateChanged(pos, seat.state)
-              }
-              
-            case PlayerEventSchema.EventType.SIT_OUT =>
-              table.seat(player).map { case (seat, pos) =>
-                seat.idle()
-                events.seatStateChanged(pos, seat.state)
-              }
-              
-            case PlayerEventSchema.EventType.COME_BACK | PlayerEventSchema.EventType.ONLINE =>
-              table.seat(player).map { case (seat, pos) =>
-                seat.ready()
-                events.seatStateChanged(pos, seat.state)
-              }
-              
-            case PlayerEventSchema.EventType.LEAVE =>
-              table.seat(player) map { case (seat, pos) =>
-                table.removePlayer(pos)
-                events.seatStateChanged(pos, seat.state)
-              }
-          }
+        case PlayerEventSchema.EventType.SIT_OUT =>
+          changeSeatState(player) { _ idle }
+          
+        case PlayerEventSchema.EventType.COME_BACK | PlayerEventSchema.EventType.ONLINE =>
+          changeSeatState(player) { _ ready }
+          
+        case PlayerEventSchema.EventType.LEAVE =>
+          table.removePlayer(player)
+          changeSeatState(player) { _ clear }
       }
       stay()
-  }
+    }
   
   whenUnhandled {
     case Event(Room.Observe(observer, name), _) =>
       events.broker.subscribe(observer, name)
       // TODO !!!!!
-      //events.start(table, variation, stake)
+      //events.start(table, variation, stake, )
       stay()
     
-    case Event(Room.Watch(conn), _) =>
+    case Event(Room.Watch(conn), running) =>
       watchers += conn
-      events.broker.subscribe(observer, conn.player.getOrElse(conn.sessionId))
+      //events.broker.subscribe(observer, conn.player.getOrElse(conn.sessionId))
+      running match {
+        case NoneRunning =>
+          events.start(table, variation, stake, null)
+        case Running(play, _) =>
+          events.start(table, variation, stake, play)
+      }
+      conn.player map { p =>
+        changeSeatState(p) { _ ready } // Reconnected
+      }
       stay()
       
     case Event(Room.Unwatch(conn), _) =>
       watchers -= conn
-      events.broker.unsubscribe(observer, conn.player.getOrElse(conn.sessionId))
+      //events.broker.unsubscribe(observer, conn.player.getOrElse(conn.sessionId))
+      conn.player map { p =>
+        changeSeatState(p) { _ away }
+      }
       stay()
       
     case Event(x: Any, _) =>
@@ -211,9 +225,17 @@ class Room(
     }
   }
   
-  private def spawnDeal(): ActorRef = {
+  private def changeSeatState(player: model.Player)(f: model.Seat => Unit) {
+    table.seat(player) map { case (seat, pos) =>
+      f(seat)
+      events.seatStateChanged(pos, seat.state)
+    }
+  }
+  
+  private def spawnDeal(): Running = {
     val ctx = new gameplay.Context(table, variation, stake, events)
-    val deal = actorOf(Props(classOf[gameplay.Deal], ctx), name = "deal-process")
-    deal
+    val play = new gameplay.Play(ctx)
+    val deal = actorOf(Props(classOf[gameplay.Deal], ctx, play))
+    Running(play, deal)
   }
 }

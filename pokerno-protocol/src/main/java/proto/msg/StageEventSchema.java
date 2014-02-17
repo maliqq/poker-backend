@@ -16,7 +16,8 @@ public class StageEventSchema
     public enum EventType implements com.dyuproject.protostuff.EnumLite<EventType>
     {
         START(1),
-        STOP(2);
+        STOP(2),
+        CANCEL(3);
         
         public final int number;
         
@@ -36,6 +37,7 @@ public class StageEventSchema
             {
                 case 1: return START;
                 case 2: return STOP;
+                case 3: return CANCEL;
                 default: return null;
             }
         }

@@ -21,6 +21,11 @@ class Events(id: String) {
     broker.publish(Notification(
       message.PlayerJoin(box._2, box._1, amount)
     ))
+    
+  def leaveTable(box: Box) =
+    broker.publish(Notification(
+      message.PlayerLeave(box._2, box._1)
+    ))
 
   def start(table: Table, variation: Variation, stake: Stake, play: Play) = {
     broker.publish(Notification(
@@ -51,20 +56,23 @@ class Events(id: String) {
 
     case _ if box.isDefined ⇒
       if (_type == DealCards.Hole) {
-        //        broker.publish(
-        //            message.DealCards(_type, cards, pos = pos),
-        //          broker.One(seat.player.get.id))
-
+        val player = box.get._1
         broker.publish(Notification(
-          message.DealCards(_type, player = box.get._1, pos = box.get._2,
-            cards = cards // FIXME hide later
-          )
+            message.DealCards(_type, player = player, pos = box.get._2,
+                cards = cards 
+              ),
+            to = Route.One(player.id) 
+          ))
+        broker.publish(Notification(
+          message.DealCards(_type, cardsNum = cards.size, player = box.get._1, pos = box.get._2),
+          to = Route.Except(List(player.id))
         ))
       } else {
         broker.publish(Notification(
             message.DealCards(_type, cards, player = box.get._1, pos = box.get._2)
           ))
       }
+    
     case _ ⇒
   }
 

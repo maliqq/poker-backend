@@ -1,13 +1,13 @@
-package de.pokerno.backend.server
+package de.pokerno
 
 import org.slf4j.LoggerFactory
 import de.pokerno.gameplay._
 import de.pokerno.backend.{ gateway ⇒ gw }
 import de.pokerno.protocol.{Codec => codec, rpc}
 import akka.actor.{ ActorSystem, Props }
-//import de.pokerno.backend.server.Config
+import de.pokerno.backend.server.Config
 
-case class Options(
+private[pokerno] case class Options(
   val configFile: Option[String] = None,
   val restoreFile: Option[String] = None,
   val config: Config = Config())
@@ -157,7 +157,7 @@ object Main {
 
       config match {
         case Some(c) ⇒
-          val node = Node.start(c)
+          val node = backend.server.Node.start(c)
           opts.restoreFile map { path =>
             try {
               val f = new java.io.FileInputStream(path)

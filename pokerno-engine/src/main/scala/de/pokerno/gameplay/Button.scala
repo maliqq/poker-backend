@@ -13,9 +13,11 @@ private[gameplay] trait Button {
   }
 
   def moveButton {
-    table.button.move
-    round.current = table.button
-    events.buttonChange(table.button)
+    round.seats.find { case (seat, pos) =>
+      seat.isActive
+    } map { case (_, pos) =>
+      setButton(pos)
+    }
   }
 
 }

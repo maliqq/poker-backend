@@ -24,8 +24,10 @@ case class Box(
 @MsgPack
 case class Bet(
     @BeanProperty var `type`: BetSchema.BetType,
-    @BeanProperty var amount: java.lang.Double = null) {
+    @BeanProperty var amount: java.lang.Double = null,
+    @BeanProperty var timeout: java.lang.Boolean = null) {
   def this() = this(null)
+  def isTimeout = timeout
 }
 
 @MsgPack

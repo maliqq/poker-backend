@@ -53,11 +53,9 @@ class Table(val size: Int) {
     amount map (seat buyIn (_))
     _seating(player) = at
   }
-
-  def removePlayer(at: Int) {
-    val seat = seatsAsList(at)
-    seat.clear()
-    seat.player.map(_seating.remove(_))
+  
+  def removePlayer(player: Player) {
+    _seating.remove(player)
   }
 
 }

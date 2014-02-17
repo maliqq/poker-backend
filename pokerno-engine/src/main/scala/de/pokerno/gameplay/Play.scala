@@ -17,8 +17,9 @@ class Play(gameplay: Context) {
 
   var getStreet: () ⇒ Street.Value = () ⇒ null
   def street: Street.Value = getStreet()
-  def acting = gameplay.round.acting
-  def pot: Pot = gameplay.round.pot
+  def require = (gameplay.round.call, gameplay.round.raise)
+  def acting = gameplay.round.box
+  def pot = gameplay.round.pot
   def rake: Option[Decimal] = None
   val winners: Map[Player, Decimal] = Map.empty
   val knownCards: Map[Player, List[Card]] = Map.empty

@@ -211,9 +211,8 @@ object PokernoBuild extends Build {
   lazy val server = Project(
     id = "pokerno-server",
     base = file("pokerno-server"),
-    settings = Project.defaultSettings ++ Seq(
+    settings = Project.defaultSettings ++ gitVersion ++ Seq(
       name := "pokerno-server",
-      version := "0.0.1",
       libraryDependencies ++= testDeps ++ Seq(
         "org.slf4j" % "slf4j-simple" % "1.7.5",
         "com.github.scopt" %% "scopt" % "3.1.0"

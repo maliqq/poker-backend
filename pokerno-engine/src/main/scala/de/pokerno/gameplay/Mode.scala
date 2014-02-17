@@ -1,9 +1,9 @@
 package de.pokerno.gameplay
 
-object Mode {
+object Mode extends Enumeration {
+  def mode(name: String) = new Val(nextId, name)
 
-  case object Cash
-  case object Random
-  case object Tournament
-
+  val Cash = mode("cash")
+  val Random = mode("random")
+  val Tournament = mode("tournament")
 }

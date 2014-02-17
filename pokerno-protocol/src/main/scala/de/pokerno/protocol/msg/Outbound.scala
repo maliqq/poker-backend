@@ -25,6 +25,7 @@ import proto.msg._
   //  new JsonSubTypes.Type(value = classOf[StageEvent], name="StageEvent"),
   //  new JsonSubTypes.Type(value = classOf[GameplayEvent], name="GameplayEvent"),
   //  new JsonSubTypes.Type(value = classOf[DealEvent], name="DealEvent"),
+  new JsonSubTypes.Type(value = classOf[SeatEvent], name="seat:"),
 
   new JsonSubTypes.Type(value = classOf[Start], name = "start:"),
   new JsonSubTypes.Type(value = classOf[ButtonChange], name = "table:"),
@@ -34,6 +35,7 @@ import proto.msg._
   new JsonSubTypes.Type(value = classOf[PlayStop], name = "stage:"),
   new JsonSubTypes.Type(value = classOf[StreetStart], name = "stage:"),
   new JsonSubTypes.Type(value = classOf[PlayerJoin], name = "player:join"),
+  new JsonSubTypes.Type(value = classOf[PlayerLeave], name = "player:leave"),
   new JsonSubTypes.Type(value = classOf[Chat], name = "msg:"),
   new JsonSubTypes.Type(value = classOf[Dealer], name = "msg:"),
   new JsonSubTypes.Type(value = classOf[Error], name = "msg:")
@@ -310,6 +312,18 @@ sealed case class PlayerJoin(
   def schema = PlayerJoinSchema.getSchema()
   def this() = this(null, null)
 
+}
+
+@MsgPack
+sealed case class PlayerLeave(
+    @BeanProperty
+    var pos: Integer,
+
+    @BeanProperty
+    var player: String) extends Outbound {
+
+  def schema = PlayerLeaveSchema.getSchema()
+  def this() = this(null, null)
 }
 
 @MsgPack

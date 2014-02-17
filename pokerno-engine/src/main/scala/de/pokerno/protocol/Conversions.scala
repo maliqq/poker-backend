@@ -19,14 +19,20 @@ object Conversions {
     new model.Player(w)
 
   implicit def bet2wire(b: model.Bet): wire.Bet = {
-    if (b != null) return wire.Bet(b.betType, b.amount.toDouble)
+    if (b != null) return wire.Bet(b.betType, b.amount match {
+      case Some(n) => n.toDouble
+      case None => null
+    }, b.timeout match {
+      case Some(flag) => flag
+      case None => null
+    })
     return null
   }
 
   implicit def wire2bet(w: wire.Bet) =
     new model.Bet(w.getType, w.getAmount match {
-      case null ⇒ .0
-      case n    ⇒ n
+      case null ⇒ None
+      case n    ⇒ Some(n)
     })
 
   implicit def decimal2wire(d: Decimal): java.lang.Double = d.toDouble

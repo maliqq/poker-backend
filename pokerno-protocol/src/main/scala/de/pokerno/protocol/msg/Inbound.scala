@@ -11,6 +11,7 @@ import proto.msg._
 
 @JsonSubTypes(Array(
   new JsonSubTypes.Type(value = classOf[JoinTable], name = "table:join"),
+  new JsonSubTypes.Type(value = classOf[LeaveTable], name = "table:leave"),
   new JsonSubTypes.Type(value = classOf[AddBet], name = "bet:add"),
   new JsonSubTypes.Type(value = classOf[DiscardCards], name = "cards:discard"),
   new JsonSubTypes.Type(value = classOf[ShowCards], name = "cards:show")
@@ -34,6 +35,16 @@ sealed case class JoinTable(
 
   def this() = this(null, null)
 }
+
+@MsgPack
+sealed case class LeaveTable(
+    @BeanProperty
+    var pos: Integer = null
+) extends Inbound {
+  def this() = this(null)
+  def schema = LeaveTableSchema.getSchema()
+}
+
 /**
  * Action event
  */

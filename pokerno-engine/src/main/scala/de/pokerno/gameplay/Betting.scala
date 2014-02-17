@@ -105,7 +105,10 @@ private[gameplay] object Betting {
         info("[betting] should done")
         return Betting.Done
       }
-      if (playing.size == 1) {
+
+      val inPlay = round.seats filter (_._1 inPlay)
+
+      if (inPlay.size == 1) {
         info("[betting] go to showdown")
         return Betting.Showdown
       }
@@ -166,6 +169,8 @@ private[gameplay] object Betting {
 
       case Betting.Showdown =>
         // TODO XXX FIXME
+        context.become(handleStreets)
+        streets(stageContext)
         
       case Betting.Done ⇒
         log.info("[betting] done")

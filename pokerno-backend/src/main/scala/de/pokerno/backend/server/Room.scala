@@ -222,6 +222,7 @@ class Room(
       events.joinTable((join.player, join.pos), join.amount)
     } catch {
       case err: model.Seat.IsTaken =>
+      case err: model.Table.AlreadyJoined =>
     }
   }
   

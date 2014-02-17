@@ -8,7 +8,13 @@ case class Player(id: String) {
   override def toString = id
 }
 
+object Table {
+  case class AlreadyJoined() extends Exception("Player already joined!")
+}
+
 class Table(val size: Int) {
+  import Table._
+  
   private val _seats = new Seats(List.fill(size) { new Seat })
   def seats = _seats
   def seatsAsList = _seats: List[Seat]
@@ -48,6 +54,7 @@ class Table(val size: Int) {
   }
 
   def addPlayer(at: Int, player: Player, amount: Option[Decimal] = None) {
+    if (_seating.contains(player)) throw AlreadyJoined()
     val seat = seatsAsList(at)
     seat.player = player
     amount map (seat buyIn (_))

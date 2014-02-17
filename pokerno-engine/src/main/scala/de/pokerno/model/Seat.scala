@@ -70,6 +70,7 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
 
   def wins(amt: Decimal) {
     net(amt)
+    _state = Seat.State.Play
   }
 
   private var _put: Decimal = .0
@@ -216,11 +217,17 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
   def isEmpty =
     state == Seat.State.Empty
 
-  def isReady =
-    state == Seat.State.Ready || state == Seat.State.Play || state == Seat.State.Fold
+  def isTaken =
+    state == Seat.State.Taken
 
-  def isActive =
-    state == Seat.State.Play || state == Seat.State.PostBB
+  def isReady =
+    state == Seat.State.Ready
+  
+  def isPlaying =
+    state == Seat.State.Play
+  
+  def isFold =
+    state == Seat.State.Fold
 
   def isAllIn =
     state == Seat.State.AllIn
@@ -230,13 +237,19 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
 
   def isPostedBB =
     state == Seat.State.PostBB
+    
+  def canPlayNextDeal =
+    isReady || isPlaying || isFold
 
-  def isPlaying =
-    state == Seat.State.Play
+  def isActive =
+    state == Seat.State.Play || state == Seat.State.PostBB
 
   def inPlay =
     state == Seat.State.Play || state == Seat.State.Bet
-
+  
+  def goesToShowdown =
+    state == Seat.State.Bet || state == Seat.State.AllIn
+    
   def inPot =
     inPlay || state == Seat.State.AllIn
 

@@ -84,8 +84,8 @@ private[gameplay] object Betting {
 
     protected def nextTurn(): Transition = {
       val round = gameplay.round
-
-      //Console printf("%s%s%s\n", Console.MAGENTA, gameplay.table, Console.RESET)
+      
+      Console printf("%s%s%s\n", Console.MAGENTA, gameplay.table, Console.RESET)
 
       round.seats filter (_._1 inPlay) foreach {
         case (seat, pos) ⇒
@@ -96,25 +96,19 @@ private[gameplay] object Betting {
       }
 
       if (round.seats.filter(_._1 inPot).size < 2) {
-        info("[betting] should stop")
         return Betting.Stop
       }
 
       val playing = round.seats filter (_._1 isPlaying)
       if (playing.size == 0) {
-        info("[betting] should done")
-        return Betting.Done
+        if (round.seats.exists(_._1.goesToShowdown)) {
+          return Betting.Showdown
+        } else {
+          return Betting.Done
+        }
       }
-
-      val inPlay = round.seats filter (_._1 inPlay)
-
-      if (inPlay.size == 1) {
-        info("[betting] go to showdown")
-        return Betting.Showdown
-      }
-
+      
       gameplay.requireBet(stageContext, playing.head)
-
       Betting.StartTimer(30 seconds)
     }
 
@@ -144,6 +138,18 @@ private[gameplay] object Betting {
         context.become(handleStreets)
         self ! Streets.Done
 
+      case Betting.Showdown ⇒
+        // TODO XXX FIXME
+        Console printf("%sgot Betting.Showdown%s\n", Console.RED, Console.RESET)
+        context.become(handleStreets)
+        self ! Streets.Next
+
+      case Betting.Done ⇒
+        log.info("[betting] done")
+        gameplay.completeBetting(stageContext)
+        context.become(handleStreets)
+        streets(stageContext)
+
       case Betting.StartTimer(duration) ⇒
         timer = system.scheduler.scheduleOnce(duration, self, Betting.Timeout)
 
@@ -166,17 +172,6 @@ private[gameplay] object Betting {
         log.info("[betting] timeout")
         gameplay.addBet(stageContext, bet)
         self ! nextTurn()
-
-      case Betting.Showdown ⇒
-        // TODO XXX FIXME
-        context.become(handleStreets)
-        streets(stageContext)
-
-      case Betting.Done ⇒
-        log.info("[betting] done")
-        gameplay.completeBetting(stageContext)
-        context.become(handleStreets)
-        streets(stageContext)
 
       case Betting.BigBets ⇒
         log.info("[betting] big bets")

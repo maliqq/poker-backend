@@ -54,8 +54,8 @@ class Deal(val gameplay: Context, val play: Play) extends Actor
       log.info("[betting] start")
       // FIXME
       //gameplay.round.reset()
-      nextTurn() //.foreach(self ! _)
       context.become(handleBetting)
+      self ! nextTurn()
 
     case Streets.Next ⇒
       log.info("streets next")

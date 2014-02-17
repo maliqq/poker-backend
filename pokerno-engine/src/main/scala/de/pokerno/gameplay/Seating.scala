@@ -8,7 +8,7 @@ private[gameplay] trait Seating {
   def prepareSeats(ctx: StageContext) {
 
     table.seatsAsList.foreach { seat ⇒
-      if (seat.isReady) seat.play()
+      if (seat.canPlayNextDeal) seat.play()
       if (seat.isAllIn) seat.idle()
     }
 

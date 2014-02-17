@@ -161,7 +161,7 @@ class Replay(
       gameplay.showdown()
       info("[showdown] stop")
 
-    case Replay.Stop =>
+    case Replay.Stop ⇒
       e.playStop()
       context.stop(self)
 

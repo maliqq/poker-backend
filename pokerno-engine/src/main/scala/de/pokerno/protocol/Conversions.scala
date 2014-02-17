@@ -20,11 +20,11 @@ object Conversions {
 
   implicit def bet2wire(b: model.Bet): wire.Bet = {
     if (b != null) return wire.Bet(b.betType, b.amount match {
-      case Some(n) => n.toDouble
-      case None => null
+      case Some(n) ⇒ n.toDouble
+      case None    ⇒ null
     }, b.timeout match {
-      case Some(flag) => flag
-      case None => null
+      case Some(flag) ⇒ flag
+      case None       ⇒ null
     })
     return null
   }

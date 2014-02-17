@@ -14,7 +14,7 @@ object Table {
 
 class Table(val size: Int) {
   import Table._
-  
+
   private val _seats = new Seats(List.fill(size) { new Seat })
   def seats = _seats
   def seatsAsList = _seats: List[Seat]
@@ -60,7 +60,7 @@ class Table(val size: Int) {
     amount map (seat buyIn (_))
     _seating(player) = at
   }
-  
+
   def removePlayer(player: Player) {
     _seating.remove(player)
   }

@@ -93,8 +93,8 @@ private[gameplay] class BettingRound(val table: Table, val game: Game, val stake
 
       case f: Bet.ForcedBet ⇒
         seat.canForce(b.amount.get, stake.amount(f))
-      
-      case _ =>
+
+      case _ ⇒
         warn("unmatched bet validation: %s", b)
         false
     }

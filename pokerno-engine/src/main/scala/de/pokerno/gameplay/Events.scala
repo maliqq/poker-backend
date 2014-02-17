@@ -21,7 +21,7 @@ class Events(id: String) {
     broker.publish(Notification(
       message.PlayerJoin(box._2, box._1, amount)
     ))
-    
+
   def leaveTable(box: Box) =
     broker.publish(Notification(
       message.PlayerLeave(box._2, box._1)
@@ -36,18 +36,18 @@ class Events(id: String) {
 
   def playStart() =
     broker.publish(Notification(
-        message.PlayStart()
-      ))
+      message.PlayStart()
+    ))
 
   def playStop() =
     broker.publish(Notification(
-        message.PlayStop()
-      ))
+      message.PlayStop()
+    ))
 
   def streetStart(name: Street.Value) =
     broker.publish(Notification(
-        message.StreetStart(name)
-      ))
+      message.StreetStart(name)
+    ))
 
   def dealCards(_type: DealCards.Value, cards: List[Card], box: Option[Box] = None) = _type match {
     case DealCards.Board ⇒
@@ -59,71 +59,71 @@ class Events(id: String) {
       if (_type == DealCards.Hole) {
         val player = box.get._1
         broker.publish(Notification(
-            message.DealCards(_type, player = player, pos = box.get._2,
-                cards = cards 
-              ),
-            to = Route.One(player.id) 
-          ))
+          message.DealCards(_type, player = player, pos = box.get._2,
+            cards = cards
+          ),
+          to = Route.One(player.id)
+        ))
         broker.publish(Notification(
           message.DealCards(_type, cardsNum = cards.size, player = box.get._1, pos = box.get._2),
           to = Route.Except(List(player.id))
         ))
       } else {
         broker.publish(Notification(
-            message.DealCards(_type, cards, player = box.get._1, pos = box.get._2)
-          ))
+          message.DealCards(_type, cards, player = box.get._1, pos = box.get._2)
+        ))
       }
-    
+
     case _ ⇒
   }
 
   def buttonChange(pos: Int) =
     broker.publish(Notification(
-        message.ButtonChange(_button = pos)
-      ))
+      message.ButtonChange(_button = pos)
+    ))
 
   def addBet(box: Box, bet: Bet) =
     broker.publish(Notification(
-        message.BetAdd(box._2, box._1, bet)
-      ))
+      message.BetAdd(box._2, box._1, bet)
+    ))
 
   def requireBet(box: Box, call: Decimal, raise: Range) =
     broker.publish(Notification(
-        message.RequireBet(pos = box._2, player = box._1, call = call, raise = raise)
-      ))
+      message.RequireBet(pos = box._2, player = box._1, call = call, raise = raise)
+    ))
 
   def declarePot(total: Decimal, side: List[Decimal] = null) = {
     val result = new java.util.ArrayList[java.lang.Double]()
     for (amt ← side) result.add(amt.toDouble)
     broker.publish(Notification(
-        message.DeclarePot(total, result)
-      ))
+      message.DeclarePot(total, result)
+    ))
   }
 
   def declareWinner(box: Box, amount: Decimal) =
     broker.publish(Notification(
-        message.DeclareWinner(pos = box._2, player = box._1, amount = amount)
-      ))
+      message.DeclareWinner(pos = box._2, player = box._1, amount = amount)
+    ))
 
   def declareHand(box: Box, cards: List[Card], hand: Hand) =
     broker.publish(Notification(
-        message.DeclareHand(pos = box._2, player = box._1, cards = cards, hand = hand)
-      ))
+      message.DeclareHand(pos = box._2, player = box._1, cards = cards, hand = hand)
+    ))
 
   def gameChange(game: Game) =
     broker.publish(Notification(
-        message.GameChange(_game = game)
-      ))
+      message.GameChange(_game = game)
+    ))
 
   def showCards(box: Box, cards: List[Card], muck: Boolean = false) =
     broker.publish(Notification(
-        message.CardsShow(pos = box._2, player = box._1, cards = cards, muck = muck)
-      ))
+      message.CardsShow(pos = box._2, player = box._1, cards = cards, muck = muck)
+    ))
 
   import proto.msg.SeatEventSchema
   def seatStateChanged(pos: Int, state: Seat.State.Value) =
     broker.publish(Notification(
-        message.SeatEvent(SeatEventSchema.EventType.STATE, pos = pos, seat = new wire.Seat(state = state))
-      ))
+      message.SeatEvent(SeatEventSchema.EventType.STATE, pos = pos, seat = new wire.Seat(state = state))
+    ))
 
 }

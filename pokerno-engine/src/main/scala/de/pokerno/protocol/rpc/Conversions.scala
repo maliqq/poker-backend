@@ -21,7 +21,7 @@ object Conversions {
     table.button.current = _table.button
     table
   }
-  
+
   import proto.wire.VariationSchema
   implicit def createVariation(_variation: wire.Variation): Variation =
     _variation.`type` match {

@@ -5,17 +5,17 @@ import io.netty.channel.Channel
 import io.netty.buffer.Unpooled
 import io.netty.util.CharsetUtil
 
-import de.pokerno.gameplay.{Notification, Route}
+import de.pokerno.gameplay.{ Notification, Route }
 import de.pokerno.backend.Gateway
 import de.pokerno.protocol.{ Message, Codec ⇒ codec }
-import de.pokerno.protocol.{msg => message}
+import de.pokerno.protocol.{ msg ⇒ message }
 
 object Http {
   class Gateway(node: Option[ActorRef])
       extends Actor with ActorLogging {
-    
+
     def this() = this(None)
-    
+
     import concurrent.duration._
     import context._
 
@@ -31,11 +31,11 @@ object Http {
         //if (!conn.room.isDefined)
         //  conn.close()
         //else
-          if (!channelConnections.contains(channel)) {
-            channelConnections.put(channel, conn)
-            log.info("{} connected", conn)
-            node.map { _ ! Gateway.Connect(conn) }
-          }
+        if (!channelConnections.contains(channel)) {
+          channelConnections.put(channel, conn)
+          log.info("{} connected", conn)
+          node.map { _ ! Gateway.Connect(conn) }
+        }
 
       case http.Event.Disconnect(channel) ⇒
         channelConnections.remove(channel).map { conn ⇒
@@ -44,14 +44,14 @@ object Http {
         }
 
       case http.Event.Message(channel, data) ⇒
-        channelConnections.get(channel) map { conn =>
+        channelConnections.get(channel) map { conn ⇒
           if (conn.player.isDefined && conn.room.isDefined) {
             try {
               val msg = codec.Json.decode[message.Inbound](data.getBytes)
               log.info("got {} from {}", msg, conn)
               node.map { _ ! Gateway.Message(conn, msg) }
             } catch {
-              case err: Throwable => // TODO
+              case err: Throwable ⇒ // TODO
                 log.error("message error: {}", err.getMessage)
             }
           } else log.warning("skip {} from {}", data, conn)
@@ -62,14 +62,14 @@ object Http {
         log.info("broadcasting {}", msg)
         // FIXME !!!
         to match {
-          case Route.All => broadcast(data)
-          case Route.One(id) =>
-            channelConnections.values.foreach { conn =>
+          case Route.All ⇒ broadcast(data)
+          case Route.One(id) ⇒
+            channelConnections.values.foreach { conn ⇒
               if (conn.player.getOrElse(conn.sessionId) == id)
                 conn.send(msg)
             }
         }
-        
+
       case x ⇒
         log.warning("unhandled: {}", x)
     }

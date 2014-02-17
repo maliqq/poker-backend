@@ -1,6 +1,6 @@
 package de.pokerno.gameplay
 
-import akka.actor.{Actor, ActorRef, Cancellable}
+import akka.actor.{ Actor, ActorRef, Cancellable }
 import math.{ BigDecimal ⇒ Decimal }
 import de.pokerno.model._
 import de.pokerno.protocol.{ msg ⇒ message }
@@ -122,9 +122,9 @@ private[gameplay] object Betting {
 
   trait DealContext extends NextTurn {
     deal: Deal ⇒
-    
+
     import context._
-    
+
     var timer: Cancellable = null
 
     def handleBetting: Receive = {
@@ -143,35 +143,35 @@ private[gameplay] object Betting {
         log.info("[betting] stop")
         context.become(handleStreets)
         self ! Streets.Done
-      
-      case Betting.StartTimer(duration) =>
+
+      case Betting.StartTimer(duration) ⇒
         timer = system.scheduler.scheduleOnce(duration, self, Betting.Timeout)
 
       case Betting.Timeout ⇒
         val round = gameplay.round
         val (seat, pos) = round.acting
-        
+
         val bet: Bet = seat.state match {
-          case Seat.State.Away =>
+          case Seat.State.Away ⇒
             // force fold
             Bet.fold(timeout = true)
-          
-          case _ =>
+
+          case _ ⇒
             // force check/fold
             if (round.call == 0 || seat.didCall(round.call))
               Bet.check(timeout = true)
             else Bet.fold(timeout = true)
         }
-        
+
         log.info("[betting] timeout")
         gameplay.addBet(stageContext, bet)
         self ! nextTurn()
 
-      case Betting.Showdown =>
+      case Betting.Showdown ⇒
         // TODO XXX FIXME
         context.become(handleStreets)
         streets(stageContext)
-        
+
       case Betting.Done ⇒
         log.info("[betting] done")
         gameplay.completeBetting(stageContext)
@@ -331,14 +331,14 @@ private[gameplay] object Betting {
 
           if (isOurTurn) {
             debug(" |-- player %s bet %s", player.get, addBet.bet)
-            
+
             gameplay.addBet(stageContext, addBet.bet)
-            
+
             sleep()
-            
+
             nextTurn() match {
-              case Betting.Done | Betting.Stop => false
-              case _ => true
+              case Betting.Done | Betting.Stop ⇒ false
+              case _                           ⇒ true
             }
           } else {
             warn("not our turn, dropping: %s %s", addBet, acting)

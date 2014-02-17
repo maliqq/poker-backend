@@ -73,14 +73,14 @@ object Bet {
 
   def check() = new Bet(Check)
   def check(timeout: Boolean) = new Bet(Check, timeout = Some(timeout))
-  
+
   def fold() = new Bet(Fold)
   def fold(timeout: Boolean) = new Bet(Fold, timeout = Some(timeout))
-  
+
   def call(amount: Decimal) = new Bet(Call, Some(amount))
   def raise(amount: Decimal) = new Bet(Raise, Some(amount))
   def allin() = new Bet(AllIn)
-  
+
   def forced(t: ForcedBet, amount: Decimal) = new Bet(t, Some(amount))
   def sb(amount: Decimal) = forced(SmallBlind, amount)
   def bb(amount: Decimal) = forced(BigBlind, amount)

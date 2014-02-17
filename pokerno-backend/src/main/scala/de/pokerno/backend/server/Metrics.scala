@@ -8,17 +8,17 @@ object Metrics {
 
 class Metrics extends Actor {
   final val metrics = new MetricRegistry
-  
+
   val deals = metrics.meter("deals")
 
   override def preStart() {
   }
 
   def receive = {
-    case _ =>
+    case _ ⇒
   }
-  
+
   override def postStop() {
-    
+
   }
 }

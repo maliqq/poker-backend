@@ -25,12 +25,12 @@ class Zeromq(config: Zeromq.Config) extends Actor with ActorLogging {
 
   final val socketType = ZMQ.PUB
   val socket = zmq.Extension(system).socket(socketType,
-      zmq.Bind(config.address))
+    zmq.Bind(config.address))
 
   def receive = {
     case msg: message.Message ⇒
       socket ! encode(msg)
-      
+
     case msg ⇒
       log info ("unhandled: %s" format (msg))
   }

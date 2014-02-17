@@ -177,11 +177,12 @@ class Room(
     case Event(Room.Watch(conn), running) =>
       watchers += conn
       //events.broker.subscribe(observer, conn.player.getOrElse(conn.sessionId))
+      val player = new model.Player(conn.player.getOrElse(conn.sessionId))
       running match {
         case NoneRunning =>
-          events.start(table, variation, stake, null)
+          events.start(player, table, variation, stake, null)
         case Running(play, _) =>
-          events.start(table, variation, stake, play)
+          events.start(player, table, variation, stake, play)
       }
       conn.player map { p =>
         changeSeatState(p) { _ ready } // Reconnected

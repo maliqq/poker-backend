@@ -60,7 +60,7 @@ class Replay(
   override def receive = {
     case Replay.Observe(out) ⇒
       e.broker.subscribe(out, "replay-out")
-      e.start(t, gameplay.variation, gameplay.stake, play)
+      e.start(id, t, gameplay.variation, gameplay.stake, play)
 
     //    case join @ rpc.JoinPlayer(pos, player, amount) ⇒
     //      debug("got: %s", join)

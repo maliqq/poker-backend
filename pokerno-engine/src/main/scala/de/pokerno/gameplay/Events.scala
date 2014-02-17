@@ -27,9 +27,10 @@ class Events(id: String) {
       message.PlayerLeave(box._2, box._1)
     ))
 
-  def start(table: Table, variation: Variation, stake: Stake, play: Play) = {
+  def start(player: Player, table: Table, variation: Variation, stake: Stake, play: Play) = {
     broker.publish(Notification(
-      message.Start(table, variation, stake, play)
+      message.Start(table, variation, stake, play),
+      to = Route.One(player)
     ))
   }
 

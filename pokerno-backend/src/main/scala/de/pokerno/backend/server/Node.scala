@@ -55,7 +55,10 @@ class Node extends Actor with ActorLogging {
           val command = msg match {
             case join: message.JoinTable ⇒
               cmd.JoinPlayer(join.pos, player, join.amount)
-
+            
+            case leave: message.LeaveTable =>
+              cmd.KickPlayer(player, "player leave")
+              
             case add: message.AddBet ⇒
               cmd.AddBet(player, add.bet)
           }

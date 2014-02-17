@@ -143,7 +143,7 @@ class Room(
     case Event(join: cmd.JoinPlayer, _) ⇒
       joinPlayer(join)
       stay()
-
+      
     case Event(kick: cmd.KickPlayer, _) ⇒
       // TODO notify
       table.removePlayer(kick.player)

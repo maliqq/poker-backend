@@ -58,7 +58,7 @@ private[gameplay] case class Street(value: Street.Value, options: StreetOptions)
       ctx.gameplay.dealCards(o.dealType, o.cardsNum)
       Stage.Next
     }
-    stages chain dealing
+    stages ~> dealing
   }
 
   if (options.bringIn) {
@@ -66,7 +66,7 @@ private[gameplay] case class Street(value: Street.Value, options: StreetOptions)
       ctx.gameplay.bringIn(ctx)
       Stage.Next
     }
-    stages chain bringIn
+    stages ~> bringIn
   }
 
   if (options.bigBets) {
@@ -74,7 +74,7 @@ private[gameplay] case class Street(value: Street.Value, options: StreetOptions)
       ctx.ref ! Betting.BigBets
       Stage.Next
     }
-    stages chain bigBets
+    stages ~> bigBets
   }
 
   if (options.betting) {
@@ -82,12 +82,12 @@ private[gameplay] case class Street(value: Street.Value, options: StreetOptions)
       ctx.ref ! Betting.Start
       Stage.Wait
     }
-    stages chain betting
+    stages ~> betting
   }
 
   if (options.discarding) {
     val discarding = stage("discarding") { ctx ⇒ Stage.Next }
-    stages chain discarding
+    stages ~> discarding
   }
 
   def apply(ctx: StageContext) = stages(ctx)

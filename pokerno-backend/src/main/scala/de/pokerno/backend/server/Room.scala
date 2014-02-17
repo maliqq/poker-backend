@@ -117,7 +117,12 @@ class Room(
     case Event(gameplay.Deal.Start, NoneRunning) ⇒
       stay() using spawnDeal
 
-    // previous deal stopped
+     // current deal cancelled
+    case Event(gameplay.Deal.Cancel, Running(_, deal)) ⇒
+      log.info("deal cancelled")
+      stay() using (NoneRunning)
+      
+    // current deal stopped
     case Event(gameplay.Deal.Done, Running(_, deal)) ⇒
       val after = nextDealAfter
       log.info("deal done; starting next deal in {}", after)

@@ -14,19 +14,27 @@ private[gameplay] object Streets {
     deal: Deal ⇒
 
     lazy val beforeStreets =
-      stage("prepare-seats") { ctx ⇒
-        ctx.gameplay.prepareSeats(ctx)
+      stage("play-start") { ctx =>
+        ctx.gameplay.events.playStart()
+        //play.started() // FIXME ugly
         Stage.Next
+      } ~> stage("prepare-seats") { ctx ⇒
+        ctx.gameplay.prepareSeats(ctx)
+        
+        if (ctx.gameplay.table.seatsAsList.count(_.canPlayNextDeal) <= 1) {
+          // cancel current deal
+          Stage.Exit
+        } else  Stage.Next
 
-      } chain stage("rotate-game") { ctx ⇒
+      } ~> stage("rotate-game") { ctx ⇒
         ctx.gameplay.rotateGame(ctx)
         Stage.Next
 
-      } chain stage("post-antes") { ctx ⇒
+      } ~> stage("post-antes") { ctx ⇒
         ctx.gameplay.postAntes(ctx)
         Stage.Next
 
-      } chain stage("post-blinds") { ctx ⇒
+      } ~> stage("post-blinds") { ctx ⇒
         ctx.gameplay.postBlinds(ctx)
         Stage.Next
       }
@@ -35,7 +43,11 @@ private[gameplay] object Streets {
       stage("showdown") { ctx ⇒
         ctx.gameplay.showdown()
         Stage.Next
-      }.chain
+      } ~> stage("play-stop") { ctx =>
+        gameplay.events.playStop()
+        play.finished()
+        Stage.Next
+      }
 
   }
 

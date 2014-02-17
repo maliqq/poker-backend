@@ -30,21 +30,16 @@ class Deal(val gameplay: Context, val play: Play) extends Actor
   play.getStreet = () ⇒ streets.current.value
 
   override def preStart() {
-    log.info("start deal")
-    gameplay.events.playStart
-    //play.started() // FIXME ugly
+    log.info("[deal] start")
     beforeStreets(stageContext) match {
-      case Stage.Next ⇒ self ! Streets.Next
-      case Stage.Exit ⇒ context stop self
+      case Stage.Next ⇒
+        self ! Streets.Next
+      case Stage.Exit ⇒
+        cancel()
     }
   }
 
   override def postStop() {
-    log.info("stop deal")
-    //afterStreets(stageContext)
-    gameplay.events.playStop()
-    play.finished() // FIXME ugly
-    parent ! Deal.Done
   }
 
   def receive = handleStreets
@@ -64,8 +59,20 @@ class Deal(val gameplay: Context, val play: Play) extends Actor
     case Streets.Done ⇒
       log.info("streets done")
       afterStreets(stageContext)
-      context.stop(self)
+      done()
 
+  }
+  
+  private def cancel() {
+    log.info("[deal] cancel")
+    parent ! Deal.Cancel
+    context stop self
+  }
+  
+  private def done() {
+    log.info("[deal] done")
+    parent ! Deal.Done
+    context.stop(self)
   }
 
 }

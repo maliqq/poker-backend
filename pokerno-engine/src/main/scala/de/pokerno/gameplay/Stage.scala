@@ -22,10 +22,10 @@ private[gameplay] object Stage {
 }
 
 private[gameplay] class Stage(val name: String, f: StageContext ⇒ Stage.Control) {
-  def chain(f: Stage): StageChain =
-    new StageChain(this) chain f
+  def ~>(f: Stage): StageChain =
+    new StageChain(this) ~> f
 
-  def chain =
+  def ~> =
     new StageChain(this)
 
   def apply(ctx: StageContext) =
@@ -39,10 +39,10 @@ private[gameplay] class StageChain() {
 
   def this(stage: Stage) = {
     this()
-    this.chain(stage)
+    this ~> stage
   }
 
-  def chain(stage: Stage): StageChain = {
+  def ~>(stage: Stage): StageChain = {
     stages :+= stage
     this
   }

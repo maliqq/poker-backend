@@ -117,7 +117,7 @@ class Room(
      // current deal cancelled
     case Event(gameplay.Deal.Cancel, Running(_, deal)) ⇒
       log.info("deal cancelled")
-      stay() using (NoneRunning)
+      goto(Room.State.Waiting) using (NoneRunning)
       
     // current deal stopped
     case Event(gameplay.Deal.Done, Running(_, deal)) ⇒
@@ -217,7 +217,7 @@ class Room(
   initialize()
 
   final val minimumReadyPlayersToStart = 2
-  final val firstDealAfter = (15 seconds)
+  final val firstDealAfter = (10 seconds)
   final val nextDealAfter = (5 seconds)
 
   private def canStart: Boolean = {

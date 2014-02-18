@@ -80,7 +80,7 @@ private[gameplay] class BettingRound(val table: Table, val game: Game, val stake
 
     val valid = b.betType match {
       case Bet.Fold ⇒
-        seat.canFold
+        seat.canFold || seat.notActive
 
       case Bet.Check ⇒
         seat.canCheck(_call)

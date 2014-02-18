@@ -244,6 +244,9 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
   def isActive =
     state == Seat.State.Play || state == Seat.State.PostBB
 
+  def notActive =
+    state == Seat.State.Away || state == Seat.State.Idle || state == Seat.State.Auto
+    
   def inPlay =
     state == Seat.State.Play || state == Seat.State.Bet
   

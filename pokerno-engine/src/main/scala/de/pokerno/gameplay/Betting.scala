@@ -101,11 +101,8 @@ private[gameplay] object Betting {
 
       val playing = round.seats filter (_._1 isPlaying)
       if (playing.size == 0) {
-        if (round.seats.exists(_._1.goesToShowdown)) {
-          return Betting.Showdown
-        } else {
-          return Betting.Done
-        }
+        return if (round.seats.exists(_._1.isAllIn)) Betting.Showdown
+               else Betting.Done
       }
       
       gameplay.requireBet(stageContext, playing.head)

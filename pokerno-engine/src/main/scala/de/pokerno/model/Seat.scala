@@ -247,8 +247,8 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
   def inPlay =
     state == Seat.State.Play || state == Seat.State.Bet
   
-  def goesToShowdown =
-    state == Seat.State.Bet || state == Seat.State.AllIn
+//  def goesToShowdown =
+//    state == Seat.State.Bet || state == Seat.State.AllIn
     
   def inPot =
     inPlay || state == Seat.State.AllIn

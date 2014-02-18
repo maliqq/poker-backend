@@ -22,9 +22,6 @@ object Room {
     val Closed = state("closed")
   }
 
-  import State._
-  type State = Value
-
   case object Close
   case object Pause
   case object Resume
@@ -144,12 +141,6 @@ class Room(
       joinPlayer(join)
       stay()
       
-    case Event(kick: cmd.KickPlayer, _) ⇒
-      // TODO notify
-      table.removePlayer(kick.player)
-      changeSeatState(kick.player) { _ clear }
-      stay()
-
     case Event(chat: cmd.Chat, _) ⇒
       // TODO broadcast
       stay()
@@ -183,17 +174,21 @@ class Room(
     case Event(Room.Watch(conn), running) ⇒
       watchers += conn
       //events.broker.subscribe(observer, conn.player.getOrElse(conn.sessionId))
+      conn.player map { p ⇒
+        changeSeatState(p) { _ ready } // Reconnected
+      }
+    
       val player = new model.Player(conn.player.getOrElse(conn.sessionId))
       running match {
         case NoneRunning ⇒
           events.start(player, table, variation, stake, null)
+          if (canStart) goto(Room.State.Active)
+          else stay() 
+          
         case Running(play, _) ⇒
           events.start(player, table, variation, stake, play)
+          stay()
       }
-      conn.player map { p ⇒
-        changeSeatState(p) { _ ready } // Reconnected
-      }
-      stay()
 
     case Event(Room.Unwatch(conn), _) ⇒
       watchers -= conn
@@ -203,6 +198,12 @@ class Room(
       }
       stay()
 
+    case Event(kick: cmd.KickPlayer, _) ⇒
+      log.info("got kick: {}", kick)
+      changeSeatState(kick.player) { _ clear }
+      table.removePlayer(kick.player)
+      stay()
+      
     case Event(x: Any, _) ⇒
       log.warning("unhandled: {}", x)
       stay()

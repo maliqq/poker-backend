@@ -43,8 +43,7 @@ class Room(
     extends Actor
     with ActorLogging
     with FSM[Room.State.Value, Data] {
-
-  val watchers = collection.mutable.ListBuffer[http.Connection]()
+  
   val table = new model.Table(variation.tableSize)
   val events = new gameplay.Events(id)
 
@@ -56,32 +55,15 @@ class Room(
   log.info("starting room {}", id)
   startWith(Room.State.Waiting, NoneRunning)
 
-  val observer = actorOf(Props(new Actor {
-    def receive = {
-      case gameplay.Notification(msg, _, to) ⇒
-        import gameplay.Route._
-        val data = codec.Json.encode(msg)
-        to match {
-          // broadcast
-          case All ⇒
-            watchers.map { _.send(data) }
-          // skip
-          case Except(ids) ⇒
-            watchers.map {
-              case w ⇒
-                if (w.player.isDefined && !ids.contains(w.player.get))
-                  w.send(data)
-            }
-          // notify one
-          case One(id) ⇒
-            watchers.find { w ⇒
-              w.player.isDefined && w.player.get == id
-            }.map { _.send(data) }
-        }
-    }
-  }), name = f"room-$id-observer")
+  def observe[T <: Actor](actorClass: Class[T], name: String, args: Any*) = {
+    val actor = actorOf(Props(actorClass, args:_*), name = name)
+    events.broker.subscribe(actor, name)
+    actor
+  }
 
-  events.broker.subscribe(observer, f"room-$id-observer")
+  val watchers = observe(classOf[Watchers], f"room-$id-watchers")
+  val logger = observe(classOf[Logger], f"room-$id-logger")
+  val metrics = observe(classOf[Metrics], f"room-$id-metrics")
 
   when(Room.State.Paused) {
     case Event(Room.Resume, _) ⇒
@@ -149,17 +131,17 @@ class Room(
       // TODO notify
       event match {
         case PlayerEventSchema.EventType.OFFLINE ⇒
-          changeSeatState(player) { _ away }
+          changeSeatState(player) { _._1 away }
 
         case PlayerEventSchema.EventType.SIT_OUT ⇒
-          changeSeatState(player) { _ idle }
+          changeSeatState(player) { _._1 idle }
 
         case PlayerEventSchema.EventType.COME_BACK | PlayerEventSchema.EventType.ONLINE ⇒
-          changeSeatState(player) { _ ready }
+          changeSeatState(player) { _._1 ready }
 
         case PlayerEventSchema.EventType.LEAVE ⇒
           table.removePlayer(player)
-          changeSeatState(player) { _ clear }
+          changeSeatState(player) { _._1 clear }
       }
       stay()
   }
@@ -171,11 +153,11 @@ class Room(
       //events.start(table, variation, stake, )
       stay()
 
-    case Event(Room.Watch(conn), running) ⇒
-      watchers += conn
+    case Event(w @ Room.Watch(conn), running) ⇒
+      watchers ! w
       //events.broker.subscribe(observer, conn.player.getOrElse(conn.sessionId))
       conn.player map { p ⇒
-        changeSeatState(p) { _ ready } // Reconnected
+        changeSeatState(p) { _._1 ready } // Reconnected
       }
     
       val player = new model.Player(conn.player.getOrElse(conn.sessionId))
@@ -190,18 +172,22 @@ class Room(
           stay()
       }
 
-    case Event(Room.Unwatch(conn), _) ⇒
-      watchers -= conn
+    case Event(uw @ Room.Unwatch(conn), _) ⇒
+      watchers ! uw
       //events.broker.unsubscribe(observer, conn.player.getOrElse(conn.sessionId))
       conn.player map { p ⇒
-        changeSeatState(p) { _ away }
+        changeSeatState(p) { _._1 away }
       }
       stay()
 
     case Event(kick: cmd.KickPlayer, _) ⇒
       log.info("got kick: {}", kick)
-      changeSeatState(kick.player) { _ clear }
+      changeSeatState(kick.player, notify = false) { case box @ (seat, pos) =>
+        seat.clear()
+        events.leaveTable((seat.player.get, pos)) // FIXME unify
+      }
       table.removePlayer(kick.player)
+      //events.leaveTable(box)
       stay()
       
     case Event(x: Any, _) ⇒
@@ -234,11 +220,11 @@ class Room(
     }
   }
 
-  private def changeSeatState(player: model.Player)(f: model.Seat ⇒ Unit) {
+  private def changeSeatState(player: model.Player, notify: Boolean = true)(f: ((model.Seat, Int)) ⇒ Unit) {
     table.seat(player) map {
-      case (seat, pos) ⇒
-        f(seat)
-        events.seatStateChanged(pos, seat.state)
+      case box @ (seat, pos) ⇒
+        f(box)
+        if (notify) events.seatStateChanged(pos, seat.state)
     }
   }
 

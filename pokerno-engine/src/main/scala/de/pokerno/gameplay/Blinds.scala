@@ -18,12 +18,14 @@ private[gameplay] trait Blinds {
 
     val seats = round.seats
     val active = seats filter (_._1 isActive)
-    val waiting = seats filter (_._1 isWaitingBB)
+    val waitingBB = seats filter (_._1 isWaitingBB)
 
-    if (active.size + waiting.size < 2) {
+    if (active.size + waitingBB.size < 2) {
       // TODO
     } else {
-      val List(sb, bb, _*) = active
+      val List(sb, bb, _*) = if (active.size == 2){
+        active.reverse
+      } else active
 
       forceBet(ctx, sb, Bet.SmallBlind)
 

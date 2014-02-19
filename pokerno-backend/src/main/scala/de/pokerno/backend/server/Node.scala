@@ -1,6 +1,6 @@
 package de.pokerno.backend.server
 
-import org.slf4j.{ Logger, LoggerFactory }
+import org.slf4j.{Logger, LoggerFactory}
 
 import de.pokerno.model
 import de.pokerno.backend.{ gateway ⇒ gw }

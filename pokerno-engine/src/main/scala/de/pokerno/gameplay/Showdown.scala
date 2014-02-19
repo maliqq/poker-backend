@@ -37,7 +37,8 @@ private[gameplay] trait Showdown {
       val amount = side.total
       val winner = seat.player.get
       seat wins amount
-      events.declareWinner((winner, pos), amount)
+      events.publish(
+          Events.declareWinner((winner, pos), amount))
     }
   }
 
@@ -89,7 +90,9 @@ private[gameplay] trait Showdown {
           table.seat(winner) map {
             case (seat, pos) ⇒
               seat wins amount
-              events.declareWinner((winner, pos), amount)
+              events.publish(
+                  Events.declareWinner((winner, pos), amount)
+                  )
           }
       }
     }
@@ -119,7 +122,9 @@ private[gameplay] trait Showdown {
         val player = seat.player.get
         hands += (player -> hand)
         //events.publish(message.ShowCards(pos = pos, player = player, cards = pocket))
-        events.declareHand((player, pos), pocket, hand)
+        events.publish(
+            Events.declareHand((player, pos), pocket, hand)
+          )
     }
     hands
   }

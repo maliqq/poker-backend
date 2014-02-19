@@ -1,9 +1,14 @@
 package de.pokerno.backend.server
 
-import de.pokerno.protocol.{Codec => codec}
+import de.pokerno.protocol.{Codec => codec, msg => message}
 import de.pokerno.gameplay.{Notification, Route}
 import de.pokerno.backend.gateway.http
 import akka.actor.{Actor, ActorLogging}
+
+object Watchers {
+  case class Broadcast(msg: message.Message)
+  case class Send(to: String, msg: message.Message)
+}
 
 class Watchers extends Actor with ActorLogging {
   val watchers = collection.mutable.ListBuffer[http.Connection]()
@@ -14,6 +19,14 @@ class Watchers extends Actor with ActorLogging {
     
     case Room.Unwatch(conn) =>
       watchers -= conn
+    
+    case Watchers.Broadcast(msg) =>
+      val data = codec.Json.encode(msg)
+      watchers.map { _.send(data) }
+    
+    case Watchers.Send(to, msg) =>
+      val data = codec.Json.encode(msg)
+      watchers.find { _.sessionId == to } map { _.send(data) }
       
     case Notification(msg, _, to) ⇒
       import Route._

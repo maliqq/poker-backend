@@ -60,7 +60,9 @@ class Replay(
   override def receive = {
     case Replay.Observe(out) ⇒
       e.broker.subscribe(out, "replay-out")
-      e.start(id, t, gameplay.variation, gameplay.stake, play)
+      e.publish(
+          Events.start(t, gameplay.variation, gameplay.stake, play).only(id)
+          )
 
     //    case join @ rpc.JoinPlayer(pos, player, amount) ⇒
     //      debug("got: %s", join)
@@ -91,7 +93,7 @@ class Replay(
         // нужный стрит
         streets = streets.drop(1)
         // notify street started
-        e.streetStart(street)
+        e.publish(Events.streetStart(street))
 
         val options = streetOptions(street)
 
@@ -162,7 +164,7 @@ class Replay(
       info("[showdown] stop")
 
     case Replay.Stop ⇒
-      e.playStop()
+      e.publish(Events.playStop())
       context.stop(self)
 
     case x ⇒

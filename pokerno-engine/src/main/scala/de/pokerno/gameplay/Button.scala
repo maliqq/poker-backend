@@ -9,7 +9,9 @@ private[gameplay] trait Button {
   def setButton(pos: Int) {
     table.button.current = pos
     round.current = pos
-    events.buttonChange(table.button)
+    events.publish(
+        Events.buttonChange(table.button)
+      )
   }
 
   def moveButton {

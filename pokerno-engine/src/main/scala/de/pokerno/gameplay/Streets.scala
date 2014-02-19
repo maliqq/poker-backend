@@ -15,7 +15,7 @@ private[gameplay] object Streets {
 
     lazy val beforeStreets =
       stage("play-start") { ctx =>
-        ctx.gameplay.events.playStart()
+        ctx.publish(Events.playStart())
         //play.started() // FIXME ugly
         Stage.Next
       } ~> stage("prepare-seats") { ctx ⇒
@@ -44,7 +44,7 @@ private[gameplay] object Streets {
         ctx.gameplay.showdown()
         Stage.Next
       } ~> stage("play-stop") { ctx =>
-        gameplay.events.playStop()
+        ctx.publish(Events.playStop())
         play.finished()
         Stage.Next
       }

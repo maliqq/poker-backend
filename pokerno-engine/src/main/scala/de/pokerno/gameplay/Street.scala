@@ -125,7 +125,7 @@ private[gameplay] class StreetChain(
     val _street = iterator.next()
     _current = new Street(_street, streetOptions(_street))
 
-    ctx.gameplay.events.streetStart(_current.value)
+    ctx.publish(Events.streetStart(_current.value))
 
     _current(ctx) match {
       case Stage.Next | Stage.Skip ⇒

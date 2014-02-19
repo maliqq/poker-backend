@@ -26,8 +26,15 @@ private[gameplay] object Dealing {
 
           (table.seats: List[Seat]).zipWithIndex filter (_._1 isActive) foreach {
             case (seat, pos) ⇒
-              val cards = dealer dealPocket (n, seat.player.get)
-              events.dealCards(_type, cards, Some((seat.player.get, pos)))
+              val player = seat.player.get
+              val cards = dealer dealPocket (n, player)
+              val box = Some((player, pos))
+              
+              if (_type == DealCards.Door) {
+                events.publish(Events.dealCards(_type, cards, box).only(player))
+                events.publish(Events.dealCardsNum(_type, cards, box).except(player))
+              } else
+                events.publish(Events.dealCards(_type, cards, box))
           }
 
         case DealCards.Board if cardsNum.isDefined ⇒
@@ -35,7 +42,7 @@ private[gameplay] object Dealing {
           info("dealing board %d cards\n", cardsNum.get)
 
           val cards = dealer dealBoard (cardsNum.get)
-          events.dealCards(_type, cards)
+          events.publish(Events.dealCards(_type, cards))
 
         case _ ⇒
         // TODO
@@ -146,7 +153,7 @@ private[gameplay] object Dealing {
             dealPocket(Left(cardsNum.getOrElse(pocketSize)), _player)
 
           debug(" | deal %s -> %s", cardsDealt, _player)
-          e.dealCards(_type, cardsDealt, Some(_player, pos))
+          e.publish(Events.dealCards(_type, cardsDealt, Some(_player, pos)))
 
         case DealCards.Board if gameOptions.hasBoard ⇒
 
@@ -170,7 +177,7 @@ private[gameplay] object Dealing {
             dealBoard(Left(cardsNum.getOrElse(0)))
 
           debug(" | deal board %s", cardsDealt)
-          e.dealCards(_type, cardsDealt)
+          e.publish(Events.dealCards(_type, cardsDealt))
 
       }
     }

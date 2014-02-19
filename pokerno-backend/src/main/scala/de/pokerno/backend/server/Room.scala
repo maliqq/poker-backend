@@ -62,7 +62,7 @@ class Room(
   }
 
   val watchers = observe(classOf[Watchers], f"room-$id-watchers")
-  val logger = observe(classOf[Logger], f"room-$id-logger")
+  val logger = observe(classOf[Log], f"room-$id-log")
   val metrics = observe(classOf[Metrics], f"room-$id-metrics")
 
   when(Room.State.Paused) {
@@ -160,15 +160,16 @@ class Room(
         changeSeatState(p) { _._1 ready } // Reconnected
       }
     
-      val player = new model.Player(conn.player.getOrElse(conn.sessionId))
       running match {
         case NoneRunning ⇒
-          events.start(player, table, variation, stake, null)
+          val m = gameplay.Events.start(table, variation, stake, null).msg
+          watchers ! Watchers.Send(conn.sessionId, m)
           if (canStart) goto(Room.State.Active)
-          else stay() 
+          else stay()
           
         case Running(play, _) ⇒
-          events.start(player, table, variation, stake, play)
+          val m = gameplay.Events.start(table, variation, stake, play).msg
+          watchers ! Watchers.Send(conn.sessionId, m)
           stay()
       }
 
@@ -183,8 +184,8 @@ class Room(
     case Event(kick: cmd.KickPlayer, _) ⇒
       log.info("got kick: {}", kick)
       changeSeatState(kick.player, notify = false) { case box @ (seat, pos) =>
+        events.publish(gameplay.Events.leaveTable((seat.player.get, pos))) // FIXME unify
         seat.clear()
-        events.leaveTable((seat.player.get, pos)) // FIXME unify
       }
       table.removePlayer(kick.player)
       //events.leaveTable(box)
@@ -213,7 +214,7 @@ class Room(
   private def joinPlayer(join: cmd.JoinPlayer) {
     try {
       table.addPlayer(join.pos, join.player, Some(join.amount))
-      events.joinTable((join.player, join.pos), join.amount)
+      events.publish(gameplay.Events.joinTable((join.player, join.pos), join.amount))
     } catch {
       case err: model.Seat.IsTaken        ⇒
       case err: model.Table.AlreadyJoined ⇒
@@ -224,7 +225,7 @@ class Room(
     table.seat(player) map {
       case box @ (seat, pos) ⇒
         f(box)
-        if (notify) events.seatStateChanged(pos, seat.state)
+        if (notify) events.publish(gameplay.Events.seatStateChanged(pos, seat.state))
     }
   }
 

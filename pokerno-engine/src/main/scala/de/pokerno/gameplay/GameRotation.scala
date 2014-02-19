@@ -10,7 +10,9 @@ private[gameplay] trait GameRotation {
   def rotateGame(ctx: StageContext) = if (variation isMixed)
     rotateNext { g ⇒
       game = g
-      events.gameChange(game)
+      events.publish(
+          Events.gameChange(game)
+        )
     }
 
   final val rotateEvery = 8

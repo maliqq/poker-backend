@@ -20,21 +20,24 @@ private[gameplay] trait Betting
     val round = ctx.gameplay.round
     round requireBet acting
     info("[betting] require %s to call %s and raise %s", acting, round.call, round.raise)
-    ctx.gameplay.events.requireBet(round.box, round.call, round.raise)
+    ctx.publish(
+        Events.requireBet(round.box, round.call, round.raise))
   }
 
   // add bet
   def addBet(ctx: StageContext, bet: Bet) {
     val round = ctx.gameplay.round
     val posted = round.addBet(bet)
-    ctx.gameplay.events.addBet(round.box, posted)
+    ctx.publish(
+        Events.addBet(round.box, posted))
   }
 
   // force bet
   def forceBet(ctx: StageContext, acting: Tuple2[Seat, Int], _type: Bet.ForcedBet) {
     val round = ctx.gameplay.round
     val posted = round.forceBet(acting, _type)
-    ctx.gameplay.events.addBet(round.box, posted)
+    ctx.publish(
+        Events.addBet(round.box, posted))
   }
 
   // current betting round finished
@@ -45,9 +48,10 @@ private[gameplay] trait Betting
     val round = ctx.gameplay.round
     round.clear()
 
-    ctx.gameplay.events.declarePot(
-      round.pot.total,
-      round.pot.sidePots.map(_.total))
+    ctx.publish(
+        Events.declarePot(
+          round.pot.total,
+          round.pot.sidePots.map(_.total)))
   }
 
 }

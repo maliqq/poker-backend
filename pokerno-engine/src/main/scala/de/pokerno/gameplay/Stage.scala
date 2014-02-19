@@ -8,7 +8,9 @@ private[gameplay] object Stages {
   }
 }
 
-private[gameplay] case class StageContext(gameplay: Context, ref: ActorRef)
+private[gameplay] case class StageContext(gameplay: Context, ref: ActorRef) {
+  def publish(e: Events.EventWrap): Unit = gameplay.events.publish(e)
+}
 
 private[gameplay] object Stage {
 

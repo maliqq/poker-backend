@@ -106,6 +106,6 @@ class Events(id: String) {
   lazy val broker = new Broker(id)
   
   def publish(e: Events.EventWrap) {
-    broker.publish(Notification(e.msg, e.route))
+    broker.publish(Notification(e.msg, from = Route.One(id), to = e.route))
   }
 }

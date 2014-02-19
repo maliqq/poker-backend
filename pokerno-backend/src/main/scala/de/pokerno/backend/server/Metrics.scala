@@ -1,6 +1,6 @@
 package de.pokerno.backend.server
 
-import akka.actor.{ Actor }
+import akka.actor.{ Actor, ActorLogging }
 import com.codahale.metrics._
 import de.pokerno.protocol.{msg => message}
 import de.pokerno.gameplay.Notification
@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit
 object Metrics {
 }
 
-class Metrics extends Actor {
+class Metrics extends Actor with ActorLogging {
   final val metrics = new MetricRegistry
 
   val players = metrics.counter("players")
@@ -23,7 +23,6 @@ class Metrics extends Actor {
   val playersPerFlop = metrics.meter("players-per-flop")
   
   override def preStart() {
-    Console printf("metrics started!\n")
   }
 
   def receive = {

@@ -39,7 +39,7 @@ class HttpConnection(
   }
   
   private val _sessionId = java.util.UUID.randomUUID()
-  def sessionId = _sessionId.toString()
+  def sessionId: String = _sessionId.toString()
   
   final val authKey = "auth"
   def auth = param(authKey)

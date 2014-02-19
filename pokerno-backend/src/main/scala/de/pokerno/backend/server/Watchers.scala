@@ -18,22 +18,18 @@ class Watchers extends Actor with ActorLogging {
     case Notification(msg, _, to) ⇒
       import Route._
       val data = codec.Json.encode(msg)
-      to match {
-        // broadcast
-        case All ⇒
-          watchers.map { _.send(data) }
-        // skip
-        case Except(ids) ⇒
-          watchers.map {
-            case w ⇒
-              if (w.player.isDefined && !ids.contains(w.player.get))
-                w.send(data)
-          }
-        // notify one
-        case One(id) ⇒
-          watchers.find { w ⇒
+      watchers.map { w =>
+        if (to match {
+          case All ⇒ true // broadcast
+          
+          case Except(ids) ⇒ // skip
+            w.player.isDefined && !ids.contains(w.player.get)
+          
+          case One(id) ⇒ // notify one
             w.player.isDefined && w.player.get == id
-          }.map { _.send(data) }
+          
+          case _ => false
+        }) w.send(data)
       }
   }
 }

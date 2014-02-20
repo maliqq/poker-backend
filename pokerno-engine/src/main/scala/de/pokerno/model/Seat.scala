@@ -52,42 +52,52 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
     _player = Some(p)
   }
 
-  private var _amount: Decimal = .0
-  def amount = _amount
+  // current stack
+  private var _stack: Decimal = .0
+  def stack = _stack
+  def stackAmount = stack
 
-  private def net(amt: Decimal) {
-    // TODO: check < 0
-    _amount += amt
-    // FIXME
-    if (_amount.toDouble == 0)
-      _state = Seat.State.AllIn
-  }
-
-  def buyIn(amt: Decimal) {
-    net(amt)
-    _state = Seat.State.Ready
-  }
-
-  def wins(amt: Decimal) {
-    net(amt)
-    _state = Seat.State.Play
-  }
-
+  // current bet
   private var _put: Decimal = .0
   def put = _put
-
-  def put_=(amount: Decimal) {
-    net(-amount)
-    _put += amount
-  }
+  def putAmount = put
 
   // total stack
-  def stack = _put + _amount
+  def total = _stack + _put
+  def totalAmoutn = total
+
+  def net(amt: Decimal)(f: => Seat.State.Value) {
+    if (isEmpty)
+      throw new IllegalStateException("can't change amount, seat is empty; %s" format(this)) 
+    // TODO: check < 0
+    _stack += amt
+    // FIXME
+    _state = if (_stack == 0)
+      Seat.State.AllIn
+    else f
+  }
+
+  def buyIn(amt: Decimal): Unit =
+    net(amt) {
+      Seat.State.Ready
+    }
+
+  def award(amt: Decimal): Unit =
+    net(amt) {
+      Seat.State.Play
+    }
+  def wins(amt: Decimal) = award(amt)
+
+  def put(amount: Decimal)(f: => Seat.State.Value) {
+    net(-amount)(f)
+    _put += amount
+  }
+  def clearPut() = _put = 0
 
   def clear() {
     _state = Seat.State.Empty
     _player = None
-    _amount = .0
+    _stack = .0
     _put = .0
   }
 
@@ -95,23 +105,26 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
    * State transitions
    */
   def play() {
-    _state = Seat.State.Play
-    _put = .0
-  }
-
-  def playing() {
+    if (isEmpty)
+      throw new IllegalStateException("can't play, seat is empty: %s" format(this))
     _state = Seat.State.Play
   }
 
   def idle() {
+    if (isEmpty)
+      throw new IllegalStateException("can't change seat state to idle: %s" format(this))
     _state = Seat.State.Idle
   }
 
   def ready() {
-    _state = Seat.State.Ready
+    if (isEmpty)
+      throw new IllegalStateException("can't change seat state to ready: %s" format(this))
+    _state = if (total == 0) Seat.State.Idle else Seat.State.Ready
   }
 
   def away() {
+    if (isEmpty)
+      throw new IllegalStateException("can't change seat state to away: %s" format(this))
     _state = Seat.State.Away
   }
 
@@ -146,8 +159,9 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
   }
 
   def force(amt: Decimal): Decimal = {
-    put = amt
-    if (!isAllIn) _state = Seat.State.Play
+    put(amt) {
+      Seat.State.Play
+    }
     amt
   }
 
@@ -158,13 +172,14 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
 
   private def _canRaise(amt: Decimal, toRaise: Tuple2[Decimal, Decimal]): Boolean = {
     val (min, max) = toRaise
-    amt <= stack && amt >= min && amt <= max
+    amt <= total && amt >= min && amt <= max
   }
 
   def raise(amt: Decimal): Decimal = {
     val diff = amt - _put
-    put = diff
-    if (!isAllIn) _state = Seat.State.Bet
+    put(diff) {
+      Seat.State.Bet
+    }
     diff
   }
 
@@ -175,14 +190,15 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
 
   private def _canCall(amt: Decimal, toCall: Decimal): Boolean = {
     // call all-in
-    (amt + _put < toCall && amt == amount ||
+    (amt + _put < toCall && amt == _stack ||
       // call exact amount
-      amt + _put == toCall && amt <= amount)
+      amt + _put == toCall && amt <= _stack)
   }
 
   def call(amt: Decimal): Decimal = {
-    put = amt
-    if (!isAllIn) _state = Seat.State.Bet
+    put(amt) {
+      Seat.State.Bet
+    }
     amt
   }
 
@@ -258,7 +274,7 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
 
   override def toString =
     if (_player.isDefined)
-      "%s - %s (%.2f - %.2f)".format(_player get, _state, _amount, _put)
+      "%s - %s (%.2f - %.2f)".format(_player get, _state, _stack, _put)
     else "(empty)"
 
 }

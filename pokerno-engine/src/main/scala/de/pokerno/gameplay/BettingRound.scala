@@ -45,7 +45,7 @@ private[gameplay] class BettingRound(val table: Table, val game: Game, val stake
 
     _call = stake amount betType
 
-    val stack = seat.amount
+    val stack = seat.stack
     val bet = Bet.forced(betType, List(stack, _call) min)
 
     addBet(bet)
@@ -56,13 +56,13 @@ private[gameplay] class BettingRound(val table: Table, val game: Game, val stake
     val limit = game.limit
 
     val blind = if (bigBets) stake.bigBlind * 2 else stake.bigBlind
-    val stack = seat.stack
+    val total = seat.total
 
-    if (stack <= _call || raiseCount >= MaxRaiseCount)
+    if (total <= _call || raiseCount >= MaxRaiseCount)
       _raise = (.0, .0)
     else {
-      val (min, max) = limit raise (stack, blind + _call, pot.total)
-      _raise = Range(List(stack, min) min, List(stack, max) min)
+      val (min, max) = limit raise (total, blind + _call, pot.total)
+      _raise = Range(List(total, min) min, List(total, max) min)
     }
   }
 
@@ -73,9 +73,9 @@ private[gameplay] class BettingRound(val table: Table, val game: Game, val stake
     val player = seat.player.get
 
     var b = if (_bet.betType == Bet.AllIn)
-      Bet.raise(seat.stack)
+      Bet.raise(seat.total)
     else if (_bet.betType == Bet.Call && _bet.amount.isEmpty)
-      _bet.copy(amount = Some(List(_call, seat.stack).min - seat.put))
+      _bet.copy(amount = Some(List(_call, seat.total).min - seat.put))
     else _bet
 
     val valid = b.betType match {

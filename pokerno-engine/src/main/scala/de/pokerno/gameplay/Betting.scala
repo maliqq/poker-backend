@@ -95,7 +95,7 @@ private[gameplay] object Betting {
         case (seat, pos) ⇒
           if (!seat.didCall(round.call)) {
             //warn("not called, still playing: %s", seat)
-            seat.playing()
+            seat.play()
           }
       }
 

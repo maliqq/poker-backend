@@ -21,21 +21,21 @@ object Game {
   }
 
   trait Limit {
-    def raise(stack: Decimal, bb: Decimal, potSize: Decimal): Tuple2[Decimal, Decimal]
+    def raise(total: Decimal, bb: Decimal, potSize: Decimal): Tuple2[Decimal, Decimal]
   }
 
   case object NoLimit extends Limit {
-    def raise(stack: Decimal, bb: Decimal, potSize: Decimal) = (bb, stack)
+    def raise(total: Decimal, bb: Decimal, potSize: Decimal) = (bb, total)
     override def toString = "no-limit"
   }
 
   case object FixedLimit extends Limit {
-    def raise(stack: Decimal, bb: Decimal, potSize: Decimal) = (bb, bb)
+    def raise(total: Decimal, bb: Decimal, potSize: Decimal) = (bb, bb)
     override def toString = "fixed-limit"
   }
 
   case object PotLimit extends Limit {
-    def raise(stack: Decimal, bb: Decimal, potSize: Decimal) = (bb, potSize)
+    def raise(total: Decimal, bb: Decimal, potSize: Decimal) = (bb, potSize)
     override def toString = "pot-limit"
   }
 

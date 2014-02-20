@@ -10,6 +10,7 @@ private[gameplay] trait Seating {
     table.seatsAsList.foreach { seat ⇒
       if (seat.canPlayNextDeal) seat.play()
       if (seat.isAllIn) seat.idle()
+      seat.clearPut()
     }
 
   }

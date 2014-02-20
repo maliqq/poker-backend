@@ -25,7 +25,7 @@ public class BetSchema
         CALL(8),
         CHECK(9),
         FOLD(10),
-        ALLIN(11);
+        ALL_IN(11);
         
         public final int number;
         
@@ -53,7 +53,7 @@ public class BetSchema
                 case 8: return CALL;
                 case 9: return CHECK;
                 case 10: return FOLD;
-                case 11: return ALLIN;
+                case 11: return ALL_IN;
                 default: return null;
             }
         }

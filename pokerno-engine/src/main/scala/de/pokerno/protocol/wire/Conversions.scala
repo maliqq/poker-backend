@@ -140,7 +140,7 @@ object Conversions {
     case BetSchema.BetType.BB          ⇒ model.Bet.BigBlind
     case BetSchema.BetType.GUEST_BLIND ⇒ model.Bet.GuestBlind
     case BetSchema.BetType.STRADDLE    ⇒ model.Bet.Straddle
-    case BetSchema.BetType.ALLIN       ⇒ model.Bet.AllIn
+    case BetSchema.BetType.ALL_IN      ⇒ model.Bet.AllIn
   }
 
   implicit def seatState2wire(v: model.Seat.State): SeatSchema.SeatState = v match {

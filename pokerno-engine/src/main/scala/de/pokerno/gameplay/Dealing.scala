@@ -30,7 +30,7 @@ private[gameplay] object Dealing {
               val cards = dealer dealPocket (n, player)
               val box = Some((player, pos))
               
-              if (_type == DealCards.Door) {
+              if (_type == DealCards.Hole) {
                 events.publish(Events.dealCards(_type, cards, box).only(player))
                 events.publish(Events.dealCardsNum(_type, cards, box).except(player))
               } else

@@ -43,7 +43,10 @@ private[gameplay] trait Betting
   // current betting round finished
   def completeBetting(ctx: StageContext) {
     val table = ctx.gameplay.table
-    table.seatsAsList.filter(_ inPlay) map (_ play)
+    table.seatsAsList.filter(_ inPlay) map { seat =>
+      seat.play()
+      seat.clearPut()
+    }
 
     val round = ctx.gameplay.round
     round.clear()

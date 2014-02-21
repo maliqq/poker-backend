@@ -29,7 +29,7 @@ class SeatSpec extends FunSpec with ClassicMatchers {
       seat.play
       seat.raise(100)
       seat.put should equal(100)
-      seat.amount should equal(900)
+      seat.stack should equal(900)
       seat.didCall(100.1) should be(false)
       seat.didCall(100) should be(true)
       seat.didCall(99.9) should be(true)
@@ -37,7 +37,7 @@ class SeatSpec extends FunSpec with ClassicMatchers {
       seat.play
       seat.force(25)
       seat.put should equal(25)
-      seat.amount should equal(875)
+      seat.stack should equal(875)
     }
 
     it("all in raise") {

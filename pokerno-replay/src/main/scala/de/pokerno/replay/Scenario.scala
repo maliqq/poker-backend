@@ -135,7 +135,7 @@ private[replay] class Scenario(val name: String) {
 
         case tags.AllIn(player) ⇒
           bet(player.unquote,
-            wire.Bet(BetSchema.BetType.ALLIN))
+            wire.Bet(BetSchema.BetType.ALL_IN))
 
         case tags.Call(player, amount) ⇒
           bet(player.unquote,

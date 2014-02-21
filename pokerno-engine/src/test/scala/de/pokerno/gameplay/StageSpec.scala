@@ -11,7 +11,7 @@ class StageSpec extends FunSpec with ClassicMatchers {
     it("sample") {
       val stages = stage("x") { ctx ⇒
         Stage.Next
-      } chain stage("y") { ctx ⇒
+      } ~> stage("y") { ctx ⇒
         Stage.Next
       }
 

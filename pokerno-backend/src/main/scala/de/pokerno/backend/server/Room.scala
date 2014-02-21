@@ -154,25 +154,25 @@ class Room(
       stay()
 
     case Event(w @ Room.Watch(conn), running) ⇒
-      watchers ! w
-      //events.broker.subscribe(observer, conn.player.getOrElse(conn.sessionId))
+      // send start message
+      val startMsg = running match {
+        case NoneRunning ⇒
+          gameplay.Events.start(table, variation, stake, null).msg
+        case Running(play, _) =>
+          gameplay.Events.start(table, variation, stake, play).msg
+      }
+      conn.send(codec.Json.encode(startMsg))
+      
+      // notify seat state change
       conn.player map { p ⇒
         changeSeatState(p) { _._1 ready } // Reconnected
       }
+      watchers ! w
     
-      running match {
-        case NoneRunning ⇒
-          val m = gameplay.Events.start(table, variation, stake, null).msg
-          watchers ! Watchers.Send(conn.sessionId, m)
-          if (canStart) goto(Room.State.Active)
-          else stay()
-          
-        case Running(play, _) ⇒
-          val m = gameplay.Events.start(table, variation, stake, play).msg
-          watchers ! Watchers.Send(conn.sessionId, m)
-          stay()
-      }
-
+      // start new deal if needed
+      if (running == NoneRunning && canStart) goto(Room.State.Active)
+      else stay()
+  
     case Event(uw @ Room.Unwatch(conn), _) ⇒
       watchers ! uw
       //events.broker.unsubscribe(observer, conn.player.getOrElse(conn.sessionId))

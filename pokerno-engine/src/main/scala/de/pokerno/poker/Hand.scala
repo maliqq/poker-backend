@@ -104,7 +104,12 @@ class Hand(
       "three of a kind, %ss" format high.head.kind
 
     case Rank.High.Straight ⇒
-      "straight, %s to %s" format (value.min.kind, value.max.kind)
+      val (from, to) = if (high.head.kind == Kind.Value.Five)
+        (value.min(AceLow).kind, value.max(AceLow).kind)
+      else
+        (value.min.kind, value.max.kind)
+      
+      "straight, %s to %s".format(from, to)
 
     case Rank.High.Flush ⇒
       "flush, %s high" format high.head.kind

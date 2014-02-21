@@ -48,7 +48,7 @@ private[poker] trait HighHand {
 
   def isStraight: Option[Hand] = gaps find { group ⇒ group.size >= 5 } match { // FIXME sorted for Ace low
     case Some(group) ⇒
-      val cards = group.sorted.reverse
+      val cards = group.reverse
       new Hand(self, value = cards take 5, High = Left(cards take 1)) ranked Rank.High.Straight
     case None ⇒ None
   }

@@ -105,10 +105,13 @@ private[gameplay] trait Showdown {
     if (board.size == 0)
       return (pocket, ranking(pocket).get)
 
-    val hands = for {
-      pair ← pocket combinations 2;
-      board ← dealer.board combinations 3
-    } yield ranking(pair ++ board).get
+    val hands = if (pocket.size > 2)
+      for {
+        pair ← pocket combinations 2;
+        board ← dealer.board combinations 3
+      } yield ranking(pair ++ board).get
+      
+    else List(ranking(pocket ++ board).get)
 
     (pocket, hands.toList.max(Ranking))
   }

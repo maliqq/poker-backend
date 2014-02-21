@@ -100,7 +100,7 @@ private[gameplay] class BettingRound(val table: Table, val game: Game, val stake
     }
 
     if (!valid) {
-      warn("bet %s is not valid; call=%.2f raise=%s", _bet, _call, _raise)
+      warn("bet %s is not valid; call=%.2f raise=%s %s", _bet, _call, _raise, seat)
       b = Bet.fold
     }
 

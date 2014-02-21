@@ -43,6 +43,7 @@ class Node extends Actor with ActorLogging {
           room ! Room.Unwatch(conn)
 
         case Failure(_) ⇒
+          log.warning("room {} not found for conn {}", id, conn)
       }
 
     // catch player messages

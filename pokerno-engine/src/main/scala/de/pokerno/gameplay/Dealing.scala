@@ -127,7 +127,7 @@ private[gameplay] object Dealing {
             if (player.isDefined)
               t.box(player.get).get
             else {
-              val (seat, pos) = gameplay.round.acting
+              val (seat, pos) = gameplay.round.acting.get
               (seat.player.get, pos)
             }
 

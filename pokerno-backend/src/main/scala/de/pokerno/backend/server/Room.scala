@@ -61,10 +61,16 @@ class Room(
     actor
   }
 
+  /*
+   * Watchers
+   * */
   val watchers = observe(classOf[Watchers], f"room-$id-watchers")
-  val logger = observe(classOf[Log], f"room-$id-log")
+  val logger = observe(classOf[Log], f"room-$id-log", "/tmp", id)
   val metrics = observe(classOf[Metrics], f"room-$id-metrics")
 
+  /*
+   * State machine
+   * */
   when(Room.State.Paused) {
     case Event(Room.Resume, _) ⇒
       goto(Room.State.Active)
@@ -157,7 +163,7 @@ class Room(
       // send start message
       val startMsg = running match {
         case NoneRunning ⇒
-          gameplay.Events.start(table, variation, stake, null).msg
+          gameplay.Events.start(table, variation, stake, null).msg // TODO: empty play
         case Running(play, _) =>
           gameplay.Events.start(table, variation, stake, play).msg
       }

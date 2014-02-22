@@ -15,8 +15,8 @@ class Play(gameplay: Context) {
     finishAt = new java.util.Date()
   }
 
-  var getStreet: () ⇒ Street.Value = () ⇒ null
-  def street: Street.Value = getStreet()
+  var getStreet: () ⇒ Option[Street.Value] = () ⇒ None
+  def street: Option[Street.Value] = getStreet()
   def require = (gameplay.round.call, gameplay.round.raise)
   def acting = gameplay.round.box
   def pot = gameplay.round.pot

@@ -9,16 +9,18 @@ private[gameplay] class BettingRound(val table: Table, val game: Game, val stake
   current = table.button
 
   def seats = table.seats.slice(current)
-  private var _acting: Tuple2[Seat, Int] = null
+  private var _acting: Option[Tuple2[Seat, Int]] = None
   def acting = _acting
   def acting_=(act: Tuple2[Seat, Int]) {
-    _acting = act
+    _acting = Some(act)
     current = act._2
   }
 
-  def seat = _acting._1
-  def pos = _acting._2
-  def box = (seat.player.get, pos)
+  def seat: Option[Seat] = _acting.map { _._1 }
+  def pos: Option[Int] = _acting.map { _._2 }
+  def box: Option[(Player, Int)] = _acting.map { a =>
+    (a._1.player.get, a._2)
+  }
 
   val pot = new Pot
   var bigBets: Boolean = false
@@ -45,7 +47,7 @@ private[gameplay] class BettingRound(val table: Table, val game: Game, val stake
 
     _call = stake amount betType
 
-    val stack = seat.stack
+    val stack = seat.get.stack
     val bet = Bet.forced(betType, List(stack, _call) min)
 
     addBet(bet)
@@ -56,7 +58,7 @@ private[gameplay] class BettingRound(val table: Table, val game: Game, val stake
     val limit = game.limit
 
     val blind = if (bigBets) stake.bigBlind * 2 else stake.bigBlind
-    val total = seat.total
+    val total = seat.get.total
 
     if (total <= _call || raiseCount >= MaxRaiseCount)
       _raise = (.0, .0)
@@ -69,7 +71,7 @@ private[gameplay] class BettingRound(val table: Table, val game: Game, val stake
   import de.pokerno.util.ConsoleUtils._
 
   def addBet(_bet: Bet): Bet = {
-    val (seat, pos) = _acting
+    val (seat, pos) = _acting.get
     val player = seat.player.get
 
     var b = if (_bet.betType == Bet.AllIn)

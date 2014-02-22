@@ -44,7 +44,7 @@ class Replay(
   var streets = Street.byGameGroup(gameOptions.group)
 
   val play = new Play(gameplay)
-  play.getStreet = () ⇒ streets.head
+  play.getStreet = () ⇒ Some(streets.head)
 
   import concurrent.duration._
   import de.pokerno.util.ConsoleUtils._

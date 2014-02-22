@@ -117,17 +117,18 @@ private[gameplay] class StreetChain(
     val streetOptions: Map[Street.Value, StreetOptions]) {
   private val streets = Street.byGameGroup(ctx.gameplay.game.options.group)
   private val iterator = streets.iterator
-  private var _current: Street = null
+  private var _current: Option[Street] = None
 
   def current = _current
 
   def apply(ctx: StageContext) = if (iterator.hasNext) {
     val _street = iterator.next()
-    _current = new Street(_street, streetOptions(_street))
+    val street = new Street(_street, streetOptions(_street))
+    _current = Some(street)
 
-    ctx.publish(Events.streetStart(_current.value))
+    ctx.publish(Events.streetStart(street.value))
 
-    _current(ctx) match {
+    street(ctx) match {
       case Stage.Next | Stage.Skip ⇒
         ctx.ref ! Streets.Next
 

@@ -21,7 +21,7 @@ private[gameplay] trait Betting
     round requireBet acting
     info("[betting] require %s to call %s and raise %s", acting, round.call, round.raise)
     ctx.publish(
-        Events.requireBet(round.box, round.call, round.raise))
+        Events.requireBet(round.box.get, round.call, round.raise))
   }
 
   // add bet
@@ -29,7 +29,7 @@ private[gameplay] trait Betting
     val round = ctx.gameplay.round
     val posted = round.addBet(bet)
     ctx.publish(
-        Events.addBet(round.box, posted))
+        Events.addBet(round.box.get, posted))
   }
 
   // force bet
@@ -37,7 +37,7 @@ private[gameplay] trait Betting
     val round = ctx.gameplay.round
     val posted = round.forceBet(acting, _type)
     ctx.publish(
-        Events.addBet(round.box, posted))
+        Events.addBet(round.box.get, posted))
   }
 
   // current betting round finished
@@ -127,7 +127,7 @@ private[gameplay] object Betting {
 
     def handleBetting: Receive = {
       case cmd.AddBet(player, bet) ⇒
-        val (seat, pos) = gameplay.round.acting
+        val (seat, pos) = gameplay.round.acting.get
         if (seat.player.map(_.id == player).getOrElse(false)) {
           if (timer != null)
             timer.cancel()
@@ -159,7 +159,7 @@ private[gameplay] object Betting {
 
       case Betting.Timeout ⇒
         val round = gameplay.round
-        val (seat, pos) = round.acting
+        val (seat, pos) = round.acting.get
 
         val bet: Bet = seat.state match {
           case Seat.State.Away ⇒
@@ -221,8 +221,7 @@ private[gameplay] object Betting {
             val player: Player = if (anteBet.player != null)
               anteBet.player
             else {
-              val acting = round.acting
-              acting._1.player.get
+              round.acting.get._1.player.get // FIXME
             }
 
             val seatOption = table.seat(anteBet.player)
@@ -324,7 +323,7 @@ private[gameplay] object Betting {
         val betsLeft = activeBets.dropWhile { addBet ⇒
           val acting = round.acting
           debug(" | acting %s", acting)
-          val player = acting._1.player
+          val player = acting.get._1.player
 
           def isOurTurn = player.isDefined && player.get.id == addBet.player
 

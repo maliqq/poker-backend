@@ -10,3 +10,5 @@ build-server-deps:
 	sbt "project pokerno-server" assembly-package-dependency
 assembly:
 	sbt "project pokerno-server" assembly
+sloc:
+	find . -name "*.scala" | xargs cloc | grep Scala | awk '{print $$5}'

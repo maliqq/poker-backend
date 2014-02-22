@@ -33,8 +33,8 @@ object Events {
     message.Start(table, variation, stake, play)
   )
   
-  def playStart() = E(
-    message.PlayStart()
+  def playStart(play: Play) = E(
+    message.PlayStart(play)
   )
 
   def playStop() = E(

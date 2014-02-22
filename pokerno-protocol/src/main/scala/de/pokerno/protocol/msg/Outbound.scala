@@ -131,9 +131,11 @@ sealed case class StakeChange(
  * Stage event
  */
 @MsgPack
-sealed case class PlayStart() extends StageEvent(StageEventSchema.EventType.START) {
+sealed case class PlayStart(_play: Play) extends StageEvent(StageEventSchema.EventType.START) {
 
   stage = StageEventSchema.StageType.PLAY
+  
+  play = _play
 
 }
 

@@ -9,6 +9,7 @@ import proto.wire.StreetType
 object Conversions {
 
   implicit def street2wire(s: gameplay.Street.Value): StreetType = s match {
+    //case null => null
     case gameplay.Street.Preflop    ⇒ StreetType.PREFLOP
     case gameplay.Street.Flop       ⇒ StreetType.FLOP
     case gameplay.Street.Turn       ⇒ StreetType.TURN
@@ -31,8 +32,12 @@ object Conversions {
     if (v != null) {
       val play = new Play(v.id, v.startAt.getTime() / 1000)
       play.pot = v.pot.total
-      play.street = v.street
-      play.acting = RequireBet(pos = v.acting._2, player = v.acting._1, call = v.require._1, raise = v.require._2)
+      v.street.map { street =>
+        play.street = street
+      }
+      v.acting.map { a =>
+        play.acting = RequireBet(pos = a._2, player = a._1, call = v.require._1, raise = v.require._2)
+      }
       play
     } else null
   }

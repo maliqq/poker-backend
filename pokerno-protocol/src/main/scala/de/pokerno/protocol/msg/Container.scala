@@ -69,6 +69,9 @@ class StageEvent(
 
   @BeanProperty
   var street: proto.wire.StreetType = null
+  
+  @BeanProperty
+  var play: Play = null 
 
   def this() = this(null)
 }

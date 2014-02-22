@@ -81,6 +81,7 @@ public class StageEventSchema
     public static final int FIELD_TYPE = 1;
     public static final int FIELD_STAGE = 2;
     public static final int FIELD_STREET = 3;
+    public static final int FIELD_PLAY = 4;
 
     public StageEventSchema() {}
 
@@ -126,13 +127,17 @@ public class StageEventSchema
             case FIELD_STREET:
                 message.setStreet(proto.wire.StreetType.valueOf(input.readEnum()));
                 break;
+            case FIELD_PLAY:
+                message.setPlay(input.mergeObject(message.getPlay(), PlaySchema.getSchema()));
+                break;
+
             default:
                 input.handleUnknownField(fieldIx, this);
         }
     }
 
 
-    private static int[] FIELDS_TO_WRITE = { FIELD_TYPE, FIELD_STAGE, FIELD_STREET };
+    private static int[] FIELDS_TO_WRITE = { FIELD_TYPE, FIELD_STAGE, FIELD_STREET, FIELD_PLAY };
 
     public int[] getWriteFields() { return FIELDS_TO_WRITE; }
 
@@ -155,6 +160,11 @@ public class StageEventSchema
                 if (message.getStreet() != null)
                     output.writeEnum(FIELD_STREET, message.getStreet().number, false);
                 break;
+            case FIELD_PLAY:
+                if (message.getPlay() != null)
+                    output.writeObject(FIELD_PLAY, message.getPlay(), PlaySchema.getSchema(), false);
+
+                break;
             default:
                 break;
         }
@@ -165,6 +175,7 @@ public class StageEventSchema
             case FIELD_TYPE: return "type";
             case FIELD_STAGE: return "stage";
             case FIELD_STREET: return "street";
+            case FIELD_PLAY: return "play";
             default: return null;
         }
     }
@@ -178,5 +189,6 @@ public class StageEventSchema
         fieldMap.put("type", FIELD_TYPE);
         fieldMap.put("stage", FIELD_STAGE);
         fieldMap.put("street", FIELD_STREET);
+        fieldMap.put("play", FIELD_PLAY);
     }
 }

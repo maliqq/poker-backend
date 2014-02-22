@@ -6,14 +6,16 @@ import de.pokerno.protocol.{msg => message}
 import de.pokerno.protocol.Conversions._
 import de.pokerno.gameplay.Notification
 
-class Log(logdir: String, id: String) extends Actor {
+class Log(logdir: String, room: String) extends Actor {
   
-  var f: java.io.OutputStreamWriter = null
+  var writer: java.io.OutputStreamWriter = null
   
   private final val ext = ".txt"
+    
+  private lazy val dir = new java.io.File(logdir, room) 
   
   override def preStart() {
-    f = new java.io.OutputStreamWriter(new java.io.FileOutputStream(new java.io.File(logdir, id + ext), true))
+    dir.mkdir()
   }
   
   import proto.wire.DealType
@@ -22,6 +24,10 @@ class Log(logdir: String, id: String) extends Actor {
   def receive = {
     case Notification(msg, from, to) =>
       msg match {
+        case message.PlayStart(play) =>
+          val id = play.id
+          writer = new java.io.OutputStreamWriter(new java.io.FileOutputStream(new java.io.File(dir.getPath, id + ext), true))
+          
         case message.ButtonChange(pos) =>
           log("button is %d", pos)
         
@@ -88,16 +94,16 @@ class Log(logdir: String, id: String) extends Actor {
   }
   
   override def postStop() {
-    f.close()
+    writer.close()
   }
   
   def flush() {
-    f.flush()
+    writer.flush()
   }
   
   def log(s: String, args: Any*) {
-    f.write(s.format(args:_*))
-    f.write("\n")
+    writer.write(s.format(args:_*))
+    writer.write("\n")
   }
   
 }

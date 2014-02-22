@@ -1,16 +1,19 @@
 package de.pokerno.backend.server
 
 import akka.actor.Actor
-import de.pokerno.poker.Card
+import de.pokerno.poker.Cards
 import de.pokerno.protocol.{msg => message}
 import de.pokerno.protocol.Conversions._
 import de.pokerno.gameplay.Notification
 
-class Log extends Actor {
+class Log(logdir: String, id: String) extends Actor {
+  
   var f: java.io.OutputStreamWriter = null
   
+  private final val ext = ".txt"
+  
   override def preStart() {
-    f = new java.io.OutputStreamWriter(new java.io.FileOutputStream(new java.io.File("/tmp/deal.txt")))
+    f = new java.io.OutputStreamWriter(new java.io.FileOutputStream(new java.io.File(logdir, id + ext), true))
   }
   
   import proto.wire.DealType
@@ -58,17 +61,26 @@ class Log extends Actor {
         case message.DealCards(_type, cards, pos, player, cardsNum) =>
           _type match {
             case DealType.BOARD =>
-              log("Dealt board %s", cards: List[Card])
+              log("Dealt board %s", Cards(cards))
               
             case DealType.DOOR | DealType.HOLE =>
               if (cardsNum != null)
                 log("Dealt %d cards to %s", cardsNum, player)
               else
-                log("Dealt to %s: %s", player, cards: List[Card])
+                log("Dealt %s to %s", Cards(cards), player)
           }
+        
+        case message.DeclarePot(total, side, rake) =>
+          log("Pot is %.2f", total)
+        
+        case message.DeclareHand(pos, player, cards, hand) =>
+          log("%s shows %s (%s)", player, Cards(cards), hand.string)
           
         case message.DeclareWinner(pos, player, amount) =>
           log("%s collected %.2f from pot", player, amount)
+        
+        case message.PlayStop() =>
+          flush()
           
         case x: Any =>
           log("unhandled: %s", x)
@@ -77,6 +89,10 @@ class Log extends Actor {
   
   override def postStop() {
     f.close()
+  }
+  
+  def flush() {
+    f.flush()
   }
   
   def log(s: String, args: Any*) {

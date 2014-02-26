@@ -124,6 +124,8 @@ private[gameplay] object Betting {
     import context._
 
     var timer: Cancellable = null
+    
+    val timers = collection.mutable.HashMap[Player, Timer]()
 
     def handleBetting: Receive = {
       case cmd.AddBet(player, bet) ⇒

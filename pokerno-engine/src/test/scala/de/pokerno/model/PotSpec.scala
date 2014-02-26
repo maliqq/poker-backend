@@ -9,7 +9,7 @@ class PotSpec extends FunSpec with ClassicMatchers {
     implicit def string2player(s: String) = new Player(s)
 
     it("split pot 1") {
-      val pot = new SidePot(Some(100))
+      val pot = new SidePot(0, Some(100))
       val p = Player("P")
       val left = pot.add(p, 120)
       left should equal(20)
@@ -18,7 +18,7 @@ class PotSpec extends FunSpec with ClassicMatchers {
     }
 
     it("split pot 2") {
-      val pot = new SidePot(Some(100))
+      val pot = new SidePot(0, Some(100))
       val p = Player("P")
       pot.add(p, 100) should equal(0)
       pot.isMember(p) should be(true)

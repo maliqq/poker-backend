@@ -23,7 +23,7 @@ private[gameplay] trait Blinds {
     if (active.size + waitingBB.size < 2) {
       // TODO
     } else {
-      val List(sb, bb, _*) = if (active.size == 2){
+      val Seq(sb, bb, _*) = if (active.size == 2) {
         active.reverse
       } else active
 

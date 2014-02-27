@@ -48,6 +48,10 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   private var _lastSeenOnline: java.util.Date = null
   def lastSeenOnline = _lastSeenOnline
   
+  def lastSeenOnlineBefore(millis: Long) = {
+    _lastSeenOnline != null && _lastSeenOnline.before(new java.util.Date(millis)) 
+  }
+  
   def presence = _presence.getOrElse(null)
   
   def offline() {
@@ -59,7 +63,7 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   def online() {
     if (!isEmpty) {
       _presence = Some(Seat.Presence.Online)
-      _lastSeenOnline = new java.util.Date() // now
+      _lastSeenOnline = new java.util.Date()
     }
   }
   

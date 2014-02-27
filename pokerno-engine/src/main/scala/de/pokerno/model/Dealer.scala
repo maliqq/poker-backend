@@ -31,6 +31,7 @@ class Dealer(private var _deck: Deck = new Deck) {
   def pocketOption(p: Player): Option[List[Card]] = _pockets.get(p)
 
   def dealPocket(cards: List[Card], p: Player) = {
+    _deck.burn(cards)
     val pocket = _pockets getOrElse (p, List.empty)
     _pockets += (p -> (pocket ++ cards))
     cards
@@ -42,6 +43,7 @@ class Dealer(private var _deck: Deck = new Deck) {
   }
 
   def dealBoard(cards: List[Card]) = {
+    _deck.burn(cards)
     _board ++= cards
     cards
   }

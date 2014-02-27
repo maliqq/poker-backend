@@ -42,7 +42,8 @@ class Room(
   stake: model.Stake)
     extends Actor
     with ActorLogging
-    with FSM[Room.State.Value, Data] {
+    with FSM[Room.State.Value, Data]
+    with RoomTimers {
   
   val table = new model.Table(variation.tableSize)
   val events = new gameplay.Events(id)
@@ -150,7 +151,11 @@ class Room(
 
         case PlayerEventSchema.EventType.LEAVE ⇒
           table.removePlayer(player)
-          changeSeatState(player) { _._1 clear }
+          changeSeatState(player, notify = false) { case box @ (seat, pos) =>
+            events.publish(gameplay.Events.leaveTable((seat.player.get, pos))) // FIXME unify
+            table.clearSeat(pos)
+          }
+          //changeSeatState(player) { _._1 clear }
       }
       stay()
   }
@@ -163,6 +168,12 @@ class Room(
       stay()
 
     case Event(w @ Room.Watch(conn), running) ⇒
+      // notify seat state change
+      conn.player map { p ⇒
+        playerReconnected(p)
+        changeSeatPresence(p) { _._1 online } // Reconnected
+      }
+    
       // send start message
       val startMsg = running match {
         case NoneRunning ⇒
@@ -172,10 +183,6 @@ class Room(
       }
       conn.send(codec.Json.encode(startMsg))
       
-      // notify seat state change
-      conn.player map { p ⇒
-        changeSeatPresence(p) { _._1 online } // Reconnected
-      }
       watchers ! w
     
       // start new deal if needed
@@ -186,18 +193,23 @@ class Room(
       watchers ! uw
       //events.broker.unsubscribe(observer, conn.player.getOrElse(conn.sessionId))
       conn.player map { p ⇒
+        playerDisconnected(p)
         changeSeatPresence(p) { _._1 offline }
       }
+      stay()
+     
+    case Event(PlayerGone(p), _) =>
+      playerGone(p)
+      changeSeatState(p) { _._1 away }
       stay()
 
     case Event(kick: cmd.KickPlayer, _) ⇒
       log.info("got kick: {}", kick)
       changeSeatState(kick.player, notify = false) { case box @ (seat, pos) =>
         events.publish(gameplay.Events.leaveTable((seat.player.get, pos))) // FIXME unify
-        seat.clear()
+        table.clearSeat(pos)
       }
       table.removePlayer(kick.player)
-      //events.leaveTable(box)
       stay()
       
     case Event(x: Any, _) ⇒

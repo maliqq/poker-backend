@@ -2,14 +2,14 @@ package de.pokerno.model
 
 object Seats {
 
-  implicit def seats2list(v: Seats): List[Seat] = v.seats
-  implicit def seats2tuplelist(v: Seats): List[Tuple2[Seat, Int]] = v.seats.zipWithIndex
+  implicit def seats2list(v: Seats): List[Seat] = v.seats.toList
+  implicit def seats2tuplelist(v: Seats): List[Tuple2[Seat, Int]] = v.seats.toList.zipWithIndex
 
 }
 
-class Seats(val seats: List[Seat]) {
+class Seats(val seats: collection.mutable.LinearSeq[Seat]) {
 
-  type Slice = List[Tuple2[Seat, Int]]
+  type Slice = collection.mutable.LinearSeq[Tuple2[Seat, Int]]
 
   import de.pokerno.util.ConsoleUtils._
 
@@ -22,5 +22,9 @@ class Seats(val seats: List[Seat]) {
     case (seat, index) ⇒
       "Seat %d: %s" format (index, seat.toString())
   } mkString "\n"
+  
+  def clear(pos: Int) {
+    seats(pos) = new Seat
+  }
 
 }

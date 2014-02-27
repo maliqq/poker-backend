@@ -123,14 +123,6 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   }
   def clearPut() = _put = 0
 
-  def clear() {
-    _state = Seat.State.Empty
-    _player = None
-    _stack = .0
-    _put = .0
-    _presence = None
-  }
-
   /**
    * State transitions
    */

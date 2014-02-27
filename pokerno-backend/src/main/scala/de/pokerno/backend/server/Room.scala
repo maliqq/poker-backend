@@ -138,11 +138,14 @@ class Room(
       event match {
         case PlayerEventSchema.EventType.OFFLINE ⇒
           changeSeatState(player) { _._1 away }
+        
+        case PlayerEventSchema.EventType.ONLINE =>
+          changeSeatState(player) { _._1 ready }
 
         case PlayerEventSchema.EventType.SIT_OUT ⇒
           changeSeatState(player) { _._1 idle }
 
-        case PlayerEventSchema.EventType.COME_BACK | PlayerEventSchema.EventType.ONLINE ⇒
+        case PlayerEventSchema.EventType.COME_BACK ⇒
           changeSeatState(player) { _._1 ready }
 
         case PlayerEventSchema.EventType.LEAVE ⇒
@@ -171,7 +174,7 @@ class Room(
       
       // notify seat state change
       conn.player map { p ⇒
-        changeSeatState(p) { _._1 ready } // Reconnected
+        changeSeatPresence(p) { _._1 online } // Reconnected
       }
       watchers ! w
     
@@ -183,7 +186,7 @@ class Room(
       watchers ! uw
       //events.broker.unsubscribe(observer, conn.player.getOrElse(conn.sessionId))
       conn.player map { p ⇒
-        changeSeatState(p) { _._1 away }
+        changeSeatPresence(p) { _._1 offline }
       }
       stay()
 
@@ -232,6 +235,14 @@ class Room(
       case box @ (seat, pos) ⇒
         f(box)
         if (notify) events.publish(gameplay.Events.seatStateChanged(pos, seat.state))
+    }
+  }
+  
+  private def changeSeatPresence(player: model.Player, notify: Boolean = true)(f: ((model.Seat, Int)) ⇒ Unit) {
+    table.seat(player) map {
+      case box @ (seat, pos) ⇒
+        f(box)
+        if (notify) events.publish(gameplay.Events.seatPresenceChanged(pos, seat.presence))
     }
   }
 

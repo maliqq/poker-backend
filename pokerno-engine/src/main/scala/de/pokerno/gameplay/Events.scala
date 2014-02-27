@@ -100,6 +100,10 @@ object Events {
   def seatStateChanged(pos: Int, state: Seat.State.Value) = E(
     message.SeatEvent(SeatEventSchema.EventType.STATE, pos = pos, seat = new wire.Seat(state = state))
   )
+  
+  def seatPresenceChanged(pos: Int, presence: Seat.Presence.Value) = E(
+    message.SeatEvent(SeatEventSchema.EventType.PRESENCE, pos = pos, seat = new wire.Seat(presence = presence))
+  )
 }
 
 class Events(id: String) {

@@ -143,7 +143,7 @@ object Conversions {
     case BetSchema.BetType.ALL_IN      ⇒ model.Bet.AllIn
   }
 
-  implicit def seatState2wire(v: model.Seat.State): SeatSchema.SeatState = v match {
+  implicit def seatState2wire(v: model.Seat.State.Value): SeatSchema.SeatState = v match {
     case model.Seat.State.Empty  ⇒ SeatSchema.SeatState.EMPTY
     case model.Seat.State.Taken  ⇒ SeatSchema.SeatState.TAKEN
     case model.Seat.State.Ready  ⇒ SeatSchema.SeatState.READY
@@ -161,7 +161,7 @@ object Conversions {
     case model.Seat.State.Away   ⇒ SeatSchema.SeatState.AWAY
   }
 
-  implicit def wire2state(v: SeatSchema.SeatState): model.Seat.State = v match {
+  implicit def wire2state(v: SeatSchema.SeatState): model.Seat.State.Value = v match {
     case SeatSchema.SeatState.EMPTY   ⇒ model.Seat.State.Empty
     case SeatSchema.SeatState.TAKEN   ⇒ model.Seat.State.Taken
     case SeatSchema.SeatState.READY   ⇒ model.Seat.State.Ready
@@ -177,6 +177,11 @@ object Conversions {
 
     case SeatSchema.SeatState.IDLE    ⇒ model.Seat.State.Idle
     case SeatSchema.SeatState.AWAY    ⇒ model.Seat.State.Away
+  }
+  
+  implicit def presence2wire(v: model.Seat.Presence.Value): SeatSchema.PresenceType = v match {
+    case model.Seat.Presence.Offline => SeatSchema.PresenceType.OFFLINE
+    case model.Seat.Presence.Online => SeatSchema.PresenceType.ONLINE
   }
 
   //  import com.dyuproject.protostuff.ByteString

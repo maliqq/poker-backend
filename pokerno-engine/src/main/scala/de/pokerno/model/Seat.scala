@@ -5,7 +5,6 @@ import de.pokerno.protocol.wire
 
 object Seat {
   object State extends Enumeration {
-    type State = Value
     def state(name: String) = new Val(nextId, name)
 
     // no player
@@ -33,16 +32,36 @@ object Seat {
     // disconnected
     val Away = state("away")
   }
-
-  import State._
-  type State = Value
+  
+  object Presence extends Enumeration {
+    val Online = new Val(nextId, "online")
+    val Offline = new Val(nextId, "offline")
+  }
 
   case class IsTaken() extends Exception("seat is taken")
 }
 
-class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
+class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
+  // presence
+  private var _presence: Option[Seat.Presence.Value] = None
+  def presence = _presence.getOrElse(null)
+  
+  def offline() {
+    if (!isEmpty) _presence = Some(Seat.Presence.Offline)
+  }
+  
+  def isOffline = _presence == Some(Seat.Presence.Offline)
+  
+  def online() {
+    if (!isEmpty) _presence = Some(Seat.Presence.Online)
+  }
+  
+  def isOnline = _presence == Some(Seat.Presence.Online)
+  
+  // state
   def state = _state
 
+  // player
   private var _player: Option[Player] = None
   def player = _player
   def player_=(p: Player) {
@@ -99,6 +118,7 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
     _player = None
     _stack = .0
     _put = .0
+    _presence = None
   }
 
   /**
@@ -123,8 +143,8 @@ class Seat(private var _state: Seat.State.State = Seat.State.Empty) {
   }
 
   def away() {
-    if (isEmpty)
-      throw new IllegalStateException("can't change seat state to away: %s" format(this))
+    if (isEmpty || isOnline)
+      throw new IllegalStateException("can't change seat state to away: %s (%s)" format(this, _presence))
     _state = Seat.State.Away
   }
 

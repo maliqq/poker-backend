@@ -15,10 +15,11 @@ public class SeatEventSchema
 
     public enum EventType implements com.dyuproject.protostuff.EnumLite<EventType>
     {
-        PLAYER(1),
-        STATE(2),
-        STACK_AMOUNT(3),
-        PUT_AMOUNT(4);
+        STATE(1),
+        PRESENCE(2),
+        PLAYER(3),
+        STACK_AMOUNT(4),
+        PUT_AMOUNT(5);
         
         public final int number;
         
@@ -36,10 +37,11 @@ public class SeatEventSchema
         {
             switch(number) 
             {
-                case 1: return PLAYER;
-                case 2: return STATE;
-                case 3: return STACK_AMOUNT;
-                case 4: return PUT_AMOUNT;
+                case 1: return STATE;
+                case 2: return PRESENCE;
+                case 3: return PLAYER;
+                case 4: return STACK_AMOUNT;
+                case 5: return PUT_AMOUNT;
                 default: return null;
             }
         }

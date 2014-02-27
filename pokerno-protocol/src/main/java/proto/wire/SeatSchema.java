@@ -59,6 +59,33 @@ public class SeatSchema
             }
         }
     }
+    public enum PresenceType implements com.dyuproject.protostuff.EnumLite<PresenceType>
+    {
+        OFFLINE(0),
+        ONLINE(1);
+        
+        public final int number;
+        
+        private PresenceType (int number)
+        {
+            this.number = number;
+        }
+        
+        public int getNumber()
+        {
+            return number;
+        }
+        
+        public static PresenceType valueOf(int number)
+        {
+            switch(number) 
+            {
+                case 0: return OFFLINE;
+                case 1: return ONLINE;
+                default: return null;
+            }
+        }
+    }
 
 
     static final de.pokerno.protocol.wire.Seat DEFAULT_INSTANCE = new de.pokerno.protocol.wire.Seat();
@@ -69,9 +96,10 @@ public class SeatSchema
 
     public static final int FIELD_NONE = 0;
     public static final int FIELD_STATE = 1;
-    public static final int FIELD_PLAYER = 2;
-    public static final int FIELD_STACK_AMOUNT = 3;
-    public static final int FIELD_PUT_AMOUNT = 4;
+    public static final int FIELD_PRESENCE = 2;
+    public static final int FIELD_PLAYER = 3;
+    public static final int FIELD_STACK_AMOUNT = 4;
+    public static final int FIELD_PUT_AMOUNT = 5;
 
     public SeatSchema() {}
 
@@ -111,6 +139,9 @@ public class SeatSchema
             case FIELD_STATE:
                 message.setState(SeatState.valueOf(input.readEnum()));
                 break;
+            case FIELD_PRESENCE:
+                message.setPresence(PresenceType.valueOf(input.readEnum()));
+                break;
             case FIELD_PLAYER:
                 message.setPlayer(input.readString());
                 break;
@@ -126,7 +157,7 @@ public class SeatSchema
     }
 
 
-    private static int[] FIELDS_TO_WRITE = { FIELD_STATE, FIELD_PLAYER, FIELD_STACK_AMOUNT, FIELD_PUT_AMOUNT };
+    private static int[] FIELDS_TO_WRITE = { FIELD_STATE, FIELD_PRESENCE, FIELD_PLAYER, FIELD_STACK_AMOUNT, FIELD_PUT_AMOUNT };
 
     public int[] getWriteFields() { return FIELDS_TO_WRITE; }
 
@@ -144,6 +175,10 @@ public class SeatSchema
             case FIELD_STATE:
                 if (message.getState() != null)
                     output.writeEnum(FIELD_STATE, message.getState().number, false);
+                break;
+            case FIELD_PRESENCE:
+                if (message.getPresence() != null)
+                    output.writeEnum(FIELD_PRESENCE, message.getPresence().number, false);
                 break;
             case FIELD_PLAYER:
                 if (message.getPlayer() != null)
@@ -165,6 +200,7 @@ public class SeatSchema
     public String getFieldName(int number) {
         switch(number) {
             case FIELD_STATE: return "state";
+            case FIELD_PRESENCE: return "presence";
             case FIELD_PLAYER: return "player";
             case FIELD_STACK_AMOUNT: return "stackAmount";
             case FIELD_PUT_AMOUNT: return "putAmount";
@@ -179,6 +215,7 @@ public class SeatSchema
 
     final java.util.Map<String, Integer> fieldMap = new java.util.HashMap<String, Integer>(); {
         fieldMap.put("state", FIELD_STATE);
+        fieldMap.put("presence", FIELD_PRESENCE);
         fieldMap.put("player", FIELD_PLAYER);
         fieldMap.put("stackAmount", FIELD_STACK_AMOUNT);
         fieldMap.put("putAmount", FIELD_PUT_AMOUNT);

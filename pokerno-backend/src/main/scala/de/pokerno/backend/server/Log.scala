@@ -1,12 +1,12 @@
 package de.pokerno.backend.server
 
-import akka.actor.Actor
+import akka.actor.{Actor, ActorLogging}
 import de.pokerno.poker.Cards
 import de.pokerno.protocol.{msg => message}
 import de.pokerno.protocol.Conversions._
 import de.pokerno.gameplay.Notification
 
-class Log(logdir: String, room: String) extends Actor {
+class Log(logdir: String, room: String) extends Actor with ActorLogging {
   
   var writer: java.io.OutputStreamWriter = null
   
@@ -29,67 +29,67 @@ class Log(logdir: String, room: String) extends Actor {
           writer = new java.io.OutputStreamWriter(new java.io.FileOutputStream(new java.io.File(dir.getPath, id + ext), true))
           
         case message.ButtonChange(pos) =>
-          log("button is %d", pos)
+          write("button is %d", pos)
         
         case message.StreetStart(street) =>
-          log("***%s***", street)
+          write("***%s***", street)
           
         case message.BetAdd(pos, player, bet) =>
           bet.`type` match {
             case BetType.ANTE =>
-              log("%s: posts ante %.2f", player, bet.amount)
+              write("%s: posts ante %.2f", player, bet.amount)
             
             case BetType.SB =>
-              log("%s: posts small blind %.2f", player, bet.amount)
+              write("%s: posts small blind %.2f", player, bet.amount)
             
             case BetType.BB =>
-              log("%s: posts big blind %.2f", player, bet.amount)
+              write("%s: posts big blind %.2f", player, bet.amount)
             
             case BetType.CHECK =>
-              log("%s: checks", player)
+              write("%s: checks", player)
             
             case BetType.FOLD =>
-              log("%s: folds", player)
+              write("%s: folds", player)
             
             case BetType.CALL =>
-              log("%s: calls %.2f", player, bet.amount)
+              write("%s: calls %.2f", player, bet.amount)
               
             case BetType.RAISE =>
-              log("%s: raises to %.2f", player, bet.amount)
+              write("%s: raises to %.2f", player, bet.amount)
             
             case BetType.BRING_IN =>
-              log("%s: posts bring in %.2f", player, bet.amount)
+              write("%s: posts bring in %.2f", player, bet.amount)
             
             case _ =>
-              log("%s", bet)
+              write("%s", bet)
           }
           
         case message.DealCards(_type, cards, pos, player, cardsNum) =>
           _type match {
             case DealType.BOARD =>
-              log("Dealt board %s", Cards(cards))
+              write("Dealt board %s", Cards(cards))
               
             case DealType.DOOR | DealType.HOLE =>
               if (cardsNum != null)
-                log("Dealt %d cards to %s", cardsNum, player)
+                write("Dealt %d cards to %s", cardsNum, player)
               else
-                log("Dealt %s to %s", Cards(cards), player)
+                write("Dealt %s to %s", Cards(cards), player)
           }
         
         case message.DeclarePot(total, side, rake) =>
-          log("Pot is %.2f", total)
+          write("Pot is %.2f", total)
         
         case message.DeclareHand(pos, player, cards, hand) =>
-          log("%s shows %s (%s)", player, Cards(cards), hand.string)
+          write("%s shows %s (%s)", player, Cards(cards), hand.string)
           
         case message.DeclareWinner(pos, player, amount) =>
-          log("%s collected %.2f from pot", player, amount)
+          write("%s collected %.2f from pot", player, amount)
         
         case message.PlayStop() =>
           flush()
           
         case x: Any =>
-          log("unhandled: %s", x)
+          log.info("unhandled: {}", x)
       }
   }
   
@@ -101,7 +101,7 @@ class Log(logdir: String, room: String) extends Actor {
     writer.flush()
   }
   
-  def log(s: String, args: Any*) {
+  def write(s: String, args: Any*) {
     writer.write(s.format(args:_*))
     writer.write("\n")
   }

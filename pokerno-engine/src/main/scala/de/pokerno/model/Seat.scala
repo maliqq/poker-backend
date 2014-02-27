@@ -44,6 +44,10 @@ object Seat {
 class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   // presence
   private var _presence: Option[Seat.Presence.Value] = None
+  
+  private var _lastSeenOnline: java.util.Date = null
+  def lastSeenOnline = _lastSeenOnline
+  
   def presence = _presence.getOrElse(null)
   
   def offline() {
@@ -53,7 +57,10 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   def isOffline = _presence == Some(Seat.Presence.Offline)
   
   def online() {
-    if (!isEmpty) _presence = Some(Seat.Presence.Online)
+    if (!isEmpty) {
+      _presence = Some(Seat.Presence.Online)
+      _lastSeenOnline = new java.util.Date() // now
+    }
   }
   
   def isOnline = _presence == Some(Seat.Presence.Online)
@@ -77,6 +84,9 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   def stackAmount = stack
 
   // current bet
+  private var _lastAction: Bet.Value = null
+  def lastAction = _lastAction
+  
   private var _put: Decimal = .0
   def put = _put
   def putAmount = put
@@ -158,6 +168,7 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
 
   def check(): Decimal = {
     _state = Seat.State.Bet
+    _lastAction = Bet.Check 
     .0
   }
 
@@ -169,6 +180,7 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   def fold(): Decimal = {
     _state = Seat.State.Fold
     _put = .0
+    _lastAction = Bet.Fold
     .0
   }
 
@@ -178,10 +190,11 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
     canCall(amt, toCall)
   }
 
-  def force(amt: Decimal): Decimal = {
+  def force(betType: Bet.Value, amt: Decimal): Decimal = {
     put(amt) {
       Seat.State.Play
     }
+    _lastAction = betType 
     amt
   }
 
@@ -200,6 +213,7 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
     put(diff) {
       Seat.State.Bet
     }
+    _lastAction = Bet.Raise
     diff
   }
 
@@ -219,6 +233,7 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
     put(amt) {
       Seat.State.Bet
     }
+    _lastAction = Bet.Call
     amt
   }
 
@@ -243,7 +258,7 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
       case Bet.Raise if bet.isActive        ⇒ raise(bet.amount.get)
       case Bet.Call if bet.isActive         ⇒ call(bet.amount.get)
       case Bet.Check                        ⇒ check()
-      case _: Bet.ForcedBet if bet.isActive ⇒ force(bet.amount.get)
+      case _: Bet.ForcedBet if bet.isActive ⇒ force(bet.betType, bet.amount.get)
       case x ⇒
         warn("unhandled postBet: %s", x)
         0

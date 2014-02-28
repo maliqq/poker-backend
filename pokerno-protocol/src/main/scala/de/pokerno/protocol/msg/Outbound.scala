@@ -86,11 +86,10 @@ sealed case class CardsShow(
     @BeanProperty
     var cards: ByteString,
 
-    @BeanProperty
+    @BooleanBeanProperty
     var muck: java.lang.Boolean = null) extends Outbound {
   def schema = CardsShowSchema.getSchema()
   def this() = this(null, null, null)
-  def isMuck = getMuck
 }
 /**
  * Table event
@@ -291,12 +290,11 @@ sealed case class TickTimer(
     @BeanProperty
     var timeLeft: Integer,
 
-    @BeanProperty
+    @BooleanBeanProperty
     var timeBank: java.lang.Boolean = false) extends Outbound {
 
   def this() = this(null, null, null)
   def schema = TickTimerSchema.getSchema()
-  def isTimeBank = timeBank
 
 }
 

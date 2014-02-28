@@ -4,6 +4,7 @@ import de.pokerno.model._
 import de.pokerno.poker.{ Card, Deck }
 import de.pokerno.protocol.{ msg ⇒ message, rpc, cmd }
 import de.pokerno.protocol
+import protocol.CommonConversions._
 import protocol.Conversions._
 //import protocol.wire.Conversions._
 //import protocol.msg.Conversions._

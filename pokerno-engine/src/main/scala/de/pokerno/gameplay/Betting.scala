@@ -5,8 +5,9 @@ import math.{ BigDecimal ⇒ Decimal }
 import de.pokerno.model._
 import de.pokerno.protocol.{ msg ⇒ message }
 import de.pokerno.protocol.{ rpc, wire, cmd }
-import wire.Conversions._
+import de.pokerno.protocol.CommonConversions._
 import de.pokerno.protocol.Conversions._
+import de.pokerno.protocol.WireConversions._
 import concurrent.duration._
 
 private[gameplay] trait Betting

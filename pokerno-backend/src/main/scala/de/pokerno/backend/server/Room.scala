@@ -6,6 +6,7 @@ import de.pokerno.gameplay
 import de.pokerno.backend.Gateway
 import de.pokerno.backend.gateway.http
 import de.pokerno.protocol.{ rpc, cmd, Codec ⇒ codec }
+import de.pokerno.protocol.CommonConversions._
 import de.pokerno.protocol.Conversions._
 import util.{ Success, Failure }
 import scala.concurrent.{ Promise, Future }

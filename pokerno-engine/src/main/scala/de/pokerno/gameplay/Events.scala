@@ -5,9 +5,10 @@ import de.pokerno.protocol.{ wire, msg ⇒ message }
 import de.pokerno.model._
 import de.pokerno.poker.{ Card, Hand }
 
+import protocol.CommonConversions._
 import protocol.Conversions._
-import protocol.wire.Conversions._
-import protocol.msg.Conversions._
+import protocol.WireConversions._
+import protocol.MsgConversions._
 
 import math.{ BigDecimal ⇒ Decimal }
 

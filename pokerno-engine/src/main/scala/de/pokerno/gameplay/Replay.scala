@@ -3,8 +3,8 @@ package de.pokerno.gameplay
 import de.pokerno.protocol
 import de.pokerno.protocol.{ msg, rpc, wire, cmd }
 import protocol.Conversions._
-import protocol.wire.Conversions._
-import protocol.rpc.Conversions._
+import protocol.WireConversions._
+import protocol.RpcConversions._
 import de.pokerno.model._
 import de.pokerno.poker.{ Deck, Card, Cards }
 import akka.actor.{ Actor, Props, ActorRef, ActorLogging }

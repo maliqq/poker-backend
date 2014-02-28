@@ -35,10 +35,9 @@ case class Bet(
     @BeanProperty
     var amount: java.lang.Double = null,
     
-    @BeanProperty
+    @BooleanBeanProperty
     var timeout: java.lang.Boolean = null) {
   def this() = this(null)
-  def isTimeout = timeout
 }
 
 @MsgPack

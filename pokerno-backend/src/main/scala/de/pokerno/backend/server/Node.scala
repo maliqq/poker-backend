@@ -8,7 +8,8 @@ import de.pokerno.backend.{ rpc ⇒ zerorpc }
 import de.pokerno.backend.Gateway
 import de.pokerno.backend.gateway.http
 import de.pokerno.protocol.{ rpc, cmd, msg ⇒ message }
-import de.pokerno.protocol.rpc.Conversions._
+import de.pokerno.protocol.CommonConversions._
+import de.pokerno.protocol.RpcConversions._
 
 import akka.actor.{ Actor, ActorLogging, ActorRef, Props, ActorSystem }
 

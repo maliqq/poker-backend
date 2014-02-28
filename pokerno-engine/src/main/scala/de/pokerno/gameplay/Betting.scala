@@ -296,7 +296,7 @@ private[gameplay] object Betting {
           //gameplay.moveButton
 
           // default blind positions
-          val List(_sb, _bb, _*) = active
+          val Seq(_sb, _bb, _*) = active // ???
           sb = Some(_sb)
           bb = Some(_bb)
         }

@@ -113,6 +113,9 @@ class Seat(
     var stackAmount: java.lang.Double = null,
 
     @BeanProperty
+    var lastAction: BetSchema.BetType = null,
+    
+    @BeanProperty
     var putAmount: java.lang.Double = null) {
   def this() = this(null, null, null, null)
 }

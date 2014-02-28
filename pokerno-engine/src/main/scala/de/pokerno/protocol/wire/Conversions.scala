@@ -16,6 +16,7 @@ object Conversions {
           case None    ⇒ null
         },
         stackAmount = seat.stack.toDouble,
+        lastAction = if (seat.lastAction == null) null else seat.lastAction,
         putAmount = seat.put.toDouble
       ))
     }

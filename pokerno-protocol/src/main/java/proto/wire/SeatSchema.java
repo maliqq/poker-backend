@@ -99,7 +99,8 @@ public class SeatSchema
     public static final int FIELD_PRESENCE = 2;
     public static final int FIELD_PLAYER = 3;
     public static final int FIELD_STACK_AMOUNT = 4;
-    public static final int FIELD_PUT_AMOUNT = 5;
+    public static final int FIELD_LAST_ACTION = 5;
+    public static final int FIELD_PUT_AMOUNT = 6;
 
     public SeatSchema() {}
 
@@ -148,6 +149,9 @@ public class SeatSchema
             case FIELD_STACK_AMOUNT:
                 message.setStackAmount(input.readDouble());
                 break;
+            case FIELD_LAST_ACTION:
+                message.setLastAction(Bet.BetType.valueOf(input.readEnum()));
+                break;
             case FIELD_PUT_AMOUNT:
                 message.setPutAmount(input.readDouble());
                 break;
@@ -157,7 +161,7 @@ public class SeatSchema
     }
 
 
-    private static int[] FIELDS_TO_WRITE = { FIELD_STATE, FIELD_PRESENCE, FIELD_PLAYER, FIELD_STACK_AMOUNT, FIELD_PUT_AMOUNT };
+    private static int[] FIELDS_TO_WRITE = { FIELD_STATE, FIELD_PRESENCE, FIELD_PLAYER, FIELD_STACK_AMOUNT, FIELD_LAST_ACTION, FIELD_PUT_AMOUNT };
 
     public int[] getWriteFields() { return FIELDS_TO_WRITE; }
 
@@ -188,6 +192,10 @@ public class SeatSchema
                 if (message.getStackAmount() != null)
                     output.writeDouble(FIELD_STACK_AMOUNT, message.getStackAmount(), false);
                 break;
+            case FIELD_LAST_ACTION:
+                if (message.getLastAction() != null)
+                    output.writeEnum(FIELD_LAST_ACTION, message.getLastAction().number, false);
+                break;
             case FIELD_PUT_AMOUNT:
                 if (message.getPutAmount() != null)
                     output.writeDouble(FIELD_PUT_AMOUNT, message.getPutAmount(), false);
@@ -203,6 +211,7 @@ public class SeatSchema
             case FIELD_PRESENCE: return "presence";
             case FIELD_PLAYER: return "player";
             case FIELD_STACK_AMOUNT: return "stackAmount";
+            case FIELD_LAST_ACTION: return "lastAction";
             case FIELD_PUT_AMOUNT: return "putAmount";
             default: return null;
         }
@@ -218,6 +227,7 @@ public class SeatSchema
         fieldMap.put("presence", FIELD_PRESENCE);
         fieldMap.put("player", FIELD_PLAYER);
         fieldMap.put("stackAmount", FIELD_STACK_AMOUNT);
+        fieldMap.put("lastAction", FIELD_LAST_ACTION);
         fieldMap.put("putAmount", FIELD_PUT_AMOUNT);
     }
 }

@@ -13,52 +13,6 @@ import com.dyuproject.protostuff.UninitializedMessageException;
 public class BetSchema
        implements Schema<de.pokerno.protocol.wire.Bet> {
 
-    public enum BetType implements com.dyuproject.protostuff.EnumLite<BetType>
-    {
-        ANTE(1),
-        BRING_IN(2),
-        SB(3),
-        BB(4),
-        GUEST_BLIND(5),
-        STRADDLE(6),
-        RAISE(7),
-        CALL(8),
-        CHECK(9),
-        FOLD(10),
-        ALL_IN(11);
-        
-        public final int number;
-        
-        private BetType (int number)
-        {
-            this.number = number;
-        }
-        
-        public int getNumber()
-        {
-            return number;
-        }
-        
-        public static BetType valueOf(int number)
-        {
-            switch(number) 
-            {
-                case 1: return ANTE;
-                case 2: return BRING_IN;
-                case 3: return SB;
-                case 4: return BB;
-                case 5: return GUEST_BLIND;
-                case 6: return STRADDLE;
-                case 7: return RAISE;
-                case 8: return CALL;
-                case 9: return CHECK;
-                case 10: return FOLD;
-                case 11: return ALL_IN;
-                default: return null;
-            }
-        }
-    }
-
 
     static final de.pokerno.protocol.wire.Bet DEFAULT_INSTANCE = new de.pokerno.protocol.wire.Bet();
     static final Schema<de.pokerno.protocol.wire.Bet> SCHEMA = new BetSchema();

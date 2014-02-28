@@ -4,6 +4,7 @@ import reflect._
 
 import com.dyuproject.protostuff.ByteString
 import org.msgpack.annotation.{ Message ⇒ MsgPack }
+import com.fasterxml.jackson.annotation.JsonInclude
 import proto.wire._
 
 @MsgPack
@@ -29,7 +30,7 @@ case class Box(
 @MsgPack
 case class Bet(
     @BeanProperty
-    var `type`: BetSchema.BetType,
+    var `type`: BetType,
     
     @BeanProperty
     var amount: java.lang.Double = null,
@@ -64,6 +65,7 @@ case class Mix(
 }
 
 @MsgPack
+@JsonInclude(JsonInclude.Include.NON_NULL)
 case class Variation(
     @BeanProperty
     var `type`: VariationSchema.VariationType,
@@ -99,6 +101,7 @@ case class Hand(
 }
 
 @MsgPack
+@JsonInclude(JsonInclude.Include.NON_NULL)
 class Seat(
     @BeanProperty
     var state: SeatSchema.SeatState = null,
@@ -113,7 +116,7 @@ class Seat(
     var stackAmount: java.lang.Double = null,
 
     @BeanProperty
-    var lastAction: BetSchema.BetType = null,
+    var lastAction: BetType = null,
     
     @BeanProperty
     var putAmount: java.lang.Double = null) {

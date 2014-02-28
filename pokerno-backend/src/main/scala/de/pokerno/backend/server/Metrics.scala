@@ -36,7 +36,7 @@ class Metrics extends Actor with ActorLogging {
   var playersPreflop: Long = 0
   var lastPot: Double = .0
   
-  import proto.wire.BetSchema.BetType
+  import proto.wire.BetType
   import proto.wire.StreetType
   
   private def handleMessage(msg: message.Message) = msg match {

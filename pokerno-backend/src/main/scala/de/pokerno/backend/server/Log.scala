@@ -19,7 +19,7 @@ class Log(logdir: String, room: String) extends Actor with ActorLogging {
   }
   
   import proto.wire.DealType
-  import proto.wire.BetSchema.BetType
+  import proto.wire.BetType
   
   def receive = {
     case Notification(msg, from, to) =>

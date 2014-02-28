@@ -52,7 +52,7 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
     _lastSeenOnline != null && _lastSeenOnline.before(new java.util.Date(millis)) 
   }
   
-  def presence = _presence.getOrElse(null)
+  def presence = _presence
   
   def offline() {
     if (!isEmpty) _presence = Some(Seat.Presence.Offline)
@@ -125,7 +125,10 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
     net(-amount)(f)
     _put += amount
   }
-  def clearPut() = _put = 0
+  def clearPut() {
+    _put = 0
+    _lastAction = null
+  }
 
   /**
    * State transitions

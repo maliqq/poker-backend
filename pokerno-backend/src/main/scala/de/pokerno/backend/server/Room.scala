@@ -254,7 +254,9 @@ class Room(
     table.seat(player) map {
       case box @ (seat, pos) ⇒
         f(box)
-        if (notify) events.publish(gameplay.Events.seatPresenceChanged(pos, seat.presence))
+        if (notify) seat.presence.map { presenceStatus =>
+          events.publish(gameplay.Events.seatPresenceChanged(pos, presenceStatus))
+        }
     }
   }
 

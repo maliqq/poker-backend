@@ -11,6 +11,10 @@ object Conversions {
     for (seat ← (table.seats: List[model.Seat])) {
       seats.add(new Seat(
         state = seat.state,
+        presence = seat.presence match {
+          case Some(v) => v
+          case None => null
+        },
         player = seat.player match {
           case Some(p) ⇒ p.toString
           case None    ⇒ null
@@ -117,31 +121,31 @@ object Conversions {
 
   implicit def mix2wire(m: model.Mix): Mix = new Mix(m.game, m.tableSize)
 
-  implicit def betType2wire(v: model.Bet.Value): BetSchema.BetType = v match {
-    case model.Bet.Call       ⇒ BetSchema.BetType.CALL
-    case model.Bet.Raise      ⇒ BetSchema.BetType.RAISE
-    case model.Bet.Check      ⇒ BetSchema.BetType.CHECK
-    case model.Bet.Fold       ⇒ BetSchema.BetType.FOLD
-    case model.Bet.Ante       ⇒ BetSchema.BetType.ANTE
-    case model.Bet.BringIn    ⇒ BetSchema.BetType.BRING_IN
-    case model.Bet.SmallBlind ⇒ BetSchema.BetType.SB
-    case model.Bet.BigBlind   ⇒ BetSchema.BetType.BB
-    case model.Bet.GuestBlind ⇒ BetSchema.BetType.GUEST_BLIND
-    case model.Bet.Straddle   ⇒ BetSchema.BetType.STRADDLE
+  implicit def betType2wire(v: model.Bet.Value): BetType = v match {
+    case model.Bet.Call       ⇒ BetType.CALL
+    case model.Bet.Raise      ⇒ BetType.RAISE
+    case model.Bet.Check      ⇒ BetType.CHECK
+    case model.Bet.Fold       ⇒ BetType.FOLD
+    case model.Bet.Ante       ⇒ BetType.ANTE
+    case model.Bet.BringIn    ⇒ BetType.BRING_IN
+    case model.Bet.SmallBlind ⇒ BetType.SB
+    case model.Bet.BigBlind   ⇒ BetType.BB
+    case model.Bet.GuestBlind ⇒ BetType.GUEST_BLIND
+    case model.Bet.Straddle   ⇒ BetType.STRADDLE
   }
 
-  implicit def wire2betType(v: BetSchema.BetType): model.Bet.Value = v match {
-    case BetSchema.BetType.CALL        ⇒ model.Bet.Call
-    case BetSchema.BetType.RAISE       ⇒ model.Bet.Raise
-    case BetSchema.BetType.CHECK       ⇒ model.Bet.Check
-    case BetSchema.BetType.FOLD        ⇒ model.Bet.Fold
-    case BetSchema.BetType.ANTE        ⇒ model.Bet.Ante
-    case BetSchema.BetType.BRING_IN    ⇒ model.Bet.BringIn
-    case BetSchema.BetType.SB          ⇒ model.Bet.SmallBlind
-    case BetSchema.BetType.BB          ⇒ model.Bet.BigBlind
-    case BetSchema.BetType.GUEST_BLIND ⇒ model.Bet.GuestBlind
-    case BetSchema.BetType.STRADDLE    ⇒ model.Bet.Straddle
-    case BetSchema.BetType.ALL_IN      ⇒ model.Bet.AllIn
+  implicit def wire2betType(v: BetType): model.Bet.Value = v match {
+    case BetType.CALL        ⇒ model.Bet.Call
+    case BetType.RAISE       ⇒ model.Bet.Raise
+    case BetType.CHECK       ⇒ model.Bet.Check
+    case BetType.FOLD        ⇒ model.Bet.Fold
+    case BetType.ANTE        ⇒ model.Bet.Ante
+    case BetType.BRING_IN    ⇒ model.Bet.BringIn
+    case BetType.SB          ⇒ model.Bet.SmallBlind
+    case BetType.BB          ⇒ model.Bet.BigBlind
+    case BetType.GUEST_BLIND ⇒ model.Bet.GuestBlind
+    case BetType.STRADDLE    ⇒ model.Bet.Straddle
+    case BetType.ALL_IN      ⇒ model.Bet.AllIn
   }
 
   implicit def seatState2wire(v: model.Seat.State.Value): SeatSchema.SeatState = v match {

@@ -150,7 +150,7 @@ public class SeatSchema
                 message.setStackAmount(input.readDouble());
                 break;
             case FIELD_LAST_ACTION:
-                message.setLastAction(Bet.BetType.valueOf(input.readEnum()));
+                message.setLastAction(BetType.valueOf(input.readEnum()));
                 break;
             case FIELD_PUT_AMOUNT:
                 message.setPutAmount(input.readDouble());

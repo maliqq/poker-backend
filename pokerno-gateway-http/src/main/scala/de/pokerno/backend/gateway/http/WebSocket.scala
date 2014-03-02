@@ -73,6 +73,15 @@ object WebSocket {
     override def channelInactive(ctx: ChannelHandlerContext) {
       disconnect(ctx.channel)
     }
+    
+    override def exceptionCaught(ctx: ChannelHandlerContext, err: Throwable): Unit = err match {
+      case e: java.io.IOException =>
+        Console printf("exceptionCaught: %s\n", err.getMessage())
+        e.printStackTrace()
+        ctx.close()
+      case _ =>
+        throw err
+    }
 
     def connection(channel: Channel, req: http.FullHttpRequest) = new Connection(channel, req)
 
@@ -106,7 +115,7 @@ object WebSocket {
       _handshaker = handshaker(req)
       if (_handshaker.isEmpty) {
         Console println("WebSocket handler: handshake failed, unsupported websocket version")
-        ws.WebSocketServerHandshakerFactory.sendUnsupportedWebSocketVersionResponse(ctx.channel)
+        ws.WebSocketServerHandshakerFactory.sendUnsupportedVersionResponse(ctx.channel)
         return
       }
 

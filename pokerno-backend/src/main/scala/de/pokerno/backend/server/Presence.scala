@@ -2,9 +2,10 @@ package de.pokerno.backend.server
 
 import akka.actor.{Actor, Cancellable}
 import de.pokerno.model
+import de.pokerno.gameplay
 import concurrent.duration._
 
-trait RoomTimers {
+trait Presence {
 
 a: Actor =>
   
@@ -29,6 +30,19 @@ a: Actor =>
   
   def playerGone(player: model.Player) {
     presenceTimers.remove(player)
+  }
+  
+  def table: model.Table
+  def events: gameplay.Events
+  
+  protected def changeSeatPresence(player: model.Player, notify: Boolean = true)(f: ((model.Seat, Int)) ⇒ Unit) {
+    table.seat(player) map {
+      case box @ (seat, pos) ⇒
+        f(box)
+        if (notify) seat.presence.map { presenceStatus =>
+          events.publish(gameplay.Events.seatPresenceChanged(pos, presenceStatus))
+        }
+    }
   }
   
 }

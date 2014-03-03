@@ -38,13 +38,17 @@ case object NoneRunning extends Data
 case class Running(play: gameplay.Play, ref: ActorRef) extends Data
 
 class Room(
-  id: String,
+  val id: String,
   variation: model.Variation,
   stake: model.Stake)
     extends Actor
     with ActorLogging
     with FSM[Room.State.Value, Data]
-    with RoomTimers {
+    with JoinLeave
+    with Presence
+    with Observers
+    with gameplay.DealCycle
+    {
   
   val table = new model.Table(variation.tableSize)
   val events = new gameplay.Events(id)
@@ -53,22 +57,13 @@ class Room(
   import context.dispatcher
   import concurrent.duration._
   import proto.cmd.PlayerEventSchema
-
-  log.info("starting room {}", id)
-  startWith(Room.State.Waiting, NoneRunning)
-
-  def observe[T <: Actor](actorClass: Class[T], name: String, args: Any*) = {
-    val actor = actorOf(Props(actorClass, args:_*), name = name)
-    events.broker.subscribe(actor, name)
-    actor
-  }
-
-  /*
-   * Watchers
-   * */
+  
   val watchers = observe(classOf[Watchers], f"room-$id-watchers")
   val logger = observe(classOf[Log], f"room-$id-log", "/tmp", id)
   val metrics = observe(classOf[Metrics], f"room-$id-metrics")
+
+  log.info("starting room {}", id)
+  startWith(Room.State.Waiting, NoneRunning)
 
   /*
    * State machine
@@ -224,40 +219,12 @@ class Room(
   }
 
   initialize()
-
-  final val minimumReadyPlayersToStart = 2
-  final val firstDealAfter = (10 seconds)
-  final val nextDealAfter = (5 seconds)
-
-  private def canStart: Boolean = {
-    table.seatsAsList.count(_ isReady) == minimumReadyPlayersToStart
-  }
-
-  private def joinPlayer(join: cmd.JoinPlayer) {
-    try {
-      table.addPlayer(join.pos, join.player, Some(join.amount))
-      events.publish(gameplay.Events.joinTable((join.player, join.pos), join.amount))
-    } catch {
-      case err: model.Seat.IsTaken        ⇒
-      case err: model.Table.AlreadyJoined ⇒
-    }
-  }
-
+  
   private def changeSeatState(player: model.Player, notify: Boolean = true)(f: ((model.Seat, Int)) ⇒ Unit) {
     table.seat(player) map {
       case box @ (seat, pos) ⇒
         f(box)
         if (notify) events.publish(gameplay.Events.seatStateChanged(pos, seat.state))
-    }
-  }
-  
-  private def changeSeatPresence(player: model.Player, notify: Boolean = true)(f: ((model.Seat, Int)) ⇒ Unit) {
-    table.seat(player) map {
-      case box @ (seat, pos) ⇒
-        f(box)
-        if (notify) seat.presence.map { presenceStatus =>
-          events.publish(gameplay.Events.seatPresenceChanged(pos, presenceStatus))
-        }
     }
   }
 

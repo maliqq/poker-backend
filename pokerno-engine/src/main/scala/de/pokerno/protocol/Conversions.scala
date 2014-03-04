@@ -111,7 +111,8 @@ object MsgConversions {
       v.acting.map { a =>
         play.acting = RequireBet(pos = a._2, player = a._1, call = v.require._1, raise = v.require._2)
       }
-      play.board = v.board
+      if (v.board != null) play.board = v.board
+      //if (v.pocket != null) play.pocket = v.pocket
       play
     } else null
   }

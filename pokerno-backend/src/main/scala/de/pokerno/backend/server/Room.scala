@@ -168,9 +168,9 @@ class Room(
       // send start message
       val startMsg = running match {
         case NoneRunning ⇒
-          gameplay.Events.start(table, variation, stake, null).msg // TODO: empty play
+          gameplay.Events.start(table, variation, stake).msg // TODO: empty play
         case Running(play, _) =>
-          gameplay.Events.start(table, variation, stake, play).msg
+          gameplay.Events.start(table, variation, stake, play, conn.player).msg
       }
       conn.send(codec.Json.encode(startMsg))
       
@@ -210,7 +210,7 @@ class Room(
 
   initialize()
   
-  private def changeSeatState(player: model.Player, notify: Boolean = true)(f: ((model.Seat, Int)) ⇒ Unit) {
+  def changeSeatState(player: model.Player, notify: Boolean = true)(f: ((model.Seat, Int)) ⇒ Unit) {
     table.seat(player) map {
       case box @ (seat, pos) ⇒
         f(box)

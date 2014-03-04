@@ -374,6 +374,9 @@ sealed case class Play(
     var board: ByteString = null,
     
     @BeanProperty
+    var pocket: ByteString = null,
+    
+    @BeanProperty
     var winners: java.util.ArrayList[DeclareWinner] = null,
     
     @BeanProperty

@@ -32,8 +32,9 @@ public class PlaySchema
     public static final int FIELD_POT = 6;
     public static final int FIELD_RAKE = 7;
     public static final int FIELD_BOARD = 8;
-    public static final int FIELD_WINNERS = 9;
-    public static final int FIELD_KNOWN_CARDS = 10;
+    public static final int FIELD_POCKET = 9;
+    public static final int FIELD_WINNERS = 10;
+    public static final int FIELD_KNOWN_CARDS = 11;
 
     public PlaySchema() {}
 
@@ -95,6 +96,9 @@ public class PlaySchema
             case FIELD_BOARD:
                 message.setBoard(input.readBytes());
                 break;
+            case FIELD_POCKET:
+                message.setPocket(input.readBytes());
+                break;
             case FIELD_WINNERS:
                 if (message.getWinners() == null)
                     message.setWinners(new ArrayList<de.pokerno.protocol.msg.DeclareWinner>());
@@ -113,7 +117,7 @@ public class PlaySchema
     }
 
 
-    private static int[] FIELDS_TO_WRITE = { FIELD_ID, FIELD_START_AT, FIELD_STOP_AT, FIELD_STREET, FIELD_ACTING, FIELD_POT, FIELD_RAKE, FIELD_BOARD, FIELD_WINNERS, FIELD_KNOWN_CARDS };
+    private static int[] FIELDS_TO_WRITE = { FIELD_ID, FIELD_START_AT, FIELD_STOP_AT, FIELD_STREET, FIELD_ACTING, FIELD_POT, FIELD_RAKE, FIELD_BOARD, FIELD_POCKET, FIELD_WINNERS, FIELD_KNOWN_CARDS };
 
     public int[] getWriteFields() { return FIELDS_TO_WRITE; }
 
@@ -157,6 +161,10 @@ public class PlaySchema
                 if (message.getBoard() != null)
                     output.writeBytes(FIELD_BOARD, message.getBoard(), false);
                 break;
+            case FIELD_POCKET:
+                if (message.getPocket() != null)
+                    output.writeBytes(FIELD_POCKET, message.getPocket(), false);
+                break;
             case FIELD_WINNERS:
                 if (message.getWinners() != null) {
                     for (de.pokerno.protocol.msg.DeclareWinner winnersEntry : message.getWinners()) {
@@ -190,6 +198,7 @@ public class PlaySchema
             case FIELD_POT: return "pot";
             case FIELD_RAKE: return "rake";
             case FIELD_BOARD: return "board";
+            case FIELD_POCKET: return "pocket";
             case FIELD_WINNERS: return "winners";
             case FIELD_KNOWN_CARDS: return "knownCards";
             default: return null;
@@ -210,6 +219,7 @@ public class PlaySchema
         fieldMap.put("pot", FIELD_POT);
         fieldMap.put("rake", FIELD_RAKE);
         fieldMap.put("board", FIELD_BOARD);
+        fieldMap.put("pocket", FIELD_POCKET);
         fieldMap.put("winners", FIELD_WINNERS);
         fieldMap.put("knownCards", FIELD_KNOWN_CARDS);
     }

@@ -30,9 +30,17 @@ object Events {
     message.PlayerLeave(box._2, box._1)
   )
   
-  def start(table: Table, variation: Variation, stake: Stake, play: Play) = E(
-    message.Start(table, variation, stake, play)
-  )
+  def start(table: Table, variation: Variation, stake: Stake, play: Play = null, connPlayer: Option[String] = None) = {
+    val msgPlay: message.Play = play
+    
+    connPlayer.map { player =>
+      play.pocketCards(player) map { msgPlay.pocket = _ } 
+    }
+    
+    E(
+      message.Start(table, variation, stake, msgPlay)
+    )
+  }
   
   def playStart(play: Play) = E(
     message.PlayStart(play)

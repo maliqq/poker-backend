@@ -3,6 +3,7 @@ package de.pokerno.backend.server
 import akka.actor.{Actor, ActorLogging}
 import de.pokerno.poker.Cards
 import de.pokerno.protocol.{msg => message}
+import de.pokerno.protocol.CommonConversions._
 import de.pokerno.protocol.Conversions._
 import de.pokerno.gameplay.Notification
 

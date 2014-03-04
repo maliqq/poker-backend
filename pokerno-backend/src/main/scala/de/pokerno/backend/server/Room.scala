@@ -146,12 +146,7 @@ class Room(
           changeSeatState(player) { _._1 ready }
 
         case PlayerEventSchema.EventType.LEAVE ⇒
-          table.removePlayer(player)
-          changeSeatState(player, notify = false) { case box @ (seat, pos) =>
-            events.publish(gameplay.Events.leaveTable((seat.player.get, pos))) // FIXME unify
-            table.clearSeat(pos)
-          }
-          //changeSeatState(player) { _._1 clear }
+          leavePlayer(player)
       }
       stay()
   }
@@ -200,12 +195,7 @@ class Room(
       stay()
 
     case Event(kick: cmd.KickPlayer, _) ⇒
-      log.info("got kick: {}", kick)
-      changeSeatState(kick.player, notify = false) { case box @ (seat, pos) =>
-        events.publish(gameplay.Events.leaveTable((seat.player.get, pos))) // FIXME unify
-        table.clearSeat(pos)
-      }
-      table.removePlayer(kick.player)
+      leavePlayer(kick.player)
       stay()
       
     case Event(x: Any, _) ⇒

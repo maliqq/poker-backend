@@ -22,6 +22,13 @@ object CommonConversions {
   implicit def range2wire(r: model.Range) = new wire.Range(r.min.toDouble, r.max.toDouble)
 
   implicit def wire2range(w: Range) = new model.Range((w.min.toDouble, w.max.toDouble))
+
+  implicit def cards2wire(c: List[poker.Card]): ByteString =
+    ByteString.copyFrom(c.map(_.toByte).toArray)
+
+  implicit def wire2cards(w: ByteString): List[poker.Card] =
+    w.toByteArray.map(poker.Card.wrap(_)).toList
+
 }
 
 object Conversions {
@@ -47,12 +54,6 @@ object Conversions {
       case null ⇒ None
       case n    ⇒ Some(n)
     })
-
-  implicit def cards2wire(c: List[poker.Card]): ByteString =
-    ByteString.copyFrom(c.map(_.toByte).toArray)
-
-  implicit def wire2cards(w: ByteString): List[poker.Card] =
-    w.toByteArray.map(poker.Card.wrap(_)).toList
 
   implicit def hand2wire(h: poker.Hand) = new wire.Hand(
     cards = h.cards.value,
@@ -110,6 +111,7 @@ object MsgConversions {
       v.acting.map { a =>
         play.acting = RequireBet(pos = a._2, player = a._1, call = v.require._1, raise = v.require._2)
       }
+      play.board = v.board
       play
     } else null
   }

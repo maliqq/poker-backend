@@ -371,6 +371,9 @@ sealed case class Play(
     var rake: java.lang.Double = null,
     
     @BeanProperty
+    var board: ByteString = null,
+    
+    @BeanProperty
     var winners: java.util.ArrayList[DeclareWinner] = null,
     
     @BeanProperty

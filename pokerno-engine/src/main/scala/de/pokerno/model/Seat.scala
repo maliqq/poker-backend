@@ -57,11 +57,36 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   def presence_=(value: Option[Seat.Presence.Value]) {
     val old = _presence
     _presence = value
-    _onPresenceChange(old, _presence)
+    presenceCallbacks.on(old, _presence)
   }
   
-  private def _onPresenceChange(oldState: Option[Seat.Presence.Value], newState: Option[Seat.Presence.Value]) {
-    newState match {
+  trait CallbackTopic
+  case object Before extends CallbackTopic
+  case object After extends CallbackTopic
+  case object On extends CallbackTopic
+  
+  class Callbacks[T] {
+    type cb = (T, T) => Unit
+    private val _cb = collection.mutable.HashMap[CallbackTopic, collection.mutable.ListBuffer[cb]]()
+    
+    def bind(topic: CallbackTopic) (f: (T, T) => Unit) {
+      if (!_cb.contains(topic)) _cb(topic) = collection.mutable.ListBuffer[cb]()
+      _cb(topic) += f
+    }
+    
+    def fire(topic: CallbackTopic, _old: T, _new: T) {
+      _cb(topic).foreach { _(_old, _new) }
+    }
+    
+    def before(_old: T, _new: T): Unit = fire(Before, _old, _new)
+    def after(_old: T, _new: T): Unit = fire(Before, _old, _new)
+    def on(_old: T, _new: T): Unit = fire(Before, _old, _new)
+    
+  }
+  
+  val presenceCallbacks = new Callbacks[Option[Seat.Presence.Value]]()
+  presenceCallbacks.bind(On) { case (_old, _new) =>
+    _new match {
       case Some(Seat.Presence.Online) =>
         _lastSeenOnline = new java.util.Date()
       case _ => // nothing
@@ -85,15 +110,40 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   
   // state
   def state = _state
+  
+  def state_=(newState: Seat.State.Value) {
+    val _old = _state
+    stateCallbacks.before(_old, newState)
+    _state = newState
+    //stateCallbacks.on(_old, _state)
+    //stateCallbacks.after(_old, _state)
+  }
+  
+  val stateCallbacks = new Callbacks[Seat.State.Value]()
+  stateCallbacks.bind(Before) { case (_old, _new) =>
+    _new match {
+      case Seat.State.Play | Seat.State.Idle | Seat.State.Ready =>
+        if (isEmpty)
+          throw new IllegalStateException("can't change emtpy seat state: %s" format(this))
+      
+      case Seat.State.Away =>
+        if (isEmpty || isOnline)
+          throw new IllegalStateException("can't change seat state to away: %s (%s)" format(this, _presence))
+    }
+  }
 
   // player
   private var _player: Option[Player] = None
   def player = _player
   def player_=(p: Player) {
-    if (_state != Seat.State.Empty) throw Seat.IsTaken()
+    playerCallbacks.before(_player.getOrElse(null), p)
 
     _state = Seat.State.Taken
     _player = Some(p)
+  }
+  val playerCallbacks = new Callbacks[Player]()
+  playerCallbacks.bind(Before) { case (_, _) => // FIXME move it to state callbacks
+    if (_state != Seat.State.Empty) throw Seat.IsTaken()
   }
 
   // current stack
@@ -147,29 +197,17 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   /**
    * State transitions
    */
-  def play() {
-    if (isEmpty)
-      throw new IllegalStateException("can't play, seat is empty: %s" format(this))
-    _state = Seat.State.Play
-  }
+  def play(): Unit =
+    state = Seat.State.Play
 
-  def idle() {
-    if (isEmpty)
-      throw new IllegalStateException("can't change seat state to idle: %s" format(this))
-    _state = Seat.State.Idle
-  }
+  def idle(): Unit =
+    state = Seat.State.Idle
 
-  def ready() {
-    if (isEmpty)
-      throw new IllegalStateException("can't change seat state to ready: %s" format(this))
-    _state = if (total == 0) Seat.State.Idle else Seat.State.Ready
-  }
+  def ready(): Unit =
+    state = if (total == 0) Seat.State.Idle else Seat.State.Ready
 
-  def away() {
-    if (isEmpty || isOnline)
-      throw new IllegalStateException("can't change seat state to away: %s (%s)" format(this, _presence))
-    _state = Seat.State.Away
-  }
+  def away(): Unit =
+    state = Seat.State.Away
 
   /**
    * Action

@@ -74,8 +74,17 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
       _cb(topic) += f
     }
     
+    def unbind(topic: CallbackTopic, f: (T, T) => Unit) {
+      if (_cb.contains(topic))
+        _cb(topic) -= f
+    }
+    
     def fire(topic: CallbackTopic, _old: T, _new: T) {
       _cb(topic).foreach { _(_old, _new) }
+    }
+    
+    def clear(topic: CallbackTopic) {
+      _cb(topic) = collection.mutable.ListBuffer[cb]()
     }
     
     def before(_old: T, _new: T): Unit = fire(Before, _old, _new)
@@ -142,8 +151,9 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
     _player = Some(p)
   }
   val playerCallbacks = new Callbacks[Player]()
-  playerCallbacks.bind(Before) { case (_, _) => // FIXME move it to state callbacks
-    if (_state != Seat.State.Empty) throw Seat.IsTaken()
+  playerCallbacks.bind(Before) { case _ => // FIXME move it to state callbacks
+    if (_state != Seat.State.Empty)
+      throw Seat.IsTaken()
   }
 
   // current stack
@@ -164,14 +174,19 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   def totalAmoutn = total
 
   def net(amt: Decimal)(f: => Seat.State.Value) {
-    if (isEmpty)
-      throw new IllegalStateException("can't change amount, seat is empty; %s" format(this)) 
+    stackCallbacks.before(amt, _stack) 
     // TODO: check < 0
     _stack += amt
     // FIXME
     _state = if (_stack == 0)
       Seat.State.AllIn
     else f
+  }
+  
+  val stackCallbacks = new Callbacks[Decimal]()
+  stackCallbacks.bind(Before) { case _ =>
+    if (isEmpty)
+      throw new IllegalStateException("can't change amount, seat is empty; %s" format(this))
   }
 
   def buyIn(amt: Decimal): Unit =

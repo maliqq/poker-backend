@@ -227,10 +227,7 @@ private[gameplay] object Betting {
               round.acting.get._1.player.get // FIXME
             }
 
-            val seatOption = table.seat(anteBet.player)
-            if (seatOption.isDefined) {
-              val (seat, pos) = seatOption.get
-              // process ante bet if seat is active
+            table.playerSeatWithPos(anteBet.player) map { case (seat, pos) =>
               if (seat.isActive) gameplay.forceBet(stageContext, (seat, pos), Bet.Ante)
             }
           }

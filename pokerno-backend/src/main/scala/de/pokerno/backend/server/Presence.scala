@@ -36,7 +36,7 @@ a: Actor =>
   def events: gameplay.Events
   
   protected def changeSeatPresence(player: model.Player, notify: Boolean = true)(f: ((model.Seat, Int)) ⇒ Unit) {
-    table.seat(player) map {
+    table.playerSeatWithPos(player) map {
       case box @ (seat, pos) ⇒
         f(box)
         if (notify) seat.presence.map { presenceStatus =>

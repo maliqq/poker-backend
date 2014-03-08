@@ -87,7 +87,7 @@ private[gameplay] trait Showdown {
 
       winners foreach {
         case (winner, amount) ⇒
-          table.seat(winner) map {
+          table.playerSeatWithPos(winner) map {
             case (seat, pos) ⇒
               seat wins amount
               events.publish(

@@ -134,7 +134,7 @@ object RpcConversions {
     var pos = 0
     for (seat ← _table.seats) {
       if (seat != null && seat.player != null && seat.stackAmount != null)
-        table.addPlayer(pos, seat.player, Some(seat.stackAmount))
+        table.takeSeat(pos, seat.player, Some(seat.stackAmount))
       pos += 1
     }
     table.button.current = _table.button

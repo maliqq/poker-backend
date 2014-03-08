@@ -13,7 +13,7 @@ trait JoinLeave {
 
   protected def joinPlayer(join: cmd.JoinPlayer) {
     try {
-      table.addPlayer(join.pos, join.player, Some(join.amount))
+      table.takeSeat(join.pos, join.player, Some(join.amount))
       events.publish(gameplay.Events.joinTable((join.player, join.pos), join.amount))
     } catch {
       case err: model.Seat.IsTaken        ⇒

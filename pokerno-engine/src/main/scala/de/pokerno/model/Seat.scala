@@ -54,17 +54,31 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   
   def presence = _presence
   
-  def offline() {
-    if (!isEmpty) _presence = Some(Seat.Presence.Offline)
+  def presence_=(value: Option[Seat.Presence.Value]) {
+    val old = _presence
+    _presence = value
+    _onPresenceChange(old, _presence)
   }
   
-  def isOffline = _presence == Some(Seat.Presence.Offline)
+  private def _onPresenceChange(oldState: Option[Seat.Presence.Value], newState: Option[Seat.Presence.Value]) {
+    newState match {
+      case Some(Seat.Presence.Online) =>
+        _lastSeenOnline = new java.util.Date()
+      case _ => // nothing
+    }
+  }
+  
+  def offline() {
+    if (!isEmpty) presence = Some(Seat.Presence.Offline)
+  }
+  
+  def isOffline = presence match {
+    case Some(Seat.Presence.Offline) => true
+    case _ => false
+  }
   
   def online() {
-    if (!isEmpty) {
-      _presence = Some(Seat.Presence.Online)
-      _lastSeenOnline = new java.util.Date()
-    }
+    if (!isEmpty) presence = Some(Seat.Presence.Online)
   }
   
   def isOnline = _presence == Some(Seat.Presence.Online)

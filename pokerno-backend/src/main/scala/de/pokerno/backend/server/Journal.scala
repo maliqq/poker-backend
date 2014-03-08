@@ -7,13 +7,13 @@ import de.pokerno.protocol.CommonConversions._
 import de.pokerno.protocol.Conversions._
 import de.pokerno.gameplay.Notification
 
-class Log(logdir: String, room: String) extends Actor with ActorLogging {
+class Journal(storageDir: String, room: String) extends Actor with ActorLogging {
   
   var writer: java.io.OutputStreamWriter = null
   
   private final val ext = ".txt"
     
-  private lazy val dir = new java.io.File(logdir, room) 
+  private lazy val dir = new java.io.File(storageDir, room) 
   
   override def preStart() {
     dir.mkdir()

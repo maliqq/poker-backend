@@ -36,37 +36,33 @@ class Table(val size: Int) {
 
   type Box = (Player, Int)
 
-  def boxes = seatsAsList.filter(_.player.isDefined).zipWithIndex.map {
-    case (seat, i) ⇒
-      (seat.player.get, i)
-  }
+  def boxes: List[Box] =
+    seats.zipped.foldLeft(List[Box]()) {
+      case (result, (seat, i)) ⇒
+        if (seat.player.isDefined)
+          (seat.player.get, i) :: result
+        else result
+    }
 
-  def pos(player: Player): Option[Int] =
-    _seating.get(player)
+  def playerSeatWithPos(player: Player): Option[(Seat, Int)] =
+    playerPos(player) map { i ⇒
+      (seats(i), i)
+    }
 
-  def box(player: Player): Option[Box] = pos(player) map { i ⇒
-    (player, i)
-  }
-
-  // TODO: seatWithPos
-  def seat(player: Player): Option[(Seat, Int)] = pos(player) map { i ⇒
-    (seatsAsList(i), i)
-  }
-
-  def addPlayer(at: Int, player: Player, amount: Option[Decimal] = None) {
-    if (_seating.contains(player)) throw AlreadyJoined()
-    val seat = seatsAsList(at)
+  def takeSeat(at: Int, player: Player, amount: Option[Decimal] = None) {
+    if (hasPlayer(player))
+      throw AlreadyJoined()
+    val seat = seats(at)
     seat.player = player
     amount map (seat buyIn (_))
-    _seating(player) = at
-  }
-
-  def removePlayer(player: Player) {
-    _seating.remove(player)
+    addPlayer(at, player)
   }
   
-  def clearSeat(pos: Int) {
-    _seats.clear(pos)
-  }
+  def clearSeat(pos: Int): Unit = _seats.clear(pos)
+
+  def playerPos(player: Player): Option[Int] = _seating.get(player)
+  def hasPlayer(player: Player): Boolean = _seating.contains(player)
+  def addPlayer(at: Int, player: Player): Unit = _seating(player) = at
+  def removePlayer(player: Player): Unit = _seating.remove(player)
 
 }

@@ -125,11 +125,13 @@ private[gameplay] object Dealing {
         case DealCards.Hole | DealCards.Door ⇒
 
           val (_player: Player, pos: Int) =
-            if (player.isDefined)
-              t.box(player.get).get
-            else {
-              val (seat, pos) = gameplay.round.acting.get
-              (seat.player.get, pos)
+            player match {
+              case Some(p) =>
+                (p, t.playerPos(p))
+              
+              case None =>
+                val (seat, pos) = gameplay.round.acting.get
+                (seat.player.get, pos)
             }
 
           val pocketSize = gameOptions.pocketSize

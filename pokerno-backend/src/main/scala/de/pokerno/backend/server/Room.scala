@@ -59,7 +59,7 @@ class Room(
   import proto.cmd.PlayerEventSchema
   
   val watchers = observe(classOf[Watchers], f"room-$id-watchers")
-  val logger = observe(classOf[Log], f"room-$id-log", "/tmp", id)
+  val logger = observe(classOf[Journal], f"room-$id-log", "/tmp", id)
   val metrics = observe(classOf[Metrics], f"room-$id-metrics")
 
   log.info("starting room {}", id)
@@ -211,7 +211,7 @@ class Room(
   initialize()
   
   def changeSeatState(player: model.Player, notify: Boolean = true)(f: ((model.Seat, Int)) ⇒ Unit) {
-    table.seat(player) map {
+    table.playerSeatWithPos(player) map {
       case box @ (seat, pos) ⇒
         f(box)
         if (notify) events.publish(gameplay.Events.seatStateChanged(pos, seat.state))

@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import proto.wire._
 
 @MsgPack
-case class Range(
+case class MinMax(
     @BeanProperty var min: java.lang.Double,
 
     @BeanProperty var max: java.lang.Double) {

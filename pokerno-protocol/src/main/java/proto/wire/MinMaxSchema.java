@@ -10,52 +10,52 @@ import com.dyuproject.protostuff.Output;
 import com.dyuproject.protostuff.Schema;
 import com.dyuproject.protostuff.UninitializedMessageException;
 
-public class RangeSchema
-       implements Schema<de.pokerno.protocol.wire.Range> {
+public class MinMaxSchema
+       implements Schema<de.pokerno.protocol.wire.MinMax> {
 
 
-    static final de.pokerno.protocol.wire.Range DEFAULT_INSTANCE = new de.pokerno.protocol.wire.Range();
-    static final Schema<de.pokerno.protocol.wire.Range> SCHEMA = new RangeSchema();
+    static final de.pokerno.protocol.wire.MinMax DEFAULT_INSTANCE = new de.pokerno.protocol.wire.MinMax();
+    static final Schema<de.pokerno.protocol.wire.MinMax> SCHEMA = new MinMaxSchema();
 
-    public static de.pokerno.protocol.wire.Range getDefaultInstance() { return DEFAULT_INSTANCE; }
-    public static Schema<de.pokerno.protocol.wire.Range> getSchema() { return SCHEMA; }
+    public static de.pokerno.protocol.wire.MinMax getDefaultInstance() { return DEFAULT_INSTANCE; }
+    public static Schema<de.pokerno.protocol.wire.MinMax> getSchema() { return SCHEMA; }
 
     public static final int FIELD_NONE = 0;
     public static final int FIELD_MIN = 1;
     public static final int FIELD_MAX = 2;
 
-    public RangeSchema() {}
+    public MinMaxSchema() {}
 
 
-    public de.pokerno.protocol.wire.Range newMessage() {
-        return new de.pokerno.protocol.wire.Range();
+    public de.pokerno.protocol.wire.MinMax newMessage() {
+        return new de.pokerno.protocol.wire.MinMax();
     }
 
-    public Class<de.pokerno.protocol.wire.Range> typeClass() {
-        return de.pokerno.protocol.wire.Range.class;
+    public Class<de.pokerno.protocol.wire.MinMax> typeClass() {
+        return de.pokerno.protocol.wire.MinMax.class;
     }
 
     public String messageName() {
-        return de.pokerno.protocol.wire.Range.class.getSimpleName();
+        return de.pokerno.protocol.wire.MinMax.class.getSimpleName();
     }
 
     public String messageFullName() {
-        return de.pokerno.protocol.wire.Range.class.getName();
+        return de.pokerno.protocol.wire.MinMax.class.getName();
     }
 
 
-    public boolean isInitialized(de.pokerno.protocol.wire.Range message) {
+    public boolean isInitialized(de.pokerno.protocol.wire.MinMax message) {
         return true;
     }
 
 
-    public void mergeFrom(Input input, de.pokerno.protocol.wire.Range message) throws IOException {
+    public void mergeFrom(Input input, de.pokerno.protocol.wire.MinMax message) throws IOException {
         for (int fieldIx = input.readFieldNumber(this); fieldIx != FIELD_NONE; fieldIx = input.readFieldNumber(this)) {
             mergeFrom(input, message, fieldIx);
         }
     }
 
-    public void mergeFrom(Input input, de.pokerno.protocol.wire.Range message, int fieldIx) throws IOException {
+    public void mergeFrom(Input input, de.pokerno.protocol.wire.MinMax message, int fieldIx) throws IOException {
         switch (fieldIx) {
             case FIELD_NONE:
                 return;
@@ -75,14 +75,14 @@ public class RangeSchema
 
     public int[] getWriteFields() { return FIELDS_TO_WRITE; }
 
-    public void writeTo(Output output, de.pokerno.protocol.wire.Range message) throws IOException {
+    public void writeTo(Output output, de.pokerno.protocol.wire.MinMax message) throws IOException {
         int[] toWrite = getWriteFields();
         for (int i = 0; i < toWrite.length; i++) {
             writeTo(output, message, toWrite[i]);
         }
     }
 
-    public void writeTo(Output output, de.pokerno.protocol.wire.Range message, int fieldIx) throws IOException {
+    public void writeTo(Output output, de.pokerno.protocol.wire.MinMax message, int fieldIx) throws IOException {
         switch (fieldIx) {
             case FIELD_NONE:
                 break;

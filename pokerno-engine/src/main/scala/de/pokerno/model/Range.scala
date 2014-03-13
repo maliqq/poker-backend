@@ -2,20 +2,21 @@ package de.pokerno.model
 
 import math.{ BigDecimal ⇒ Decimal }
 
-object Range {
+object MinMax {
   case class GreaterThanMax(amount: Decimal, max: Decimal)
     extends Error("amount=%.2f max=%.2f" format (amount, max))
 
   case class LessThanMin(amount: Decimal, min: Decimal)
     extends Error("amount=%.2f min=%.2f" format (amount, min))
 
-  def apply(min: Decimal, max: Decimal): Range = new Range((min, max))
-
-  implicit def tuple2Range(t: Tuple2[Double, Double]) = new Range((t._1, t._2))
-  implicit def range2Tuple(r: Range): Tuple2[Decimal, Decimal] = r.value
+  def apply(min: Decimal, max: Decimal): MinMax = MinMax(min, max)
+  
+  implicit def wrapminmax(value: MinMax): MinMaxWrapper = MinMaxWrapper(value)
+  implicit def unwrapminmax(wrap: MinMaxWrapper): MinMax = wrap.value
 }
 
-case class Range(value: Tuple2[Decimal, Decimal] = (.0, .0)) {
-  def min = value._1
-  def max = value._2
+case class MinMaxWrapper(underlying: MinMax) {
+  def value = underlying
+  def min = underlying._1
+  def max = underlying._2
 }

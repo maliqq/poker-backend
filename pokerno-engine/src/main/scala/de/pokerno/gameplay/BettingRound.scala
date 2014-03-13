@@ -30,7 +30,7 @@ private[gameplay] class BettingRound(val table: Table, val game: Game, val stake
 
   private var _call: Decimal = .0
   def call = _call
-  private var _raise: Range = (.0, .0)
+  private var _raise: MinMax = (.0, .0)
   def raise = _raise
 
   def clear() {
@@ -64,7 +64,7 @@ private[gameplay] class BettingRound(val table: Table, val game: Game, val stake
       _raise = (.0, .0)
     else {
       val (min, max) = limit raise (total, blind + _call, pot.total)
-      _raise = Range(List(total, min) min, List(total, max) min)
+      _raise = MinMax(List(total, min) min, List(total, max) min)
     }
   }
 

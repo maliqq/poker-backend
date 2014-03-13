@@ -79,7 +79,7 @@ object Events {
     message.BetAdd(box._2, box._1, bet)
   )
 
-  def requireBet(box: Box, call: Decimal, raise: Range) = E(
+  def requireBet(box: Box, call: Decimal, raise: MinMax) = E(
     message.RequireBet(pos = box._2, player = box._1, call = call, raise = raise)
   )
 

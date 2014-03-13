@@ -179,12 +179,12 @@ sealed case class RequireBet(
 
     @BeanProperty var call: java.lang.Double,
 
-    @BeanProperty var raise: wire.Range) extends Outbound {
+    @BeanProperty var raise: wire.MinMax) extends Outbound {
 
   def schema = RequireBetSchema.getSchema()
   //def pipeSchema = RequireBetSchema.PIPE_SCHEMA
 
-  def this() = this(null, null, null, wire.Range(.0, .0))
+  def this() = this(null, null, null, wire.MinMax(.0, .0))
   //@BeanProperty
   //var `type` = DealEventSchema.EventType.REQUIRE_BET
 

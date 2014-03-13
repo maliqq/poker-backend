@@ -71,7 +71,7 @@ public class RequireBetSchema
                 message.setCall(input.readDouble());
                 break;
             case FIELD_RAISE:
-                message.setRaise(input.mergeObject(message.getRaise(), proto.wire.RangeSchema.getSchema()));
+                message.setRaise(input.mergeObject(message.getRaise(), proto.wire.MinMaxSchema.getSchema()));
                 break;
 
             default:
@@ -105,7 +105,7 @@ public class RequireBetSchema
                 output.writeDouble(FIELD_CALL, message.getCall(), false);
                 break;
             case FIELD_RAISE:
-                output.writeObject(FIELD_RAISE, message.getRaise(), proto.wire.RangeSchema.getSchema(), false);
+                output.writeObject(FIELD_RAISE, message.getRaise(), proto.wire.MinMaxSchema.getSchema(), false);
 
                 break;
             default:

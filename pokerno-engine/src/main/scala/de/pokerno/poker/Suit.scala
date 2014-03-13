@@ -40,8 +40,7 @@ object Suit {
     case 'd' ⇒ Diamond
     case 'c' ⇒ Club
   }
-  implicit def intToSuit(i: Int): Value = All(i)
+  implicit def intToSuit(i: Int): Value = Suits(i)
 
-  final val All: List[Value] = List(Spade, Heart, Diamond, Club)
   final val Seq = List range (0, 4)
 }

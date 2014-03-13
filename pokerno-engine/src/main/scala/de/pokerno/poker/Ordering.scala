@@ -1,5 +1,10 @@
 package de.pokerno.poker
 
+object CardOrdering {
+  final val ByHead = Ordering.by[List[Card], Card](_ head)
+  final val ByMax = Ordering.by[List[Card], Card](_ max)
+}
+
 private[poker] case object AceHigh extends Ordering[Card] {
   def compare(a: Card, b: Card): Int = a compareTo b
 }

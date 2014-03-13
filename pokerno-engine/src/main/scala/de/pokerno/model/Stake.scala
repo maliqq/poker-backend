@@ -2,14 +2,6 @@ package de.pokerno.model
 
 import math.{ BigDecimal ⇒ Decimal }
 
-private[model] object Rates {
-  final val Default: Map[Bet.Value, Decimal] = Map(
-    Bet.Ante -> 0.1,
-    Bet.BringIn -> 0.25,
-    Bet.SmallBlind -> 0.5,
-    Bet.BigBlind -> 1.0)
-}
-
 case class Stake(
     bigBlind: Decimal,
     SmallBlind: Option[Decimal] = None,
@@ -44,5 +36,5 @@ case class Stake(
       else None
   }
 
-  private def rate(v: Bet.Value) = Rates.Default(v) * bigBlind
+  private def rate(v: Bet.Value) = Rates(v) * bigBlind
 }

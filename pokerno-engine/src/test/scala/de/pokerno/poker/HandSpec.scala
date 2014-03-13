@@ -11,7 +11,7 @@ class HandSpec extends FunSpec with ClassicMatchers {
 
   describe("Hand.Cards") {
     it("has gaps") {
-      val cards = Cards.parseString("AsKsQs7s8s9s").sorted(AceHigh)
+      val cards = CardUtils.parseString("AsKsQs7s8s9s").sorted(AceHigh)
       val handCards = new CardSet(cards)
       handCards.gaps.size should equal(3)
       val List(gap1, gap2, gap3) = handCards.gaps

@@ -8,7 +8,7 @@ class CardSpec extends FunSpec with ClassicMatchers {
   describe("Card") {
     it("all") {
       Card.CardsNum should equal(52)
-      Card.All.size should equal(Card.CardsNum)
+      Cards.size should equal(Card.CardsNum)
     }
 
     describe("parse int") {

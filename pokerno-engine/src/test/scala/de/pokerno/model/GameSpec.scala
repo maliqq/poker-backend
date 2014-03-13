@@ -15,7 +15,7 @@ class GameSpec extends FunSpec with ClassicMatchers {
     }
 
     it("new game with defaults") {
-      Games.Default.foreach {
+      Games.foreach {
         case (limited, options) ⇒
           val gameWithDefaults = new Game(limited)
           gameWithDefaults.limit should equal(options.defaultLimit)
@@ -27,7 +27,7 @@ class GameSpec extends FunSpec with ClassicMatchers {
     }
 
     it("toString") {
-      Games.Default.foreach {
+      Games.foreach {
         case (limited, options) ⇒
           val g1 = new Game(limited, Some(Game.FixedLimit), Some(6))
           g1.toString should equal(f"$limited ${Game.FixedLimit} 6-max")
@@ -98,7 +98,7 @@ class GameSpec extends FunSpec with ClassicMatchers {
 
     it("group") {
       Array(Game.Texas, Game.Omaha, Game.Omaha8) foreach { g ⇒
-        val o = Games.Default(g)
+        val o = Games(g)
         o.group should equal(Game.Holdem)
         o.hasBlinds should be(true)
         o.hasBoard should be(true)
@@ -110,7 +110,7 @@ class GameSpec extends FunSpec with ClassicMatchers {
       }
 
       Array(Game.FiveCard, Game.Single27) foreach { g ⇒
-        val o = Games.Default(g)
+        val o = Games(g)
         o.group should equal(Game.SingleDraw)
         o.discards should be(true)
         o.hasBlinds should be(true)
@@ -123,7 +123,7 @@ class GameSpec extends FunSpec with ClassicMatchers {
       }
 
       Array(Game.Triple27, Game.Badugi) foreach { g ⇒
-        val o = Games.Default(g)
+        val o = Games(g)
         o.group should equal(Game.TripleDraw)
         o.discards should be(true)
         o.hasBlinds should be(true)
@@ -136,7 +136,7 @@ class GameSpec extends FunSpec with ClassicMatchers {
       }
 
       Array(Game.Stud, Game.Stud8, Game.Razz, Game.London) foreach { g ⇒
-        val o = Games.Default(g)
+        val o = Games(g)
         o.group should equal(Game.SevenCard)
         o.discards should be(false)
         o.hasBlinds should be(false)

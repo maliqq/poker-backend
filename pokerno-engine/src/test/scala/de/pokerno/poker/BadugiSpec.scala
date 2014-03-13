@@ -7,8 +7,8 @@ import org.scalatest.matchers.ShouldMatchers._
 class BadugiSpec extends FunSpec with ClassicMatchers {
   describe("Badugi") {
     // AaBbCcDd
-    val kinds = Kind.All
-    val suits = Suit.All
+    val kinds = Kinds
+    val suits = Suits
     val kindCombinations = kinds.combinations(4)
     val suitPermutations = suits.permutations
 

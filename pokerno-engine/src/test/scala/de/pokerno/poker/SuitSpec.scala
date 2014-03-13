@@ -20,10 +20,10 @@ class SuitSpec extends FunSpec with ClassicMatchers {
       c should equal(Suit.Club)
 
       Suit.Seq should equal(List(0, 1, 2, 3))
-      Suit.All should equal(List[Suit.Value](0, 1, 2, 3))
+      Suits should equal(List[Suit.Value](0, 1, 2, 3))
 
-      Suit.All.map(_ toString) mkString ("") should equal("shdc")
-      Suit.All.map(_ unicode) mkString ("") should equal("♠♥♦♣")
+      Suits.map(_ toString) mkString ("") should equal("shdc")
+      Suits.map(_ unicode) mkString ("") should equal("♠♥♦♣")
     }
   }
 }

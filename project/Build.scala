@@ -131,6 +131,20 @@ object PokernoBuild extends Build {
       )
     ) ++ assemblySettings
   )
+
+  lazy val storage = Project(
+    id = "pokerno-storage",
+    base = file("pokerno-storage"),
+    settings = Project.defaultSettings ++ Seq(
+      name := "pokerno-storage",
+      version := "0.0.1",
+      libraryDependencies ++= Seq(
+        "org.mongodb" % "mongo-java-driver" % "2.11.3"
+        ,"com.datastax.cassandra" % "cassandra-driver-core" % "2.0.0"
+        ,"org.apache.hbase" % "hbase-client" % "0.95.0"
+      )
+    ) ++ assemblySettings
+  ) dependsOn(engine, protocol)
   
   lazy val backend = Project(
     id = "pokerno-backend",
@@ -143,13 +157,12 @@ object PokernoBuild extends Build {
         //,"org.zeromq" % "jzmq" % "3.0.1"
         ,"org.zeromq" % "jeromq" % "0.3.2"
         ,"redis.clients" % "jedis" % "2.2.1"
-        ,"org.mongodb" % "mongo-java-driver" % "2.11.3"
         //,"net.databinder" %% "unfiltered-netty-server" % "0.7.1"
         //,"net.databinder.dispatch" %% "dispatch-core" % "0.10.0"
         //,"io.spray" % "spray-routing" % "1.2.0"
       )
     ) ++ assemblySettings
-  ) dependsOn(engine, protocol, httpGateway, stompGateway)
+  ) dependsOn(engine, protocol, httpGateway, stompGateway, storage)
 
   lazy val ai = Project(
     id = "pokerno-ai",

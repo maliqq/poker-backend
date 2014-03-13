@@ -8,29 +8,29 @@ object Seats {
 }
 
 trait SliceableSeq[T] {
-  
+
   def seq: Seq[T]
-  
+
   def zipped = seq.zipWithIndex
-  
+
   def slice(from: Int): Seq[Tuple2[T, Int]] = {
     val (before, after) = zipped span (_._2 <= from)
     after ++ before
   }
-  
+
 }
 
 class Seats(val seats: collection.mutable.LinearSeq[Seat]) extends SliceableSeq[Seat] {
 
   def seq = seats
-  
+
   def apply(at: Int) = seats(at)
 
   override def toString = seats.zipWithIndex map {
     case (seat, index) ⇒
       "Seat %d: %s" format (index, seat.toString())
   } mkString "\n"
-  
+
   def clear(pos: Int): Unit = seats(pos) = new Seat
 
 }

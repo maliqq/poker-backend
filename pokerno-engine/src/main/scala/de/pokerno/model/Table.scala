@@ -57,7 +57,7 @@ class Table(val size: Int) {
     amount map (seat buyIn (_))
     addPlayer(at, player)
   }
-  
+
   def clearSeat(pos: Int): Unit = _seats.clear(pos)
 
   def playerPos(player: Player): Option[Int] = _seating.get(player)

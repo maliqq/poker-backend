@@ -11,8 +11,8 @@ private[gameplay] trait GameRotation {
     rotateNext { g ⇒
       game = g
       events.publish(
-          Events.gameChange(game)
-        )
+        Events.gameChange(game)
+      )
     }
 
   final val rotateEvery = 8

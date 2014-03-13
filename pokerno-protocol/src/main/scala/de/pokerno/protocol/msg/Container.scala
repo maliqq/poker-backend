@@ -13,9 +13,7 @@ import proto.msg._
 @MsgPack
 @JsonInclude(JsonInclude.Include.NON_NULL)
 class ActionEvent(
-    @BeanProperty
-    var `type`: ActionEventSchema.EventType
-    ) extends Outbound {
+    @BeanProperty var `type`: ActionEventSchema.EventType) extends Outbound {
 
   @BeanProperty
   var pos: Integer = null
@@ -41,9 +39,7 @@ class ActionEvent(
 @MsgPack
 @JsonInclude(JsonInclude.Include.NON_NULL)
 class GameplayEvent(
-    @BeanProperty
-    var `type`: GameplayEventSchema.EventType
-    ) extends Outbound {
+    @BeanProperty var `type`: GameplayEventSchema.EventType) extends Outbound {
 
   def schema = GameplayEventSchema.getSchema()
   //def pipeSchema = GameplayEventSchema.PIPE_SCHEMA
@@ -69,9 +65,9 @@ class StageEvent(
 
   @BeanProperty
   var street: proto.wire.StreetType = null
-  
+
   @BeanProperty
-  var play: Play = null 
+  var play: Play = null
 
   def this() = this(null)
 }
@@ -96,22 +92,16 @@ class TableEvent(
 @MsgPack
 @JsonInclude(JsonInclude.Include.NON_NULL)
 case class SeatEvent(
-    @BeanProperty
-    var `type`: SeatEventSchema.EventType,
-    
-    @BeanProperty
-    var pos: Integer = null,
-  
-    @BeanProperty
-    var seat: wire.Seat = null
-) extends Outbound {
+    @BeanProperty var `type`: SeatEventSchema.EventType,
+
+    @BeanProperty var pos: Integer = null,
+
+    @BeanProperty var seat: wire.Seat = null) extends Outbound {
   def schema = SeatEventSchema.getSchema()
   //def pipeSchema = SeatEventSchema.PIPE_SCHEMA
 
   def this() = this(null)
 }
-
-
 
 @MsgPack
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -149,10 +139,10 @@ class DealEvent extends Outbound {
 class Msg extends Outbound {
   def schema = MsgSchema.getSchema()
   //def pipeSchema = MsgSchema.PIPE_SCHEMA
-  
+
   @BeanProperty
   var `type`: MsgSchema.MsgType = null
-  
+
   @BeanProperty
   var body: String = null
 }
@@ -162,13 +152,13 @@ class Msg extends Outbound {
 class Cmd extends Message {
   def schema = CmdSchema.getSchema()
   //def pipeSchema = CmdSchema.PIPE_SCHEMA
-  
+
   @BeanProperty
   var `type`: CmdSchema.CmdType = null
-  
+
   @BeanProperty
   var joinTable: JoinTable = null
-  
+
   @BeanProperty
   var actionEvent: ActionEvent = null
 }
@@ -178,22 +168,22 @@ class Cmd extends Message {
 class Evt extends Outbound {
   def schema = EvtSchema.getSchema()
   //def pipeSchema = EventSchema.PIPE_SCHEMA
-  
+
   @BeanProperty
   var `type`: EvtSchema.EventType = null
-  
+
   @BeanProperty
   var seatEvent: SeatEvent = null
-  
+
   @BeanProperty
   var actionEvent: ActionEvent = null
-  
+
   @BeanProperty
   var stageEvent: StageEvent = null
-  
+
   @BeanProperty
   var tableEvent: TableEvent = null
-  
+
   @BeanProperty
   var dealEvent: DealEvent = null
 

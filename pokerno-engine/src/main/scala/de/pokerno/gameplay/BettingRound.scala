@@ -18,7 +18,7 @@ private[gameplay] class BettingRound(val table: Table, val game: Game, val stake
 
   def seat: Option[Seat] = _acting.map { _._1 }
   def pos: Option[Int] = _acting.map { _._2 }
-  def box: Option[(Player, Int)] = _acting.map { a =>
+  def box: Option[(Player, Int)] = _acting.map { a ⇒
     (a._1.player.get, a._2)
   }
 

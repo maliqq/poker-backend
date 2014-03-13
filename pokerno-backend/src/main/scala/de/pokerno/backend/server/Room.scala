@@ -47,9 +47,8 @@ class Room(
     with JoinLeave
     with Presence
     with Observers
-    with gameplay.DealCycle
-    {
-  
+    with gameplay.DealCycle {
+
   val table = new model.Table(variation.tableSize)
   val events = new gameplay.Events(id)
 
@@ -57,7 +56,7 @@ class Room(
   import context.dispatcher
   import concurrent.duration._
   import proto.cmd.PlayerEventSchema
-  
+
   val watchers = observe(classOf[Watchers], f"room-$id-watchers")
   val logger = observe(classOf[Journal], f"room-$id-log", "/tmp", id)
   val metrics = observe(classOf[Metrics], f"room-$id-metrics")
@@ -99,11 +98,11 @@ class Room(
     case Event(gameplay.Deal.Start, NoneRunning) ⇒
       stay() using spawnDeal
 
-     // current deal cancelled
+    // current deal cancelled
     case Event(gameplay.Deal.Cancel, Running(_, deal)) ⇒
       log.info("deal cancelled")
       goto(Room.State.Waiting) using (NoneRunning)
-      
+
     // current deal stopped
     case Event(gameplay.Deal.Done, Running(_, deal)) ⇒
       val after = nextDealAfter
@@ -125,7 +124,7 @@ class Room(
     case Event(join: cmd.JoinPlayer, _) ⇒
       joinPlayer(join)
       stay()
-      
+
     case Event(chat: cmd.Chat, _) ⇒
       // TODO broadcast
       stay()
@@ -135,8 +134,8 @@ class Room(
       event match {
         case PlayerEventSchema.EventType.OFFLINE ⇒
           changeSeatState(player) { _._1 away }
-        
-        case PlayerEventSchema.EventType.ONLINE =>
+
+        case PlayerEventSchema.EventType.ONLINE ⇒
           changeSeatState(player) { _._1 ready }
 
         case PlayerEventSchema.EventType.SIT_OUT ⇒
@@ -164,22 +163,22 @@ class Room(
         playerReconnected(p)
         changeSeatPresence(p) { _._1 online } // Reconnected
       }
-    
+
       // send start message
       val startMsg = running match {
         case NoneRunning ⇒
           gameplay.Events.start(table, variation, stake).msg // TODO: empty play
-        case Running(play, _) =>
+        case Running(play, _) ⇒
           gameplay.Events.start(table, variation, stake, play, conn.player).msg
       }
       conn.send(codec.Json.encode(startMsg))
-      
+
       watchers ! w
-    
+
       // start new deal if needed
       if (running == NoneRunning && canStart) goto(Room.State.Active)
       else stay()
-  
+
     case Event(uw @ Room.Unwatch(conn), _) ⇒
       watchers ! uw
       //events.broker.unsubscribe(observer, conn.player.getOrElse(conn.sessionId))
@@ -188,8 +187,8 @@ class Room(
         changeSeatPresence(p) { _._1 offline }
       }
       stay()
-     
-    case Event(PlayerGone(p), _) =>
+
+    case Event(PlayerGone(p), _) ⇒
       playerGone(p)
       changeSeatState(p) { _._1 away }
       stay()
@@ -197,7 +196,7 @@ class Room(
     case Event(kick: cmd.KickPlayer, _) ⇒
       leavePlayer(kick.player)
       stay()
-      
+
     case Event(x: Any, _) ⇒
       log.warning("unhandled: {}", x)
       stay()
@@ -209,7 +208,7 @@ class Room(
   }
 
   initialize()
-  
+
   def changeSeatState(player: model.Player, notify: Boolean = true)(f: ((model.Seat, Int)) ⇒ Unit) {
     table.playerSeatWithPos(player) map {
       case box @ (seat, pos) ⇒

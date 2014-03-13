@@ -24,10 +24,17 @@ import proto.rpc._
  */
 @MsgPack
 sealed case class CreateRoom(
-    @BeanProperty var id: String,
-    @BeanProperty var table: wire.Table,
-    @BeanProperty var variation: wire.Variation,
-    @BeanProperty var stake: wire.Stake) extends BaseMessage {
+    @BeanProperty
+    var id: String,
+
+    @BeanProperty
+    var table: wire.Table,
+
+    @BeanProperty
+    var variation: wire.Variation,
+
+    @BeanProperty
+    var stake: wire.Stake) extends BaseMessage {
 
   def schema = CreateRoomSchema.getSchema()
 

@@ -10,7 +10,7 @@ object CommonConversions {
   implicit def decimal2wire(d: Decimal): java.lang.Double = d.toDouble
 
   implicit def wire2decimal(w: java.lang.Double): Decimal = Decimal.double2bigDecimal(w)
-  
+
   implicit def player2wire(p: model.Player): String = {
     if (p != null) return p.id
     return null
@@ -37,7 +37,7 @@ object Conversions {
   import WireConversions._
   import MsgConversions._
   //import RpcConversions._
-  
+
   implicit def bet2wire(b: model.Bet): wire.Bet = {
     if (b != null) return wire.Bet(b.betType, b.amount match {
       case Some(n) ⇒ n.toDouble
@@ -76,7 +76,7 @@ object Conversions {
 }
 
 object MsgConversions {
-  
+
   import CommonConversions._
   import de.pokerno.protocol.msg._
   import proto.wire.StreetType
@@ -105,10 +105,10 @@ object MsgConversions {
     if (v != null) {
       val play = new Play(v.id, v.startAt.getTime() / 1000)
       play.pot = v.pot.total
-      v.street.map { street =>
+      v.street.map { street ⇒
         play.street = street
       }
-      v.acting.map { a =>
+      v.acting.map { a ⇒
         play.acting = RequireBet(pos = a._2, player = a._1, call = v.require._1, raise = v.require._2)
       }
       if (v.board != null) play.board = v.board
@@ -118,7 +118,6 @@ object MsgConversions {
   }
 
 }
-
 
 object RpcConversions {
 
@@ -182,8 +181,8 @@ object WireConversions {
       seats.add(new Seat(
         state = seat.state,
         presence = seat.presence match {
-          case Some(v) => v
-          case None => null
+          case Some(v) ⇒ v
+          case None    ⇒ null
         },
         player = seat.player match {
           case Some(p) ⇒ p.toString
@@ -353,10 +352,10 @@ object WireConversions {
     case SeatSchema.SeatState.IDLE    ⇒ model.Seat.State.Idle
     case SeatSchema.SeatState.AWAY    ⇒ model.Seat.State.Away
   }
-  
+
   implicit def presence2wire(v: model.Seat.Presence.Value): SeatSchema.PresenceType = v match {
-    case model.Seat.Presence.Offline => SeatSchema.PresenceType.OFFLINE
-    case model.Seat.Presence.Online => SeatSchema.PresenceType.ONLINE
+    case model.Seat.Presence.Offline ⇒ SeatSchema.PresenceType.OFFLINE
+    case model.Seat.Presence.Online  ⇒ SeatSchema.PresenceType.ONLINE
   }
 
   //  import com.dyuproject.protostuff.ByteString

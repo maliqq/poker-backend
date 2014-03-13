@@ -22,7 +22,7 @@ private[gameplay] trait Betting
     round requireBet acting
     info("[betting] require %s to call %s and raise %s", acting, round.call, round.raise)
     ctx.publish(
-        Events.requireBet(round.box.get, round.call, round.raise))
+      Events.requireBet(round.box.get, round.call, round.raise))
   }
 
   // add bet
@@ -30,7 +30,7 @@ private[gameplay] trait Betting
     val round = ctx.gameplay.round
     val posted = round.addBet(bet)
     ctx.publish(
-        Events.addBet(round.box.get, posted))
+      Events.addBet(round.box.get, posted))
   }
 
   // force bet
@@ -38,13 +38,13 @@ private[gameplay] trait Betting
     val round = ctx.gameplay.round
     val posted = round.forceBet(acting, _type)
     ctx.publish(
-        Events.addBet(round.box.get, posted))
+      Events.addBet(round.box.get, posted))
   }
 
   // current betting round finished
   def completeBetting(ctx: StageContext) {
     val table = ctx.gameplay.table
-    table.seatsAsList.filter(_ inPlay) map { seat =>
+    table.seatsAsList.filter(_ inPlay) map { seat ⇒
       seat.play()
       seat.clearPut()
     }
@@ -53,9 +53,9 @@ private[gameplay] trait Betting
     round.clear()
 
     ctx.publish(
-        Events.declarePot(
-          round.pot.total,
-          round.pot.sidePots.map(_.total)))
+      Events.declarePot(
+        round.pot.total,
+        round.pot.sidePots.map(_.total)))
   }
 
 }
@@ -92,8 +92,8 @@ private[gameplay] object Betting {
 
     protected def nextTurn(): Transition = {
       val round = gameplay.round
-      
-      Console printf("%s%s%s\n", Console.MAGENTA, gameplay.table, Console.RESET)
+
+      Console printf ("%s%s%s\n", Console.MAGENTA, gameplay.table, Console.RESET)
 
       round.seats filter (_._1 inPlay) foreach {
         case (seat, pos) ⇒
@@ -110,9 +110,9 @@ private[gameplay] object Betting {
       val playing = round.seats filter (_._1 isPlaying)
       if (playing.size == 0) {
         return if (round.seats.exists(_._1.isAllIn)) Betting.Showdown
-               else Betting.Done
+        else Betting.Done
       }
-      
+
       gameplay.requireBet(stageContext, playing.head)
       Betting.StartTimer(30 seconds)
     }
@@ -125,7 +125,7 @@ private[gameplay] object Betting {
     import context._
 
     var timer: Cancellable = null
-    
+
     val timers = collection.mutable.HashMap[Player, Timer]()
 
     def handleBetting: Receive = {
@@ -147,7 +147,7 @@ private[gameplay] object Betting {
 
       case Betting.Showdown ⇒
         // TODO XXX FIXME
-        Console printf("%sgot Betting.Showdown%s\n", Console.RED, Console.RESET)
+        Console printf ("%sgot Betting.Showdown%s\n", Console.RED, Console.RESET)
         context.become(handleStreets)
         self ! Streets.Next
 
@@ -227,8 +227,9 @@ private[gameplay] object Betting {
               round.acting.get._1.player.get // FIXME
             }
 
-            table.playerSeatWithPos(anteBet.player) map { case (seat, pos) =>
-              if (seat.isActive) gameplay.forceBet(stageContext, (seat, pos), Bet.Ante)
+            table.playerSeatWithPos(anteBet.player) map {
+              case (seat, pos) ⇒
+                if (seat.isActive) gameplay.forceBet(stageContext, (seat, pos), Bet.Ante)
             }
           }
         } else {

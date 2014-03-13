@@ -61,8 +61,8 @@ class Replay(
     case Replay.Observe(out) ⇒
       e.broker.subscribe(out, "replay-out")
       e.publish(
-          Events.start(t, gameplay.variation, gameplay.stake, null)//.only(id)
-          )
+        Events.start(t, gameplay.variation, gameplay.stake, null) //.only(id)
+      )
 
     //    case join @ rpc.JoinPlayer(pos, player, amount) ⇒
     //      debug("got: %s", join)

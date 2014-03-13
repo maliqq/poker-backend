@@ -22,9 +22,9 @@ case class Play(gameplay: Context) {
   def pot = gameplay.round.pot
   def board = gameplay.dealer.board
   def rake: Option[Decimal] = None
-  
+
   def pocketCards(player: Player) = gameplay.dealer.pocketOption(player)
-  
+
   val winners: Map[Player, Decimal] = Map.empty
   val knownCards: Map[Player, List[Card]] = Map.empty
 }

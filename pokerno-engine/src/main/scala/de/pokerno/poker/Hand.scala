@@ -108,7 +108,7 @@ class Hand(
         (value.min(AceLow).kind, value.max(AceLow).kind)
       else
         (value.min.kind, value.max.kind)
-      
+
       "straight, %s to %s".format(from, to)
 
     case Rank.High.Flush ⇒

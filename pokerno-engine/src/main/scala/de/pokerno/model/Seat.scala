@@ -6,6 +6,7 @@ import de.pokerno.protocol.wire
 object Seat {
   object State extends Enumeration {
     def state(name: String) = new Val(nextId, name)
+    //def state[T <: Trait](name: String) = new Val(nextId, name) with T
 
     // no player
     val Empty = state("empty")
@@ -32,7 +33,7 @@ object Seat {
     // disconnected
     val Away = state("away")
   }
-  
+
   object Presence extends Enumeration {
     val Online = new Val(nextId, "online")
     val Offline = new Val(nextId, "offline")
@@ -44,82 +45,87 @@ object Seat {
 class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   // presence
   private var _presence: Option[Seat.Presence.Value] = None
-  
+
   private var _lastSeenOnline: java.util.Date = null
   def lastSeenOnline = _lastSeenOnline
-  
+
   def lastSeenOnlineBefore(millis: Long) = {
-    _lastSeenOnline != null && _lastSeenOnline.before(new java.util.Date(millis)) 
+    _lastSeenOnline != null && _lastSeenOnline.before(new java.util.Date(millis))
   }
-  
+
   def presence = _presence
-  
+
   def presence_=(value: Option[Seat.Presence.Value]) {
     val old = _presence
     _presence = value
     presenceCallbacks.on(old, _presence)
   }
-  
+
+  class States[T](initial: T) {
+    private val transitions = collection.mutable.HashMap[T, T]()
+  }
+
   trait CallbackTopic
   case object Before extends CallbackTopic
   case object After extends CallbackTopic
   case object On extends CallbackTopic
-  
+
   class Callbacks[T] {
-    type cb = (T, T) => Unit
+    type cb = (T, T) ⇒ Unit
     private val _cb = collection.mutable.HashMap[CallbackTopic, collection.mutable.ListBuffer[cb]]()
-    
-    def bind(topic: CallbackTopic) (f: (T, T) => Unit) {
+
+    def bind(topic: CallbackTopic)(f: (T, T) ⇒ Unit) {
       if (!_cb.contains(topic)) _cb(topic) = collection.mutable.ListBuffer[cb]()
       _cb(topic) += f
     }
-    
-    def unbind(topic: CallbackTopic, f: (T, T) => Unit) {
+
+    def unbind(topic: CallbackTopic, f: (T, T) ⇒ Unit) {
       if (_cb.contains(topic))
         _cb(topic) -= f
     }
-    
+
     def fire(topic: CallbackTopic, _old: T, _new: T) {
       _cb(topic).foreach { _(_old, _new) }
     }
-    
+
     def clear(topic: CallbackTopic) {
       _cb(topic) = collection.mutable.ListBuffer[cb]()
     }
-    
+
     def before(_old: T, _new: T): Unit = fire(Before, _old, _new)
     def after(_old: T, _new: T): Unit = fire(Before, _old, _new)
     def on(_old: T, _new: T): Unit = fire(Before, _old, _new)
-    
+
   }
-  
+
   val presenceCallbacks = new Callbacks[Option[Seat.Presence.Value]]()
-  presenceCallbacks.bind(On) { case (_old, _new) =>
-    _new match {
-      case Some(Seat.Presence.Online) =>
-        _lastSeenOnline = new java.util.Date()
-      case _ => // nothing
-    }
+  presenceCallbacks.bind(On) {
+    case (_old, _new) ⇒
+      _new match {
+        case Some(Seat.Presence.Online) ⇒
+          _lastSeenOnline = new java.util.Date()
+        case _ ⇒ // nothing
+      }
   }
-  
+
   def offline() {
     if (!isEmpty) presence = Some(Seat.Presence.Offline)
   }
-  
+
   def isOffline = presence match {
-    case Some(Seat.Presence.Offline) => true
-    case _ => false
+    case Some(Seat.Presence.Offline) ⇒ true
+    case _                           ⇒ false
   }
-  
+
   def online() {
     if (!isEmpty) presence = Some(Seat.Presence.Online)
   }
-  
+
   def isOnline = _presence == Some(Seat.Presence.Online)
-  
+
   // state
   def state = _state
-  
+
   def state_=(newState: Seat.State.Value) {
     val _old = _state
     stateCallbacks.before(_old, newState)
@@ -127,18 +133,19 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
     //stateCallbacks.on(_old, _state)
     //stateCallbacks.after(_old, _state)
   }
-  
+
   val stateCallbacks = new Callbacks[Seat.State.Value]()
-  stateCallbacks.bind(Before) { case (_old, _new) =>
-    _new match {
-      case Seat.State.Play | Seat.State.Idle | Seat.State.Ready =>
-        if (isEmpty)
-          throw new IllegalStateException("can't change emtpy seat state: %s" format(this))
-      
-      case Seat.State.Away =>
-        if (isEmpty || isOnline)
-          throw new IllegalStateException("can't change seat state to away: %s (%s)" format(this, _presence))
-    }
+  stateCallbacks.bind(Before) {
+    case (_old, _new) ⇒
+      _new match {
+        case Seat.State.Play | Seat.State.Idle | Seat.State.Ready ⇒
+          if (isEmpty)
+            throw new IllegalStateException("can't change emtpy seat state: %s" format (this))
+
+        case Seat.State.Away ⇒
+          if (isEmpty || isOnline)
+            throw new IllegalStateException("can't change seat state to away: %s (%s)" format (this, _presence))
+      }
   }
 
   // player
@@ -151,9 +158,10 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
     _player = Some(p)
   }
   val playerCallbacks = new Callbacks[Player]()
-  playerCallbacks.bind(Before) { case _ => // FIXME move it to state callbacks
-    if (_state != Seat.State.Empty)
-      throw Seat.IsTaken()
+  playerCallbacks.bind(Before) {
+    case _ ⇒ // FIXME move it to state callbacks
+      if (_state != Seat.State.Empty)
+        throw Seat.IsTaken()
   }
 
   // current stack
@@ -164,7 +172,7 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   // current bet
   private var _lastAction: Bet.Value = null
   def lastAction = _lastAction
-  
+
   private var _put: Decimal = .0
   def put = _put
   def putAmount = put
@@ -173,20 +181,19 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   def total = _stack + _put
   def totalAmoutn = total
 
-  def net(amt: Decimal)(f: => Seat.State.Value) {
-    stackCallbacks.before(amt, _stack) 
+  def net(amt: Decimal)(f: ⇒ Seat.State.Value) {
+    stackCallbacks.before(amt, _stack)
     // TODO: check < 0
     _stack += amt
     // FIXME
-    _state = if (_stack == 0)
-      Seat.State.AllIn
-    else f
+    _state = if (_stack == 0) Seat.State.AllIn else f
   }
-  
+
   val stackCallbacks = new Callbacks[Decimal]()
-  stackCallbacks.bind(Before) { case _ =>
-    if (isEmpty)
-      throw new IllegalStateException("can't change amount, seat is empty; %s" format(this))
+  stackCallbacks.bind(Before) {
+    case _ ⇒
+      if (isEmpty)
+        throw new IllegalStateException("can't change amount, seat is empty; %s" format (this))
   }
 
   def buyIn(amt: Decimal): Unit =
@@ -200,7 +207,7 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
     }
   def wins(amt: Decimal) = award(amt)
 
-  def put(amount: Decimal)(f: => Seat.State.Value) {
+  def put(amount: Decimal)(f: ⇒ Seat.State.Value) {
     net(-amount)(f)
     _put += amount
   }
@@ -234,7 +241,7 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
 
   def check(): Decimal = {
     _state = Seat.State.Bet
-    _lastAction = Bet.Check 
+    _lastAction = Bet.Check
     .0
   }
 
@@ -260,7 +267,7 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
     put(amt) {
       Seat.State.Play
     }
-    _lastAction = betType 
+    _lastAction = betType
     amt
   }
 
@@ -339,10 +346,10 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
 
   def isReady =
     state == Seat.State.Ready
-  
+
   def isPlaying =
     state == Seat.State.Play
-  
+
   def isFold =
     state == Seat.State.Fold
 
@@ -354,7 +361,7 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
 
   def isPostedBB =
     state == Seat.State.PostBB
-    
+
   def canPlayNextDeal =
     isReady || isPlaying || isFold
 
@@ -363,13 +370,13 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
 
   def notActive =
     state == Seat.State.Away || state == Seat.State.Idle || state == Seat.State.Auto
-    
+
   def inPlay =
     state == Seat.State.Play || state == Seat.State.Bet
-  
-//  def goesToShowdown =
-//    state == Seat.State.Bet || state == Seat.State.AllIn
-    
+
+  //  def goesToShowdown =
+  //    state == Seat.State.Bet || state == Seat.State.AllIn
+
   def inPot =
     inPlay || state == Seat.State.AllIn
 

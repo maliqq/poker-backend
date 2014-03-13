@@ -62,13 +62,13 @@ class Deal(val gameplay: Context, val play: Play) extends Actor
       done()
 
   }
-  
+
   private def cancel() {
     log.info("[deal] cancel")
     parent ! Deal.Cancel
     context stop self
   }
-  
+
   private def done() {
     log.info("[deal] done")
     parent ! Deal.Done

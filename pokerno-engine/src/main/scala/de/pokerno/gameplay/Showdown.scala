@@ -38,7 +38,7 @@ private[gameplay] trait Showdown {
       val winner = seat.player.get
       seat wins amount
       events.publish(
-          Events.declareWinner((winner, pos), amount))
+        Events.declareWinner((winner, pos), amount))
     }
   }
 
@@ -91,8 +91,8 @@ private[gameplay] trait Showdown {
             case (seat, pos) ⇒
               seat wins amount
               events.publish(
-                  Events.declareWinner((winner, pos), amount)
-                  )
+                Events.declareWinner((winner, pos), amount)
+              )
           }
       }
     }
@@ -110,7 +110,7 @@ private[gameplay] trait Showdown {
         pair ← pocket combinations 2;
         board ← dealer.board combinations 3
       } yield ranking(pair ++ board).get
-      
+
     else List(ranking(pocket ++ board).get)
 
     (pocket, hands.toList.max(Ranking))
@@ -126,8 +126,8 @@ private[gameplay] trait Showdown {
         hands += (player -> hand)
         //events.publish(message.ShowCards(pos = pos, player = player, cards = pocket))
         events.publish(
-            Events.declareHand((player, pos), pocket, hand)
-          )
+          Events.declareHand((player, pos), pocket, hand)
+        )
     }
     hands
   }

@@ -18,7 +18,7 @@ class SidePot(val capFrom: Decimal = 0, val cap: Option[Decimal] = None) {
   def isActive: Boolean = members.size > 0 && total > .0
 
   def add(member: Player, left: Decimal): Decimal = add(member, left, left)
-  
+
   def add(member: Player, _amount: Decimal, left: Decimal): Decimal = {
     if (left == 0) return 0
 
@@ -32,33 +32,33 @@ class SidePot(val capFrom: Decimal = 0, val cap: Option[Decimal] = None) {
     }
 
     val capAmount = cap.get
-    if (amount >= capFrom && capAmount <= amount) {// (capAmount > value) {
+    if (amount >= capFrom && capAmount <= amount) { // (capAmount > value) {
       members += (member -> capAmount)
       return newValue - capAmount
     }
 
     left
   }
-  
-  def split(member: Player, left: Decimal): Tuple2[SidePot, SidePot] = split(member, left, left) 
+
+  def split(member: Player, left: Decimal): Tuple2[SidePot, SidePot] = split(member, left, left)
 
   def split(member: Player, _amount: Decimal, left: Decimal, cap: Option[Decimal] = None): Tuple2[SidePot, SidePot] = {
     val value: Decimal = members getOrElse (member, 0)
     val bet = value + left
     val amount = value + _amount
-    
+
     members += (member -> bet)
 
-    val _new = new SidePot(amount, cap map { capAmount =>
+    val _new = new SidePot(amount, cap map { capAmount ⇒
       capAmount - bet
-    } orElse(Some(amount)))
-    
+    } orElse (Some(amount)))
+
     _new.members = members
       .filter { case (key, _value) ⇒ _value > bet && key != member }
       .map { case (key, _value) ⇒ (key, _value - bet) }
-      
+
     val _old = new SidePot(capFrom, Some(bet))
-    
+
     _old.members = members map {
       case (key, _value) ⇒
         (key, List(_value, bet).min)
@@ -81,7 +81,7 @@ class SidePot(val capFrom: Decimal = 0, val cap: Option[Decimal] = None) {
     s.append(" = %.2f" formatLocal (Locale.US, total))
     //if (cap.isDefined)
     s.append(" (cap: %.2f+%.2f)" formatLocal (Locale.US, capFrom, cap.getOrElse(.0)))
-    
+
     s.append("\n")
     s.toString()
   }
@@ -116,10 +116,10 @@ class Pot {
       side :+= _old
       main = _new
     } else {
-      var (skip, _side) = side.span { sidePot =>
+      var (skip, _side) = side.span { sidePot ⇒
         sidePot.capFrom <= amount
       }
-      
+
       val current = if (!skip.isEmpty) {
         val _current = skip.last
         skip = skip.dropRight(1)
@@ -129,7 +129,7 @@ class Pot {
         _side = _side.drop(1)
         _current
       }
-      
+
       info("splitting side: %s for member %s with amount %s/%s and current cap", current, member, amount, left)
       val (_new, _old) = current split (member, _amount, left, current.cap)
       side = skip ++ List(_old, _new) ++ _side

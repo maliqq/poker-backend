@@ -8,15 +8,16 @@ private[gameplay] trait Seating {
 
   def prepareSeats(ctx: StageContext) {
 
-    table.seatsAsList.zipWithIndex.foreach { case (seat, pos) ⇒
-      if (seat.canPlayNextDeal) seat.play()
-      if (seat.isAllIn) seat.idle()
-      if (seat.lastSeenOnlineBefore(System.currentTimeMillis() - 10.minutes.toMillis)) {
-        table.clearSeat(pos)
-      }
-      seat.clearPut()
+    table.seatsAsList.zipWithIndex.foreach {
+      case (seat, pos) ⇒
+        if (seat.canPlayNextDeal) seat.play()
+        if (seat.isAllIn) seat.idle()
+        if (seat.lastSeenOnlineBefore(System.currentTimeMillis() - 10.minutes.toMillis)) {
+          table.clearSeat(pos)
+        }
+        seat.clearPut()
     }
-    
+
   }
 
 }

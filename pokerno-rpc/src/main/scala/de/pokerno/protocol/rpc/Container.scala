@@ -95,15 +95,20 @@ class NodeAction extends BaseRequest {
 
 @MsgPack
 sealed case class Request(
-    @BeanProperty var `type`: RequestSchema.RequestType,
+    @BeanProperty
+    var `type`: RequestSchema.RequestType,
     
-    @BeanProperty var nodeAction: NodeAction = null,
+    @BeanProperty
+    var nodeAction: NodeAction = null,
     
-    @BeanProperty var roomAction: RoomAction = null,
+    @BeanProperty
+    var roomAction: RoomAction = null,
     
-    @BeanProperty var tableAction: TableAction = null,
+    @BeanProperty
+    var tableAction: TableAction = null,
     
-    @BeanProperty var dealAction: DealAction = null
+    @BeanProperty
+    var dealAction: DealAction = null
 ) extends BaseMessage {
   
   def schema = RequestSchema.getSchema()

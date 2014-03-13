@@ -6,7 +6,7 @@ import de.pokerno.gameplay
 import de.pokerno.protocol.CommonConversions._
 
 trait JoinLeave {
-  
+
   def table: model.Table
   def events: gameplay.Events
   def changeSeatState(player: model.Player, notify: Boolean = true)(f: ((model.Seat, Int)) ⇒ Unit)
@@ -20,14 +20,15 @@ trait JoinLeave {
       case err: model.Table.AlreadyJoined ⇒
     }
   }
-  
+
   protected def leavePlayer(player: model.Player) {
-    changeSeatState(player, notify = false) { case box @ (seat, pos) =>
-      events.publish(gameplay.Events.leaveTable((seat.player.get, pos))) // FIXME unify
-      table.clearSeat(pos)
+    changeSeatState(player, notify = false) {
+      case box @ (seat, pos) ⇒
+        events.publish(gameplay.Events.leaveTable((seat.player.get, pos))) // FIXME unify
+        table.clearSeat(pos)
     }
     table.removePlayer(player)
     //changeSeatState(player) { _._1 clear }
   }
-  
+
 }

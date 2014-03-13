@@ -24,11 +24,9 @@ abstract class Inbound extends Message
  */
 @MsgPack
 sealed case class JoinTable(
-    @BeanProperty
-    var pos: Integer,
+    @BeanProperty var pos: Integer,
 
-    @BeanProperty
-    var amount: java.lang.Double) extends Inbound {
+    @BeanProperty var amount: java.lang.Double) extends Inbound {
 
   def schema = JoinTableSchema.getSchema()
   //def pipeSchema = JoinTableSchema.PIPE_SCHEMA
@@ -38,9 +36,7 @@ sealed case class JoinTable(
 
 @MsgPack
 sealed case class LeaveTable(
-    @BeanProperty
-    var pos: Integer = null
-) extends Inbound {
+    @BeanProperty var pos: Integer = null) extends Inbound {
   def this() = this(null)
   def schema = LeaveTableSchema.getSchema()
 }
@@ -51,8 +47,7 @@ sealed case class LeaveTable(
 @MsgPack
 @JsonIgnoreProperties(ignoreUnknown = true)
 sealed case class AddBet(
-    @BeanProperty
-    var bet: wire.Bet) extends Inbound {
+    @BeanProperty var bet: wire.Bet) extends Inbound {
   def schema = AddBetSchema.getSchema()
 
   def this() = this(null)
@@ -77,11 +72,9 @@ sealed case class DiscardCards(
 @MsgPack
 @JsonIgnoreProperties(ignoreUnknown = true)
 sealed case class ShowCards(
-    @BeanProperty
-    var cards: ByteString,
-    
-    @BeanProperty
-    var muck: java.lang.Boolean = null) extends Inbound {
+    @BeanProperty var cards: ByteString,
+
+    @BeanProperty var muck: java.lang.Boolean = null) extends Inbound {
 
   def schema = ShowCardsSchema.getSchema()
 

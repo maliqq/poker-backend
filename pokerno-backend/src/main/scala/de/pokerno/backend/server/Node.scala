@@ -1,6 +1,6 @@
 package de.pokerno.backend.server
 
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.{ Logger, LoggerFactory }
 
 import de.pokerno.model
 import de.pokerno.backend.{ gateway ⇒ gw }
@@ -57,10 +57,10 @@ class Node extends Actor with ActorLogging {
           val command = msg match {
             case join: message.JoinTable ⇒
               cmd.JoinPlayer(join.pos, player, join.amount)
-            
-            case leave: message.LeaveTable =>
+
+            case leave: message.LeaveTable ⇒
               cmd.KickPlayer(player, "player leave")
-              
+
             case add: message.AddBet ⇒
               cmd.AddBet(player, add.bet)
           }

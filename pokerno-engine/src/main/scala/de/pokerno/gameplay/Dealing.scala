@@ -30,7 +30,7 @@ private[gameplay] object Dealing {
               val player = seat.player.get
               val cards = dealer dealPocket (n, player)
               val box = Some((player, pos))
-              
+
               if (_type == DealCards.Hole) {
                 events.publish(Events.dealCards(_type, cards, box).only(player))
                 events.publish(Events.dealCardsNum(_type, cards, box).except(player))
@@ -126,10 +126,10 @@ private[gameplay] object Dealing {
 
           val (_player: Player, pos: Int) =
             player match {
-              case Some(p) =>
+              case Some(p) ⇒
                 (p, t.playerPos(p))
-              
-              case None =>
+
+              case None ⇒
                 val (seat, pos) = gameplay.round.acting.get
                 (seat.player.get, pos)
             }

@@ -5,6 +5,7 @@ import Process._
 import sbtassembly.Plugin._ 
 import AssemblyKeys._
 import com.typesafe.sbt.SbtGit._
+import com.twitter.scrooge.ScroogeSBT
 
 object GitVersionStrategy extends Plugin {
 
@@ -74,17 +75,21 @@ object PokernoBuild extends Build {
   lazy val protocol = Project(
     id = "pokerno-protocol",
     base = file("pokerno-protocol"),
-    settings = Project.defaultSettings ++ Seq(
+    settings = Project.defaultSettings ++ ScroogeSBT.newSettings ++ Seq(
       name := "pokerno-protocol",
       version := "0.0.1",
       libraryDependencies ++= Seq(
         "com.fasterxml.jackson.core" % "jackson-databind" % "2.3.0",
+        "org.apache.thrift" % "libthrift" % "0.9.1",
         "org.msgpack" %% "msgpack-scala" % "0.6.8",
         //"org.msgpack" % "msgpack" % "0.6.8",
         "com.dyuproject.protostuff" % "protostuff-core" % "1.0.7",
         "com.dyuproject.protostuff" % "protostuff-runtime" % "1.0.7"
       )
-    ) ++ assemblySettings
+    ) ++ assemblySettings 
+  ).settings(
+    ScroogeSBT.scroogeBuildOptions in Compile := Seq(),
+    ScroogeSBT.scroogeThriftOutputFolder in Compile <<= (sourceDirectory) { _ / "main/scala" }
   )
   
   lazy val rpc = Project(

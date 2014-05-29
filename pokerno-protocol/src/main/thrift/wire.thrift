@@ -1,16 +1,12 @@
-namespace java de.pokerno.protocol
+namespace java de.pokerno.protocol.thrift
 
 typedef binary Cards
+typedef string Player
 
 enum DealType {
   BOARD = 1,
   HOLE = 2,
   DOOR = 3
-}
-
-struct MinMax {
-  1: double Min,
-  2: double Max
 }
 
 enum StreetType {
@@ -33,9 +29,24 @@ enum StreetType {
   THIRD_DRAW = 15
 }
 
-struct Box {
-  1: required i32 Pos,
-  2: required string Player
+enum RankType {
+  HIGH_CARD = 1,
+  ONE_PAIR = 2,
+  TWO_PAIR = 3,
+  THREE_KIND = 4,
+  STRAIGHT = 5,
+  FLUSH = 6,
+  FULL_HOUSE = 7,
+  FOUR_KIND = 8,
+  STRAIGHT_FLUSH = 9,
+  
+  BADUGI1 = 10,
+  BADUGI2 = 11,
+  BADUGI3 = 12,
+  BADUGI4 = 13,
+  
+  NOT_LOW = 14,
+  LOW = 15
 }
 
 enum SeatState {
@@ -77,33 +88,11 @@ enum BetType {
   ALL_IN = 11
 }
 
-struct Seat {
-  1: optional SeatState State,
-  2: optional PresenceType Presence,
-  3: optional string Player,
-  4: optional double StackAmount,
-  5: optional BetType LastAction,
-  6: optional double PutAmount
-}
-
 enum TableState {
   WAITING = 1,
   ACTIVE = 2,
   PAUSED = 3,
   CLOSED = 4
-}
-
-struct Table {
-  //required int32 Size = 2;
-  1: required i32 Button,
-  2: list<Seat> Seats,
-  3: optional TableState State
-}
-
-struct Bet {
-  1: required BetType Type,
-  2: optional double Amount,
-  3: optional bool Timeout
 }
 
 enum GameType {
@@ -129,20 +118,9 @@ enum GameLimit {
   FL = 2
 }
 
-struct Game {
-  1: required GameType Type,
-  2: required GameLimit Limit,
-  3: required i32 TableSize
-}
-
 enum MixType {
   HORSE = 1,
   EIGHT_GAME = 2
-}
-
-struct Mix {
-  1: required MixType Type,
-  2: required i32 TableSize
 }
 
 enum VariationType {
@@ -150,43 +128,66 @@ enum VariationType {
   MIX = 2
 }
 
+struct Box {
+  1: i32 Pos,
+  2: Player Player
+}
+
+struct MinMax {
+  1: double Min,
+  2: double Max
+}
+
+struct Seat {
+  1: optional SeatState State,
+  2: optional PresenceType Presence,
+  3: optional Player Player,
+  4: optional double StackAmount,
+  5: optional BetType LastAction,
+  6: optional double PutAmount
+}
+
+struct Table {
+  //int32 Size = 2;
+  1: i32 Button,
+  2: list<Seat> Seats,
+  3: optional TableState State
+}
+
+struct Bet {
+  1: BetType Type,
+  2: optional double Amount,
+  3: optional bool Timeout
+}
+
+struct Game {
+  1: GameType Type,
+  2: GameLimit Limit,
+  3: i32 TableSize
+}
+
+struct Mix {
+  1: MixType Type,
+  2: i32 TableSize
+}
+
 struct Variation {
-  1: required VariationType Type,
+  1: VariationType Type,
   2: optional Game Game,
   3: optional Mix Mix
 }
 
 struct Stake {
-  1: required double BigBlind,
+  1: double BigBlind,
   2: optional double SmallBlind,
   3: optional double Ante,
   4: optional double BringIn
 }
 
-enum RankType {
-  HIGH_CARD = 1,
-  ONE_PAIR = 2,
-  TWO_PAIR = 3,
-  THREE_KIND = 4,
-  STRAIGHT = 5,
-  FLUSH = 6,
-  FULL_HOUSE = 7,
-  FOUR_KIND = 8,
-  STRAIGHT_FLUSH = 9,
-  
-  BADUGI1 = 10,
-  BADUGI2 = 11,
-  BADUGI3 = 12,
-  BADUGI4 = 13,
-  
-  NOT_LOW = 14,
-  LOW = 15
-}
-
 struct Hand {
-  1: required RankType Rank,
-  2: required Cards Cards,
-  3: required Cards Value,
+  1: RankType Rank,
+  2: Cards Cards,
+  3: Cards Value,
   4: optional Cards High,
   5: optional Cards Kicker,
   6: optional string String

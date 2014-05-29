@@ -1,4 +1,4 @@
-namespace java de.pokerno.protocol.rpc
+namespace java de.pokerno.protocol.thrift.rpc
 
 include "wire.thrift"
 
@@ -32,7 +32,7 @@ service Deal {
 
   void dealCards(1: wire.DealType DealType, 2: Cards Cards, 3: i32 CardsNum, 4: Player Player)
   void addBet(1: Player Player, 2: wire.Bet Bet)
-  void discardCards(1: Player Player, 2: Cards Cards)
+  void discardCards(1: Player Player, 2: Cards Cards, 3: bool StandPat)
   void showCards(1: Player Player, 2: Cards Cards, 3: bool Muck)
 
   void leave(1: Player Player)

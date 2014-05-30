@@ -1,7 +1,6 @@
 package de.pokerno.model
 
 import math.{ BigDecimal ⇒ Decimal }
-import collection._
 
 object Table {
   case class AlreadyJoined() extends Exception("Player already joined!")
@@ -33,8 +32,10 @@ class Table(val size: Int) {
     
     b.toString()
   }
+  
+  import collection.mutable.{ Map => MutableMap }
 
-  private val _seating: mutable.Map[Player, Int] = mutable.Map.empty
+  private val _seating: MutableMap[Player, Int] = MutableMap.empty
 
   type Box = (Player, Int)
 

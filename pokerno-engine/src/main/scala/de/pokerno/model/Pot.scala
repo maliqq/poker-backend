@@ -1,7 +1,6 @@
 package de.pokerno.model
 
 import math.{ BigDecimal ⇒ Decimal }
-import collection.mutable
 import java.util.Locale
 import util.control.Breaks._
 
@@ -88,8 +87,10 @@ class Pot {
 
   def total: Decimal = sidePots.map(_.total).sum
 
+  import collection.mutable.ListBuffer
+  
   def sidePots: List[SidePot] = {
-    var pots = new mutable.ListBuffer[SidePot]
+    var pots = new ListBuffer[SidePot]
     if (main.isActive)
       pots += main
     (side ++ inactive) foreach { side ⇒

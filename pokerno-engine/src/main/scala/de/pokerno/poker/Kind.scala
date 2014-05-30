@@ -10,19 +10,19 @@ object Kind {
 
     private def Kind(name: String) = new Kind(nextId, name)
 
-    val Deuce = Kind("deuce")
-    val Three = Kind("three")
-    val Four = Kind("four")
-    val Five = Kind("five")
-    val Six = Kind("six")
-    val Seven = Kind("seven")
-    val Eight = Kind("eight")
-    val Nine = Kind("nine")
-    val Ten = Kind("ten")
-    val Jack = Kind("jack")
-    val Queen = Kind("queen")
-    val King = Kind("king")
-    val Ace = Kind("ace")
+    val Deuce   = Kind("deuce")
+    val Three   = Kind("three")
+    val Four    = Kind("four")
+    val Five    = Kind("five")
+    val Six     = Kind("six")
+    val Seven   = Kind("seven")
+    val Eight   = Kind("eight")
+    val Nine    = Kind("nine")
+    val Ten     = Kind("ten")
+    val Jack    = Kind("jack")
+    val Queen   = Kind("queen")
+    val King    = Kind("king")
+    val Ace     = Kind("ace")
   }
   import Value._
 

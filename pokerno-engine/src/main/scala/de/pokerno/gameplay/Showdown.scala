@@ -3,17 +3,34 @@ package de.pokerno.gameplay
 import math.{ BigDecimal ⇒ Decimal }
 import de.pokerno.model._
 import de.pokerno.poker._
-import de.pokerno.protocol.{ msg ⇒ message }
+import de.pokerno.protocol.GameEvent
 
 /*
  * Стадия вскрытия карт
  */
-private[gameplay] trait Showdown {
 
-  g: ContextLike ⇒
+private[gameplay] case class Showdown(ctx: StageContext) extends Stage(ctx) {
+  
+  def process() = {
+    val stillInPot = table.seats.zipWithIndex filter (_._1 inPot)
+    if (stillInPot.size == 1) {
+      declareExclusiveWinner(round.pot, stillInPot head)
+    } else if (stillInPot.size > 1) {
+      var hiHands: Option[Map[Player, Hand]] = None
+      var loHands: Option[Map[Player, Hand]] = None
 
-  import de.pokerno.util.ConsoleUtils._
-
+      game.options.hiRanking match {
+        case Some(ranking) ⇒ hiHands = Some(showHands(ranking))
+        case None          ⇒
+      }
+      game.options.loRanking match {
+        case Some(ranking) ⇒ loHands = Some(showHands(ranking))
+        case None          ⇒
+      }
+      declareWinners(round.pot, hiHands, loHands)
+    }
+  }
+  
   // FIXME: equal hands
   private def best(pot: SidePot, hands: Map[Player, Hand]): List[Tuple2[Player, Hand]] = {
     var winner: Option[Player] = None
@@ -38,7 +55,7 @@ private[gameplay] trait Showdown {
       val winner = seat.player.get
       seat wins amount
       events.publish(
-        Events.declareWinner((winner, pos), amount))
+        GameEvent.declareWinner((winner, pos), amount)) { _.all() }
     }
   }
 
@@ -91,8 +108,8 @@ private[gameplay] trait Showdown {
             case (seat, pos) ⇒
               seat wins amount
               events.publish(
-                Events.declareWinner((winner, pos), amount)
-              )
+                GameEvent.declareWinner((winner, pos), amount)
+              ) { _.all() }
           }
       }
     }
@@ -119,36 +136,17 @@ private[gameplay] trait Showdown {
   private def showHands(ranking: Hand.Ranking): Map[Player, Hand] = {
     var hands: Map[Player, Hand] = Map.empty
 
-    table.seatsAsList.zipWithIndex filter (_._1 inPot) foreach {
+    table.seats.zipWithIndex filter (_._1 inPot) foreach {
       case (seat, pos) ⇒
         val (pocket, hand) = rank(seat.player get, ranking)
         val player = seat.player.get
         hands += (player -> hand)
         //events.publish(message.ShowCards(pos = pos, player = player, cards = pocket))
         events.publish(
-          Events.declareHand((player, pos), pocket, hand)
-        )
+          GameEvent.declareHand((player, pos), pocket, hand)
+        ) { _.all() }
     }
     hands
   }
 
-  def showdown() {
-    val stillInPot = table.seatsAsList.zipWithIndex filter (_._1 inPot)
-    if (stillInPot.size == 1) {
-      declareExclusiveWinner(round.pot, stillInPot head)
-    } else if (stillInPot.size > 1) {
-      var hiHands: Option[Map[Player, Hand]] = None
-      var loHands: Option[Map[Player, Hand]] = None
-
-      game.options.hiRanking match {
-        case Some(ranking) ⇒ hiHands = Some(showHands(ranking))
-        case None          ⇒
-      }
-      game.options.loRanking match {
-        case Some(ranking) ⇒ loHands = Some(showHands(ranking))
-        case None          ⇒
-      }
-      declareWinners(round.pot, hiHands, loHands)
-    }
-  }
 }

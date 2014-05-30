@@ -7,17 +7,17 @@ import akka.actor.ActorRef
 /*
  * Стадия принудительных ставок - бринг-ин
  */
-private[gameplay] trait BringIn {
-
-  def bringIn(ctx: StageContext) {
-    val (seat, pos) = ctx.gameplay.round.seats filter (_._1 isActive) minBy {
-      case (_seat, _pos) ⇒
-        ctx.gameplay.dealer.pocket(_seat.player.get).last
+private[gameplay] case class BringIn(ctx: StageContext) extends Stage(ctx) {
+  
+  def process() = {
+    val (_, pos) = round.seats filter (_._1.isActive) minBy { case (_seat, _pos) ⇒
+      dealer.pocket(_seat.player.get).last
     }
-    ctx.gameplay.setButton(pos)
-    ctx.gameplay.round.acting = (seat, pos)
+    
+    gameplay.setButton(pos)
+    
     // FIXME wtf?
-    ctx.ref ! Betting.Require(ctx.gameplay.stake.bringIn get, ctx.gameplay.game.limit)
+    //ctx.ref ! Betting.Require(stake.bringIn get, game.limit)
   }
-
+  
 }

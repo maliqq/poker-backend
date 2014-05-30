@@ -27,8 +27,6 @@ class Deal(val gameplay: Context, val play: Play) extends Actor
   lazy val streets = Streets(stageContext)
   lazy val stageContext = StageContext(gameplay, self)
 
-  play.getStreet = () ⇒ streets.current.map(_.value)
-
   override def preStart() {
     log.info("[deal] start")
     beforeStreets(stageContext) match {
@@ -54,7 +52,7 @@ class Deal(val gameplay: Context, val play: Play) extends Actor
 
     case Streets.Next ⇒
       log.info("streets next")
-      streets(stageContext)
+      streets.process()
 
     case Streets.Done ⇒
       log.info("streets done")

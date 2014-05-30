@@ -1,38 +1,16 @@
 package de.pokerno.gameplay
 
 import de.pokerno.model._
+import de.pokerno.protocol.GameEvent
 import de.pokerno.protocol.{ msg ⇒ message }
 
-private[gameplay] trait GameRotation {
+private[gameplay] trait GameRotation { g: ContextLike ⇒
 
-  g: ContextLike ⇒
-
-  def rotateGame(ctx: StageContext) = if (variation isMixed)
-    rotateNext { g ⇒
-      game = g
-      events.publish(
-        Events.gameChange(game)
-      )
-    }
-
-  final val rotateEvery = 8
-
-  private var _rotationIndex = 0
-  private var _rotationCounter = 0
-
-  private def nextGame = {
-    val mix = variation.asInstanceOf[Mix]
-    _rotationIndex += 1
-    _rotationIndex %= mix.games.size
-    mix.games(_rotationIndex)
-  }
-
-  private def rotateNext(f: Game ⇒ Unit) {
-    _rotationCounter += 1
-    if (_rotationCounter > rotateEvery) {
-      _rotationCounter = 0
-      f(nextGame)
-    }
+  private lazy val gameRotation = new Rotation(variation.asInstanceOf[Mix].games)
+  
+  def rotateGame() = if (variation.isMixed && gameRotation.hasNext) {
+    game = gameRotation.next
+    events.publish(GameEvent.gameChange(game)) { _.all() }
   }
 
 }

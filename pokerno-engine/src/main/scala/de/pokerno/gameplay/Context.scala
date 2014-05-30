@@ -30,28 +30,15 @@ trait ContextLike extends Button {
 // TODO
 //private[gameplay]
 class Context(
-  val table: Table,
-  val variation: Variation,
-  val stake: Stake,
-  val events: Events,
-  val dealer: Dealer = new Dealer) extends ContextLike
-    with GameRotation
-    with Betting
-    with Seating
-    //with Antes
-    //with Blinds
-    with Dealing.DealContext
-    with BringIn
-    with Showdown {
+    val table: Table,
+    val variation: Variation,
+    val stake: Stake,
+    val events: Events,
+    val dealer: Dealer = new Dealer
+  ) extends ContextLike with GameRotation with Seating {
 
   val round = new BettingRound(table, game, stake)
 
-  override def toString = {
-    val b = new StringBuilder
-    b.append("table:\n%s\n" format table)
-    b.append("stake: %s\n" format stake)
-    b.append("game: %s\n" format game)
-    b.toString
-  }
+  override def toString = f"table:${table} stake: ${stake} game: ${game}"
 
 }

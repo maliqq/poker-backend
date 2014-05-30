@@ -1,27 +1,21 @@
 package de.pokerno.gameplay
 
 import de.pokerno.model._
-import akka.actor.ActorRef
 
 /*
  * Стадия принудительных ставок-анте
  */
-private[gameplay] trait Antes {
 
-  betting: Betting ⇒
+private[gameplay] case class PostAntes(ctx: StageContext) extends Stage(ctx) with Betting {
+  
+  def process =
 
-  def postAntes(ctx: StageContext) = {
-    val gameOptions = ctx.gameplay.game.options
-    val stake = ctx.gameplay.stake
-    val round = ctx.gameplay.round
-
-    if (gameOptions.hasAnte || stake.ante.isDefined) {
-      val seats = ctx.gameplay.round.seats filter (_._1 isActive)
-
-      seats foreach (forceBet(ctx, _, Bet.Ante))
-
-      ctx.gameplay.completeBetting(ctx)
+    if (game.options.hasAnte || stake.ante.isDefined) {
+      round.seats filter (_._1.isActive) foreach { case (_, pos) =>
+        forceBet(pos, Bet.Ante)
+      }
+  
+      completeBetting()
     }
-  }
-
+  
 }

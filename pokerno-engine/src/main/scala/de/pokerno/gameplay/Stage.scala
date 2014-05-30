@@ -1,15 +1,23 @@
 package de.pokerno.gameplay
 
+import de.pokerno.model._
 import akka.actor.ActorRef
+import de.pokerno.protocol.GameEvent
 
-private[gameplay] object Stages {
-  def stage(name: String)(f: StageContext ⇒ Stage.Control): Stage = {
-    new Stage(name, f)
-  }
+abstract class Stage(val ctx: StageContext) {
+  def gameplay  = ctx.gameplay
+  def events    = gameplay.events
+  def game      = gameplay.game
+  def table     = gameplay.table
+  def stake     = gameplay.stake
+  def round     = gameplay.round
+  def dealer    = gameplay.dealer
+  
+  def process(): Unit
 }
 
 private[gameplay] case class StageContext(gameplay: Context, ref: ActorRef) {
-  def publish(e: Events.EventWrap): Unit = gameplay.events.publish(e)
+  def broadcast(e: GameEvent) = gameplay.events.publish(e) { _.all() }
 }
 
 private[gameplay] object Stage {
@@ -23,8 +31,14 @@ private[gameplay] object Stage {
 
 }
 
-private[gameplay] class Stage(val name: String, f: StageContext ⇒ Stage.Control) {
-  def ~>(f: Stage): StageChain =
+private[gameplay] object Stages {
+  def stage(name: String)(f: StageContext ⇒ Stage.Control): StageTransition = {
+    new StageTransition(name, f)
+  }
+}
+
+private[gameplay] class StageTransition(val name: String, f: StageContext ⇒ Stage.Control) {
+  def ~>(f: StageTransition): StageChain =
     new StageChain(this) ~> f
 
   def ~> =
@@ -37,14 +51,14 @@ private[gameplay] class Stage(val name: String, f: StageContext ⇒ Stage.Contro
 }
 
 private[gameplay] class StageChain() {
-  var stages = List[Stage]()
+  var stages = List[StageTransition]()
 
-  def this(stage: Stage) = {
+  def this(stage: StageTransition) = {
     this()
     this ~> stage
   }
 
-  def ~>(stage: Stage): StageChain = {
+  def ~>(stage: StageTransition): StageChain = {
     stages :+= stage
     this
   }

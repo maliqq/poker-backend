@@ -1,7 +1,7 @@
 package de.pokerno.gameplay
 
 import de.pokerno.model._
-import de.pokerno.protocol.msg
+import de.pokerno.protocol.GameEvent
 
 import akka.event.{ ActorEventBus, EventBus, ScanningClassification }
 //import akka.util.Index
@@ -21,7 +21,7 @@ object Route {
   case class Except(endpoints: List[String]) extends Route
 }
 
-case class Notification(message: msg.Message, from: Route = Route.NoOne, to: Route = Route.All) // from: Route = Route.NoOne, 
+case class Notification(message: GameEvent, from: Route = Route.NoOne, to: Route = Route.All) // from: Route = Route.NoOne, 
 
 private[gameplay] class Broker(id: String) extends ActorEventBus
     with ScanningClassification {

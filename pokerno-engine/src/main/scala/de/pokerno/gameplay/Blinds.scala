@@ -8,29 +8,23 @@ import akka.actor.ActorRef
 /*
  * Стадия принудительных ставок-блайндов
  */
-private[gameplay] trait Blinds {
-
-  betting: Betting ⇒
-
-  def postBlinds(ctx: StageContext) = if (ctx.gameplay.game.options.hasBlinds) {
-    ctx.gameplay.moveButton // FIXME
-    val round = ctx.gameplay.round
-
-    val seats = round.seats
-    val active = seats filter (_._1 isActive)
-    val waitingBB = seats filter (_._1 isWaitingBB)
+private[gameplay] case class PostBlinds(ctx: StageContext) extends Stage(ctx) with Betting {
+  
+  def process() = if (game.options.hasBlinds) {
+    gameplay.moveButton // FIXME
+    
+    val active      = round.seats filter (_._1 isActive)      map (_._2)
+    val waitingBB   = round.seats filter (_._1 isWaitingBB)   map (_._2)
 
     if (active.size + waitingBB.size < 2) {
       // TODO
     } else {
-      val Seq(sb, bb, _*) = if (active.size == 2) {
-        active.reverse
-      } else active
+      val Seq(sb, bb, _*) = if (active.size == 2) active.reverse else active
 
-      forceBet(ctx, sb, Bet.SmallBlind)
-
-      forceBet(ctx, bb, Bet.BigBlind)
+      forceBet(sb, Bet.SmallBlind)
+      
+      forceBet(bb, Bet.BigBlind)
     }
   }
-
+  
 }

@@ -2,7 +2,7 @@ package de.pokerno.gameplay
 
 import de.pokerno.model._
 import akka.actor.{ Actor, Props, ActorLogging, ActorRef }
-import de.pokerno.protocol.{ msg ⇒ proto }
+import de.pokerno.protocol.GameEvent
 
 private[gameplay] object Streets {
   case object Next
@@ -15,44 +15,41 @@ private[gameplay] object Streets {
 
     lazy val beforeStreets =
       stage("play-start") { ctx ⇒
-        ctx.publish(Events.playStart(play))
+        ctx broadcast GameEvent.playStart(play)
         //play.started() // FIXME ugly
         Stage.Next
       } ~> stage("prepare-seats") { ctx ⇒
         ctx.gameplay.prepareSeats(ctx)
 
-        if (ctx.gameplay.table.seatsAsList.count(_.canPlayNextDeal) <= 1) {
+        if (ctx.gameplay.table.seats.count(_.canPlayNextDeal) <= 1) {
           // cancel current deal
           Stage.Exit
         } else Stage.Next
 
       } ~> stage("rotate-game") { ctx ⇒
-        ctx.gameplay.rotateGame(ctx)
+        ctx.gameplay.rotateGame()
         Stage.Next
 
       } ~> stage("post-antes") { ctx ⇒
-        ctx.gameplay.postAntes(ctx)
+        PostAntes(ctx).process()
         Stage.Next
 
       } ~> stage("post-blinds") { ctx ⇒
-        ctx.gameplay.postBlinds(ctx)
+        PostBlinds(ctx).process()
         Stage.Next
       }
 
     lazy val afterStreets =
       stage("showdown") { ctx ⇒
-        ctx.gameplay.showdown()
+        Showdown(ctx).process()
         Stage.Next
       } ~> stage("play-stop") { ctx ⇒
-        ctx.publish(Events.playStop())
+        ctx.broadcast(
+            GameEvent.playStop())
         play.finished()
         Stage.Next
       }
 
-  }
-
-  trait ReplayContext {
-    replay: Replay ⇒
   }
 
   def apply(ctx: StageContext) = {
@@ -66,61 +63,57 @@ private[gameplay] object Streets {
 
     def apply(gameGroup: Game.Group) = byGameGroup(gameGroup)
 
-    implicit def dealingCards2dealingOptions(v: DealCards.Value): DealingOptions = DealingOptions(v)
-    implicit def dealingOptions2option(v: DealCards.Value): Option[DealingOptions] = Some(v)
-    implicit def dealingOptions2option(v: DealingOptions): Option[DealingOptions] = Some(v)
-
     final val byGameGroup = Map[Game.Group, Map[Street.Value, StreetOptions]](
       Game.Holdem -> Map(
         Preflop -> StreetOptions(
-          dealing = DealCards.Hole,
+          dealing = Some((DealType.Hole, None)),
           betting = true),
 
         Flop -> StreetOptions(
-          dealing = DealCards.Board(3),
+          dealing = Some((DealType.Board, Some(3))),
           betting = true),
 
         Turn -> StreetOptions(
-          dealing = DealCards.Board(1),
+          dealing = Some((DealType.Board, Some(1))),
           bigBets = true,
           betting = true),
 
         River -> StreetOptions(
-          dealing = DealCards.Board(1),
+          dealing = Some((DealType.Board, Some(1))),
           betting = true)
       ),
 
       Game.SevenCard -> Map(
         Second -> StreetOptions(
-          dealing = DealCards.Hole(2)
+          dealing = Some((DealType.Hole, Some(2)))
         ),
 
         Third -> StreetOptions(
-          dealing = DealCards.Door(1),
+          dealing = Some((DealType.Door, Some(1))),
           bringIn = true,
           betting = true),
 
         Fourth -> StreetOptions(
-          dealing = DealCards.Door(1),
+          dealing = Some((DealType.Door, Some(1))),
           betting = true),
 
         Fifth -> StreetOptions(
-          dealing = DealCards.Door(1),
+          dealing = Some((DealType.Door, Some(1))),
           bigBets = true,
           betting = true),
 
         Sixth -> StreetOptions(
-          dealing = DealCards.Door(1),
+          dealing = Some((DealType.Door, Some(1))),
           betting = true),
 
         Seventh -> StreetOptions(
-          dealing = DealCards.Hole(1),
+          dealing = Some((DealType.Hole, Some(1))),
           betting = true)
       ),
 
       Game.SingleDraw -> Map(
         Predraw -> StreetOptions(
-          dealing = DealCards.Hole(5),
+          dealing = Some((DealType.Hole, Some(5))),
           betting = true,
           discarding = true),
 
@@ -132,7 +125,7 @@ private[gameplay] object Streets {
 
       Game.TripleDraw -> Map(
         Predraw -> StreetOptions(
-          dealing = DealCards.Hole,
+          dealing = Some((DealType.Hole, None)),
           betting = true,
           discarding = true),
 

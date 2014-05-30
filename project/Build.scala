@@ -80,6 +80,7 @@ object PokernoBuild extends Build {
       version := "0.0.1",
       libraryDependencies ++= Seq(
         "com.fasterxml.jackson.core" % "jackson-databind" % "2.3.0",
+        "com.twitter" %% "scrooge-core" % "3.15.0",
         "org.apache.thrift" % "libthrift" % "0.9.1",
         "org.msgpack" %% "msgpack-scala" % "0.6.8",
         //"org.msgpack" % "msgpack" % "0.6.8",

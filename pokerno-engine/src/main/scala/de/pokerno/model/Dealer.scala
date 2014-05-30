@@ -1,25 +1,6 @@
 package de.pokerno.model
 
 import de.pokerno.poker.{ Card, Deck }
-import de.pokerno.protocol.wire
-
-case class DealingOptions(
-  dealType: DealCards.Value,
-  cardsNum: Option[Int] = None)
-
-object DealCards {
-
-  abstract class Value {
-    def apply(n: Int) = DealingOptions(this, Some(n))
-  }
-
-  case object Board extends Value
-
-  case object Door extends Value
-
-  case object Hole extends Value
-
-}
 
 class Dealer(private var _deck: Deck = new Deck) {
 

@@ -3,6 +3,7 @@ package de.pokerno
 import math.{BigDecimal => Decimal}
 
 package object model {
+  type Player = String
   type MinMax = Tuple2[Decimal, Decimal]
   
   final val Rates: Map[Bet.Value, Decimal] = Map(

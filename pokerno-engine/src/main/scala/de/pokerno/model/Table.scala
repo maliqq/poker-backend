@@ -2,11 +2,6 @@ package de.pokerno.model
 
 import math.{ BigDecimal ⇒ Decimal }
 import collection._
-import de.pokerno.protocol.wire
-
-case class Player(id: String) {
-  override def toString = id
-}
 
 object Table {
   case class AlreadyJoined() extends Exception("Player already joined!")
@@ -15,20 +10,27 @@ object Table {
 class Table(val size: Int) {
   import Table._
 
-  private val _seats = new Seats(collection.mutable.LinearSeq.fill(size) { new Seat })
-  def seats = _seats
-  def seatsAsList = _seats: List[Seat]
-
-  private val _button = new Round(size)
-  def button = _button
+  val seats = collection.mutable.LinearSeq.fill(size) { new Seat }
+  val button = new Ring(seats)
+  
+  def seatsFrom(from: Int): Seq[Tuple2[Seat, Int]] = {
+    val (before, after) = seats.zipWithIndex span (_._2 <= from)
+    after ++ before
+  }
+  
+  def fromButton() = seatsFrom(button)
 
   override def toString = {
     val b = new StringBuilder
 
     b.append("size=%d\n" format size)
     b.append("button=%d\n" format (button: Int))
-    b.append(_seats toString)
-
+    
+    b.append(seats.zipWithIndex map {
+      case (seat, index) ⇒
+        "Seat %d: %s" format (index, seat.toString())
+    } mkString "\n")
+    
     b.toString()
   }
 
@@ -37,7 +39,7 @@ class Table(val size: Int) {
   type Box = (Player, Int)
 
   def boxes: List[Box] =
-    seats.zipped.foldLeft(List[Box]()) {
+    seats.zipWithIndex.foldLeft(List[Box]()) {
       case (result, (seat, i)) ⇒
         if (seat.player.isDefined)
           (seat.player.get, i) :: result
@@ -58,11 +60,12 @@ class Table(val size: Int) {
     addPlayer(at, player)
   }
 
-  def clearSeat(pos: Int): Unit = _seats.clear(pos)
+  def clearSeat(pos: Int): Unit =
+    seats(pos) = new Seat
 
-  def playerPos(player: Player): Option[Int] = _seating.get(player)
-  def hasPlayer(player: Player): Boolean = _seating.contains(player)
-  def addPlayer(at: Int, player: Player): Unit = _seating(player) = at
-  def removePlayer(player: Player): Unit = _seating.remove(player)
+  def playerPos(player: Player): Option[Int] =    _seating.get(player)
+  def hasPlayer(player: Player): Boolean =        _seating.contains(player)
+  def addPlayer(at: Int, player: Player): Unit =  _seating(player) = at
+  def removePlayer(player: Player): Unit =        _seating.remove(player)
 
 }

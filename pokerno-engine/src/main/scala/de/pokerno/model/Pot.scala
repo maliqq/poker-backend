@@ -3,19 +3,15 @@ package de.pokerno.model
 import math.{ BigDecimal ⇒ Decimal }
 import collection.mutable
 import java.util.Locale
+import util.control.Breaks._
 
 class SidePot(val capFrom: Decimal = 0, val cap: Option[Decimal] = None) {
+  // members
   var members: Map[Player, Decimal] = Map.empty
-
-  def isMember(member: Player) = members.contains(member)
-
-  import de.pokerno.util.ConsoleUtils._
-
-  info("| --- side pot %s+%s created", capFrom, cap)
-
-  def total: Decimal = members.values.sum
-
-  def isActive: Boolean = members.size > 0 && total > .0
+  
+  def isMember(member: Player)  = members.contains(member)
+  def total: Decimal            = members.values.sum
+  def isActive: Boolean         = members.size > 0 && total > .0
 
   def add(member: Player, left: Decimal): Decimal = add(member, left, left)
 
@@ -63,8 +59,6 @@ class SidePot(val capFrom: Decimal = 0, val cap: Option[Decimal] = None) {
       case (key, _value) ⇒
         (key, List(_value, bet).min)
     }
-
-    warn("CURRENT:\n%s\nOLD:\n%s\nNEW:\n%s", this, _old, _new)
 
     (_new, _old)
   }

@@ -1,7 +1,6 @@
 package de.pokerno.model
 
 import math.{ BigDecimal ⇒ Decimal }
-import de.pokerno.protocol.wire
 
 object Seat {
   object State extends Enumeration {
@@ -324,6 +323,28 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   }
 
   import de.pokerno.util.ConsoleUtils._
+  
+  def canBet(bet: Bet, stake: Stake, _call: Decimal, _raise: MinMax): Boolean =
+    bet.betType match {
+      case Bet.Fold ⇒
+        canFold || notActive
+  
+      case Bet.Check ⇒
+        canCheck(_call)
+  
+      case Bet.Call if isActive ⇒
+        canCall(bet.amount.get, _call)
+  
+      case Bet.Raise if isActive ⇒
+        canRaise(bet.amount.get, _raise)
+  
+      case f: Bet.ForcedBet ⇒
+        canForce(bet.amount.get, stake.amount(f))
+  
+      case _ ⇒
+        // TODO warn
+        false
+    }
 
   def postBet(bet: Bet): Decimal =
     bet.betType match {

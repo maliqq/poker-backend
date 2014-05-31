@@ -1,8 +1,6 @@
-package de.pokerno.poker
+package de.pokerno.poker.fast
 
-import collection.mutable
-
-private[poker] trait FastHigh {
+private[poker] trait High {
   final val HighCardFlag = 0x100000
   final val OnePairFlag = 0x200000
   final val TwoPairFlag = 0x300000

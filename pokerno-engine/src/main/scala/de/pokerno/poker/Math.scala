@@ -25,7 +25,7 @@ object Math {
       }
     }
 
-    def compare(c1: List[Card], c2: List[Card]) {
+    def compare(c1: Seq[Card], c2: Seq[Card]) {
       val h1 = Hand.High(c1)
       val h2 = Hand.High(c2)
 
@@ -34,7 +34,7 @@ object Math {
   }
 
   case class AgainstOne(samplesNum: Int = DefaultSamplesNum) {
-    def preflop(hole: List[Card], other: List[Card]): Sample = {
+    def preflop(hole: Seq[Card], other: Seq[Card]): Sample = {
       val sample = new Sample
       (0 to samplesNum) foreach { _ ⇒
         val deck = new Deck without hole without other
@@ -45,12 +45,12 @@ object Math {
       sample
     }
 
-    def withBoard(hole: List[Card], board: List[Card]): Sample = {
+    def withBoard(hole: Seq[Card], board: Seq[Card]): Sample = {
       if (board.size > 5 || board.size == 0)
         throw new Error("invalid board")
 
       val deck = new Deck without hole without board
-      val cardsLeft: List[Card] = deck.cards
+      val cardsLeft: Seq[Card] = deck.cards
 
       val sample = new Sample
       for {
@@ -66,8 +66,8 @@ object Math {
     }
   }
 
-  case class Headsup(a: List[Card], b: List[Card], samplesNum: Int = DefaultSamplesNum) {
-    def withBoard(board: List[Card]) = {
+  case class Headsup(a: Seq[Card], b: Seq[Card], samplesNum: Int = DefaultSamplesNum) {
+    def withBoard(board: Seq[Card]) = {
       val deck = new Deck without a without b without board
       val cardsLeft = deck.cards
       val cardsNumToCompleteBoard = Deck.FullBoardSize - board.size
@@ -83,7 +83,7 @@ object Math {
   }
 
   case class Against(opponentsNum: Int, samplesNum: Int = DefaultSamplesNum) {
-    def equity(hole: List[Card], board: List[Card]): Double = {
+    def equity(hole: Seq[Card], board: Seq[Card]): Double = {
       var sample = if (board.size == 0)
         preflop(hole)
       else
@@ -91,7 +91,7 @@ object Math {
       sample.wins / samplesNum + sample.ties / opponentsNum
     }
 
-    def preflop(hole: List[Card]): Sample = {
+    def preflop(hole: Seq[Card]): Sample = {
       val sample = new Sample
 
       (0 to samplesNum) foreach { _ ⇒
@@ -104,7 +104,7 @@ object Math {
       sample
     }
 
-    def withBoard(hole: List[Card], board: List[Card]): Sample = {
+    def withBoard(hole: Seq[Card], board: Seq[Card]): Sample = {
       if (board.size > 5 || board.size == 0)
         throw new Error("board invalid")
 

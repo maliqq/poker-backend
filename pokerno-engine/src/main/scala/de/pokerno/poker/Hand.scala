@@ -1,41 +1,41 @@
 package de.pokerno.poker
 
 object Hand {
-  implicit def cards2CardSet(v: List[Card]): CardSet = new CardSet(v)
+  implicit def cards2CardSet(v: Seq[Card]): CardSet = new CardSet(v)
 
   case class InvalidCards(str: String) extends Exception(str)
 
   sealed trait Ranking {
-    def apply(cards: List[Card]): Option[Hand]
+    def apply(cards: Seq[Card]): Option[Hand]
   }
 
   abstract class HighRanking extends Ranking
   case object High extends HighRanking {
-    def apply(cards: List[Card]): Option[Hand] = {
+    def apply(cards: Seq[Card]): Option[Hand] = {
       (new CardSet(cards, AceHigh) with HighHand) isHigh
     }
   }
 
   abstract class LowRanking extends Ranking
   case object AceFive extends LowRanking {
-    def apply(cards: List[Card]) = None
+    def apply(cards: Seq[Card]) = None
   }
   case object AceFive8 extends LowRanking {
-    def apply(cards: List[Card]) = None
+    def apply(cards: Seq[Card]) = None
   }
   case object AceSix extends LowRanking {
-    def apply(cards: List[Card]) = None
+    def apply(cards: Seq[Card]) = None
   }
   case object DeuceSix extends LowRanking {
-    def apply(cards: List[Card]) = None
+    def apply(cards: Seq[Card]) = None
   }
   case object DeuceSeven extends LowRanking {
-    def apply(cards: List[Card]) = None
+    def apply(cards: Seq[Card]) = None
   }
 
   abstract class BadugiRanking extends Ranking
   case object Badugi extends BadugiRanking {
-    def apply(cards: List[Card]): Option[Hand] = {
+    def apply(cards: Seq[Card]): Option[Hand] = {
       (new CardSet(cards) with BadugiHand).isBadugi
     }
   }
@@ -43,21 +43,21 @@ object Hand {
 
 class Hand(
     val cards: CardSet,
-    val value: List[Card] = List.empty,
+    val value: Seq[Card] = List.empty,
     var rank: Option[Rank.Value] = None,
-    High: Either[List[Card], Boolean] = Right(false),
-    Kicker: Either[List[Card], Boolean] = Right(false)) extends Ordered[Hand] {
+    High: Either[Seq[Card], Boolean] = Right(false),
+    Kicker: Either[Seq[Card], Boolean] = Right(false)) extends Ordered[Hand] {
 
-  val kicker: List[Card] = Kicker match {
+  val kicker: Seq[Card] = Kicker match {
     case Left(_cards) ⇒ _cards
     case Right(true)  ⇒ cards.value.diff(value).sorted(cards.ordering).reverse.take(5 - value.size)
-    case Right(false) ⇒ List.empty
+    case Right(false) ⇒ Seq.empty
   }
 
-  val high: List[Card] = High match {
+  val high: Seq[Card] = High match {
     case Left(_cards) ⇒ _cards
     case Right(true)  ⇒ value.sorted(cards.ordering).reverse.take(1)
-    case Right(false) ⇒ List.empty
+    case Right(false) ⇒ Seq.empty
   }
 
   def ranked(r: Rank.Value) = {
@@ -67,7 +67,7 @@ class Hand(
 
   def compare(other: Hand): Int = Ranking.compare(this, other)
 
-  private def equalKinds(a: List[Card], b: List[Card]): Boolean = {
+  private def equalKinds(a: Seq[Card], b: Seq[Card]): Boolean = {
     if (a.size != b.size) return false
 
     a.zipWithIndex foreach {

@@ -35,7 +35,7 @@ private[poker] trait BadugiHand {
       val d = value diff v
 
       var _a = v.head
-      val List(_b, _c, _*) = d.filter { card ⇒ _a.kind != card.kind }
+      val Seq(_b, _c, _*) = d.filter { card ⇒ _a.kind != card.kind }
       if (_b.suit == _c.suit)
         return None
 
@@ -51,7 +51,7 @@ private[poker] trait BadugiHand {
 
       val _a = v.min
 
-      val List(_b, _c, _*) = d.filter { card ⇒ _a.suit != card.suit }
+      val Seq(_b, _c, _*) = d.filter { card ⇒ _a.suit != card.suit }
 
       if (_b.kind == _c.kind)
         return None

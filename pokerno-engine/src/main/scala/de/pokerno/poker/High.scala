@@ -24,7 +24,7 @@ private[poker] trait HighHand {
   def isFullHouse: Option[Hand] = paired get 3 match {
     case Some(sets) ⇒
       val (major, minor) = if (sets.size > 1) {
-        val List(minor, major, _*) = sets.sorted(CardOrdering.ByHead).reverse.take(2)
+        val Seq(minor, major, _*) = sets.sorted(CardOrdering.ByHead).reverse.take(2)
         (major, minor)
       } else {
         paired.get(2) match {
@@ -62,7 +62,7 @@ private[poker] trait HighHand {
 
   def isTwoPair: Option[Hand] = paired get 2 match {
     case Some(pairs) if pairs.size >= 2 ⇒
-      val List(major, minor, _*) = pairs.sorted(CardOrdering.ByMax).reverse
+      val Seq(major, minor, _*) = pairs.sorted(CardOrdering.ByMax).reverse
       new Hand(self, value = major ++ minor, High = Left(List(major head, minor head)), Kicker = Right(true)) ranked Rank.High.TwoPair
     case None ⇒ None
     case _    ⇒ None

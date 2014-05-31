@@ -1,6 +1,7 @@
-package de.pokerno.gameplay
+package de.pokerno.gameplay.betting
 
 import concurrent.duration._
+import de.pokerno.gameplay.{Betting, Context, StageContext}
 
 trait NextTurn {
 

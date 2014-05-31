@@ -3,10 +3,10 @@ package de.pokerno.gameplay
 import akka.actor.{ Actor, Props, ActorRef, ActorLogging }
 import de.pokerno.model._
 import de.pokerno.poker.Card
-import de.pokerno.protocol.{ msg ⇒ message }
 import concurrent._
 import concurrent.duration._
 import math.{ BigDecimal ⇒ Decimal }
+import de.pokerno.gameplay.betting.NextTurn
 
 object Deal {
 
@@ -20,8 +20,9 @@ object Deal {
 
 class Deal(val gameplay: Context, val play: Play) extends Actor
     with ActorLogging
-    with Betting.DealContext
-    with Streets.DealContext {
+    with BettingActor
+    with NextTurn
+    with Streets.Default {
   import context._
 
   lazy val streets = Streets(stageContext)
@@ -29,7 +30,7 @@ class Deal(val gameplay: Context, val play: Play) extends Actor
 
   override def preStart() {
     log.info("[deal] start")
-    beforeStreets(stageContext) match {
+    beforeStreets.apply(stageContext) match {
       case Stage.Next ⇒
         self ! Streets.Next
       case Stage.Exit ⇒
@@ -52,11 +53,11 @@ class Deal(val gameplay: Context, val play: Play) extends Actor
 
     case Streets.Next ⇒
       log.info("streets next")
-      streets.process()
+      streets.apply()
 
     case Streets.Done ⇒
       log.info("streets done")
-      afterStreets(stageContext)
+      afterStreets.apply(stageContext)
       done()
 
   }
@@ -70,7 +71,7 @@ class Deal(val gameplay: Context, val play: Play) extends Actor
   private def done() {
     log.info("[deal] done")
     parent ! Deal.Done
-    context.stop(self)
+    context stop self
   }
 
 }

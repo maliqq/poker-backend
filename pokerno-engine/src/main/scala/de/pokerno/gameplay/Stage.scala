@@ -4,62 +4,69 @@ import de.pokerno.model._
 import akka.actor.ActorRef
 import de.pokerno.protocol.GameEvent
 
-abstract class Stage(val ctx: StageContext) {
-  def gameplay  = ctx.gameplay
-  def events    = gameplay.events
-  def game      = gameplay.game
-  def table     = gameplay.table
-  def stake     = gameplay.stake
-  def round     = gameplay.round
-  def dealer    = gameplay.dealer
-  
-  def process(): Unit
+abstract class Stage {
+  val ctx: StageContext
+  def apply(): Unit
 }
 
 private[gameplay] case class StageContext(gameplay: Context, ref: ActorRef) {
-  def broadcast(e: GameEvent) = gameplay.events.publish(e) { _.all() }
+  def publish(e: GameEvent)     = gameplay.events.publish(e)_
+  def broadcast(e: GameEvent)   = gameplay.events.publish(e) { _.all() }
 }
 
 private[gameplay] object Stage {
-
   trait Control
 
   case object Next extends Control
-  case object Skip extends Control
-  case object Wait extends Control
-  case object Exit extends Control
-
+  case object Wait extends Throwable with Control
+  case object Skip extends Throwable with Control
+  case object Exit extends Throwable with Control
 }
 
 private[gameplay] object Stages {
-  def stage(name: String)(f: StageContext ⇒ Stage.Control): StageTransition = {
-    new StageTransition(name, f)
+  
+  def process(name: String, next: Stage.Control = Stage.Next)(f: StageContext => Unit) = {
+    new StageStep(name) { def apply(ctx: StageContext): Stage.Control = {
+      f(ctx)
+      next
+    } }
   }
+  
+  def stage[T <: Stage](name: String)(implicit manifest: Manifest[T]): StageStep =
+    new StageStep(name) { def apply(ctx: StageContext): Stage.Control = {
+      val st: T = manifest.runtimeClass.getConstructor(classOf[StageContext]).newInstance(ctx).asInstanceOf[T]
+      try {
+        st.apply()
+      } catch {
+        case ctl: Stage.Control => return ctl
+      }
+      Stage.Next
+    }}
+  
 }
 
-private[gameplay] class StageTransition(val name: String, f: StageContext ⇒ Stage.Control) {
-  def ~>(f: StageTransition): StageChain =
+private[gameplay] abstract class StageStep(val name: String) {
+  def ~>(f: StageStep): StageChain =
     new StageChain(this) ~> f
 
   def ~> =
     new StageChain(this)
 
-  def apply(ctx: StageContext) =
-    f(ctx)
+  def apply(ctx: StageContext): Stage.Control
 
-  override def toString = f"#[stage:$name]"
+  override def toString = f"stage:$name"
 }
 
 private[gameplay] class StageChain() {
-  var stages = List[StageTransition]()
+  var stages = List[StageStep]()
 
-  def this(stage: StageTransition) = {
+  def this(step: StageStep) = {
     this()
-    this ~> stage
+    this ~> step
   }
 
-  def ~>(stage: StageTransition): StageChain = {
-    stages :+= stage
+  def ~>(step: StageStep): StageChain = {
+    stages :+= step
     this
   }
 
@@ -69,22 +76,16 @@ private[gameplay] class StageChain() {
     var result: Stage.Control = Stage.Next
     if (!stages.isEmpty) {
       stages = stages.dropWhile { f ⇒
-        Console printf ("[stage] %s {\n", f.name)
+        Console printf ("[stage] start %s\n", f.name)
         result = f(ctx)
-        Console printf ("[stage] %s }\n", f.name)
+        Console printf ("[stage] stop %s\n", f.name)
         result == Stage.Next
       }
     }
     result
   }
-
-  override def toString = {
-    val b = new StringBuilder
-    b.append("#[StageChain")
-    for (stage ← stages) {
-      b.append(" " + stage.toString)
-    }
-    b.append("]").toString()
-  }
+  
+  override def toString =
+    "stages:" + stages.map(_.toString).mkString("; ")
 
 }

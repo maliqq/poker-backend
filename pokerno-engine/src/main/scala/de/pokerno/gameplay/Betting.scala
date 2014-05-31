@@ -3,39 +3,54 @@ package de.pokerno.gameplay
 import akka.actor.{ Actor, ActorRef, Cancellable }
 import math.{ BigDecimal ⇒ Decimal }
 import de.pokerno.model._
-import de.pokerno.protocol.GameEvent
 import concurrent.duration._
+import de.pokerno.gameplay.betting.NextTurn
 
-private[gameplay] trait Betting { stage: Stage =>
-  // require bet
-  def requireBet(pos: Int) {
-    val seat = round requireBet pos
-    val player = seat.player.get
-    ctx broadcast GameEvent.requireBet(pos, player, round.call, round.raise)
+case class Betting(ctx: StageContext, betting: ActorRef) extends Bets with NextTurn {
+  
+  import ctx.gameplay._
+  
+  var timer: Cancellable = null
+  
+  // turn on big bets
+  def bigBets() {
+    round.bigBets = true
   }
-
+  
   // add bet
-  def addBet(bet: Bet) {
-    val (seat, posted) = round.addBet(bet)
+  def bet(player: Player, bet: Bet) {
     val pos = round.current
-    val player = seat.player.get
-    ctx broadcast GameEvent.addBet(pos, player, posted)
+    val seat = table.seats(pos)
+    if (seat.player == player) {
+      if (timer != null) timer.cancel()
+      Console printf("[betting] add {}", bet)
+      addBet(bet)
+      ctx.ref ! nextTurn()
+    } else
+      Console printf("[betting] not a turn of {}; current acting is {}", player, seat.player)
   }
-
-  // force bet
-  def forceBet(pos: Int, _type: Bet.ForcedBet) {
-    val (seat, posted) = round.forceBet(pos, _type)
+  
+  // timeout bet
+  def timeout() {
     val pos = round.current
-    val player = seat.player.get
-    ctx broadcast GameEvent.addBet(pos, player, posted)
-  }
+    val seat = table.seats(pos)
+    
+    val bet: Bet = seat.state match {
+      case Seat.State.Away ⇒
+        // force fold
+        Bet.fold(timeout = true)
 
-  // current betting round finished
-  def completeBetting() {
-    ctx broadcast GameEvent.declarePot(round.pot.total,
-        round.pot.sidePots.map(_.total))
-    round complete()
+      case _ ⇒
+        // force check/fold
+        if (round.call == 0 || seat.didCall(round.call))
+          Bet.check(timeout = true)
+        else Bet.fold(timeout = true)
+    }
+
+    Console printf("[betting] timeout")
+    addBet(bet)
   }
+  
 }
 
 private[gameplay] object Betting {

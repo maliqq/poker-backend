@@ -2,60 +2,33 @@ package de.pokerno.gameplay
 
 import de.pokerno.model._
 import akka.actor.{ Actor, Props, ActorLogging, ActorRef }
-import de.pokerno.protocol.GameEvent
+import de.pokerno.gameplay.stage.PlayStop
+import de.pokerno.gameplay.stage.PlayStart
 
 private[gameplay] object Streets {
   case object Next
   case object Done
-
-  import Stages._
-
-  trait DealContext {
-    deal: Deal ⇒
-
+  
+  trait Default {
+    import Stages._
+    import de.pokerno.gameplay.stage.{ PostBlinds,  RotateGame, PostAntes, PrepareSeats, Showdown }
+    
     lazy val beforeStreets =
-      stage("play-start") { ctx ⇒
-        ctx broadcast GameEvent.playStart(play)
-        //play.started() // FIXME ugly
-        Stage.Next
-      } ~> stage("prepare-seats") { ctx ⇒
-        ctx.gameplay.prepareSeats(ctx)
-
-        if (ctx.gameplay.table.seats.count(_.canPlayNextDeal) <= 1) {
-          // cancel current deal
-          Stage.Exit
-        } else Stage.Next
-
-      } ~> stage("rotate-game") { ctx ⇒
-        ctx.gameplay.rotateGame()
-        Stage.Next
-
-      } ~> stage("post-antes") { ctx ⇒
-        PostAntes(ctx).process()
-        Stage.Next
-
-      } ~> stage("post-blinds") { ctx ⇒
-        PostBlinds(ctx).process()
-        Stage.Next
-      }
+      stage[PlayStart]    ("play-start") ~>
+      stage[PrepareSeats] ("prepare-seats") ~>
+      stage[RotateGame]   ("rotate-game") ~>
+      stage[PostAntes]    ("post-antes") ~>
+      stage[PostBlinds]   ("post-blinds")
 
     lazy val afterStreets =
-      stage("showdown") { ctx ⇒
-        Showdown(ctx).process()
-        Stage.Next
-      } ~> stage("play-stop") { ctx ⇒
-        ctx.broadcast(
-            GameEvent.playStop())
-        play.finished()
-        Stage.Next
-      }
-
+      stage[Showdown]     ("showdown") ~>
+      stage[PlayStop]     ("play-stop")
   }
 
   def apply(ctx: StageContext) = {
     val gameOptions = ctx.gameplay.game.options
     val streetOptions = Options.byGameGroup(gameOptions.group)
-    new StreetChain(ctx, streetOptions)
+    new street.Chain(ctx, streetOptions)
   }
 
   object Options {

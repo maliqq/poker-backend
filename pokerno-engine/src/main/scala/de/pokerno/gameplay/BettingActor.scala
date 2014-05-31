@@ -3,72 +3,41 @@ package de.pokerno.gameplay
 import de.pokerno.model._
 import akka.actor.Cancellable
 
-class BettingActor extends Betting with NextTurn {
-    deal: Deal ⇒
+trait BettingActor { deal: Deal ⇒
+  import context._
 
-    import context._
+  val betting = Betting(stageContext, self)
 
-    var timer: Cancellable = null
+  def handleBetting: Receive = {
+    case Betting.Add(player, bet) ⇒
+      betting.bet(player, bet)
 
-    val timers = collection.mutable.HashMap[Player, Timer]()
+    case Betting.Stop ⇒
+      log.info("[betting] stop")
+      context.become(handleStreets)
+      self ! Streets.Done
 
-    def handleBetting: Receive = {
-      case Betting.Add(player, bet) ⇒
-        val pos = gameplay.round.current
-        val seat = gameplay.table.seats(pos)
-        if (seat.player == player) {
-          if (timer != null)
-            timer.cancel()
-          log.info("[betting] add {}", bet)
-          gameplay.addBet(stageContext, bet)
-          self ! nextTurn()
-        } else
-          log.warning("[betting] not a turn of {}; current acting is {}", player, seat.player)
+    case Betting.Showdown ⇒
+      // TODO XXX FIXME WTF?
+      //Console printf ("%sgot Betting.Showdown%s\n", Console.RED, Console.RESET)
+      context.become(handleStreets)
+      self ! Streets.Next
 
-      case Betting.Stop ⇒
-        log.info("[betting] stop")
-        context.become(handleStreets)
-        self ! Streets.Done
+    case Betting.Done ⇒
+      log.info("[betting] done")
+      betting.doneBets()
+      context.become(handleStreets)
+      streets.apply()
 
-      case Betting.Showdown ⇒
-        // TODO XXX FIXME
-        Console printf ("%sgot Betting.Showdown%s\n", Console.RED, Console.RESET)
-        context.become(handleStreets)
-        self ! Streets.Next
+    case Betting.StartTimer(duration) ⇒
+      betting.timer = system.scheduler.scheduleOnce(duration, self, Betting.Timeout)
 
-      case Betting.Done ⇒
-        log.info("[betting] done")
-        gameplay.completeBetting(stageContext)
-        context.become(handleStreets)
-        streets(stageContext)
+    case Betting.Timeout ⇒
+      betting.timeout()
+      self ! nextTurn()
 
-      case Betting.StartTimer(duration) ⇒
-        timer = system.scheduler.scheduleOnce(duration, self, Betting.Timeout)
-
-      case Betting.Timeout ⇒
-        val round = gameplay.round
-        val (seat, pos) = round.acting.get
-
-        val bet: Bet = seat.state match {
-          case Seat.State.Away ⇒
-            // force fold
-            Bet.fold(timeout = true)
-
-          case _ ⇒
-            // force check/fold
-            if (round.call == 0 || seat.didCall(round.call))
-              Bet.check(timeout = true)
-            else Bet.fold(timeout = true)
-        }
-
-        log.info("[betting] timeout")
-        gameplay.addBet(stageContext, bet)
-        self ! nextTurn()
-
-      case Betting.BigBets ⇒
-        log.info("[betting] big bets")
-        gameplay.round.bigBets = true
-    }
-
+    case Betting.BigBets ⇒
+      log.info("[betting] big bets")
+      betting.bigBets()
   }
 }

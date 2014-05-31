@@ -1,12 +1,12 @@
-package de.pokerno.gameplay
+package de.pokerno.gameplay.stage
 
-import de.pokerno.model.{ Player, Seat }
-import concurrent.duration._
+import de.pokerno.gameplay.{Stage, StageContext}
 
-private[gameplay] trait Seating { ctx: ContextLike ⇒
-
-  def prepareSeats(ctx: StageContext) {
-
+case class PrepareSeats(ctx: StageContext) extends Stage {
+  import concurrent.duration._
+  import ctx.gameplay._
+  
+  def apply() = {
     table.seats.zipWithIndex.foreach {
       case (seat, pos) ⇒
         if (seat.canPlayNextDeal)     seat.play()
@@ -17,7 +17,8 @@ private[gameplay] trait Seating { ctx: ContextLike ⇒
         }
         seat.clearPut()
     }
-
+    
+    if (table.seats.count(_.canPlayNextDeal) <= 1) throw Stage.Exit
   }
-
+  
 }

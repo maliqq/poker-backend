@@ -18,7 +18,7 @@ case class Play(gameplay: Context) {
   var getStreet: () ⇒ Option[Street.Value] = () ⇒ None
   def street: Option[Street.Value] = getStreet()
   def require = (gameplay.round.call, gameplay.round.raise)
-  def acting = gameplay.round.box
+  //def acting = gameplay.round.box
   def pot = gameplay.round.pot
   def board = gameplay.dealer.board
   def rake: Option[Decimal] = None

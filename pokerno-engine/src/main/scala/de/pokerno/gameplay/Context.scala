@@ -2,12 +2,7 @@ package de.pokerno.gameplay
 
 import de.pokerno.model._
 
-object Gameplay {
-  case object Start
-  case object Stop
-}
-
-trait ContextLike extends Button {
+trait ContextLike extends context.Button {
   //
   val events: Events
   // game or mix
@@ -24,7 +19,7 @@ trait ContextLike extends Button {
   //
   val dealer: Dealer
   //
-  val round: BettingRound
+  val round: betting.Round
 }
 
 // TODO
@@ -35,9 +30,10 @@ class Context(
     val stake: Stake,
     val events: Events,
     val dealer: Dealer = new Dealer
-  ) extends ContextLike with GameRotation with Seating {
+  ) extends ContextLike {
 
-  val round = new BettingRound(table, game, stake)
+  lazy val gameRotation = new Rotation(variation.asInstanceOf[Mix].games)
+  lazy val round = new betting.Round(table, game, stake)
 
   override def toString = f"table:${table} stake: ${stake} game: ${game}"
 

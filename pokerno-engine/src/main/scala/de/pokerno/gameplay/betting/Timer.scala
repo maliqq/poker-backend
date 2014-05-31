@@ -1,9 +1,10 @@
-package de.pokerno.gameplay
+package de.pokerno.gameplay.betting
 
 import akka.actor.{ Actor, Cancellable }
 import concurrent.duration._
+import de.pokerno.gameplay.Betting
 
-trait BettingTimer {
+trait Timer {
 
   a: Actor ⇒
 

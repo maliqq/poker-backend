@@ -1,11 +1,9 @@
-package de.pokerno.gameplay
+package de.pokerno.gameplay.betting
 
 import de.pokerno.model._
-import de.pokerno.protocol.{ msg ⇒ message }
-
 import math.{ BigDecimal ⇒ Decimal }
 
-private[gameplay] class BettingRound(val table: Table, val game: Game, val stake: Stake) extends Ring(table.seats) {
+private[gameplay] class Round(val table: Table, val game: Game, val stake: Stake) extends Ring(table.seats) {
   val seats = table.seatsFrom(current)
   
   val pot = new Pot
@@ -20,13 +18,13 @@ private[gameplay] class BettingRound(val table: Table, val game: Game, val stake
   def call = _call
   
   // current raise range
-  private var _raise: MinMax = (.0, .0)
+  private var _raise: MinMax[Decimal] = MinMax(.0, .0)
   def raise = _raise
 
   def clear() {
     raiseCount = 0
     _call = .0
-    _raise = (.0, .0)
+    _raise = MinMax(.0, .0)
     current = table.button
     // FIXME
     //pot.complete()
@@ -63,7 +61,7 @@ private[gameplay] class BettingRound(val table: Table, val game: Game, val stake
     val total = seat.total
 
     if (total <= _call || raiseCount >= MaxRaiseCount)
-      _raise = (.0, .0)
+      _raise = MinMax(.0, .0)
     else {
       val (min, max) = limit raise (total, blind + _call, pot.total)
       _raise = MinMax(List(total, min) min, List(total, max) min)

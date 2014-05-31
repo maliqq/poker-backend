@@ -1,17 +1,17 @@
-package de.pokerno.gameplay
+package de.pokerno.gameplay.stage
 
 import de.pokerno.model._
-import de.pokerno.protocol.{ msg ⇒ message }
-
-import akka.actor.ActorRef
+import de.pokerno.gameplay.{Bets, Stage, StageContext}
 
 /*
  * Стадия принудительных ставок-блайндов
  */
-private[gameplay] case class PostBlinds(ctx: StageContext) extends Stage(ctx) with Betting {
+private[gameplay] case class PostBlinds(ctx: StageContext) extends Stage with Bets {
   
-  def process() = if (game.options.hasBlinds) {
-    gameplay.moveButton // FIXME
+  import ctx.gameplay._
+  
+  def apply() = if (game.options.hasBlinds) {
+    moveButton() // FIXME
     
     val active      = round.seats filter (_._1 isActive)      map (_._2)
     val waitingBB   = round.seats filter (_._1 isWaitingBB)   map (_._2)

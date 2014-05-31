@@ -1,11 +1,13 @@
-package de.pokerno.gameplay
+package de.pokerno.gameplay.stage
 
 import de.pokerno.model._
-import de.pokerno.protocol.GameEvent
-import de.pokerno.poker.{ Card, Deck }
+import de.pokerno.gameplay.{Event, Stage, StageContext}
 
-case class Dealing(ctx: StageContext, _type: DealType.Value, cardsNum: Option[Int] = None) extends Stage(ctx) {
-  def process() = _type match {
+case class Dealing(ctx: StageContext, _type: DealType.Value, cardsNum: Option[Int] = None) extends Stage {
+  
+  import ctx.gameplay._
+  
+  def apply() = _type match {
     case DealType.Hole | DealType.Door ⇒
       var n: Int = cardsNum getOrElse (0)
       if (n <= 0 || n > game.options.pocketSize) n = game.options.pocketSize
@@ -16,13 +18,12 @@ case class Dealing(ctx: StageContext, _type: DealType.Value, cardsNum: Option[In
         case (seat, pos) ⇒
           val player = seat.player.get
           val cards = dealer dealPocket (n, player)
-          val box = Some((player, pos))
 
           if (_type == DealType.Hole) {
-            events.publish(GameEvent.dealCards(_type, cards, box)) { _.only(player) }
-            events.publish(GameEvent.dealCardsNum(_type, cards, box)) { _.except(player) }
+            ctx.publish(Event.dealCards(pos, player, _type, cards)) { _.only(player) }
+            ctx.publish(Event.dealCardsNum(pos, player, _type, cards)) { _.except(player) }
           } else
-            events.publish(GameEvent.dealCards(_type, cards, box)) { _.all() }
+            ctx broadcast Event.dealCards(pos, player, _type, cards)
       }
 
     case DealType.Board if cardsNum.isDefined ⇒
@@ -30,53 +31,13 @@ case class Dealing(ctx: StageContext, _type: DealType.Value, cardsNum: Option[In
       Console printf("dealing board %d cards\n", cardsNum.get)
 
       val cards = dealer dealBoard (cardsNum.get)
-      events.publish(
-          GameEvent.dealCards(_type, cards)) { _.all() }
+      ctx broadcast Event.dealCards(_type, cards)
 
     case _ ⇒
     // TODO
   }
 
 }
-//
-//private[gameplay] object Dealing {
-//  
-//  case class DealCards(
-//      _type: DealType.Value,
-//      player: Option[Player] = None,
-//      cards: Option[List[Card]] = None, 
-//      cardsNum: Option[Int] = None)
-//
-//  trait ReplayContext {
-//    replay: Replay ⇒
-//
-//    import concurrent.duration.Duration
-//    import de.pokerno.util.ConsoleUtils._
-//
-//    def dealing(dealActions: List[Dealing.DealCards], dealOptions: Tuple2[DealType.Value, Option[Int]], speed: Duration) {
-//      def sleep() = Thread.sleep(speed.toMillis)
-//
-//      val dealer = gameplay.dealer
-//
-//      val _type = dealOptions.dealType
-//
-//      _type match {
-//        case DealType.Board ⇒
-//
-//          var cardsDealt: Option[List[Card]] = dealActions.headOption.map(_.cards.get)
-//
-//          dealCards(Dealing.DealCards(_type,
-//            cards = cardsDealt,
-//            cardsNum = dealOptions.cardsNum
-//          ))
-//          sleep()
-//
-//        case DealType.Door | DealType.Hole ⇒
-//
-//          val dealActionsByPlayer = collection.mutable.HashMap[Player, Dealing.DealCards]()
-//          dealActions.foreach { action ⇒
-//            dealActionsByPlayer(action.player.get) = action
-//          }
 //
 //          t.seatsAsList.zipWithIndex filter (_._1 isActive) foreach {
 //            case (seat, pos) ⇒
@@ -138,7 +99,7 @@ case class Dealing(ctx: StageContext, _type: DealType.Value, cardsNum: Option[In
 //            dealPocket(Left(d.cardsNum.getOrElse(pocketSize)), _player)
 //
 //          debug(" | deal %s -> %s", cardsDealt, _player)
-//          e.publish(GameEvent.dealCards(d._type, cardsDealt, Some(_player, pos))) { _.all() }
+//          e.publish(Event.dealCards(d._type, cardsDealt, Some(_player, pos))) { _.all() }
 //
 //        case DealType.Board if gameOptions.hasBoard ⇒
 //
@@ -162,7 +123,7 @@ case class Dealing(ctx: StageContext, _type: DealType.Value, cardsNum: Option[In
 //            dealBoard(Left(d.cardsNum.getOrElse(0)))
 //
 //          debug(" | deal board %s", cardsDealt)
-//          e.publish(GameEvent.dealCards(d._type, cardsDealt)) { _.all() }
+//          e.publish(Event.dealCards(d._type, cardsDealt)) { _.all() }
 //
 //      }
 //    }

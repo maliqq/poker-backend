@@ -1,17 +1,20 @@
-package de.pokerno.gameplay
+package de.pokerno.gameplay.stage
 
 import math.{ BigDecimal ⇒ Decimal }
 import de.pokerno.model._
 import de.pokerno.poker._
-import de.pokerno.protocol.GameEvent
+import de.pokerno.gameplay.{Event, Stage, StageContext}
+import scala.math.{BigDecimal => Decimal}
 
 /*
  * Стадия вскрытия карт
  */
 
-private[gameplay] case class Showdown(ctx: StageContext) extends Stage(ctx) {
+private[gameplay] case class Showdown(ctx: StageContext) extends Stage {
   
-  def process() = {
+  import ctx.gameplay._
+  
+  def apply() = {
     val stillInPot = table.seats.zipWithIndex filter (_._1 inPot)
     if (stillInPot.size == 1) {
       declareExclusiveWinner(round.pot, stillInPot head)
@@ -55,7 +58,7 @@ private[gameplay] case class Showdown(ctx: StageContext) extends Stage(ctx) {
       val winner = seat.player.get
       seat wins amount
       events.publish(
-        GameEvent.declareWinner((winner, pos), amount)) { _.all() }
+        Event.declareWinner(pos, winner, amount)) { _.all() }
     }
   }
 
@@ -108,14 +111,14 @@ private[gameplay] case class Showdown(ctx: StageContext) extends Stage(ctx) {
             case (seat, pos) ⇒
               seat wins amount
               events.publish(
-                GameEvent.declareWinner((winner, pos), amount)
+                Event.declareWinner(pos, winner, amount)
               ) { _.all() }
           }
       }
     }
   }
 
-  private def rank(player: Player, ranking: Hand.Ranking): Tuple2[List[Card], Hand] = {
+  private def rank(player: Player, ranking: Hand.Ranking): Tuple2[Seq[Card], Hand] = {
     val pocket = dealer pocket player
     val board = dealer.board
 
@@ -143,7 +146,7 @@ private[gameplay] case class Showdown(ctx: StageContext) extends Stage(ctx) {
         hands += (player -> hand)
         //events.publish(message.ShowCards(pos = pos, player = player, cards = pocket))
         events.publish(
-          GameEvent.declareHand((player, pos), pocket, hand)
+          Event.declareHand(pos, player, pocket, hand)
         ) { _.all() }
     }
     hands

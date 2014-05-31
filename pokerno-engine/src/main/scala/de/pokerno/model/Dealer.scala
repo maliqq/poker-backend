@@ -5,9 +5,11 @@ import de.pokerno.poker.{ Card, Deck }
 class Dealer(private var _deck: Deck = new Deck) {
 
   private var _board: Seq[Card] = Seq.empty
+  
   def board = _board
 
-  private var _pockets: Map[Player, List[Card]] = Map.empty
+  private var _pockets: Map[Player, Seq[Card]] = Map.empty
+  
   def pocket(p: Player): Seq[Card] = _pockets(p)
   def pocketOption(p: Player): Option[Seq[Card]] = _pockets.get(p)
 

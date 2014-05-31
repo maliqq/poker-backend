@@ -1,5 +1,5 @@
 package de.pokerno.model
 
 object DealType extends Enumeration {
-  val Board, Door, Hole = Value
+  val Board, Door, Hole, Discard = Value
 }

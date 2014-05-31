@@ -271,13 +271,12 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   }
 
   // RAISE
-  def canRaise(amt: Decimal, toRaise: Tuple2[Decimal, Decimal]): Boolean = {
+  def canRaise(amt: Decimal, toRaise: MinMax[Decimal]): Boolean = {
     inPlay && _canRaise(amt, toRaise)
   }
 
-  private def _canRaise(amt: Decimal, toRaise: Tuple2[Decimal, Decimal]): Boolean = {
-    val (min, max) = toRaise
-    amt <= total && amt >= min && amt <= max
+  private def _canRaise(amt: Decimal, toRaise: MinMax[Decimal]): Boolean = {
+    amt <= total && amt >= toRaise.min && amt <= toRaise.max
   }
 
   def raise(amt: Decimal): Decimal = {
@@ -324,7 +323,7 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
 
   import de.pokerno.util.ConsoleUtils._
   
-  def canBet(bet: Bet, stake: Stake, _call: Decimal, _raise: MinMax): Boolean =
+  def canBet(bet: Bet, stake: Stake, _call: Decimal, _raise: MinMax[Decimal]): Boolean =
     bet.betType match {
       case Bet.Fold ⇒
         canFold || notActive

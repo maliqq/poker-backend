@@ -33,9 +33,7 @@ class Table(val size: Int) {
     b.toString()
   }
   
-  import collection.mutable.{ Map => MutableMap }
-
-  private val _seating: MutableMap[Player, Int] = MutableMap.empty
+  private val _seating: collection.mutable.Map[Player, Int] = collection.mutable.Map.empty
 
   type Box = (Player, Int)
 

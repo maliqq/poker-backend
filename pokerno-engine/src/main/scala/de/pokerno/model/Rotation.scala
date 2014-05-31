@@ -12,7 +12,7 @@ class Rotation[A](
   
   private var _counter  = counter
   
-  def hasNext = {
+  override def hasNext = {
     _counter += 1
     if (_counter > rotateEvery) {
       _counter = 0

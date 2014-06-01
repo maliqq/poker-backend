@@ -7,10 +7,11 @@ class Card(val kind: Kind.Value.Kind, val suit: Suit.Value) extends Ordered[Card
   def toByte: Byte = (toInt + 1).toByte
 
   override def toString = kind.toString + suit.toString
-  def toConsoleString = "%s%s%s%s".format(suit.color, kind.toString, suit.unicode, Console.RESET)
   override def compare(other: Card): Int = {
     kind.toInt compareTo other.kind.toInt
   }
+
+  def toColoredString = suit.color + kind.toString + suit.unicode + Console.RESET
 }
 
 object Card {
@@ -18,9 +19,9 @@ object Card {
   //  implicit def str2Card(s: String): Card = Card(s)
   implicit def symbol2Card(s: Symbol): Card = Card(s.name replace ("_", ""))
 
-  case class NotACard(value: Any) extends Exception("not a card: %s" format value)
-  case class InvalidCard(value: Any) extends Exception("invalid card: %s" format value)
-  case class ParseError(s: String) extends Exception("can't parse card: %s" format s)
+  case class NotACard(value: Any)     extends Exception("not a card: %s" format value)
+  case class InvalidCard(value: Any)  extends Exception("invalid card: %s" format value)
+  case class ParseError(s: String)    extends Exception("can't parse card: %s" format s)
 
   private var _all: ListBuffer[Card] = new ListBuffer
   private var _masks: ListBuffer[Int] = new ListBuffer

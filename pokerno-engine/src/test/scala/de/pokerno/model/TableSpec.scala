@@ -20,7 +20,7 @@ class TableSpec extends FunSpec with ClassicMatchers {
 
       table.takeSeat(pos, player, Some(stack))
 
-      val seat: Seat = (table.seats: List[Seat])(0)
+      val seat: Seat = table.seats(0)
       seat.player.get should equal(player)
       seat.stack should equal(stack)
       seat.state should equal(Seat.State.Ready)

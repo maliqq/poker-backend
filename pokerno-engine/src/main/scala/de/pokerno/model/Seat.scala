@@ -169,7 +169,7 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   def stackAmount = stack
 
   // current bet
-  private var _lastAction: Bet.Value = null
+  private var _lastAction: BetType.Value = null
   def lastAction = _lastAction
 
   private var _put: Decimal = .0
@@ -240,7 +240,7 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
 
   def check(): Decimal = {
     _state = Seat.State.Bet
-    _lastAction = Bet.Check
+    _lastAction = BetType.Check
     .0
   }
 
@@ -252,7 +252,7 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   def fold(): Decimal = {
     _state = Seat.State.Fold
     _put = .0
-    _lastAction = Bet.Fold
+    _lastAction = BetType.Fold
     .0
   }
 
@@ -262,7 +262,7 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
     canCall(amt, toCall)
   }
 
-  def force(betType: Bet.Value, amt: Decimal): Decimal = {
+  def force(betType: BetType.Value, amt: Decimal): Decimal = {
     put(amt) {
       Seat.State.Play
     }
@@ -284,7 +284,7 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
     put(diff) {
       Seat.State.Bet
     }
-    _lastAction = Bet.Raise
+    _lastAction = BetType.Raise
     diff
   }
 
@@ -304,7 +304,7 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
     put(amt) {
       Seat.State.Bet
     }
-    _lastAction = Bet.Call
+    _lastAction = BetType.Call
     amt
   }
 
@@ -320,24 +320,22 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   def canBet: Boolean = {
     inPlay || isPostedBB
   }
-
-  import de.pokerno.util.ConsoleUtils._
   
   def canBet(bet: Bet, stake: Stake, _call: Decimal, _raise: MinMax[Decimal]): Boolean =
     bet.betType match {
-      case Bet.Fold ⇒
+      case BetType.Fold ⇒
         canFold || notActive
   
-      case Bet.Check ⇒
+      case BetType.Check ⇒
         canCheck(_call)
   
-      case Bet.Call if isActive ⇒
+      case BetType.Call if isActive ⇒
         canCall(bet.amount.get, _call)
   
-      case Bet.Raise if isActive ⇒
+      case BetType.Raise if isActive ⇒
         canRaise(bet.amount.get, _raise)
   
-      case f: Bet.ForcedBet ⇒
+      case f if BetType.FORCED.contains(f) ⇒
         canForce(bet.amount.get, stake.amount(f))
   
       case _ ⇒
@@ -347,13 +345,13 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
 
   def postBet(bet: Bet): Decimal =
     bet.betType match {
-      case Bet.Fold                         ⇒ fold
-      case Bet.Raise if bet.isActive        ⇒ raise(bet.amount.get)
-      case Bet.Call if bet.isActive         ⇒ call(bet.amount.get)
-      case Bet.Check                        ⇒ check()
-      case _: Bet.ForcedBet if bet.isActive ⇒ force(bet.betType, bet.amount.get)
+      case BetType.Fold                         ⇒ fold
+      case BetType.Raise if bet.isActive        ⇒ raise(bet.amount.get)
+      case BetType.Call if bet.isActive         ⇒ call(bet.amount.get)
+      case BetType.Check                        ⇒ check()
+      case f if BetType.FORCED.contains(f) && bet.isActive ⇒ force(bet.betType, bet.amount.get)
       case x ⇒
-        warn("unhandled postBet: %s", x)
+        Console printf("unhandled postBet: %s", x)
         0
     }
 

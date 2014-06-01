@@ -1,19 +1,38 @@
 package de.pokerno.protocol.game_events
 
-import beans._
-import com.fasterxml.jackson.annotation.JsonInclude
-
 import de.pokerno.model.DealType
 
+import beans._
+import com.fasterxml.jackson.annotation.{JsonInclude, JsonIgnore}
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
-sealed case class DealCards(
-    @BeanProperty var `type`: DealType.Value,
+abstract class DealCards(
+    _cards: Either[Cards, Int]
+) extends GameEvent {
+  
+    @BeanProperty val cards: Cards = _cards match {
+      case Left(c) => c
+      case _ => Array()
+    }
 
-    @BeanProperty var cards: Array[Byte] = Array(),
+    @BeanProperty val cardsNum: Option[Int] = _cards match {
+      case Right(n) => Some(n)
+      case _ => None
+    }
+}
 
-    @BeanProperty var pos: Option[Int] = None,
+sealed case class DealHole(
+    @BeanProperty pos: Int,
+    @BeanProperty player: Player,
+    @JsonIgnore _cards: Either[Cards, Int]
+  ) extends DealCards(_cards)
 
-    @BeanProperty var player: Option[Player] = None,
+sealed case class DealDoor(
+    @BeanProperty pos: Int,
+    @BeanProperty player: Player,
+    @JsonIgnore _cards: Either[Cards, Int]    
+  ) extends DealCards(_cards)
 
-    @BeanProperty var cardsNum: Option[Int] = None
-  ) extends GameEvent {}
+sealed case class DealBoard(
+    @JsonIgnore _cards: Cards = Array()
+) extends DealCards(Left(_cards))

@@ -5,13 +5,29 @@ import com.fasterxml.jackson.annotation.JsonInclude
 
 import de.pokerno.poker.Hand
 
+object DeclareHand {
+  def apply(pos: Int, player: Player, hand: Hand) = new DeclareHand(pos, player, hand)
+}
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
-sealed case class DeclareHand(
-    @BeanProperty var pos: Integer,
+sealed class DeclareHand(
+    @BeanProperty val pos: Integer,
 
-    @BeanProperty var player: Player,
+    @BeanProperty val player: Player,
 
-    @BeanProperty var cards: Cards,
+    _hand: Hand
+  ) extends GameEvent {
+  
+  @BeanProperty val rank: String = _hand.rank.get.toString()
+  
+  @BeanProperty val cards: Cards = _hand.cards.value
 
-    @BeanProperty var hand: Hand
-    ) extends GameEvent {}
+  @BeanProperty val value: Cards = _hand.value
+  
+  @BeanProperty val high: Cards = _hand.high
+  
+  @BeanProperty val kicker: Cards = _hand.kicker
+  
+  @BeanProperty val description: String = _hand.description
+  
+}

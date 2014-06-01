@@ -100,13 +100,11 @@ class Pot {
     pots.toList
   }
 
-  import de.pokerno.util.ConsoleUtils._
-
   def split(member: Player, _amount: Decimal, left: Decimal) {
     val value: Decimal = main.members.getOrElse(member, 0)
     val amount = value + _amount
     if (main.capFrom <= amount) {
-      info("splitting main: %s for member %s with amount %s/%s", main, member, amount, left)
+      Console printf("splitting main: %s for member %s with amount %s/%s", main, member, amount, left)
       val (_new, _old) = main split (member, _amount, left)
       side :+= _old
       main = _new
@@ -125,11 +123,11 @@ class Pot {
         _current
       }
 
-      info("splitting side: %s for member %s with amount %s/%s and current cap", current, member, amount, left)
+      Console printf("splitting side: %s for member %s with amount %s/%s and current cap", current, member, amount, left)
       val (_new, _old) = current split (member, _amount, left, current.cap)
       side = skip ++ List(_old, _new) ++ _side
     }
-    error("main=%s\nside=%s", main, side)
+    Console printf("main=%s\nside=%s", main, side)
   }
 
   def complete() {

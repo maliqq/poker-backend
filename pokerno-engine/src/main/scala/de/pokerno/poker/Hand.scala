@@ -41,9 +41,12 @@ object Hand {
   }
 }
 
+import beans._
+import com.fasterxml.jackson.annotation.JsonProperty
+
 class Hand(
     val cards: CardSet,
-    val value: Seq[Card] = List.empty,
+    val value: Seq[Card] = Seq.empty,
     var rank: Option[Rank.Value] = None,
     High: Either[Seq[Card], Boolean] = Right(false),
     Kicker: Either[Seq[Card], Boolean] = Right(false)) extends Ordered[Hand] {

@@ -1,6 +1,6 @@
 package de.pokerno.gameplay.stage
 
-import de.pokerno.gameplay.{Event, Stage, StageContext}
+import de.pokerno.gameplay.{Events, Stage, StageContext}
 
 case class RotateGame(ctx: StageContext) extends Stage {
   
@@ -10,7 +10,7 @@ case class RotateGame(ctx: StageContext) extends Stage {
     if (variation.isMixed && gameRotation.hasNext) {
       game = gameRotation.next
       
-      ctx broadcast Event.gameChange(game)
+      ctx broadcast Events.gameChange(game)
     }
 
 }

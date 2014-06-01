@@ -1,6 +1,7 @@
 package de.pokerno.poker
 
 object Suit {
+  
   abstract class Value {
     def short: Char
     def unicode: String
@@ -8,24 +9,28 @@ object Suit {
     def color: String
     override def toString: String = short.toString()
   }
+  
   case object Spade extends Value {
     def toInt = 0
     def short = 's'
     def unicode = "♠"
     def color = Console.YELLOW
   }
+  
   case object Heart extends Value {
     def toInt = 1
     def short = 'h'
     def unicode = "♥"
     def color = Console.RED
   }
+  
   case object Diamond extends Value {
     def toInt = 2
     def short = 'd'
     def unicode = "♦"
     def color = Console.CYAN
   }
+  
   case object Club extends Value {
     def toInt = 3
     def short = 'c'

@@ -5,10 +5,6 @@ import org.scalatest.matchers._
 import org.scalatest.matchers.ShouldMatchers._
 
 class HandSpec extends FunSpec with ClassicMatchers {
-  describe("Hand") {
-
-  }
-
   describe("Hand.Cards") {
     it("has gaps") {
       val cards = CardUtils.parseString("AsKsQs7s8s9s").sorted(AceHigh)

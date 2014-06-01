@@ -3,7 +3,35 @@ package de.pokerno.model
 import math.{ BigDecimal ⇒ Decimal }
 import java.util.Locale
 
-case class Bet(val betType: Bet.Value, val amount: Option[Decimal] = None, val timeout: Option[Boolean] = None) {
+import beans._
+
+object BetType extends Enumeration {
+  private def value(s: String) = new Val(nextId, s)
+
+  val SmallBlind  = value("small-blind")
+  val BigBlind    = value("big-blind")
+  val Ante        = value("ante")
+  val BringIn     = value("bring-in")
+  val GuestBlind  = value("guest-blind")
+  val Straddle    = value("straddle")
+
+  val AllIn       = value("all-in")
+  
+  val Call        = value("call")
+  val Raise       = value("raise")
+  val Check       = value("check")
+  val Fold        = value("fold")
+  
+  final val FORCED = Seq(SmallBlind, BigBlind, Ante, BringIn, GuestBlind, Straddle)
+}
+
+case class Bet(
+    `type`: BetType.Value,
+    amount: Option[Decimal] = None
+  ) {
+  
+  def betType = `type`
+  
   override def toString = {
     if (amount.isDefined)
       "%s %.2f" formatLocal (Locale.US, betType.toString, amount.get)
@@ -11,11 +39,11 @@ case class Bet(val betType: Bet.Value, val amount: Option[Decimal] = None, val t
   }
   
   def isActive =  amount.isDefined && amount.get > 0
-  def isForced =  betType.isInstanceOf[Bet.ForcedBet]
-  def isRaise =   betType == Bet.Raise
-  def isCheck =   betType == Bet.Check
-  def isCall =    betType == Bet.Call
-  def isFold =    betType == Bet.Fold
+  def isForced =  BetType.FORCED.contains(betType)
+  def isRaise =   betType == BetType.Raise
+  def isCheck =   betType == BetType.Check
+  def isCall =    betType == BetType.Call
+  def isFold =    betType == BetType.Fold
 
   override def equals(other: Any): Boolean = {
     other match {
@@ -26,45 +54,26 @@ case class Bet(val betType: Bet.Value, val amount: Option[Decimal] = None, val t
 }
 
 object Bet {
-  trait Value
-  trait Rateable // FIXME - ?
-
-  object DoubleBet extends Value with Rateable
-
-  abstract class ForcedBet  extends Value
-  case object SmallBlind    extends ForcedBet with Rateable
-  case object BigBlind      extends ForcedBet with Rateable
-  case object Ante          extends ForcedBet with Rateable
-  case object BringIn       extends ForcedBet with Rateable
-  case object GuestBlind    extends ForcedBet
-  case object Straddle      extends ForcedBet
-
-  abstract class PassiveBet extends Value
-  case object Fold          extends PassiveBet
-  case object Check         extends PassiveBet
-
-  abstract class ActiveBet  extends Value
-  case object Raise         extends ActiveBet
-  case object AllIn         extends ActiveBet
-  case object Call          extends ActiveBet
-
-  abstract class CardAction extends Value
+  import BetType._
 
   def check()                   = Bet(Check)
-  def check(timeout: Boolean)   = Bet(Check, timeout = Some(timeout))
 
   def fold()                    = Bet(Fold)
-  def fold(timeout: Boolean)    = Bet(Fold, timeout = Some(timeout))
 
   def call(amount: Decimal)     = Bet(Call, Some(amount))
   def raise(amount: Decimal)    = Bet(Raise, Some(amount))
-  def allin()                   = Bet(AllIn)
-
-  def forced(t: ForcedBet,
-      amount: Decimal)          = Bet(t, Some(amount))
-  def sb(amount: Decimal)       = forced(SmallBlind, amount)
-  def bb(amount: Decimal)       = forced(BigBlind, amount)
-  def ante(amount: Decimal)     = forced(Ante, amount)
+  def allIn()                   = Bet(AllIn)
+//
+//  def forced(t: Value, amount: Decimal) =
+//        if (BetType.FORCED.contains(t)) Bet(t, Some(amount))
+//        else throw new IllegalArgumentException("bet should be one of: %s" format (BetType.FORCED.map(_.toString).mkString(", ")))
+  
+  def sb(amount: Decimal)       = Bet(SmallBlind, Some(amount))
+  def bb(amount: Decimal)       = Bet(BigBlind, Some(amount))
+  def ante(amount: Decimal)     = Bet(Ante, Some(amount))
+  def bringIn(amount: Decimal)  = Bet(BringIn, Some(amount))
+  def gb(amount: Decimal)       = Bet(GuestBlind, Some(amount))
+  def straddle(amount: Decimal) = Bet(Straddle, Some(amount))
 
   case class CantCheck(call: Decimal)
     extends Error("Can't check: need to call=%.2f" format call)

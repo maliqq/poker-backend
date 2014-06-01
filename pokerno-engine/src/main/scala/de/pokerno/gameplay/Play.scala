@@ -1,30 +1,19 @@
 package de.pokerno.gameplay
 
 import de.pokerno.poker.Card
-import de.pokerno.model.{ Player, Pot }
+import de.pokerno.model.{ Player, Pot, Street }
 import math.{ BigDecimal ⇒ Decimal }
 
-case class Play(gameplay: Context) {
+class Play() {
   val id: String = java.util.UUID.randomUUID().toString()
-
+  
   // timestamps
-  var startAt: java.util.Date = new java.util.Date()
-  var finishAt: java.util.Date = null
+  val started: java.util.Date = new java.util.Date()
+  
+  private var _ended: java.util.Date = null
+  def ended = _ended
+  def end(): Unit = _ended = new java.util.Date()
 
-  def finished() {
-    finishAt = new java.util.Date()
-  }
-
-  var getStreet: () ⇒ Option[Street.Value] = () ⇒ None
-  def street: Option[Street.Value] = getStreet()
-  def require = (gameplay.round.call, gameplay.round.raise)
-  //def acting = gameplay.round.box
-  def pot = gameplay.round.pot
-  def board = gameplay.dealer.board
-  def rake: Option[Decimal] = None
-
-  def pocketCards(player: Player) = gameplay.dealer.pocketOption(player)
-
-  val winners: Map[Player, Decimal] = Map.empty
-  val knownCards: Map[Player, List[Card]] = Map.empty
+  var winners: Map[Player, Decimal] = Map.empty
+  var knownCards: Map[Player, List[Card]] = Map.empty
 }

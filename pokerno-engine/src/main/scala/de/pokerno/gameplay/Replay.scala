@@ -61,7 +61,7 @@ package de.pokerno.gameplay
 //    case Replay.Observe(out) ⇒
 //      e.broker.subscribe(out, "replay-out")
 //      e.publish(
-//        Event.start(t, gameplay.variation, gameplay.stake, null) //.only(id)
+//        Events.start(t, gameplay.variation, gameplay.stake, null) //.only(id)
 //      ) { _.all() }
 //
 //    //    case join @ rpc.JoinPlayer(pos, player, amount) ⇒
@@ -165,7 +165,7 @@ package de.pokerno.gameplay
 //
 //    case Replay.Stop ⇒
 //      e.publish(
-//          Event.playStop()) { _.all() }
+//          Events.playStop()) { _.all() }
 //      context.stop(self)
 //
 //    case x ⇒

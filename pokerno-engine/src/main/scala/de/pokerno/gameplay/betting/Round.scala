@@ -18,13 +18,15 @@ private[gameplay] class Round(val table: Table, val game: Game, val stake: Stake
   def call = _call
   
   // current raise range
-  private var _raise: MinMax[Decimal] = MinMax(.0, .0)
+  private final val noRaise: MinMax[Decimal] = MinMax(.0, .0)
+  
+  private var _raise: MinMax[Decimal] = noRaise
   def raise = _raise
-
+  
   def clear() {
     raiseCount = 0
     _call = .0
-    _raise = MinMax(.0, .0)
+    _raise = noRaise
     current = table.button
     // FIXME
     //pot.complete()
@@ -39,14 +41,21 @@ private[gameplay] class Round(val table: Table, val game: Game, val stake: Stake
     clear()
   }
 
-  def forceBet(pos: Int, betType: Bet.ForcedBet): Tuple2[Seat, Bet] = {
+  def forceBet(pos: Int, betType: BetType.Value): Tuple2[Seat, Bet] = {
     current = pos
     val seat = table.seats(current)
 
     _call = stake amount betType
 
     val stack = seat.stack
-    val bet = Bet.forced(betType, List(stack, _call) min)
+    val amt = List(stack, _call) min
+    val bet = betType match {
+      case BetType.Ante =>        Bet.ante(amt)
+      case BetType.SmallBlind =>  Bet.sb(amt)
+      case BetType.BringIn =>     Bet.bringIn(amt)
+      case BetType.Straddle =>    Bet.straddle(amt)
+      case BetType.GuestBlind =>  Bet.gb(amt)
+    }
 
     addBet(bet)
   }
@@ -61,7 +70,7 @@ private[gameplay] class Round(val table: Table, val game: Game, val stake: Stake
     val total = seat.total
 
     if (total <= _call || raiseCount >= MaxRaiseCount)
-      _raise = MinMax(.0, .0)
+      _raise = noRaise
     else {
       val (min, max) = limit raise (total, blind + _call, pot.total)
       _raise = MinMax(List(total, min) min, List(total, max) min)
@@ -74,9 +83,9 @@ private[gameplay] class Round(val table: Table, val game: Game, val stake: Stake
     val seat = table.seats(current)
     val player = seat.player.get
 
-    val _posting = if (_bet.betType == Bet.AllIn)
+    val _posting = if (_bet.betType == BetType.AllIn)
       Bet.raise(seat.total)
-    else if (_bet.betType == Bet.Call && _bet.amount.isEmpty)
+    else if (_bet.betType == BetType.Call && _bet.amount.isEmpty)
       _bet.copy(amount = Some(List(_call, seat.total).min - seat.put))
     else  _bet
     

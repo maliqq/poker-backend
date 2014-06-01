@@ -9,7 +9,7 @@ sealed case class DiscardCards(
 
     @BeanProperty var player: Player,
 
-    @BeanProperty var cards: Cards,
+    @BeanProperty var cards: Cards = null,
 
     @BeanProperty var cardsNum: Option[Int] = None
   ) extends GameEvent {}

@@ -1,18 +1,16 @@
 package de.pokerno.gameplay.betting
 
 import concurrent.duration._
+
 import de.pokerno.gameplay.{Betting, Context, StageContext}
 
 trait NextTurn {
 
-  def gameplay: Context
-  def stageContext: StageContext
-
+  val ctx: StageContext
+  
   protected def nextTurn(): Betting.Transition = {
-    val round = gameplay.round
-
-    Console printf ("%s%s%s\n", Console.MAGENTA, gameplay.table, Console.RESET)
-
+    val round = ctx.gameplay.round
+    
     round.seats filter (_._1 inPlay) foreach {
       case (seat, pos) ⇒
         if (!seat.didCall(round.call)) {

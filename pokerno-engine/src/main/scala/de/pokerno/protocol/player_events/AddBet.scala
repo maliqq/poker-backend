@@ -1,3 +1,8 @@
 package de.pokerno.protocol.player_events
 
-case class AddBet() extends PlayerEvent {}
+import beans._
+import de.pokerno.model.Bet
+
+sealed case class AddBet(
+  @BeanProperty var bet: Bet = null
+) extends PlayerEvent {}

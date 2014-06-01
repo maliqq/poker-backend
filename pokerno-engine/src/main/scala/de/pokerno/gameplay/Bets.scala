@@ -1,16 +1,17 @@
 package de.pokerno.gameplay
 
-import de.pokerno.model.Bet
+import de.pokerno.model.{Bet, BetType}
 
 private[gameplay] trait Bets {
-  def ctx: StageContext
-  def round: betting.Round
+  val ctx: StageContext
+  
+  def round: betting.Round = ctx.gameplay.round
   
   // require bet
   def requireBet(pos: Int) {
     val seat = round requireBet pos
     val player = seat.player.get
-    ctx broadcast Event.requireBet(pos, player, round.call, round.raise)
+    ctx broadcast Events.requireBet(pos, player, round.call, round.raise)
   }
 
   // add bet
@@ -18,20 +19,28 @@ private[gameplay] trait Bets {
     val (seat, posted) = round.addBet(bet)
     val pos = round.current
     val player = seat.player.get
-    ctx broadcast Event.addBet(pos, player, posted)
+    ctx broadcast Events.addBet(pos, player, posted)
+  }
+  
+  def addBetWithTimeout(bet: Bet) {
+    val (seat, posted) = round.addBet(bet)
+    val pos = round.current
+    val player = seat.player.get
+    val event = Events.addBet(pos, player, posted)
+    event.timeout = Some(true)
+    ctx broadcast event
   }
 
   // force bet
-  def forceBet(pos: Int, _type: Bet.ForcedBet) {
+  def forceBet(pos: Int, _type: BetType.Value) {
     val (seat, posted) = round.forceBet(pos, _type)
-    val pos = round.current
     val player = seat.player.get
-    ctx broadcast Event.addBet(pos, player, posted)
+    ctx broadcast Events.addBet(pos, player, posted)
   }
 
   // current betting round finished
   def doneBets() {
-    ctx broadcast Event.declarePot(round.pot.total,
+    ctx broadcast Events.declarePot(round.pot.total,
         round.pot.sidePots.map(_.total))
     round complete()
   }

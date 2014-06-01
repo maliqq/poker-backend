@@ -10,7 +10,7 @@ class PotSpec extends FunSpec with ClassicMatchers {
 
     it("split pot 1") {
       val pot = new SidePot(0, Some(100))
-      val p = Player("P")
+      val p = new Player("P")
       val left = pot.add(p, 120)
       left should equal(20)
       pot.isMember(p) should be(true)
@@ -19,7 +19,7 @@ class PotSpec extends FunSpec with ClassicMatchers {
 
     it("split pot 2") {
       val pot = new SidePot(0, Some(100))
-      val p = Player("P")
+      val p = new Player("P")
       pot.add(p, 100) should equal(0)
       pot.isMember(p) should be(true)
       pot.total should equal(100)
@@ -27,7 +27,7 @@ class PotSpec extends FunSpec with ClassicMatchers {
 
     it("pot 1") {
       val pot = new SidePot
-      val p = Player("P")
+      val p = new Player("P")
       pot.add(p, 100) should equal(0)
       pot.isMember(p) should be(true)
       pot.total should equal(100)
@@ -38,9 +38,9 @@ class PotSpec extends FunSpec with ClassicMatchers {
 
     it("split") {
       val pot = new SidePot
-      val a = Player("A")
-      val b = Player("B")
-      val c = Player("C")
+      val a = new Player("A")
+      val b = new Player("B")
+      val c = new Player("C")
 
       pot.members = Map(
         a -> 10,
@@ -62,8 +62,8 @@ class PotSpec extends FunSpec with ClassicMatchers {
 
     it("all in - 2 players, 1 allin") {
       val pot = new Pot
-      val a = Player("A")
-      val b = Player("B")
+      val a = new Player("A")
+      val b = new Player("B")
       pot.add(a, 100) should equal(0)
       pot.add(b, 60, true) should equal(0)
       pot.main.total should equal(40)
@@ -76,9 +76,9 @@ class PotSpec extends FunSpec with ClassicMatchers {
 
     it("all in - three players, 1 allin") {
       val pot = new Pot
-      val a = Player("A")
-      val b = Player("B")
-      val c = Player("C")
+      val a = new Player("A")
+      val b = new Player("B")
+      val c = new Player("C")
       pot.add(a, 100) should equal(0)
       pot.add(b, 100) should equal(0)
       pot.add(c, 60, true) should equal(0)
@@ -94,9 +94,9 @@ class PotSpec extends FunSpec with ClassicMatchers {
 
     it("all in - three players, middle player allin") {
       val pot = new Pot
-      val a = Player("A")
-      val b = Player("B")
-      val c = Player("C")
+      val a = new Player("A")
+      val b = new Player("B")
+      val c = new Player("C")
 
       pot.add(a, 100) should equal(0)
       pot.add(b, 60, true) should equal(0)
@@ -116,10 +116,10 @@ class PotSpec extends FunSpec with ClassicMatchers {
 
     it("all in - 4 players, 2 allins") {
       val pot = new Pot
-      val a = Player("A")
-      val b = Player("B")
-      val c = Player("C")
-      val d = Player("D")
+      val a = new Player("A")
+      val b = new Player("B")
+      val c = new Player("C")
+      val d = new Player("D")
       pot.add(a, 100) should equal(0)
       pot.add(b, 60, true) should equal(0)
       pot.add(c, 100) should equal(0)
@@ -151,10 +151,10 @@ class PotSpec extends FunSpec with ClassicMatchers {
 
     it("all in - 4 players, 1 allin") {
       val pot = new Pot
-      val a = Player("A")
-      val b = Player("B")
-      val c = Player("C")
-      val d = Player("D")
+      val a = new Player("A")
+      val b = new Player("B")
+      val c = new Player("C")
+      val d = new Player("D")
 
       pot.add(a, 10) should equal(0)
       pot.add(b, 10) should equal(0)
@@ -181,10 +181,10 @@ class PotSpec extends FunSpec with ClassicMatchers {
 
     it("all in - 4 players, 2 allin") {
       val pot = new Pot
-      val a = Player("A")
-      val b = Player("B")
-      val c = Player("C")
-      val d = Player("D")
+      val a = new Player("A")
+      val b = new Player("B")
+      val c = new Player("C")
+      val d = new Player("D")
 
       pot.add(a, 10) should equal(0)
       pot.add(b, 10) should equal(0)
@@ -218,10 +218,10 @@ class PotSpec extends FunSpec with ClassicMatchers {
 
     it("all in - 4 players, 2 allins, 1 round") {
       val pot = new Pot
-      val a = Player("A")
-      val b = Player("B")
-      val c = Player("C")
-      val d = Player("D")
+      val a = new Player("A")
+      val b = new Player("B")
+      val c = new Player("C")
+      val d = new Player("D")
 
       pot.add(a, 5, true) should equal(0)
       pot.add(b, 10) should equal(0)
@@ -252,10 +252,10 @@ class PotSpec extends FunSpec with ClassicMatchers {
 
     it("all in - 4 players, 1 allin, 1 round") {
       val pot = new Pot
-      val a = Player("A")
-      val b = Player("B")
-      val c = Player("C")
-      val d = Player("D")
+      val a = new Player("A")
+      val b = new Player("B")
+      val c = new Player("C")
+      val d = new Player("D")
 
       pot.add(a, 10) should equal(0)
       pot.add(b, 10) should equal(0)
@@ -280,10 +280,10 @@ class PotSpec extends FunSpec with ClassicMatchers {
     it("all in - 4 players, 1 allin raise") {
       val pot = new Pot
 
-      val a = Player("A")
-      val b = Player("B")
-      val c = Player("C")
-      val d = Player("D")
+      val a = new Player("A")
+      val b = new Player("B")
+      val c = new Player("C")
+      val d = new Player("D")
 
       pot.add(a, 10) should equal(0)
       pot.add(b, 10) should equal(0)
@@ -306,10 +306,10 @@ class PotSpec extends FunSpec with ClassicMatchers {
     it("all in - 4 players, 1 allin raise, 1 allin call") {
       val pot = new Pot
 
-      val a = Player("A")
-      val b = Player("B")
-      val c = Player("C")
-      val d = Player("D")
+      val a = new Player("A")
+      val b = new Player("B")
+      val c = new Player("C")
+      val d = new Player("D")
 
       pot.add(a, 17, true) should equal(0)
       pot.add(b, 7, true) should equal(0)
@@ -334,10 +334,10 @@ class PotSpec extends FunSpec with ClassicMatchers {
     it("all in - 4 players, 1 allin raise, 1 allin call, 1 allin re-raise") {
       val pot = new Pot
 
-      val a = Player("A")
-      val b = Player("B")
-      val c = Player("C")
-      val d = Player("D")
+      val a = new Player("A")
+      val b = new Player("B")
+      val c = new Player("C")
+      val d = new Player("D")
 
       pot.add(a, 17, true) should equal(0)
       pot.add(b, 7, true) should equal(0)
@@ -350,10 +350,10 @@ class PotSpec extends FunSpec with ClassicMatchers {
     it("all in - 4 players, 1 allin raise, 1 allin call, raise, raise under allin") {
       val pot = new Pot
 
-      val a = Player("A")
-      val b = Player("B")
-      val c = Player("C")
-      val d = Player("D")
+      val a = new Player("A")
+      val b = new Player("B")
+      val c = new Player("C")
+      val d = new Player("D")
 
       pot.add(a, 6, true) should equal(0)
       pot.add(b, 5, true) should equal(0)
@@ -366,8 +366,8 @@ class PotSpec extends FunSpec with ClassicMatchers {
 
     it("total") {
       val pot = new Pot
-      val a = Player("A")
-      val b = Player("B")
+      val a = new Player("A")
+      val b = new Player("B")
       pot.add(a, 20)
       pot.add(b, 10)
       pot.total should equal(30)

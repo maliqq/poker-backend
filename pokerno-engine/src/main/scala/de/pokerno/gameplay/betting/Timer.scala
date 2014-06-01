@@ -4,9 +4,7 @@ import akka.actor.{ Actor, Cancellable }
 import concurrent.duration._
 import de.pokerno.gameplay.Betting
 
-trait Timer {
-
-  a: Actor ⇒
+trait Timer { a: Actor ⇒
 
   import context._
 

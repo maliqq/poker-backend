@@ -8,22 +8,22 @@ case class Stake(
     Ante: Either[Decimal, Boolean] = Right(false),
     BringIn: Either[Decimal, Boolean] = Right(false)) {
 
-  def amount(t: Bet.Value): Decimal = t match {
-    case Bet.BringIn    ⇒ bringIn.get
-    case Bet.Ante       ⇒ ante.getOrElse(rate(Bet.Ante))
-    case Bet.SmallBlind ⇒ smallBlind
-    case Bet.BigBlind   ⇒ bigBlind
+  def amount(t: BetType.Value): Decimal = t match {
+    case BetType.BringIn    ⇒ bringIn.get
+    case BetType.Ante       ⇒ ante.getOrElse(rate(BetType.Ante))
+    case BetType.SmallBlind ⇒ smallBlind
+    case BetType.BigBlind   ⇒ bigBlind
     case _              ⇒ throw new Error("no amount for %s" format t)
   }
 
-  val smallBlind: Decimal = SmallBlind getOrElse rate(Bet.SmallBlind)
+  val smallBlind: Decimal = SmallBlind getOrElse rate(BetType.SmallBlind)
 
   val ante: Option[Decimal] = Ante match {
     case Left(amount) ⇒
       if (amount > .0) Some(amount)
       else None
     case Right(withAnte) ⇒
-      if (withAnte) Some(rate(Bet.Ante))
+      if (withAnte) Some(rate(BetType.Ante))
       else None
   }
 
@@ -32,9 +32,9 @@ case class Stake(
       if (amount > .0) Some(amount)
       else None
     case Right(withBringIn) ⇒
-      if (withBringIn) Some(rate(Bet.BringIn))
+      if (withBringIn) Some(rate(BetType.BringIn))
       else None
   }
 
-  private def rate(v: Bet.Value) = Rates(v) * bigBlind
+  private def rate(v: BetType.Value) = Rates(v) * bigBlind
 }

@@ -1,7 +1,7 @@
 package de.pokerno.gameplay.stage
 
 import de.pokerno.model._
-import de.pokerno.gameplay.{Event, Stage, StageContext}
+import de.pokerno.gameplay.{Events, Stage, StageContext}
 
 case class Dealing(ctx: StageContext, _type: DealType.Value, cardsNum: Option[Int] = None) extends Stage {
   
@@ -20,10 +20,10 @@ case class Dealing(ctx: StageContext, _type: DealType.Value, cardsNum: Option[In
           val cards = dealer dealPocket (n, player)
 
           if (_type == DealType.Hole) {
-            ctx.publish(Event.dealCards(pos, player, _type, cards)) { _.only(player) }
-            ctx.publish(Event.dealCardsNum(pos, player, _type, cards)) { _.except(player) }
+            ctx.publish(Events.dealCards(pos, player, _type, cards)) { _.only(player) }
+            ctx.publish(Events.dealCardsNum(pos, player, _type, cards)) { _.except(player) }
           } else
-            ctx broadcast Event.dealCards(pos, player, _type, cards)
+            ctx broadcast Events.dealCards(pos, player, _type, cards)
       }
 
     case DealType.Board if cardsNum.isDefined ⇒
@@ -31,7 +31,7 @@ case class Dealing(ctx: StageContext, _type: DealType.Value, cardsNum: Option[In
       Console printf("dealing board %d cards\n", cardsNum.get)
 
       val cards = dealer dealBoard (cardsNum.get)
-      ctx broadcast Event.dealCards(_type, cards)
+      ctx broadcast Events.dealCards(_type, cards)
 
     case _ ⇒
     // TODO
@@ -99,7 +99,7 @@ case class Dealing(ctx: StageContext, _type: DealType.Value, cardsNum: Option[In
 //            dealPocket(Left(d.cardsNum.getOrElse(pocketSize)), _player)
 //
 //          debug(" | deal %s -> %s", cardsDealt, _player)
-//          e.publish(Event.dealCards(d._type, cardsDealt, Some(_player, pos))) { _.all() }
+//          e.publish(Events.dealCards(d._type, cardsDealt, Some(_player, pos))) { _.all() }
 //
 //        case DealType.Board if gameOptions.hasBoard ⇒
 //
@@ -123,7 +123,7 @@ case class Dealing(ctx: StageContext, _type: DealType.Value, cardsNum: Option[In
 //            dealBoard(Left(d.cardsNum.getOrElse(0)))
 //
 //          debug(" | deal board %s", cardsDealt)
-//          e.publish(Event.dealCards(d._type, cardsDealt)) { _.all() }
+//          e.publish(Events.dealCards(d._type, cardsDealt)) { _.all() }
 //
 //      }
 //    }

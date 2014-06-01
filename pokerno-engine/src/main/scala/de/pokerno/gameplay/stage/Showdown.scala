@@ -3,7 +3,7 @@ package de.pokerno.gameplay.stage
 import math.{ BigDecimal ⇒ Decimal }
 import de.pokerno.model._
 import de.pokerno.poker._
-import de.pokerno.gameplay.{Event, Stage, StageContext}
+import de.pokerno.gameplay.{Events, Stage, StageContext}
 import scala.math.{BigDecimal => Decimal}
 
 /*
@@ -58,7 +58,7 @@ private[gameplay] case class Showdown(ctx: StageContext) extends Stage {
       val winner = seat.player.get
       seat wins amount
       events.publish(
-        Event.declareWinner(pos, winner, amount)) { _.all() }
+        Events.declareWinner(pos, winner, amount)) { _.all() }
     }
   }
 
@@ -111,7 +111,7 @@ private[gameplay] case class Showdown(ctx: StageContext) extends Stage {
             case (seat, pos) ⇒
               seat wins amount
               events.publish(
-                Event.declareWinner(pos, winner, amount)
+                Events.declareWinner(pos, winner, amount)
               ) { _.all() }
           }
       }
@@ -146,7 +146,7 @@ private[gameplay] case class Showdown(ctx: StageContext) extends Stage {
         hands += (player -> hand)
         //events.publish(message.ShowCards(pos = pos, player = player, cards = pocket))
         events.publish(
-          Event.declareHand(pos, player, pocket, hand)
+          Events.declareHand(pos, player, pocket, hand)
         ) { _.all() }
     }
     hands

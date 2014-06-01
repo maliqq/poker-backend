@@ -9,8 +9,10 @@ sealed case class DeclareStart(
 
     @BeanProperty var variation: Variation,
 
-    @BeanProperty var stake: Stake//,
-    // FIXME
-    //@BeanProperty var play: PlayState
+    @BeanProperty var stake: Stake,
+    
+    @BeanProperty var play: PlayState,
+    
+    @BeanProperty var pocket: Option[Cards] = None 
 
   ) extends GameEvent {}

@@ -18,7 +18,7 @@ case class Betting(ctx: StageContext, betting: ActorRef) extends Bets with NextT
   }
   
   // add bet
-  def bet(player: Player, bet: Bet) {
+  def add(player: Player, bet: Bet) {
     val pos = round.current
     val seat = table.seats(pos)
     if (seat.player == player) {
@@ -38,17 +38,17 @@ case class Betting(ctx: StageContext, betting: ActorRef) extends Bets with NextT
     val bet: Bet = seat.state match {
       case Seat.State.Away ⇒
         // force fold
-        Bet.fold(timeout = true)
+        Bet.fold//(timeout = true)
 
       case _ ⇒
         // force check/fold
         if (round.call == 0 || seat.didCall(round.call))
-          Bet.check(timeout = true)
-        else Bet.fold(timeout = true)
+          Bet.check//(timeout = true)
+        else Bet.fold//(timeout = true)
     }
 
     Console printf("[betting] timeout")
-    addBet(bet)
+    addBetWithTimeout(bet)
   }
   
 }

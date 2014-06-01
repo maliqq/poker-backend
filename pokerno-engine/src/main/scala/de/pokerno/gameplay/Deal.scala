@@ -18,19 +18,36 @@ object Deal {
 
 }
 
-class Deal(val gameplay: Context, val play: Play) extends Actor
-    with ActorLogging
-    with BettingActor
-    with NextTurn
-    with Streets.Default {
+trait DealCycle { a: Actor ⇒
+
   import context._
 
-  lazy val streets = Streets(stageContext)
-  lazy val stageContext = StageContext(gameplay, self)
+  final val minimumReadyPlayersToStart = 2
+  final val firstDealAfter = (10 seconds)
+  final val nextDealAfter = (5 seconds)
 
+  def table: Table
+
+  protected def canStart: Boolean = {
+    table.seats.count(_ isReady) == minimumReadyPlayersToStart
+  }
+
+}
+
+class Deal(val gameplay: Context, val play: Play) extends Actor
+    with ActorLogging
+    with betting.Handler
+    with NextTurn
+    with Streets.Default {
+  
+  import context._
+  
+  val ctx = StageContext(gameplay, new Play, self)
+  lazy val streets = Streets(ctx)
+  
   override def preStart() {
     log.info("[deal] start")
-    beforeStreets.apply(stageContext) match {
+    beforeStreets.apply(ctx) match {
       case Stage.Next ⇒
         self ! Streets.Next
       case Stage.Exit ⇒
@@ -57,9 +74,8 @@ class Deal(val gameplay: Context, val play: Play) extends Actor
 
     case Streets.Done ⇒
       log.info("streets done")
-      afterStreets.apply(stageContext)
+      afterStreets.apply(ctx)
       done()
-
   }
 
   private def cancel() {

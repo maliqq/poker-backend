@@ -3,7 +3,6 @@ package de.pokerno
 import org.slf4j.LoggerFactory
 import de.pokerno.gameplay._
 import de.pokerno.backend.{ gateway ⇒ gw }
-import de.pokerno.protocol.{Codec => codec, rpc}
 import akka.actor.{ ActorSystem, Props }
 import de.pokerno.backend.server.Config
 
@@ -88,49 +87,49 @@ object Main {
         rpc = Some(c.config.rpcConfig.copy(port = value))
       ))
     }
-
-    // --stomp
-    opt[Unit]("stomp") text "STOMP with default options" action { (value, c) ⇒
-      c.copy(config = c.config.copy(
-        stomp = Some(c.config.stompConfig)
-      ))
-    }
-
-    // --stomp-port 8082
-    opt[Int]("stomp-port") text "STOMP port" action { (value, c) ⇒
-      c.copy(config = c.config.copy(
-        stomp = Some(c.config.stompConfig.copy(port = value))
-      ))
-    }
-
-    // --zeromq
-    opt[Unit]("zeromq") text "ZeroMQ with default options" action { (value, c) ⇒
-      c.copy(config = c.config.copy(
-        zeromq = Some(c.config.zeromqConfig)
-      ))
-    }
-
-    // --zeromq-port
-    opt[Int]("zeromq-port") text "ZeroMQ port" action { (value, c) ⇒
-      val config = c.config.zeromqConfig
-      c.copy(config = c.config.copy(
-        zeromq = Some(config.copy(port = value))
-      ))
-    }
-    // --zeromq-host
-    opt[String]("zeromq-host") text "ZeroMQ host" action { (value, c) ⇒
-      val config = c.config.zeromqConfig
-      c.copy(config = c.config.copy(
-        zeromq = Some(config.copy(host = value))
-      ))
-    }
-    // --zeromq-topic "updates"
-    opt[String]("zeromq-topic") text "ZeroMQ subscribe topic" action { (value, c) ⇒
-      val config = c.config.zeromqConfig
-      c.copy(config = c.config.copy(
-        zeromq = Some(config.copy(topic = value))
-      ))
-    }
+//
+//    // --stomp
+//    opt[Unit]("stomp") text "STOMP with default options" action { (value, c) ⇒
+//      c.copy(config = c.config.copy(
+//        stomp = Some(c.config.stompConfig)
+//      ))
+//    }
+//
+//    // --stomp-port 8082
+//    opt[Int]("stomp-port") text "STOMP port" action { (value, c) ⇒
+//      c.copy(config = c.config.copy(
+//        stomp = Some(c.config.stompConfig.copy(port = value))
+//      ))
+//    }
+//
+//    // --zeromq
+//    opt[Unit]("zeromq") text "ZeroMQ with default options" action { (value, c) ⇒
+//      c.copy(config = c.config.copy(
+//        zeromq = Some(c.config.zeromqConfig)
+//      ))
+//    }
+//
+//    // --zeromq-port
+//    opt[Int]("zeromq-port") text "ZeroMQ port" action { (value, c) ⇒
+//      val config = c.config.zeromqConfig
+//      c.copy(config = c.config.copy(
+//        zeromq = Some(config.copy(port = value))
+//      ))
+//    }
+//    // --zeromq-host
+//    opt[String]("zeromq-host") text "ZeroMQ host" action { (value, c) ⇒
+//      val config = c.config.zeromqConfig
+//      c.copy(config = c.config.copy(
+//        zeromq = Some(config.copy(host = value))
+//      ))
+//    }
+//    // --zeromq-topic "updates"
+//    opt[String]("zeromq-topic") text "ZeroMQ subscribe topic" action { (value, c) ⇒
+//      val config = c.config.zeromqConfig
+//      c.copy(config = c.config.copy(
+//        zeromq = Some(config.copy(topic = value))
+//      ))
+//    }
 
     // --help
     help("help") text "Help"
@@ -158,16 +157,6 @@ object Main {
       config match {
         case Some(c) ⇒
           val node = backend.server.Node.start(c)
-          opts.restoreFile map { path =>
-            try {
-              val f = new java.io.FileInputStream(path)
-              val msgs = codec.Json.decodeValuesFromStream[rpc.BaseRequest](f)
-              msgs.foreach { node ! _ }
-            } catch {
-              case err: Throwable =>
-                log.warn("can't restore from {}: {}", Array[AnyRef](path, err.getMessage):_*)
-            }
-          }
         case None ⇒
           System.exit(0)
       }

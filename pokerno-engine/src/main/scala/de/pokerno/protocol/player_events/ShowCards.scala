@@ -1,3 +1,7 @@
 package de.pokerno.protocol.player_events
 
-case class ShowCards() extends PlayerEvent {}
+import beans._
+
+sealed case class ShowCards(
+  @BeanProperty var cards: Cards = null
+) extends PlayerEvent {}

@@ -26,8 +26,8 @@ class DealerSpec extends FunSpec with ClassicMatchers {
     }
 
     it("type checks") {
-      Array(DealCards.Door, DealCards.Board, DealCards.Hole) foreach { d ⇒
-        d.isInstanceOf[DealCards.Value] should be(true)
+      Array(DealType.Door, DealType.Board, DealType.Hole) foreach { d ⇒
+        d.isInstanceOf[DealType.Value] should be(true)
       }
     }
   }

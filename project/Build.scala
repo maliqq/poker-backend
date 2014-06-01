@@ -45,7 +45,10 @@ object GitVersionStrategy extends Plugin {
 import GitVersionStrategy._
 
 object PokernoBuild extends Build {
-  val pokernoVersion = "0.0.1"
+  val pokernoVersion  = "0.0.1"
+  val scoptVersion    = "3.1.0"
+  val nettyVersion    = "4.0.19.Final"
+  val akkaVersion     = "2.2.3"
 
   override lazy val settings = super.settings ++ Seq(
     organization := "de.pokerno"
@@ -61,7 +64,7 @@ object PokernoBuild extends Build {
   lazy val deps = Seq(
     "org.scalaz" %% "scalaz-core" % "7.0.3",
     "org.slf4j" % "slf4j-simple" % "1.7.5",
-    "com.typesafe.akka" %% "akka-actor" % "2.2.3",
+    "com.typesafe.akka" %% "akka-actor" % akkaVersion,
     //"com.twitter" % "ostrich" % "2.3.0"
     "com.twitter" %% "util-core" % "6.10.0",
     "commons-codec" % "commons-codec" % "1.9"
@@ -69,7 +72,7 @@ object PokernoBuild extends Build {
   
   lazy val testDeps = Seq(
     "org.scalatest" %% "scalatest" % "1.9.2" % "test",
-    "com.typesafe.akka" %% "akka-testkit" % "2.2.3"
+    "com.typesafe.akka" %% "akka-testkit" % akkaVersion
   )
 
   lazy val protocol = Project(
@@ -79,13 +82,10 @@ object PokernoBuild extends Build {
       name := "pokerno-protocol",
       version := "0.0.1",
       libraryDependencies ++= Seq(
-        "com.fasterxml.jackson.core" % "jackson-databind" % "2.3.0",
+        "com.fasterxml.jackson.core" % "jackson-databind" % "2.3.3",
+        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.3.3",
         "com.twitter" %% "scrooge-core" % "3.15.0",
-        "org.apache.thrift" % "libthrift" % "0.9.1",
-        "org.msgpack" %% "msgpack-scala" % "0.6.8",
-        //"org.msgpack" % "msgpack" % "0.6.8",
-        "com.dyuproject.protostuff" % "protostuff-core" % "1.0.7",
-        "com.dyuproject.protostuff" % "protostuff-runtime" % "1.0.7"
+        "org.apache.thrift" % "libthrift" % "0.9.1"
       )
     ) ++ assemblySettings 
   ).settings(
@@ -93,15 +93,6 @@ object PokernoBuild extends Build {
     ScroogeSBT.scroogeThriftOutputFolder in Compile <<= (sourceDirectory) { _ / "main/scala" }
   )
   
-  lazy val rpc = Project(
-    id = "pokerno-rpc",
-    base = file("pokerno-rpc"),
-    settings = Project.defaultSettings ++ Seq(
-      name := "pokerno-rpc",
-      version := "0.0.1"
-    ) ++ assemblySettings
-  ) dependsOn(protocol)
-
   lazy val engine = Project(
     id = "pokerno-engine",
     base = file("pokerno-engine"),
@@ -110,7 +101,7 @@ object PokernoBuild extends Build {
       version := "0.0.1",
       libraryDependencies ++= deps ++ testDeps
     ) ++ assemblySettings
-  ) dependsOn(protocol, rpc)
+  ) dependsOn(protocol)
 
   lazy val httpGateway = Project(
     id = "pokerno-gateway-http",
@@ -119,7 +110,7 @@ object PokernoBuild extends Build {
       name := "pokerno-gateway-http",
       version := "0.0.1",
       libraryDependencies ++= deps ++ testDeps ++ Seq(
-        "io.netty" % "netty-all" % "4.0.15.Final"
+        "io.netty" % "netty-all" % nettyVersion
       )
     ) ++ assemblySettings
   )
@@ -133,42 +124,27 @@ object PokernoBuild extends Build {
       libraryDependencies ++= deps ++ testDeps ++ Seq(
         "asia.stampy" % "stampy-core" % "1.0-RELEASE",
         //"asia.stampy" % "stampy-NETTY-client-server-RI" % "1.0-RELEASE",
-        "io.netty" % "netty-all" % "4.0.14.Final"
+        "io.netty" % "netty-all" % nettyVersion
       )
     ) ++ assemblySettings
   )
 
-  lazy val storage = Project(
-    id = "pokerno-storage",
-    base = file("pokerno-storage"),
-    settings = Project.defaultSettings ++ Seq(
-      name := "pokerno-storage",
-      version := "0.0.1",
-      libraryDependencies ++= Seq(
-        "org.mongodb" % "mongo-java-driver" % "2.11.3"
-        ,"com.datastax.cassandra" % "cassandra-driver-core" % "2.0.0"
-        ,"org.apache.hbase" % "hbase-client" % "0.95.0"
-      )
-    ) ++ assemblySettings
-  ) dependsOn(engine, protocol)
-  
-  lazy val backend = Project(
-    id = "pokerno-backend",
-    base = file("pokerno-backend"),
-    settings = Project.defaultSettings ++ Seq(
-      name := "pokerno-backend",
-      version := "0.0.1",
+  lazy val server = Project(
+    id = "pokerno-server",
+    base = file("pokerno-server"),
+    settings = Project.defaultSettings ++ gitVersion ++ Seq(
+      name := "pokerno-server",
+      //version := "0.0.1",
       libraryDependencies ++= testDeps ++ Seq(
-        "com.codahale.metrics" % "metrics-core" % "3.0.1"
-        //,"org.zeromq" % "jzmq" % "3.0.1"
-        ,"org.zeromq" % "jeromq" % "0.3.2"
-        ,"redis.clients" % "jedis" % "2.2.1"
-        //,"net.databinder" %% "unfiltered-netty-server" % "0.7.1"
-        //,"net.databinder.dispatch" %% "dispatch-core" % "0.10.0"
-        //,"io.spray" % "spray-routing" % "1.2.0"
+        "com.codahale.metrics" % "metrics-core" % "3.0.1",
+        "redis.clients" % "jedis" % "2.2.1",
+        "org.slf4j" % "slf4j-simple" % "1.7.5",
+        "com.github.scopt" %% "scopt" % scoptVersion
       )
-    ) ++ assemblySettings
-  ) dependsOn(engine, protocol, httpGateway, stompGateway, storage)
+    ) ++ assemblySettings ++ Seq(
+      assemblyOption in assembly ~= { _.copy(includeScala = false, includeDependency = false) }
+    )
+  ) dependsOn(engine, protocol, httpGateway, stompGateway)
 
   lazy val ai = Project(
     id = "pokerno-ai",
@@ -177,10 +153,10 @@ object PokernoBuild extends Build {
       name := "pokerno-ai",
       version := "0.0.2",
       libraryDependencies ++= Seq(
-        "com.github.scopt" %% "scopt" % "3.1.0"
+        "com.github.scopt" %% "scopt" % scoptVersion
       ) ++ testDeps
     ) ++ assemblySettings
-  ) dependsOn(engine, backend)
+  ) dependsOn(engine, server)
 
   lazy val util = Project(
     id = "pokerno-util",
@@ -199,12 +175,12 @@ object PokernoBuild extends Build {
       name := "pokerno-replay",
       libraryDependencies ++= Seq(
         "jline" % "jline" % "2.11",
-        "com.github.scopt" %% "scopt" % "3.1.0"
+        "com.github.scopt" %% "scopt" % scoptVersion
       )
     ) ++ assemblySettings ++ Seq(
       assemblyOption in assembly ~= { _.copy(includeScala = false, includeDependency = false) }
     )
-  ) dependsOn(util, engine, backend)
+  ) dependsOn(util, engine, server)
   
   lazy val bench = Project(
     id = "pokerno-bench",
@@ -227,20 +203,6 @@ object PokernoBuild extends Build {
     ) ++ assemblySettings
   ) dependsOn(engine)
   
-  lazy val server = Project(
-    id = "pokerno-server",
-    base = file("pokerno-server"),
-    settings = Project.defaultSettings ++ gitVersion ++ Seq(
-      name := "pokerno-server",
-      libraryDependencies ++= testDeps ++ Seq(
-        "org.slf4j" % "slf4j-simple" % "1.7.5",
-        "com.github.scopt" %% "scopt" % "3.1.0"
-      )
-    ) ++ assemblySettings ++ Seq(
-      assemblyOption in assembly ~= { _.copy(includeScala = false, includeDependency = false) }
-    )
-  ) dependsOn(engine, backend)
-
   lazy val console = Project(
     id = "pokerno-console",
     base = file("pokerno-console"),
@@ -249,9 +211,9 @@ object PokernoBuild extends Build {
       version := "0.0.1",
       libraryDependencies ++= Seq(
         "jline" % "jline" % "2.11",
-        "com.github.scopt" %% "scopt" % "3.1.0"
+        "com.github.scopt" %% "scopt" % scoptVersion
       ) ++ testDeps
     ) ++ assemblySettings
-  ) dependsOn(engine, backend)
+  ) dependsOn(engine, server)
   
 }

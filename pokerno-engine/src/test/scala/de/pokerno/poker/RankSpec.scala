@@ -16,9 +16,6 @@ class RankSpec extends FunSpec with ClassicMatchers {
       Rank.High.values.max should equal(Rank.High.StraightFlush)
       Rank.High.values.min should equal(Rank.High.HighCard)
     }
-
-    it("enum") {
-    }
   }
 
   describe("Rank.Badugi") {

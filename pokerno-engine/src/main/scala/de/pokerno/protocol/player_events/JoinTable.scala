@@ -1,3 +1,8 @@
 package de.pokerno.protocol.player_events
 
-case class JoinTable() extends PlayerEvent {}
+import beans._
+
+sealed case class JoinTable(
+    @BeanProperty var pos: Int,
+    @BeanProperty var amount: Decimal
+) extends PlayerEvent {}

@@ -28,8 +28,8 @@ class OrderingSpec extends FunSpec with ClassicMatchers {
     it("by rank") {
       val cards = new CardSet(List.empty)
 
-      val h1 = new Hand(cards, rank = Some(Rank.High.Flush))
-      val h2 = new Hand(cards, rank = Some(Rank.High.StraightFlush))
+      val h1 = cards.hand(rank = Some(Rank.High.Flush))
+      val h2 = cards.hand(rank = Some(Rank.High.StraightFlush))
 
       val hands = List[Hand](h1, h2)
 
@@ -39,8 +39,8 @@ class OrderingSpec extends FunSpec with ClassicMatchers {
     it("by high") {
       val cards = new CardSet(List.empty)
 
-      val h1 = new Hand(cards, rank = Some(Rank.High.Flush), High = Left(List('_2d)))
-      val h2 = new Hand(cards, rank = Some(Rank.High.Flush), High = Left(List('Kd)))
+      val h1 = cards.hand(rank = Some(Rank.High.Flush), high = Left(List('_2d)))
+      val h2 = cards.hand(rank = Some(Rank.High.Flush), high = Left(List('Kd)))
 
       val hands = List[Hand](h1, h2)
 
@@ -50,8 +50,8 @@ class OrderingSpec extends FunSpec with ClassicMatchers {
     it("by value") {
       val cards = new CardSet(List.empty)
 
-      val h1 = new Hand(cards, rank = Some(Rank.High.Flush), High = Left(List(1)), value = List(1, 2, '_2d))
-      val h2 = new Hand(cards, rank = Some(Rank.High.Flush), High = Left(List(1)), value = List(1, 2, 'Kd))
+      val h1 = cards.hand(rank = Some(Rank.High.Flush), high = Left(List(1)), value = List(1, 2, '_2d))
+      val h2 = cards.hand(rank = Some(Rank.High.Flush), high = Left(List(1)), value = List(1, 2, 'Kd))
 
       val hands = List[Hand](h1, h2)
 
@@ -61,8 +61,8 @@ class OrderingSpec extends FunSpec with ClassicMatchers {
     it("by kicker") {
       val cards = new CardSet(List.empty)
 
-      val h1 = new Hand(cards, rank = Some(Rank.High.Flush), High = Left(List(1)), value = List(1, 2, 3), Kicker = Left(List('_2d)))
-      val h2 = new Hand(cards, rank = Some(Rank.High.Flush), High = Left(List(1)), value = List(1, 2, 3), Kicker = Left(List('Kd)))
+      val h1 = cards.hand(rank = Some(Rank.High.Flush), high = Left(List(1)), value = List(1, 2, 3), kicker = Left(List('_2d)))
+      val h2 = cards.hand(rank = Some(Rank.High.Flush), high = Left(List(1)), value = List(1, 2, 3), kicker = Left(List('Kd)))
 
       val hands = List[Hand](h1, h2)
 
@@ -72,8 +72,8 @@ class OrderingSpec extends FunSpec with ClassicMatchers {
     it("same hands") {
       val cards = new CardSet(List.empty)
 
-      val h1 = new Hand(cards, rank = Some(Rank.High.Flush), High = Left(List(1)), value = List(1, 2, 3), Kicker = Left(List(1)))
-      val h2 = new Hand(cards, rank = Some(Rank.High.Flush), High = Left(List(1)), value = List(1, 2, 3), Kicker = Left(List(1)))
+      val h1 = cards.hand(rank = Some(Rank.High.Flush), high = Left(List(1)), value = List(1, 2, 3), kicker = Left(List(1)))
+      val h2 = cards.hand(rank = Some(Rank.High.Flush), high = Left(List(1)), value = List(1, 2, 3), kicker = Left(List(1)))
 
       (h1 equals h2) should be(true)
     }

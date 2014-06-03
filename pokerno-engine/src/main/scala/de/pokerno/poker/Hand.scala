@@ -1,5 +1,8 @@
 package de.pokerno.poker
 
+import beans._
+import com.fasterxml.jackson.annotation.{JsonProperty, JsonInclude, JsonIgnore, JsonPropertyOrder}
+
 object Hand {
   implicit def cards2CardSet(v: Seq[Card]): CardSet = new CardSet(v)
 
@@ -41,28 +44,37 @@ object Hand {
   }
 }
 
-import beans._
-import com.fasterxml.jackson.annotation.JsonProperty
-
+@JsonPropertyOrder(Array("rank", "cards", "value", "high", "kicker", "description"))
+@JsonInclude(JsonInclude.Include.NON_NULL)
 class Hand(
-    val cards: CardSet,
-    val value: Seq[Card] = Seq.empty,
+    private val _cards: CardSet,
+    private val _value: Seq[Card] = Seq.empty,
     var rank: Option[Rank.Value] = None,
-    High: Either[Seq[Card], Boolean] = Right(false),
-    Kicker: Either[Seq[Card], Boolean] = Right(false)) extends Ordered[Hand] {
+    __high: Either[Seq[Card], Boolean] = Right(false),
+    __kicker: Either[Seq[Card], Boolean] = Right(false)) extends Ordered[Hand] {
 
-  val kicker: Seq[Card] = Kicker match {
+  def cards = _cards
+  def value = _value
+  
+  @JsonProperty("cards")    def cardsAsBytes: Array[Byte] = cards.value
+  @JsonProperty("value")    def valueAsBytes: Array[Byte] = value
+  @JsonProperty("high")     def highAsBytes: Array[Byte] = high
+  @JsonProperty("kicker")   def kickerAsBytes: Array[Byte] = kicker
+  
+  private val _kicker: Seq[Card] = __kicker match {
     case Left(_cards) ⇒ _cards
-    case Right(true)  ⇒ cards.value.diff(value).sorted(cards.ordering).reverse.take(5 - value.size)
+    case Right(true)  ⇒ _cards.value.diff(value).sorted(cards.ordering).reverse.take(5 - value.size)
     case Right(false) ⇒ Seq.empty
   }
+  def kicker = _kicker
 
-  val high: Seq[Card] = High match {
+  private val _high: Seq[Card] = __high match {
     case Left(_cards) ⇒ _cards
     case Right(true)  ⇒ value.sorted(cards.ordering).reverse.take(1)
     case Right(false) ⇒ Seq.empty
   }
-
+  def high = _high
+  
   def ranked(r: Rank.Value) = {
     rank = Some(r)
     Some(this)
@@ -93,7 +105,7 @@ class Hand(
 
   override def toString = "rank=%s high=%s value=%s kicker=%s" format (rank, high, value, kicker)
 
-  def description: String = rank.get match {
+  @JsonProperty def description: String = rank.get match {
     case Rank.High.HighCard ⇒
       "high card %s" format high.head.kind
 

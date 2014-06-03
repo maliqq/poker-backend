@@ -10,12 +10,12 @@ private[poker] trait Low {
     if (lowCards.size == 0)
       return None
 
-    val hand = new Hand(self,
+    val h = hand(
       value = lowCards,
-      High = Left(List(lowCards max)))
+      high = Left(List(lowCards max)))
     val rankType = if (lowCards.size == 5) Rank.Low.Complete else Rank.Low.Incomplete
 
-    hand ranked rankType
+    h ranked rankType
   }
 
   def isGapLow: Option[Hand] = {

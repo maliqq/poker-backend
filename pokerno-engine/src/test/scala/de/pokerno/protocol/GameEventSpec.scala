@@ -65,13 +65,13 @@ class GameEventSpec extends FunSpec with ClassicMatchers {
       
       val e6 = DeclareBet(1, new Player("A"), Bet.ante(1000))
       val d6 = GameEvent.encodeAsString(e6)
-      d6 should equal("""{"$type":"bet:add","pos":1,"player":"A","ante":1000}""")
+      d6 should equal("""{"$type":"bet:add","pos":1,"player":"A","call":1000,"type":"ante"}""")
     }
     
     it("DeclareHand") {
       val e = DeclareHand(1, new Player("A"), Hand.High(Cards("AdAdKhKdJs")).get)
       val d = GameEvent.encodeAsString(e)
-      d should equal("""{"$type":"hand:","rank":"two-pair","cards":"MzMuLyU=","value":"MzMuLw==","high":"My4=","kicker":"JQ==","description":"two pairs, As and Ks"}""")
+      d should equal("""{"$type":"hand:","pos":1,"player":"A","rank":"two-pair","cards":"MzMuLyU=","value":"MzMuLw==","high":"My4=","kicker":"JQ==","description":"two pairs, As and Ks"}""")
     }
     
     it("DeclarePlayStart") {

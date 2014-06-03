@@ -42,7 +42,7 @@ class PotSpec extends FunSpec with ClassicMatchers {
       val b = new Player("B")
       val c = new Player("C")
 
-      pot.members = Map(
+      pot.members = collection.mutable.Map(
         a -> 10,
         b -> 30,
         c -> 40

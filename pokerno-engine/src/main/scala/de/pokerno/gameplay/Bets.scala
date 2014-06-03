@@ -1,6 +1,6 @@
 package de.pokerno.gameplay
 
-import de.pokerno.model.{Bet, BetType}
+import de.pokerno.model.Bet
 
 private[gameplay] trait Bets {
   val ctx: StageContext
@@ -11,7 +11,7 @@ private[gameplay] trait Bets {
   def requireBet(pos: Int) {
     val seat = round requireBet pos
     val player = seat.player.get
-    ctx broadcast Events.requireBet(pos, player, round.call, round.raise)
+    ctx broadcast Events.requireBet(pos, player, round.call, round.raise.get)
   }
 
   // add bet
@@ -32,8 +32,8 @@ private[gameplay] trait Bets {
   }
 
   // force bet
-  def forceBet(pos: Int, _type: BetType.Value) {
-    val (seat, posted) = round.forceBet(pos, _type)
+  def forceBet(pos: Int, betType: Bet.ForcedType) {
+    val (seat, posted) = round.forceBet(pos, betType)
     val player = seat.player.get
     ctx broadcast Events.addBet(pos, player, posted)
   }

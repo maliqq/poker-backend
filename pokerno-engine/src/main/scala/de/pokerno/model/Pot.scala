@@ -3,13 +3,14 @@ package de.pokerno.model
 import math.{ BigDecimal ⇒ Decimal }
 import java.util.Locale
 import util.control.Breaks._
+import com.fasterxml.jackson.annotation.{ JsonValue, JsonIgnore, JsonProperty }
 
 class SidePot(val capFrom: Decimal = 0, val cap: Option[Decimal] = None) {
   // members
-  var members: Map[Player, Decimal] = Map.empty
+  var members: collection.mutable.Map[Player, Decimal] = collection.mutable.Map.empty
   
   def isMember(member: Player)  = members.contains(member)
-  def total: Decimal            = members.values.sum
+  @JsonValue def total: Decimal = members.values.sum
   def isActive: Boolean         = members.size > 0 && total > .0
 
   def add(member: Player, left: Decimal): Decimal = add(member, left, left)
@@ -22,13 +23,13 @@ class SidePot(val capFrom: Decimal = 0, val cap: Option[Decimal] = None) {
     val newValue = value + left
 
     if (!cap.isDefined) {
-      members += (member -> newValue)
+      members(member) = newValue
       return 0
     }
 
     val capAmount = cap.get
     if (amount >= capFrom && capAmount <= amount) { // (capAmount > value) {
-      members += (member -> capAmount)
+      members(member) = capAmount
       return newValue - capAmount
     }
 
@@ -42,7 +43,7 @@ class SidePot(val capFrom: Decimal = 0, val cap: Option[Decimal] = None) {
     val bet = value + left
     val amount = value + _amount
 
-    members += (member -> bet)
+    members(member) = bet
 
     val _new = new SidePot(amount, cap map { capAmount ⇒
       capAmount - bet
@@ -81,11 +82,11 @@ class SidePot(val capFrom: Decimal = 0, val cap: Option[Decimal] = None) {
 }
 
 class Pot {
-  var main: SidePot = new SidePot
-  var side: List[SidePot] = List.empty
-  var inactive: List[SidePot] = List.empty
+  @JsonIgnore var main: SidePot = new SidePot
+  @JsonProperty var side: List[SidePot] = List.empty
+  @JsonIgnore var inactive: List[SidePot] = List.empty
 
-  def total: Decimal = sidePots.map(_.total).sum
+  @JsonProperty def total: Decimal = sidePots.map(_.total).sum
 
   import collection.mutable.ListBuffer
   

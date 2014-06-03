@@ -1,40 +1,43 @@
 package de.pokerno.model
 
 import math.{ BigDecimal ⇒ Decimal }
+import beans._
+import com.fasterxml.jackson.annotation.{JsonIgnore, JsonInclude}
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 case class Stake(
-    bigBlind: Decimal,
-    SmallBlind: Option[Decimal] = None,
-    Ante: Either[Decimal, Boolean] = Right(false),
-    BringIn: Either[Decimal, Boolean] = Right(false)) {
+    @BeanProperty bigBlind: Decimal,
+    @JsonIgnore SmallBlind: Option[Decimal] = None,
+    @JsonIgnore Ante: Either[Decimal, Boolean] = Right(false),
+    @JsonIgnore BringIn: Either[Decimal, Boolean] = Right(false)) {
 
-  def amount(t: BetType.Value): Decimal = t match {
-    case BetType.BringIn    ⇒ bringIn.get
-    case BetType.Ante       ⇒ ante.getOrElse(rate(BetType.Ante))
-    case BetType.SmallBlind ⇒ smallBlind
-    case BetType.BigBlind   ⇒ bigBlind
+  def amount(t: Bet.ForcedType): Decimal = t match {
+    case Bet.BringIn    ⇒ bringIn.get
+    case Bet.Ante       ⇒ ante.getOrElse(rate(Bet.Ante))
+    case Bet.SmallBlind ⇒ smallBlind
+    case Bet.BigBlind   ⇒ bigBlind
     case _              ⇒ throw new Error("no amount for %s" format t)
   }
 
-  val smallBlind: Decimal = SmallBlind getOrElse rate(BetType.SmallBlind)
+  @BeanProperty val smallBlind: Decimal = SmallBlind getOrElse rate(Bet.SmallBlind)
 
-  val ante: Option[Decimal] = Ante match {
+  @BeanProperty val ante: Option[Decimal] = Ante match {
     case Left(amount) ⇒
       if (amount > .0) Some(amount)
       else None
     case Right(withAnte) ⇒
-      if (withAnte) Some(rate(BetType.Ante))
+      if (withAnte) Some(rate(Bet.Ante))
       else None
   }
 
-  val bringIn: Option[Decimal] = BringIn match {
+  @BeanProperty val bringIn: Option[Decimal] = BringIn match {
     case Left(amount) ⇒
       if (amount > .0) Some(amount)
       else None
     case Right(withBringIn) ⇒
-      if (withBringIn) Some(rate(BetType.BringIn))
+      if (withBringIn) Some(rate(Bet.BringIn))
       else None
   }
 
-  private def rate(v: BetType.Value) = Rates(v) * bigBlind
+  private def rate(v: Bet.ForcedType): Decimal = Rates(v) * bigBlind
 }

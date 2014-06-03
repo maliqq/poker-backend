@@ -35,6 +35,11 @@ private[poker] class CardSet(val value: Seq[Card], val ordering: Ordering[Card] 
     }
     _gaps ++ Seq(_buffer)
   }
+  
+  def hand(value: Seq[Card] = Seq.empty, rank: Option[Rank.Value] = None,
+      high: Either[Seq[Card], Boolean] = Right(false),
+      kicker: Either[Seq[Card], Boolean] = Right(false)) =
+    new Hand(this, value, rank, high, kicker)
 
   override def toString = "gaps=%s paired=%s suited=%s" format (gaps, paired, suited)
 }

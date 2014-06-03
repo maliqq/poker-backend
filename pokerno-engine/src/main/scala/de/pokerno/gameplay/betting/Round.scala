@@ -18,15 +18,13 @@ private[gameplay] class Round(val table: Table, val game: Game, val stake: Stake
   def call = _call
   
   // current raise range
-  private final val noRaise: MinMax[Decimal] = MinMax(.0, .0)
-  
-  private var _raise: MinMax[Decimal] = noRaise
+  private var _raise: Option[MinMax[Decimal]] = None
   def raise = _raise
   
   def clear() {
     raiseCount = 0
     _call = .0
-    _raise = noRaise
+    _raise = None
     current = table.button
     // FIXME
     //pot.complete()
@@ -41,20 +39,20 @@ private[gameplay] class Round(val table: Table, val game: Game, val stake: Stake
     clear()
   }
 
-  def forceBet(pos: Int, betType: BetType.Value): Tuple2[Seat, Bet] = {
+  def forceBet(pos: Int, betType: Bet.ForcedType): Tuple2[Seat, Bet] = {
     current = pos
     val seat = table.seats(current)
 
     _call = stake amount betType
 
-    val stack = seat.stack
+    val stack = seat.stack.get
     val amt = List(stack, _call) min
     val bet = betType match {
-      case BetType.Ante =>        Bet.ante(amt)
-      case BetType.SmallBlind =>  Bet.sb(amt)
-      case BetType.BringIn =>     Bet.bringIn(amt)
-      case BetType.Straddle =>    Bet.straddle(amt)
-      case BetType.GuestBlind =>  Bet.gb(amt)
+      case Bet.Ante =>        Bet.ante(amt)
+      case Bet.SmallBlind =>  Bet.sb(amt)
+      case Bet.BringIn =>     Bet.bringIn(amt)
+      case Bet.Straddle =>    Bet.straddle(amt)
+      case Bet.GuestBlind =>  Bet.gb(amt)
     }
 
     addBet(bet)
@@ -70,10 +68,10 @@ private[gameplay] class Round(val table: Table, val game: Game, val stake: Stake
     val total = seat.total
 
     if (total <= _call || raiseCount >= MaxRaiseCount)
-      _raise = noRaise
+      _raise = None
     else {
       val (min, max) = limit raise (total, blind + _call, pot.total)
-      _raise = MinMax(List(total, min) min, List(total, max) min)
+      _raise = Some(MinMax(List(total, min) min, List(total, max) min))
     }
     
     seat
@@ -83,13 +81,16 @@ private[gameplay] class Round(val table: Table, val game: Game, val stake: Stake
     val seat = table.seats(current)
     val player = seat.player.get
 
-    val _posting = if (_bet.betType == BetType.AllIn)
-      Bet.raise(seat.total)
-    else if (_bet.betType == BetType.Call && _bet.amount.isEmpty)
-      _bet.copy(amount = Some(List(_call, seat.total).min - seat.put))
-    else  _bet
+    val _posting = _bet match {
+      case Bet.AllIn =>
+        Bet.raise(seat.total)
+      case Bet.Call(amt) if amt == 0 =>
+        Bet.Call(List(_call, seat.total).min - seat.put.get)
+      case _ =>
+        _bet
+    }
     
-    if (!seat.canBet(_posting, stake, _call, _raise)) {
+    if (!seat.canBet(_posting, stake, _call, _raise.get)) {
       Console printf("bet %s is not valid; call=%.2f raise=%s %s", _posting, _call, _raise, seat)
       Bet.fold
     }
@@ -100,8 +101,8 @@ private[gameplay] class Round(val table: Table, val game: Game, val stake: Stake
       if (_posting.isRaise)
         raiseCount += 1
 
-      if (!_posting.isCall && seat.put > _call)
-        _call = seat.put
+      if (!_posting.isCall && seat.put.get > _call)
+        _call = seat.put.get
 
       pot add (player, diff, seat.isAllIn)
     }

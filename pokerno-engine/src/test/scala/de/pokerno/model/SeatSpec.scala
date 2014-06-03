@@ -35,7 +35,7 @@ class SeatSpec extends FunSpec with ClassicMatchers {
       seat.didCall(99.9) should be(true)
 
       seat.play
-      seat.force(BetType.SmallBlind, 25)
+      seat.force(Bet.SmallBlind(25))
       seat.put should equal(25)
       seat.stack should equal(875)
     }
@@ -59,7 +59,7 @@ class SeatSpec extends FunSpec with ClassicMatchers {
       seat.buyIn(10)
 
       seat.play
-      seat.force(BetType.SmallBlind, 10)
+      seat.force(Bet.SmallBlind(10))
       seat.state should equal(Seat.State.AllIn)
       seat.didCall(25) should be(true)
 

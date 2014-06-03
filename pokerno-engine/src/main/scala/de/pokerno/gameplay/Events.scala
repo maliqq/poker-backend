@@ -32,19 +32,25 @@ object Events {
 
   def playerLeave(pos: Int, player: Player) =
     message.PlayerLeave(pos, player)
-
-//  def start(table: Table, variation: Variation, stake: Stake, play: Play = null, connPlayer: Option[String] = None) = {
-//    val msgPlay: message.Play = play
-//
-//    connPlayer.map { player ⇒
-//      play.pocketCards(player) map { msgPlay.pocket = _ }
+  
+  def playerOnline(pos: Int, player: Player) =
+    message.PlayerOnline(pos, player)
+  
+  def playerOffline(pos: Int, player: Player) =
+    message.PlayerOffline(pos, player)
+    
+  def playerSitOut(pos: Int, player: Player) =
+    message.PlayerSitOut(pos, player)  
+  
+  def playerComeBack(pos: Int, player: Player) =
+    message.PlayerComeBack(pos, player)
+  
+  def start(table: Table, variation: Variation, stake: Stake, play: Play = null, forPlayer: Option[String] = None) = {
+//    val msg = message.DeclareStart(table, variation, stake)
+//    forPlayer.map { player =>
+//      msg.pocket
 //    }
-//
-//    message.DeclareStart(table, variation, stake, connPlayer match {
-//      case Some(player) => play.pocketCards(player) map { p => play.copy(pocket = p) }
-//      case None => play
-//    })
-//  }
+  }
 
   def playStart() =
     message.DeclarePlayStart()
@@ -94,10 +100,5 @@ object Events {
 
   def showCards(pos: Int, player: Player, cards: Seq[Card], muck: Boolean = false) =
     message.ShowCards(pos, player, cards = cards, muck = muck)
-
-  // def seatStateChanged(pos: Int, state: Seat.State.Value) =
-  //   message.SeatStateChange(pos, state)
-
-  // def seatPresenceChanged(pos: Int, presence: Seat.Presence.Value) =
-  //   message.SeatPresenceChange(pos, presence)
+    
 }

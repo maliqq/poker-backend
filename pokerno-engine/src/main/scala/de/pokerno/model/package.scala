@@ -5,11 +5,11 @@ import math.{BigDecimal => Decimal}
 package object model {
   type Player = String
   
-  final val Rates: Map[BetType.Value, Decimal] = Map(
-    BetType.Ante -> 0.1,
-    BetType.BringIn -> 0.25,
-    BetType.SmallBlind -> 0.5,
-    BetType.BigBlind -> 1.0)
+  final val Rates: Map[Bet.ForcedType, Decimal] = Map(
+    Bet.Ante -> 0.1,
+    Bet.BringIn -> 0.25,
+    Bet.SmallBlind -> 0.5,
+    Bet.BigBlind -> 1.0)
   
   import de.pokerno.poker.Hand
   

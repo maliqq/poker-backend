@@ -3,9 +3,12 @@ package de.pokerno.model
 import de.pokerno.poker.Hand
 import math.{ BigDecimal ⇒ Decimal }
 
+import com.fasterxml.jackson.annotation.{JsonIgnore, JsonValue}
+import beans._
+
 trait Variation {
-  def isMixed: Boolean = this.isInstanceOf[Mix]
-  def tableSize: Int
+  @JsonIgnore def isMixed: Boolean = this.isInstanceOf[Mix]
+  @JsonIgnore def tableSize: Int
 }
 
 object Game {
@@ -26,17 +29,17 @@ object Game {
 
   case object NoLimit extends Limit {
     def raise(total: Decimal, bb: Decimal, potSize: Decimal) = (bb, total)
-    override def toString = "no-limit"
+    @JsonValue override def toString = "no-limit"
   }
 
   case object FixedLimit extends Limit {
     def raise(total: Decimal, bb: Decimal, potSize: Decimal) = (bb, bb)
-    override def toString = "fixed-limit"
+    @JsonValue override def toString = "fixed-limit"
   }
 
   case object PotLimit extends Limit {
     def raise(total: Decimal, bb: Decimal, potSize: Decimal) = (bb, potSize)
-    override def toString = "pot-limit"
+    @JsonValue override def toString = "pot-limit"
   }
 
   trait Limited
@@ -71,39 +74,39 @@ object Game {
   }
 
   case object Texas extends Limited {
-    override def toString = "texas"
+    @JsonValue override def toString = "texas"
   }
   case object Omaha extends Limited {
-    override def toString = "omaha"
+    @JsonValue override def toString = "omaha"
   }
   case object Omaha8 extends Limited {
-    override def toString = "omaha8"
+    @JsonValue override def toString = "omaha8"
   }
 
   case object Stud extends Limited {
-    override def toString = "stud"
+    @JsonValue override def toString = "stud"
   }
   case object Stud8 extends Limited {
-    override def toString = "stud8"
+    @JsonValue override def toString = "stud8"
   }
   case object Razz extends Limited {
-    override def toString = "razz"
+    @JsonValue override def toString = "razz"
   }
   case object London extends Limited {
-    override def toString = "london"
+    @JsonValue override def toString = "london"
   }
 
   case object FiveCard extends Limited {
-    override def toString = "five-card"
+    @JsonValue override def toString = "five-card"
   }
   case object Single27 extends Limited {
-    override def toString = "single27"
+    @JsonValue override def toString = "single27"
   }
   case object Triple27 extends Limited {
-    override def toString = "triple27"
+    @JsonValue override def toString = "triple27"
   }
   case object Badugi extends Limited {
-    override def toString = "badugi"
+    @JsonValue override def toString = "badugi"
   }
 
   trait Mixed
@@ -118,8 +121,12 @@ object Game {
     }
   }
 
-  case object Horse extends Mixed
-  case object Eight extends Mixed
+  case object Horse extends Mixed {
+    @JsonValue override def toString = "horse"
+  }
+  case object Eight extends Mixed {
+    @JsonValue override def toString = "eight"
+  }
 
   trait Group
   case object Holdem extends Group
@@ -184,9 +191,13 @@ object Game {
   }
 }
 
-case class Game(game: Game.Limited, var Limit: Option[Game.Limit] = None, var TableSize: Option[Int] = None) extends Variation {
-  val options = Games(game)
-  val tableSize: Int = TableSize match {
+case class Game(
+    @BeanProperty game: Game.Limited,
+    @JsonIgnore var Limit: Option[Game.Limit] = None,
+    @JsonIgnore var TableSize: Option[Int] = None
+  ) extends Variation {
+  @JsonIgnore val options = Games(game)
+  @JsonIgnore val tableSize: Int = TableSize match {
     case None ⇒ options.maxTableSize
     case Some(size) ⇒
       if (size > options.maxTableSize)
@@ -194,7 +205,7 @@ case class Game(game: Game.Limited, var Limit: Option[Game.Limit] = None, var Ta
       else
         size
   }
-  val limit: Game.Limit = Limit match {
+  @BeanProperty val limit: Game.Limit = Limit match {
     case None    ⇒ options.defaultLimit
     case Some(l) ⇒ l
   }

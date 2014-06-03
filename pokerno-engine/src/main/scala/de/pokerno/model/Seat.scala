@@ -2,6 +2,14 @@ package de.pokerno.model
 
 import math.{ BigDecimal ⇒ Decimal }
 
+import com.fasterxml.jackson.annotation.{JsonIgnore, JsonProperty, JsonInclude, JsonAutoDetect, JsonPropertyOrder}
+import beans._
+
+import com.fasterxml.jackson.module.scala.JsonScalaEnumeration
+import com.fasterxml.jackson.core.`type`.TypeReference
+
+class SeatStateRef extends TypeReference[Seat.State.type]
+
 object Seat {
   object State extends Enumeration {
     def state(name: String) = new Val(nextId, name)
@@ -38,12 +46,56 @@ object Seat {
     val Offline = new Val(nextId, "offline")
   }
 
+  trait StateTransitions {
+    class States[T](initial: T) {
+      private val transitions = collection.mutable.HashMap[T, T]()
+    }
+  }
+
+  object Callbacks {
+
+    trait CallbackTopic
+    case object Before extends CallbackTopic
+    case object After extends CallbackTopic
+    case object On extends CallbackTopic
+
+    class Callbacks[T] {
+      type cb = (T, T) ⇒ Unit
+      private val _cb = collection.mutable.HashMap[CallbackTopic, collection.mutable.ListBuffer[cb]]()
+
+      def bind(topic: CallbackTopic)(f: (T, T) ⇒ Unit): Unit = {
+        if (!_cb.contains(topic)) _cb(topic) = collection.mutable.ListBuffer[cb]()
+        _cb(topic) += f
+      }
+
+      def unbind(topic: CallbackTopic, f: (T, T) ⇒ Unit): Unit = if (_cb.contains(topic))
+        _cb(topic) -= f
+
+      def fire(topic: CallbackTopic, _old: T, _new: T): Unit = if (_cb.contains(topic))
+        _cb(topic).foreach { _(_old, _new) }
+
+      def clear(topic: CallbackTopic): Unit =
+        _cb(topic) = collection.mutable.ListBuffer[cb]()
+
+      def before(_old: T, _new: T): Unit = fire(Before, _old, _new)
+      def after(_old: T, _new: T): Unit = fire(After, _old, _new)
+      def on(_old: T, _new: T): Unit = fire(On, _old, _new)
+
+    }
+  }
+
   case class IsTaken() extends Exception("seat is taken")
 }
 
+@JsonPropertyOrder(Array("state","player","stack","put","action"))
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonAutoDetect(isGetterVisibility = JsonAutoDetect.Visibility.NONE)
 class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
+  import Seat._
+  import Seat.Callbacks._
+
   // presence
-  private var _presence: Option[Seat.Presence.Value] = None
+  private var _presence: Option[Presence.Value] = None
 
   private var _lastSeenOnline: java.util.Date = null
   def lastSeenOnline = _lastSeenOnline
@@ -52,80 +104,45 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
     _lastSeenOnline != null && _lastSeenOnline.before(new java.util.Date(millis))
   }
 
-  def presence = _presence
+  @JsonIgnore def presence = _presence
 
-  def presence_=(value: Option[Seat.Presence.Value]) {
+  def presence_=(value: Option[Presence.Value]) {
     val old = _presence
     _presence = value
     presenceCallbacks.on(old, _presence)
   }
 
-  class States[T](initial: T) {
-    private val transitions = collection.mutable.HashMap[T, T]()
-  }
-
-  trait CallbackTopic
-  case object Before extends CallbackTopic
-  case object After extends CallbackTopic
-  case object On extends CallbackTopic
-
-  class Callbacks[T] {
-    type cb = (T, T) ⇒ Unit
-    private val _cb = collection.mutable.HashMap[CallbackTopic, collection.mutable.ListBuffer[cb]]()
-
-    def bind(topic: CallbackTopic)(f: (T, T) ⇒ Unit) {
-      if (!_cb.contains(topic)) _cb(topic) = collection.mutable.ListBuffer[cb]()
-      _cb(topic) += f
-    }
-
-    def unbind(topic: CallbackTopic, f: (T, T) ⇒ Unit) {
-      if (_cb.contains(topic))
-        _cb(topic) -= f
-    }
-
-    def fire(topic: CallbackTopic, _old: T, _new: T) {
-      _cb(topic).foreach { _(_old, _new) }
-    }
-
-    def clear(topic: CallbackTopic) {
-      _cb(topic) = collection.mutable.ListBuffer[cb]()
-    }
-
-    def before(_old: T, _new: T): Unit = fire(Before, _old, _new)
-    def after(_old: T, _new: T): Unit = fire(Before, _old, _new)
-    def on(_old: T, _new: T): Unit = fire(Before, _old, _new)
-
-  }
-
-  val presenceCallbacks = new Callbacks[Option[Seat.Presence.Value]]()
+  private val presenceCallbacks = new Callbacks[Option[Presence.Value]]()
   presenceCallbacks.bind(On) {
     case (_old, _new) ⇒
       _new match {
-        case Some(Seat.Presence.Online) ⇒
+        case Some(Presence.Online) ⇒
           _lastSeenOnline = new java.util.Date()
         case _ ⇒ // nothing
       }
   }
 
   def offline() {
-    if (!isEmpty) presence = Some(Seat.Presence.Offline)
+    if (!isEmpty) presence = Some(Presence.Offline)
   }
 
   def isOffline = presence match {
-    case Some(Seat.Presence.Offline) ⇒ true
-    case _                           ⇒ false
+    case Some(Presence.Offline) ⇒ true
+    case _                      ⇒ false
   }
+  @JsonProperty("offline") def offlineStatus: java.lang.Boolean = if (isOffline) true else null
 
   def online() {
-    if (!isEmpty) presence = Some(Seat.Presence.Online)
+    if (!isEmpty) presence = Some(Presence.Online)
   }
 
-  def isOnline = _presence == Some(Seat.Presence.Online)
-
+  def isOnline = _presence == Some(Presence.Online)
+  //@JsonProperty("online") def onlineStatus: java.lang.Boolean = if (isOnline) true else null
+  
   // state
-  def state = _state
+  @JsonScalaEnumeration(classOf[SeatStateRef]) @JsonProperty("state") def state = _state
 
-  def state_=(newState: Seat.State.Value) {
+  def state_=(newState: State.Value) {
     val _old = _state
     stateCallbacks.before(_old, newState)
     _state = newState
@@ -133,15 +150,15 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
     //stateCallbacks.after(_old, _state)
   }
 
-  val stateCallbacks = new Callbacks[Seat.State.Value]()
+  private val stateCallbacks = new Callbacks[State.Value]()
   stateCallbacks.bind(Before) {
     case (_old, _new) ⇒
       _new match {
-        case Seat.State.Play | Seat.State.Idle | Seat.State.Ready ⇒
+        case State.Play | State.Idle | State.Ready ⇒
           if (isEmpty)
             throw new IllegalStateException("can't change emtpy seat state: %s" format (this))
 
-        case Seat.State.Away ⇒
+        case State.Away ⇒
           if (isEmpty || isOnline)
             throw new IllegalStateException("can't change seat state to away: %s (%s)" format (this, _presence))
       }
@@ -149,46 +166,46 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
 
   // player
   private var _player: Option[Player] = None
-  def player = _player
+  @JsonProperty("player") def player = _player
   def player_=(p: Player) {
     playerCallbacks.before(_player.getOrElse(null), p)
 
-    _state = Seat.State.Taken
+    _state = State.Taken
     _player = Some(p)
   }
-  val playerCallbacks = new Callbacks[Player]()
+  private val playerCallbacks = new Callbacks[Player]()
   playerCallbacks.bind(Before) {
     case _ ⇒ // FIXME move it to state callbacks
-      if (_state != Seat.State.Empty)
+      if (_state != State.Empty)
         throw Seat.IsTaken()
   }
 
   // current stack
-  private var _stack: Decimal = .0
-  def stack = _stack
-  def stackAmount = stack
+  private var _stack: Option[Decimal] = None
+  @JsonProperty("stack") def stack = _stack
+  def stackAmount: Decimal = _stack.getOrElse(.0)
 
   // current bet
-  private var _lastAction: BetType.Value = null
-  def lastAction = _lastAction
+  private var _lastAction: Option[Bet] = None
+  @JsonProperty("action") def lastAction = _lastAction
 
-  private var _put: Decimal = .0
-  def put = _put
-  def putAmount = put
+  private var _put: Option[Decimal] = None
+  @JsonProperty("put") def put = _put
+  def putAmount: Decimal = _put.getOrElse(.0)
 
   // total stack
-  def total = _stack + _put
-  def totalAmoutn = total
+  def total = _stack.get + _put.get
+  def totalAmount = total
 
-  def net(amt: Decimal)(f: ⇒ Seat.State.Value) {
-    stackCallbacks.before(amt, _stack)
+  def net(amt: Decimal)(f: ⇒ State.Value) {
+    stackCallbacks.before(amt, stackAmount)
     // TODO: check < 0
-    _stack += amt
+    _stack = Some(amt + stackAmount)
     // FIXME
-    _state = if (_stack == 0) Seat.State.AllIn else f
+    _state = if (_stack.get == 0) State.AllIn else f
   }
 
-  val stackCallbacks = new Callbacks[Decimal]()
+  private val stackCallbacks = new Callbacks[Decimal]()
   stackCallbacks.bind(Before) {
     case _ ⇒
       if (isEmpty)
@@ -197,38 +214,38 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
 
   def buyIn(amt: Decimal): Unit =
     net(amt) {
-      Seat.State.Ready
+      State.Ready
     }
 
   def award(amt: Decimal): Unit =
     net(amt) {
-      Seat.State.Play
+      State.Play
     }
   def wins(amt: Decimal) = award(amt)
 
-  def put(amount: Decimal)(f: ⇒ Seat.State.Value) {
+  def put(amount: Decimal)(f: ⇒ State.Value) {
     net(-amount)(f)
-    _put += amount
+    _put = Some(amount + putAmount)
   }
   def clearPut() {
-    _put = 0
-    _lastAction = null
+    _put = None
+    _lastAction = None
   }
 
   /**
    * State transitions
    */
   def play(): Unit =
-    state = Seat.State.Play
+    state = State.Play
 
   def idle(): Unit =
-    state = Seat.State.Idle
+    state = State.Idle
 
   def ready(): Unit =
-    state = if (total == 0) Seat.State.Idle else Seat.State.Ready
+    state = if (total == 0) State.Idle else State.Ready
 
   def away(): Unit =
-    state = Seat.State.Away
+    state = State.Away
 
   /**
    * Action
@@ -239,8 +256,8 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   }
 
   def check(): Decimal = {
-    _state = Seat.State.Bet
-    _lastAction = BetType.Check
+    _state = State.Bet
+    _lastAction = Some(Bet.Check)
     .0
   }
 
@@ -250,9 +267,9 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   }
 
   def fold(): Decimal = {
-    _state = Seat.State.Fold
-    _put = .0
-    _lastAction = BetType.Fold
+    _state = State.Fold
+    _put = None
+    _lastAction = Some(Bet.Fold)
     .0
   }
 
@@ -262,11 +279,12 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
     canCall(amt, toCall)
   }
 
-  def force(betType: BetType.Value, amt: Decimal): Decimal = {
+  def force(bet: Bet.Forced): Decimal = {
+    val amt = bet.amount
     put(amt) {
-      Seat.State.Play
+      State.Play
     }
-    _lastAction = betType
+    _lastAction = Some(bet)
     amt
   }
 
@@ -280,11 +298,11 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   }
 
   def raise(amt: Decimal): Decimal = {
-    val diff = amt - _put
+    val diff = amt - putAmount
     put(diff) {
-      Seat.State.Bet
+      State.Bet
     }
-    _lastAction = BetType.Raise
+    _lastAction = Some(Bet.Raise(amt))
     diff
   }
 
@@ -295,16 +313,16 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
 
   private def _canCall(amt: Decimal, toCall: Decimal): Boolean = {
     // call all-in
-    (amt + _put < toCall && amt == _stack ||
+    (amt + _put.get < toCall && amt == _stack.get ||
       // call exact amount
-      amt + _put == toCall && amt <= _stack)
+      amt + _put.get == toCall && amt <= _stack.get)
   }
 
   def call(amt: Decimal): Decimal = {
     put(amt) {
-      Seat.State.Bet
+      State.Bet
     }
-    _lastAction = BetType.Call
+    _lastAction = Some(Bet.Call(amt))
     amt
   }
 
@@ -313,7 +331,7 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   }
 
   private def _didCall(amt: Decimal): Boolean = {
-    amt <= _put
+    amt <= _put.get
   }
 
   // BET
@@ -322,21 +340,21 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   }
   
   def canBet(bet: Bet, stake: Stake, _call: Decimal, _raise: MinMax[Decimal]): Boolean =
-    bet.betType match {
-      case BetType.Fold ⇒
+    bet match {
+      case Bet.Fold ⇒
         canFold || notActive
   
-      case BetType.Check ⇒
+      case Bet.Check ⇒
         canCheck(_call)
   
-      case BetType.Call if isActive ⇒
-        canCall(bet.amount.get, _call)
+      case Bet.Call(amt) if isActive ⇒
+        canCall(amt, _call)
   
-      case BetType.Raise if isActive ⇒
-        canRaise(bet.amount.get, _raise)
+      case Bet.Raise(amt) if isActive ⇒
+        canRaise(amt, _raise)
   
-      case f if BetType.FORCED.contains(f) ⇒
-        canForce(bet.amount.get, stake.amount(f))
+      case f: Bet.Forced ⇒
+        canForce(f.amount, stake.amount(f.betType))
   
       case _ ⇒
         // TODO warn
@@ -344,12 +362,12 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
     }
 
   def postBet(bet: Bet): Decimal =
-    bet.betType match {
-      case BetType.Fold                         ⇒ fold
-      case BetType.Raise if bet.isActive        ⇒ raise(bet.amount.get)
-      case BetType.Call if bet.isActive         ⇒ call(bet.amount.get)
-      case BetType.Check                        ⇒ check()
-      case f if BetType.FORCED.contains(f) && bet.isActive ⇒ force(bet.betType, bet.amount.get)
+    bet match {
+      case Bet.Fold                         ⇒ fold
+      case Bet.Raise(amt) if amt > 0        ⇒ raise(amt)
+      case Bet.Call(amt) if amt > 0         ⇒ call(amt)
+      case Bet.Check                        ⇒ check()
+      case f: Bet.Forced if f.amount > 0    ⇒ force(f)
       case x ⇒
         Console printf("unhandled postBet: %s", x)
         0
@@ -357,46 +375,46 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
 
   // STATE
   def isEmpty =
-    state == Seat.State.Empty
+    state == State.Empty
 
   def isTaken =
-    state == Seat.State.Taken
+    state == State.Taken
 
   def isReady =
-    state == Seat.State.Ready
+    state == State.Ready
 
   def isPlaying =
-    state == Seat.State.Play
+    state == State.Play
 
   def isFold =
-    state == Seat.State.Fold
+    state == State.Fold
 
   def isAllIn =
-    state == Seat.State.AllIn
+    state == State.AllIn
 
   def isWaitingBB =
-    state == Seat.State.WaitBB
+    state == State.WaitBB
 
   def isPostedBB =
-    state == Seat.State.PostBB
+    state == State.PostBB
 
   def canPlayNextDeal =
     isReady || isPlaying || isFold
 
   def isActive =
-    state == Seat.State.Play || state == Seat.State.PostBB
+    state == State.Play || state == State.PostBB
 
   def notActive =
-    state == Seat.State.Away || state == Seat.State.Idle || state == Seat.State.Auto
+    state == State.Away || state == State.Idle || state == State.Auto
 
   def inPlay =
-    state == Seat.State.Play || state == Seat.State.Bet
+    state == State.Play || state == State.Bet
 
   //  def goesToShowdown =
-  //    state == Seat.State.Bet || state == Seat.State.AllIn
+  //    state == State.Bet || state == State.AllIn
 
   def inPot =
-    inPlay || state == Seat.State.AllIn
+    inPlay || state == State.AllIn
 
   override def toString =
     if (_player.isDefined)

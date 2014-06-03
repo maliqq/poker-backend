@@ -1,16 +1,26 @@
 package de.pokerno.model
 
 import math.{ BigDecimal ⇒ Decimal }
+import com.fasterxml.jackson.annotation.{JsonIgnore, JsonProperty, JsonPropertyOrder}
+import beans._
 
 object Table {
   case class AlreadyJoined() extends Exception("Player already joined!")
 }
 
-class Table(val size: Int) {
+@JsonPropertyOrder(Array("button","seats"))
+class Table(@JsonIgnore val size: Int) {
   import Table._
+  
+  private val _seats = collection.mutable.LinearSeq.fill(size) { new Seat }
+  def seats = _seats
+  
+  @JsonProperty("seats") def getSeats: List[Seat] = seats.toList
 
-  val seats = collection.mutable.LinearSeq.fill(size) { new Seat }
-  val button = new Ring(seats)
+  private val _button = new Ring(seats)
+  def button = _button
+  
+  @JsonProperty("button") def getButton: Int = button
   
   def seatsFrom(from: Int): Seq[Tuple2[Seat, Int]] = {
     val (before, after) = seats.zipWithIndex span (_._2 <= from)

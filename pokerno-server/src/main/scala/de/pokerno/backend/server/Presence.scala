@@ -10,7 +10,6 @@ trait Presence { a: Actor ⇒
   import context._
 
   val presenceTimers = collection.mutable.HashMap[model.Player, Cancellable]()
-
   val waitReconnect = (15 seconds)
 
   case class PlayerGone(player: model.Player)
@@ -20,9 +19,7 @@ trait Presence { a: Actor ⇒
   }
 
   def playerReconnected(player: model.Player) {
-    presenceTimers.get(player) map { timer ⇒
-      timer.cancel()
-    }
+    presenceTimers.get(player) map(_.cancel())
     presenceTimers.remove(player)
   }
 
@@ -32,15 +29,5 @@ trait Presence { a: Actor ⇒
 
   def table: model.Table
   def events: gameplay.Events
-
-  protected def changeSeatPresence(player: model.Player, notify: Boolean = true)(f: ((model.Seat, Int)) ⇒ Unit) {
-    table.playerSeatWithPos(player) map {
-      case box @ (seat, pos) ⇒
-        f(box)
-        if (notify) seat.presence.map { presenceStatus ⇒
-          events.publish(gameplay.Events.seatPresenceChanged(pos, presenceStatus))
-        }
-    }
-  }
 
 }

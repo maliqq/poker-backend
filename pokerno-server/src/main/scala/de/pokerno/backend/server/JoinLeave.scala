@@ -20,7 +20,8 @@ trait JoinLeave {
   }
 
   protected def leavePlayer(player: Player) {
-    table.playerSeatWithPos(player) map { case (seat, pos) =>
+    table.playerPos(player) map { pos =>
+      val seat = table.seats(pos)
       events.publish(gameplay.Events.playerLeave(pos, seat.player.get)) { _.all() } // FIXME unify
       table.clearSeat(pos)
     }

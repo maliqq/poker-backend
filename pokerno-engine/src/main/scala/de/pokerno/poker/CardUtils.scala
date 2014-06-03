@@ -1,7 +1,8 @@
 package de.pokerno.poker
 
 object CardUtils {
-  def parseList(l: Seq[_]): Seq[Card] = l.map(Card(_))
+  def parseBinary(b: Array[Byte]): Seq[Card] = Array(b).map(Card(_))
+  def parseSeq(l: Seq[_]): Seq[Card] = l.map(Card(_))
 
   def parseString(s: String): Seq[Card] = {
     val regex = """(?i)([akqjt2-9]{1})([shdc]{1})""".r

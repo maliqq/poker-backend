@@ -35,21 +35,6 @@ class Table(val size: Int) {
   
   private val _seating: collection.mutable.Map[Player, Int] = collection.mutable.Map.empty
 
-  type Box = (Player, Int)
-
-  def boxes: List[Box] =
-    seats.zipWithIndex.foldLeft(List[Box]()) {
-      case (result, (seat, i)) ⇒
-        if (seat.player.isDefined)
-          (seat.player.get, i) :: result
-        else result
-    }
-
-  def playerSeatWithPos(player: Player): Option[(Seat, Int)] =
-    playerPos(player) map { i ⇒
-      (seats(i), i)
-    }
-
   def takeSeat(at: Int, player: Player, amount: Option[Decimal] = None) {
     if (hasPlayer(player))
       throw AlreadyJoined()

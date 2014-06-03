@@ -46,8 +46,8 @@ object Events {
 //    })
 //  }
 
-  def playStart(ctx: StageContext) =
-    message.DeclarePlayStart(ctx.play)
+  def playStart() =
+    message.DeclarePlayStart()
 
   def playStop() =
     message.DeclarePlayStop()

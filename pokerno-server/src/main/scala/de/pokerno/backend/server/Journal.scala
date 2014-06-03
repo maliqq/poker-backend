@@ -23,7 +23,7 @@ class Journal(storageDir: String, room: String) extends Actor with ActorLogging 
     case Notification(msg, from, to) ⇒
       msg match {
         case message.DeclarePlayStart() ⇒
-          val id = play.id
+          val id = "new-uuid"//play.id
           writer = new java.io.OutputStreamWriter(new java.io.FileOutputStream(new java.io.File(dir.getPath, id + ext), true))
 
         case message.ButtonChange(pos) ⇒

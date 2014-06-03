@@ -40,10 +40,10 @@ enum RankType {
   FOUR_KIND = 8,
   STRAIGHT_FLUSH = 9,
   
-  BADUGI1 = 10,
-  BADUGI2 = 11,
-  BADUGI3 = 12,
-  BADUGI4 = 13,
+  BADUGI_1 = 10,
+  BADUGI_2 = 11,
+  BADUGI_3 = 12,
+  BADUGI_4 = 13,
   
   NOT_LOW = 14,
   LOW = 15

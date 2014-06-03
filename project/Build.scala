@@ -49,6 +49,7 @@ object PokernoBuild extends Build {
   val scoptVersion    = "3.1.0"
   val nettyVersion    = "4.0.19.Final"
   val akkaVersion     = "2.2.3"
+  val finagleVersion  = "6.16.0"
 
   override lazy val settings = super.settings ++ Seq(
     organization := "de.pokerno"
@@ -85,11 +86,13 @@ object PokernoBuild extends Build {
         "com.fasterxml.jackson.core" % "jackson-databind" % "2.3.3",
         "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.3.3",
         "com.twitter" %% "scrooge-core" % "3.15.0",
-        "org.apache.thrift" % "libthrift" % "0.9.1"
+        "org.apache.thrift" % "libthrift" % "0.9.1",
+        "com.twitter" %% "finagle-core" % finagleVersion,
+        "com.twitter" %% "finagle-thrift" % finagleVersion
       )
     ) ++ assemblySettings 
   ).settings(
-    ScroogeSBT.scroogeBuildOptions in Compile := Seq(),
+    //ScroogeSBT.scroogeBuildOptions in Compile := Seq(),
     ScroogeSBT.scroogeThriftOutputFolder in Compile <<= (sourceDirectory) { _ / "main/scala" }
   )
   

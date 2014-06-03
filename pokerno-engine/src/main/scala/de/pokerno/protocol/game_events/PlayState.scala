@@ -6,10 +6,11 @@ import de.pokerno.model.Street
 
 class PlayState(
     gameplay: Context,
+    @BeanProperty var id: String,
+    @BeanProperty var started: Long,
     @BeanProperty val street: Option[Street.Value] = None
 ) {
-  @BeanProperty var id: String
-  @BeanProperty var started: Long
+  
   @BeanProperty var ended: Option[Long] = None
   
   @BeanProperty var board: Cards = gameplay.dealer.board

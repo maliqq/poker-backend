@@ -5,6 +5,8 @@ import de.pokerno.model
 import de.pokerno.gameplay
 import de.pokerno.backend.Gateway
 import de.pokerno.backend.gateway.http
+import de.pokerno.protocol.{ player_events => message}
+import de.pokerno.protocol.{ commands => cmd }
 import util.{ Success, Failure }
 import scala.concurrent.{ Promise, Future }
 
@@ -19,10 +21,12 @@ object Room {
     val Paused    = state("paused")
     val Closed    = state("closed")
   }
+  
+  trait ChangeState
 
-  case object Close
-  case object Pause
-  case object Resume
+  case object Close extends ChangeState
+  case object Pause extends ChangeState
+  case object Resume extends ChangeState
 
   case class Watch(watcher: http.Connection)
   case class Unwatch(watcher: http.Connection)
@@ -124,27 +128,32 @@ class Room(
     case Event(chat: cmd.Chat, _) ⇒
       // TODO broadcast
       stay()
-
-    case Event(cmd.PlayerEvent(event, player: String), _) ⇒
-      // TODO notify
-      event match {
-        case PlayerEventSchema.EventType.OFFLINE ⇒
-          changeSeatState(player) { _._1 away }
-
-        case PlayerEventSchema.EventType.ONLINE ⇒
-          changeSeatState(player) { _._1 ready }
-
-        case PlayerEventSchema.EventType.SIT_OUT ⇒
-          changeSeatState(player) { _._1 idle }
-
-        case PlayerEventSchema.EventType.COME_BACK ⇒
-          changeSeatState(player) { _._1 ready }
-
-        case PlayerEventSchema.EventType.LEAVE ⇒
-          leavePlayer(player)
-      }
-      stay()
-  }
+    
+//    case Event(sitout: cmd.SitOut, _) =>
+//      stay()
+//    case Event(comeback: cmd.ComeBack, _) =>
+//      stay()
+      
+//    case Event(cmd.PlayerEvent(event, player: String), _) ⇒
+//      // TODO notify
+//      event match {
+//        case PlayerEventSchema.EventType.OFFLINE ⇒
+//          changeSeatState(player) { _._1 away }
+//
+//        case PlayerEventSchema.EventType.ONLINE ⇒
+//          changeSeatState(player) { _._1 ready }
+//
+//        case PlayerEventSchema.EventType.SIT_OUT ⇒
+//          changeSeatState(player) { _._1 idle }
+//
+//        case PlayerEventSchema.EventType.COME_BACK ⇒
+//          changeSeatState(player) { _._1 ready }
+//
+//        case PlayerEventSchema.EventType.LEAVE ⇒
+//          leavePlayer(player)
+//      }
+//      stay()
+//  }
 
   whenUnhandled {
     case Event(Room.Observe(observer, name), _) ⇒
@@ -155,10 +164,10 @@ class Room(
 
     case Event(w @ Room.Watch(conn), running) ⇒
       // notify seat state change
-      conn.player map { p ⇒
-        playerReconnected(p)
-        changeSeatPresence(p) { _._1 online } // Reconnected
-      }
+//      conn.player map { p ⇒
+//        playerReconnected(p)
+//        changeSeatPresence(p) { _._1 online } // Reconnected
+//      }
 
       // send start message
       val startMsg = running match {

@@ -107,13 +107,13 @@ private[gameplay] case class Showdown(ctx: StageContext) extends Stage {
 
       winners foreach {
         case (winner, amount) ⇒
-          table.playerSeatWithPos(winner) map {
-            case (seat, pos) ⇒
-              seat wins amount
-              events.publish(
-                Events.declareWinner(pos, winner, amount)
-              ) { _.all() }
-          }
+          table.playerPos(winner) map { pos =>
+            val seat = table.seats(pos)
+            seat wins amount
+            events.publish(
+              Events.declareWinner(pos, winner, amount)
+            ) { _.all() }
+        }
       }
     }
   }

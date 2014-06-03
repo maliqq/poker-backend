@@ -12,8 +12,9 @@ package object poker {
   
   
   def Cards(s: String) = CardUtils.parseString(s)
-  def Cards(a: List[_]) = CardUtils.parseList(a)
-  
+  def Cards(a: Seq[_]) = CardUtils.parseSeq(a)
+
   implicit def cards2binary(v: Seq[Card]): Array[Byte] = v.map(_.toByte).toArray
+  implicit def binary2cards(v: Array[Byte]): Seq[Card] = CardUtils.parseBinary(v)
 
 }

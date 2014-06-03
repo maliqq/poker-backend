@@ -27,7 +27,7 @@ object Thrift {
     
     val server = ServerBuilder().
       codec(ThriftServerFramedCodec()).
-      bindTo(new java.net.InetSocketAddress("127.0.0.1", 9091)).
+      bindTo(addr).
       name(name).
       build(service)
   }

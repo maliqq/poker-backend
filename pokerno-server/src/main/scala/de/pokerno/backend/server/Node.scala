@@ -2,6 +2,7 @@ package de.pokerno.backend.server
 
 import org.slf4j.{ Logger, LoggerFactory }
 
+import de.pokerno.model
 import de.pokerno.backend.{ gateway ⇒ gw }
 import de.pokerno.backend.Gateway
 import de.pokerno.backend.gateway.http
@@ -14,7 +15,6 @@ import com.twitter.util.Future
 import org.apache.thrift.protocol.TBinaryProtocol
 
 import akka.actor.{ Actor, ActorLogging, ActorRef, Props, ActorSystem }
-
 
 object Node {
 
@@ -81,7 +81,7 @@ class Node extends Actor with ActorLogging {
 
       actorSelection(id).resolveOne(1 second).onComplete {
         case Success(room) ⇒
-          room ! Room.Watch(conn)
+          room ! Room.Connect(conn)
 
         case Failure(_) ⇒
           log.warning("room {} not found for conn {}", id, conn)
@@ -93,7 +93,7 @@ class Node extends Actor with ActorLogging {
 
       actorSelection(id).resolveOne(1 second).onComplete {
         case Success(room) ⇒
-          room ! Room.Unwatch(conn)
+          room ! Room.Disconnect(conn)
 
         case Failure(_) ⇒
           log.warning("room {} not found for conn {}", id, conn)
@@ -106,17 +106,22 @@ class Node extends Actor with ActorLogging {
 
       actorSelection(id).resolveOne(1 second).onComplete {
         case Success(room) ⇒
-          val command = msg match {
+          room ! (msg match {
             case join: message.JoinTable ⇒
               cmd.JoinPlayer(join.pos, player, join.amount)
 
             case leave: message.LeaveTable ⇒
               cmd.KickPlayer(player)
+            
+            case sitOut: message.SitOut =>
+              cmd.ChangePlayerState(player, model.Seat.State.Idle)
+            
+            case comeBack: message.ComeBack =>
+              cmd.ChangePlayerState(player, model.Seat.State.Ready)
 
             case add: message.AddBet ⇒
               cmd.AddBet(player, add.bet)
-          }
-          room ! command
+          })
 
         case Failure(_) ⇒
           log.warning("Room not found: {}", id)

@@ -23,14 +23,15 @@ object Room {
     val Closed    = state("closed")
   }
   
+  case class Connect(conn: http.Connection)
+  case class Disconnect(conn: http.Connection)
+  
   trait ChangeState
 
   case object Close extends ChangeState
   case object Pause extends ChangeState
   case object Resume extends ChangeState
 
-  case class Watch(watcher: http.Connection)
-  case class Unwatch(watcher: http.Connection)
   case class Observe(observer: ActorRef, name: String)
   
 //  class Service extends thrift.rpc.Room.FutureIface {}
@@ -59,43 +60,53 @@ class Room(
   import context._
   import context.dispatcher
   import concurrent.duration._
+  import Room._
 
   val watchers = observe(classOf[Watchers], f"room-$id-watchers")
   val logger = observe(classOf[Journal], f"room-$id-log", "/tmp", id)
   val metrics = observe(classOf[Metrics], f"room-$id-metrics")
 
   log.info("starting room {}", id)
-  startWith(Room.State.Waiting, NoneRunning)
+  startWith(State.Waiting, NoneRunning)
 
   /*
    * State machine
    * */
-  when(Room.State.Paused) {
-    case Event(Room.Resume, _) ⇒
-      goto(Room.State.Active)
+  def paused      = when(State.Paused)_
+  def waiting     = when(State.Waiting)_
+  def closed      = when(State.Closed)_
+  def active      = when(State.Active)_
+  
+  def toActive()  = goto(State.Active)
+  def toClosed()  = goto(State.Closed)
+  def toPaused()  = goto(State.Paused)
+  def toWaiting() = goto(State.Waiting)
+  
+  paused {
+    case Event(Resume, _) ⇒ toActive()
   }
-
-  when(Room.State.Waiting) {
+  
+  waiting {
     case Event(join: cmd.JoinPlayer, NoneRunning) ⇒
       joinPlayer(join)
-      if (canStart) goto(Room.State.Active)
+      if (canStart) toActive()
       else stay()
   }
-
-  when(Room.State.Closed) {
+  
+  closed {
     case Event(x: Any, _) ⇒
       log.warning("got {} in closed state", x)
       stay()
   }
-
-  when(Room.State.Active) {
-    case Event(Room.Close, Running(_, deal)) ⇒
+  
+  active {
+    case Event(Close, Running(_, deal)) ⇒
       context.stop(deal)
-      goto(Room.State.Closed)
+      toClosed()
 
-    case Event(Room.Pause, Running(_, deal)) ⇒
+    case Event(Pause, Running(_, deal)) ⇒
       context.stop(deal)
-      goto(Room.State.Paused)
+      toPaused()
 
     // first deal in active state
     case Event(gameplay.Deal.Start, NoneRunning) ⇒
@@ -104,7 +115,7 @@ class Room(
     // current deal cancelled
     case Event(gameplay.Deal.Cancel, Running(_, deal)) ⇒
       log.info("deal cancelled")
-      goto(Room.State.Waiting) using (NoneRunning)
+      toWaiting() using (NoneRunning)
 
     // current deal stopped
     case Event(gameplay.Deal.Done, Running(_, deal)) ⇒
@@ -132,6 +143,8 @@ class Room(
       // TODO broadcast
       stay()
     
+    case Event(cmd.ChangePlayerState(player, newState), _) =>
+      stay()
 //    case Event(sitout: cmd.SitOut, _) =>
 //      stay()
 //    case Event(comeback: cmd.ComeBack, _) =>
@@ -165,21 +178,19 @@ class Room(
       //events.start(table, variation, stake, )
       stay()
 
-    case Event(w @ Room.Watch(conn), running) ⇒
+    case Event(w @ Connect(conn), running) ⇒
       // notify seat state change
-//      conn.player map { p ⇒
-//        playerReconnected(p)
-//        changeSeatPresence(p) { _._1 online } // Reconnected
-//      }
+      conn.player map (playerOnline(_))
 
       // send start message
       val startMsg = running match {
         case NoneRunning ⇒
-          //gameplay.Events.start(table, variation, stake).msg // TODO: empty play
+          gameplay.Events.start(table, variation, stake) // TODO: empty play
         case Running(play, _) ⇒
-          //gameplay.Events.start(table, variation, stake, play, conn.player).msg
+          gameplay.Events.start(table, variation, stake, play, conn.player)
       }
-      //conn.send(codec.Json.encode(startMsg))
+    
+      conn.send(codec.Json.encode(startMsg))
 
       watchers ! w
 
@@ -187,18 +198,14 @@ class Room(
       if (running == NoneRunning && canStart) goto(Room.State.Active)
       else stay()
 
-    case Event(uw @ Room.Unwatch(conn), _) ⇒
+    case Event(uw @ Disconnect(conn), _) ⇒
       watchers ! uw
       //events.broker.unsubscribe(observer, conn.player.getOrElse(conn.sessionId))
-      conn.player map { p ⇒
-        playerDisconnected(p)
-        //changeSeatPresence(p) { _._1 offline }
-      }
+      conn.player map (playerOffline(_))
       stay()
 
-    case Event(PlayerGone(p), _) ⇒
-      playerGone(p)
-      //changeSeatState(p) { _._1 away }
+    case Event(Away(player), _) ⇒
+      playerAway(player)
       stay()
 
     case Event(kick: cmd.KickPlayer, _) ⇒
@@ -211,7 +218,7 @@ class Room(
   }
 
   onTransition {
-    case Room.State.Waiting -> Room.State.Active ⇒
+    case State.Waiting -> State.Active ⇒
       self ! gameplay.Deal.Next(firstDealAfter)
   }
 

@@ -6,25 +6,30 @@ import akka.actor.{ Actor, ActorLogging }
 import de.pokerno.protocol.{GameEvent, PlayerEvent}
 
 object Watchers {
+  case class Watch(watcher: http.Connection)
+  case class Unwatch(watcher: http.Connection)
+
   case class Broadcast(msg: GameEvent)
   case class Send(to: String, msg: GameEvent)
 }
 
 class Watchers extends Actor with ActorLogging {
+  import Watchers._
+  
   val watchers = collection.mutable.ListBuffer[http.Connection]()
 
   def receive = {
-    case Room.Watch(conn) ⇒
+    case Watch(conn) ⇒
       watchers += conn
 
-    case Room.Unwatch(conn) ⇒
+    case Unwatch(conn) ⇒
       watchers -= conn
 
-    case Watchers.Broadcast(msg) ⇒
+    case Broadcast(msg) ⇒
       val data = GameEvent.encode(msg)
       watchers.map { _.send(data) }
 
-    case Watchers.Send(to, msg) ⇒
+    case Send(to, msg) ⇒
       val data = GameEvent.encode(msg)
       watchers.find { _.sessionId == to } map { _.send(data) }
 

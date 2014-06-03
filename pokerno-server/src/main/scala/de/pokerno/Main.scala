@@ -138,7 +138,7 @@ object Main {
   val options = Options()
 
   def main(args: Array[String]) {
-    backend.server.Poker.Service(new java.net.InetSocketAddress("localhost", 9091))
+    backend.server.Poker.Service(new java.net.InetSocketAddress("127.0.0.1", 9091))
 //    optionParser.parse(args, options) map { opts ⇒
 //      val config: Option[Config] = if (opts.configFile.isDefined) {
 //        val f = new java.io.FileInputStream(opts.configFile.get)

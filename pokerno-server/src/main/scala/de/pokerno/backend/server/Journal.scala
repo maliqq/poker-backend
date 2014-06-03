@@ -35,29 +35,23 @@ class Journal(storageDir: String, room: String) extends Actor with ActorLogging 
         case bet: message.DeclareBet ⇒
           val player = bet.player
           
-          bet.ante.map { amt =>
-            write("%s: posts ante %.2f", player, amt)
-          } orElse
-          bet.sb.map { amt =>
-            write("%s: posts small blind %.2f", player, amt)
-          } orElse
-          bet.bb.map { amt =>
-            write("%s: posts big blind %.2f", player, amt)
-          } orElse
-          bet.check.map { check =>
-            if (check) write("%s: checks", player)
-          } orElse
-          bet.fold.map { fold =>
-            if (fold) write("%s: folds", player)
-          } orElse
-          bet.call.map { amt =>
-            write("%s: calls %.2f", player, amt)
-          } orElse
-          bet.raise.map { amt =>
-            write("%s: raises to %.2f", player, amt)
-          } orElse
-          bet.bringIn.map { amt =>
-            write("%s: posts bring in %.2f", player, amt)
+          bet.bet match {
+            case Bet.Ante(amt) => 
+              write("%s: posts ante %.2f", player, amt)
+            case Bet.SmallBlind(amt) =>
+              write("%s: posts small blind %.2f", player, amt)
+            case Bet.BigBlind(amt) =>
+              write("%s: posts big blind %.2f", player, amt)
+            case Bet.Check =>
+              write("%s: checks", player)
+            case Bet.Fold =>
+              write("%s: folds", player)
+            case Bet.Call(amt) =>
+              write("%s: calls %.2f", player, amt)
+            case Bet.Raise(amt) =>
+              write("%s: raises to %.2f", player, amt)
+            case Bet.BringIn(amt) =>
+              write("%s: posts bring in %.2f", player, amt)
           }
 
         case message.DealBoard(cards) ⇒
@@ -82,9 +76,8 @@ class Journal(storageDir: String, room: String) extends Actor with ActorLogging 
         case message.DeclarePot(total, side, rake) ⇒
           write("Pot is %.2f", total)
 
-        case h: message.DeclareHand ⇒
-          val player = h.player
-          write("%s shows %s (%s)", player, h.cards, h.description)
+        case message.DeclareHand(pos, player, hand) ⇒
+          write("%s shows %s (%s)", player, hand.cards, hand.description)
 
         case message.DeclareWinner(pos, player, amount) ⇒
           write("%s collected %.2f from pot", player, amount)

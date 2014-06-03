@@ -13,4 +13,4 @@ build-server-deps:
 assembly:
 	sbt "project pokerno-server" assembly
 sloc:
-	find . -name "*.scala" | xargs cloc | grep Scala | awk '{print $$5}'
+	find . -path ./pokerno-protocol/src/main/scala/de/pokerno/protocol/thrift -prune -o -name "*.scala" -print | xargs cloc | grep Scala | awk '{print $$5}'

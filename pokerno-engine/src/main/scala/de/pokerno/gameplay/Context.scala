@@ -29,11 +29,14 @@ class Context(
     val variation: Variation,
     val stake: Stake,
     val events: Events,
+    val play: Play = new Play,
     val dealer: Dealer = new Dealer
   ) extends ContextLike {
 
+  var street: Option[Street.Value] = None
+  
+  lazy val round: betting.Round = new betting.Round(table, game, stake)
   lazy val gameRotation = new Rotation(variation.asInstanceOf[Mix].games)
-  lazy val round = new betting.Round(table, game, stake)
 
   override def toString = f"table:${table} stake: ${stake} game: ${game}"
 

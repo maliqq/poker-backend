@@ -13,7 +13,7 @@ sealed case class DeclareStart(
 
 ) extends GameEvent {
     
-    @BeanProperty var play: PlayState = null
+    @BeanProperty var play: Option[PlayState] = None
     
     @BeanProperty var pocket: Option[Cards] = None 
 

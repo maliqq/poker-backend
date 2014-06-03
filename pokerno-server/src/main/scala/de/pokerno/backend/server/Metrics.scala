@@ -87,8 +87,8 @@ class Metrics extends Actor with ActorLogging {
     case _ ⇒
   }
 
-  private def handleBet(bet: message.DeclareBet) = bet.fold match {
-    case Some(true) ⇒
+  private def handleBet(bet: message.DeclareBet) = bet.bet match {
+    case Bet.Fold ⇒
       folds.inc()
 
     case _ ⇒

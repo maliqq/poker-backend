@@ -1,16 +1,28 @@
 package de.pokerno.gameplay.betting
 
 import de.pokerno.model._
+import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnore, JsonInclude}
 import math.{ BigDecimal ⇒ Decimal }
 
-private[gameplay] class Round(val table: Table, val game: Game, val stake: Stake) extends Ring(table.seats) {
-  val seats = table.seatsFrom(current)
+@JsonInclude(JsonInclude.Include.NON_NULL)
+class Round(
+    table: Table,
+    game: Game,
+    stake: Stake
+  ) {
   
-  val pot = new Pot
-  var bigBets: Boolean = false
+  private var _acting = new Ring(table.seats)
+  def acting = _acting
+  def current = _acting.current
+  
+  @JsonIgnore val seats = table.seatsFrom(_acting.current)
+  @JsonIgnore var bigBets: Boolean = false
+  
+  @JsonProperty val pot = new Pot
+  @JsonProperty val rake: Option[SidePot] = None
 
   // limit number of raises per one street
-  final val MaxRaiseCount = 8
+  private final val MaxRaiseCount = 8
   private var raiseCount: Int = 0
 
   // current amount to call
@@ -25,7 +37,7 @@ private[gameplay] class Round(val table: Table, val game: Game, val stake: Stake
     raiseCount = 0
     _call = .0
     _raise = None
-    current = table.button
+    _acting.current = table.button
     // FIXME
     //pot.complete()
   }
@@ -40,7 +52,7 @@ private[gameplay] class Round(val table: Table, val game: Game, val stake: Stake
   }
 
   def forceBet(pos: Int, betType: Bet.ForcedType): Tuple2[Seat, Bet] = {
-    current = pos
+    _acting.current = pos
     val seat = table.seats(current)
 
     _call = stake amount betType
@@ -59,7 +71,7 @@ private[gameplay] class Round(val table: Table, val game: Game, val stake: Stake
   }
 
   def requireBet(pos: Int): Seat = {
-    current = pos
+    _acting.current = pos
     
     val seat = table.seats(current)
     val limit = game.limit

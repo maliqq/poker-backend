@@ -1,12 +1,14 @@
 package de.pokerno.model
 
 import de.pokerno.poker.{ Card, Deck }
+import com.fasterxml.jackson.annotation.JsonProperty
 
 class Dealer(private var _deck: Deck = new Deck) {
 
   private var _board: Seq[Card] = Seq.empty
   
   def board = _board
+  @JsonProperty("board") def boardAsBytes: Array[Byte] = _board
 
   private var _pockets: Map[Player, Seq[Card]] = Map.empty
   

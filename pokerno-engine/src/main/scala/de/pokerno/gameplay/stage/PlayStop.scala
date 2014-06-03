@@ -6,7 +6,7 @@ case class PlayStop(ctx: StageContext) extends Stage {
   
   def apply() = {
     ctx broadcast Events.playStop()
-    ctx.play.end()
+    ctx.gameplay.play.end()
   }
 
 }

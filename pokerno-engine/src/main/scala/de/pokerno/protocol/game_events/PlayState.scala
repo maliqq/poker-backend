@@ -1,22 +1,19 @@
 package de.pokerno.protocol.game_events
 
 import beans._
-import de.pokerno.gameplay.Context
+import de.pokerno.gameplay
 import de.pokerno.model.Street
+import com.fasterxml.jackson.annotation.{JsonIgnore, JsonUnwrapped, JsonInclude}
 
-class PlayState(
-    gameplay: Context,
-    @BeanProperty var id: String,
-    @BeanProperty var started: Long,
-    @BeanProperty val street: Option[Street.Value] = None
-) {
-  
-  @BeanProperty var ended: Option[Long] = None
-  
-  @BeanProperty var board: Cards = gameplay.dealer.board
-  @BeanProperty var pot: Decimal = gameplay.round.pot.total
-  @BeanProperty var rake: Decimal = 0
-  
-  @BeanProperty var winners: Map[Player, Decimal] = Map.empty
-  @BeanProperty var pockets: Map[Player, Cards] = Map.empty
+object PlayState {
+  def apply(ctx: gameplay.Context) = new PlayState(ctx)
+}
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+sealed class PlayState(
+    ctx: gameplay.Context
+  ) {
+  @JsonUnwrapped val play = ctx.play
+  @JsonUnwrapped val round = ctx.round
+  @JsonUnwrapped val dealer = ctx.dealer
 }

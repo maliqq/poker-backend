@@ -1,10 +1,12 @@
 package de.pokerno.model
 
+import com.fasterxml.jackson.annotation.JsonValue
+
 class Ring[A](items: Seq[A]) extends Iterator[A] {
   protected var _current = 0
   protected var _size = items.size 
   
-  def current = _current
+  @JsonValue def current = _current
   def current_=(i: Int) = {
     _current = if (i < 0) _size + i else i
     _current %= _size

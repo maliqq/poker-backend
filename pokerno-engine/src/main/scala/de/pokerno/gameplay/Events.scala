@@ -45,11 +45,12 @@ object Events {
   def playerComeBack(pos: Int, player: Player) =
     message.PlayerComeBack(pos, player)
   
-  def start(table: Table, variation: Variation, stake: Stake, play: Play = null, forPlayer: Option[String] = None) = {
-//    val msg = message.DeclareStart(table, variation, stake)
-//    forPlayer.map { player =>
-//      msg.pocket
-//    }
+  def start(table: Table, variation: Variation, stake: Stake) = message.DeclareStart(table, variation, stake)
+  def start(ctx: Context, player: Option[Player]) = {
+    val msg = message.DeclareStart(ctx.table, ctx.variation, ctx.stake)
+    val play = ctx.play.copy()
+    msg.play = Some(message.PlayState(ctx))
+    msg
   }
 
   def playStart() =

@@ -7,6 +7,7 @@ import org.scalatest.matchers.ShouldMatchers._
 class CodecSpec extends FunSpec with ClassicMatchers {
 
   import de.pokerno.model._
+  import de.pokerno.poker.Deck
   
   object Json extends Codec.Json {
     def encode(v: Any) = mapper.writeValueAsString(v)
@@ -98,6 +99,29 @@ class CodecSpec extends FunSpec with ClassicMatchers {
       
       val bet6 = Bet.ante(100)
       Json.encode(bet6) should equal("""{"type":"ante","call":100}""")
+    }
+    
+    import de.pokerno.gameplay
+    
+    it("betting.Round") {
+      val table = new Table(1)
+      val game = new Game(Game.Texas)
+      val stake = new Stake(100)
+      val round = new gameplay.betting.Round(table, game, stake)
+      Json.encode(round) should equal("""{"pot":{"side":[],"total":0}}""")
+    }
+    
+    it("PlayState") {
+      val table = new Table(1)
+      val game = new Game(Game.Texas)
+      val stake = new Stake(100)
+      val deck = new Deck
+      val dealer = new Dealer(deck)
+      dealer.dealBoard(3)
+      val events = new gameplay.Events("test")
+      val play = new Play("1")
+      val ctx = new gameplay.Context(table, game, stake, events, dealer = dealer, play = play)
+      Json.encode(game_events.PlayState(ctx)) should equal("""{}""")
     }
   }
   

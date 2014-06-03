@@ -34,7 +34,7 @@ trait DealCycle { a: Actor ⇒
 
 }
 
-class Deal(val gameplay: Context, val play: Play) extends Actor
+class Deal(val gameplay: Context) extends Actor
     with ActorLogging
     with betting.Handler
     with NextTurn
@@ -42,7 +42,7 @@ class Deal(val gameplay: Context, val play: Play) extends Actor
   
   import context._
   
-  val ctx = StageContext(gameplay, new Play, self)
+  val ctx = StageContext(gameplay, self)
   lazy val streets = Streets(ctx)
   
   override def preStart() {

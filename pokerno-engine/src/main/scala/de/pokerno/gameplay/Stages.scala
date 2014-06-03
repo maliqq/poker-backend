@@ -11,11 +11,8 @@ abstract class Stage {
 
 private[gameplay] case class StageContext(
     gameplay: Context,
-    play: Play,
     ref: ActorRef
   ) {
-  
-  var street: Option[Street.Value] = None
   
   def publish(e: GameEvent)     = gameplay.events.publish(e)_
   def broadcast(e: GameEvent)   = gameplay.events.publish(e) { _.all() }

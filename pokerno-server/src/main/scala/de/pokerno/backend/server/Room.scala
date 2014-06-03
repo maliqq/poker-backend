@@ -5,8 +5,11 @@ import de.pokerno.model
 import de.pokerno.gameplay
 import de.pokerno.backend.Gateway
 import de.pokerno.backend.gateway.http
+
+import de.pokerno.protocol.GameEvent
 import de.pokerno.protocol.{ player_events => message}
 import de.pokerno.protocol.{ commands => cmd }
+
 import de.pokerno.protocol.thrift
 import util.{ Success, Failure }
 import scala.concurrent.{ Promise, Future }
@@ -178,28 +181,28 @@ class Room(
       //events.start(table, variation, stake, )
       stay()
 
-    case Event(w @ Connect(conn), running) ⇒
+    case Event(Connect(conn), running) ⇒
       // notify seat state change
       conn.player map (playerOnline(_))
 
       // send start message
-      val startMsg = running match {
+      val startMsg: GameEvent = running match {
         case NoneRunning ⇒
           gameplay.Events.start(table, variation, stake) // TODO: empty play
-        case Running(play, _) ⇒
-          gameplay.Events.start(table, variation, stake, play, conn.player)
+        case Running(play, ctx) ⇒
+          gameplay.Events.start(ctx, conn.player)
       }
     
-      conn.send(codec.Json.encode(startMsg))
+      conn.send(GameEvent.encode(startMsg))
 
-      watchers ! w
+      watchers ! Watchers.Watch(conn)
 
       // start new deal if needed
       if (running == NoneRunning && canStart) goto(Room.State.Active)
       else stay()
 
-    case Event(uw @ Disconnect(conn), _) ⇒
-      watchers ! uw
+    case Event(Disconnect(conn), _) ⇒
+      watchers ! Watchers.Unwatch(conn)
       //events.broker.unsubscribe(observer, conn.player.getOrElse(conn.sessionId))
       conn.player map (playerOffline(_))
       stay()
@@ -223,11 +226,10 @@ class Room(
   }
 
   initialize()
-//
-//  private def spawnDeal(): Running = {
-//    val ctx = new gameplay.Context(table, variation, stake, events)
-//    val play = new gameplay.Play(ctx)
-//    val deal = actorOf(Props(classOf[gameplay.Deal], ctx, play))
-//    Running(play, deal)
-//  }
+
+  private def startDeal(): Running = {
+    val ctx = new gameplay.Context(table, variation, stake, events)
+    val deal = actorOf(Props(classOf[gameplay.Deal], ctx))
+    Running(ctx, deal)
+  }
 }

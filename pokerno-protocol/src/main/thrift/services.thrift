@@ -15,54 +15,54 @@ enum PauseReason {
 enum KickReason {}
 
 service Node {
-  void createRoom(1: string Id, 2: wire.Variation Variation, 3: wire.Stake Stake, 4: wire.Table Table)
+  void createRoom(1: string id, 2: wire.Variation variation, 3: wire.Stake stake, 4: wire.Table table)
   void maintenance()
 }
 
 service Room {
-  void close(1: string Id)
-  void pause(1: string Id, 2: PauseReason Reason)
-  void resume(1: string Id)
-  void cancelCurrentDeal(1: string Id)
+  void close(1: string id)
+  void pause(1: string id, 2: PauseReason Reason)
+  void resume(1: string id)
+  void cancelCurrentDeal(1: string id)
 }
 
 service Deal {
-  void joinPlayer(1: string Id, 2: Player Player, 3: i32 Pos, 4: double Amount)
-  void kickPlayer(1: string Id, 2: Player Player, 3: KickReason Reason)
+  void joinPlayer(1: string id, 2: Player player, 3: i32 Pos, 4: double amount)
+  void kickPlayer(1: string id, 2: Player player, 3: KickReason reason)
 
-  void dealCards(1: string Id, 2: wire.DealType DealType, 3: Cards Cards, 4: i32 CardsNum, 5: Player Player)
-  void addBet(1: string Id, 2: Player Player, 3: wire.Bet Bet)
-  void discardCards(1: string Id, 2: Player Player, 3: Cards Cards, 4: bool StandPat)
-  void showCards(1: string Id, 2: Player Player, 3: Cards Cards, 4: bool Muck)
+  void dealCards(1: string id, 2: wire.DealType dealType, 3: Cards cards, 4: i32 cardsNum, 5: Player player)
+  void addBet(1: string id, 2: Player player, 3: wire.Bet bet)
+  void discardCards(1: string id, 2: Player player, 3: Cards cards, 4: bool standPat)
+  void showCards(1: string id, 2: Player player, 3: Cards cards, 4: bool muck)
 
-  void leave(1: string Id, 2: Player Player)
-  void sitOut(1: string Id, 2: Player Player)
-  void comeBack(1: string Id, 2: Player Player)
+  void leave(1: string id, 2: Player player)
+  void sitOut(1: string id, 2: Player player)
+  void comeBack(1: string id, 2: Player player)
 
-  void offline(1: string Id, 2: Player Player)
-  void online(1: string Id, 2: Player Player)
+  void offline(1: string id, 2: Player player)
+  void online(1: string id, 2: Player player)
 
-  void buyIn(1: string Id, 2: Player Player, 3: double Amount)
-  void rebuy(1: string Id, 2: Player Player, 3: double Amount)
-  void doubleRebuy(1: string Id, 2: Player Player, 3: double Amount)
-  void addon(1: string Id, 2: Player Player, 3: double Amount)
+  void buyIn(1: string id, 2: Player player, 3: double amount)
+  void rebuy(1: string id, 2: Player player, 3: double amount)
+  void doubleRebuy(1: string id, 2: Player player, 3: double amount)
+  void addon(1: string id, 2: Player player, 3: double amount)
 }
 
 struct CompareResult {
-  1: wire.Hand A
-  2: wire.Hand B
-  3: i32 Result
+  1: wire.Hand a
+  2: wire.Hand b
+  3: i32 result
 }
 
 struct SimulateResult {
-  1: double Wins
-  2: double Loses
-  3: double Ties
+  1: double wins
+  2: double loses
+  3: double ties
 }
 
 service Poker {
   Cards generateDeck()
-  wire.Hand evaluateHand(1: Cards Cards)
-  CompareResult compareHands(1: Cards A, 2: Cards B, 3: Cards Board)
-  SimulateResult simulateHands(1: Cards A, 2: Cards B, 3: Cards Board, 4: i32 Samples)
+  wire.Hand evaluateHand(1: Cards cards)
+  CompareResult compareHands(1: Cards a, 2: Cards b, 3: Cards board)
+  SimulateResult simulateHands(1: Cards a, 2: Cards b, 3: Cards board, 4: i32 samples)
 }

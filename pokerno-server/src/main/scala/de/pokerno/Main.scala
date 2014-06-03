@@ -138,29 +138,30 @@ object Main {
   val options = Options()
 
   def main(args: Array[String]) {
-    optionParser.parse(args, options) map { opts ⇒
-      val config: Option[Config] = if (opts.configFile.isDefined) {
-        val f = new java.io.FileInputStream(opts.configFile.get)
-
-        try Some(Config.from(f))
-        catch {
-          case _: java.io.FileNotFoundException ⇒
-            log.error("Config file not found!")
-            None
-
-          case e: com.fasterxml.jackson.core.JsonParseException ⇒
-            log.error("Invalid JSON: {}", e.getMessage)
-            None
-        }
-      } else Some(opts.config)
-
-      config match {
-        case Some(c) ⇒
-          val node = backend.server.Node.start(c)
-        case None ⇒
-          System.exit(0)
-      }
-    }
+    backend.server.Poker.Service(new java.net.InetSocketAddress("localhost", 9091))
+//    optionParser.parse(args, options) map { opts ⇒
+//      val config: Option[Config] = if (opts.configFile.isDefined) {
+//        val f = new java.io.FileInputStream(opts.configFile.get)
+//
+//        try Some(Config.from(f))
+//        catch {
+//          case _: java.io.FileNotFoundException ⇒
+//            log.error("Config file not found!")
+//            None
+//
+//          case e: com.fasterxml.jackson.core.JsonParseException ⇒
+//            log.error("Invalid JSON: {}", e.getMessage)
+//            None
+//        }
+//      } else Some(opts.config)
+//
+//      config match {
+//        case Some(c) ⇒
+//          val node = backend.server.Node.start(c)
+//        case None ⇒
+//          System.exit(0)
+//      }
+//    }
   }
 
 }

@@ -1,9 +1,9 @@
 package de.pokerno.backend.server
 
-import org.apache.thrift.protocol.TBinaryProtocol
 import com.twitter.util.Future
 import com.twitter.finagle.builder.ServerBuilder
 import com.twitter.finagle.thrift.ThriftServerFramedCodec
+import org.apache.thrift.protocol.TBinaryProtocol
 
 object Poker {
   
@@ -24,7 +24,7 @@ object Poker {
       Future.value(hand)
     }
     
-    def compareHands(a: Seq[Card], b: Seq[Card], board: Seq[Card]): Future[Unit] = {
+    def compareHands(a: Seq[Card], b: Seq[Card], board: Seq[Card]): Future[thrift.rpc.CompareResult] = {
       val h1 = Hand.High(a ++ board).get
       val h2 = Hand.High(b ++ board).get
       Future.value(
@@ -32,10 +32,10 @@ object Poker {
         )
     }
     
-    def compareHands(a: ByteBuffer, b: ByteBuffer, board: ByteBuffer): Future[Unit] =
+    def compareHands(a: ByteBuffer, b: ByteBuffer, board: ByteBuffer): Future[thrift.rpc.CompareResult] =
       compareHands(a.array(): Seq[Card], b.array(): Seq[Card], board.array(): Seq[Card])
     
-    def simulateHands(a: Seq[Card], b: Seq[Card], board: Seq[Card], samples: Int): Future[Unit] = {
+    def simulateHands(a: Seq[Card], b: Seq[Card], board: Seq[Card], samples: Int): Future[thrift.rpc.SimulateResult] = {
       val h1 = Hand.High(a ++ board).get
       val h2 = Hand.High(b ++ board).get
       val hu = Math.Headsup(a, b, samples) withBoard(board)
@@ -45,20 +45,13 @@ object Poker {
         )
     }
     
-    def simulateHands(a: ByteBuffer, b: ByteBuffer, board: ByteBuffer, samples: Int): Future[Unit] =
+    def simulateHands(a: ByteBuffer, b: ByteBuffer, board: ByteBuffer, samples: Int): Future[thrift.rpc.SimulateResult] =
       simulateHands(a.array(): Seq[Card], b.array(): Seq[Card], board.array(): Seq[Card], samples)
   }
   
   object Service {
     def apply(addr: java.net.InetSocketAddress) = {
-      val processor = new Service()
-      val protocol = new TBinaryProtocol.Factory()
-      val service = new thrift.rpc.Poker.FinagledService(processor, protocol)
-      val server = ServerBuilder().
-        codec(ThriftServerFramedCodec()).
-        bindTo(addr).
-        name("PokerService").
-        build(service)
+      Thrift.serve[thrift.rpc.Poker.FinagledService, thrift.rpc.Poker.FutureIface](new Service, "PokerService", addr)
     }
   }
 

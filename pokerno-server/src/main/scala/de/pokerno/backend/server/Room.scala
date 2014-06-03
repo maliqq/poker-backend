@@ -7,6 +7,7 @@ import de.pokerno.backend.Gateway
 import de.pokerno.backend.gateway.http
 import de.pokerno.protocol.{ player_events => message}
 import de.pokerno.protocol.{ commands => cmd }
+import de.pokerno.protocol.thrift
 import util.{ Success, Failure }
 import scala.concurrent.{ Promise, Future }
 
@@ -31,6 +32,8 @@ object Room {
   case class Watch(watcher: http.Connection)
   case class Unwatch(watcher: http.Connection)
   case class Observe(observer: ActorRef, name: String)
+  
+//  class Service extends thrift.rpc.Room.FutureIface {}
 
 }
 
@@ -96,7 +99,7 @@ class Room(
 
     // first deal in active state
     case Event(gameplay.Deal.Start, NoneRunning) ⇒
-      stay() using spawnDeal
+      stay()// using spawnDeal
 
     // current deal cancelled
     case Event(gameplay.Deal.Cancel, Running(_, deal)) ⇒
@@ -153,7 +156,7 @@ class Room(
 //          leavePlayer(player)
 //      }
 //      stay()
-//  }
+  }
 
   whenUnhandled {
     case Event(Room.Observe(observer, name), _) ⇒
@@ -172,11 +175,11 @@ class Room(
       // send start message
       val startMsg = running match {
         case NoneRunning ⇒
-          gameplay.Events.start(table, variation, stake).msg // TODO: empty play
+          //gameplay.Events.start(table, variation, stake).msg // TODO: empty play
         case Running(play, _) ⇒
-          gameplay.Events.start(table, variation, stake, play, conn.player).msg
+          //gameplay.Events.start(table, variation, stake, play, conn.player).msg
       }
-      conn.send(codec.Json.encode(startMsg))
+      //conn.send(codec.Json.encode(startMsg))
 
       watchers ! w
 
@@ -189,13 +192,13 @@ class Room(
       //events.broker.unsubscribe(observer, conn.player.getOrElse(conn.sessionId))
       conn.player map { p ⇒
         playerDisconnected(p)
-        changeSeatPresence(p) { _._1 offline }
+        //changeSeatPresence(p) { _._1 offline }
       }
       stay()
 
     case Event(PlayerGone(p), _) ⇒
       playerGone(p)
-      changeSeatState(p) { _._1 away }
+      //changeSeatState(p) { _._1 away }
       stay()
 
     case Event(kick: cmd.KickPlayer, _) ⇒
@@ -213,11 +216,11 @@ class Room(
   }
 
   initialize()
-
-  private def spawnDeal(): Running = {
-    val ctx = new gameplay.Context(table, variation, stake, events)
-    val play = new gameplay.Play(ctx)
-    val deal = actorOf(Props(classOf[gameplay.Deal], ctx, play))
-    Running(play, deal)
-  }
+//
+//  private def spawnDeal(): Running = {
+//    val ctx = new gameplay.Context(table, variation, stake, events)
+//    val play = new gameplay.Play(ctx)
+//    val deal = actorOf(Props(classOf[gameplay.Deal], ctx, play))
+//    Running(play, deal)
+//  }
 }

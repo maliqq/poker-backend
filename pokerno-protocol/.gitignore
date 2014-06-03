@@ -1,2 +1,3 @@
 /bin
 /src/main/scala/de/pokerno/protocol/thrift
+/src/main/ruby/gen-rb

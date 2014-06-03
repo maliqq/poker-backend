@@ -7,10 +7,14 @@ import de.pokerno.backend.Gateway
 import de.pokerno.backend.gateway.http
 import de.pokerno.protocol.{player_events => message}
 import de.pokerno.protocol.{commands => cmd}
-
 import de.pokerno.protocol.PlayerEvent
+import de.pokerno.protocol.thrift
+import com.twitter.finagle.thrift.ThriftServerFramedCodec
+import com.twitter.util.Future
+import org.apache.thrift.protocol.TBinaryProtocol
 
 import akka.actor.{ Actor, ActorLogging, ActorRef, Props, ActorSystem }
+
 
 object Node {
 
@@ -43,6 +47,23 @@ object Node {
   case class CreateRoom(id: String, variation: Variation, stake: Stake)
   
   case class ChangeRoomState(id: String, newState: Room.ChangeState)
+  
+  class Service extends thrift.rpc.Node.FutureIface {
+    def createRoom(id: String,
+        variation: thrift.Variation,
+        stake: thrift.Stake,
+        table: thrift.Table): Future[Unit] = {
+      Future.value(())
+    }
+    
+    def maintenance: Future[Unit] = Future.value(())
+  }
+  
+  object Service {
+    def apply(addr: java.net.InetSocketAddress) = {
+      Thrift.serve[thrift.rpc.Node.FinagledService, thrift.rpc.Node.FutureIface](new Service, "NodeService", addr)
+    }
+  }
 }
 
 class Node extends Actor with ActorLogging {

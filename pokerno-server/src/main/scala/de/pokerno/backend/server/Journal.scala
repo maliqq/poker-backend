@@ -67,6 +67,7 @@ class Journal(storageDir: String, room: String) extends Actor with ActorLogging 
           cardsOrCardsNum match {
             case Right(cardsNum) =>
               write("Dealt door %d cards to %s", cardsNum, player)
+            case Left(_) =>
           }
               
         case message.DealHole(pos, player, cardsOrCardsNum) =>

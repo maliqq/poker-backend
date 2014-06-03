@@ -21,7 +21,7 @@ service Node {
 
 service Room {
   void close(1: string id)
-  void pause(1: string id, 2: PauseReason Reason)
+  void pause(1: string id, 2: PauseReason reason)
   void resume(1: string id)
   void cancelCurrentDeal(1: string id)
 }

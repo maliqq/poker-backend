@@ -129,66 +129,66 @@ enum VariationType {
 }
 
 struct Box {
-  1: i32 Pos,
-  2: Player Player
+  1: i32 pos,
+  2: Player player
 }
 
 struct MinMax {
-  1: double Min,
-  2: double Max
+  1: double min,
+  2: double max
 }
 
 struct Seat {
-  1: optional SeatState State,
-  2: optional PresenceType Presence,
-  3: optional Player Player,
-  4: optional double StackAmount,
-  5: optional BetType LastAction,
-  6: optional double PutAmount
+  1: optional SeatState state,
+  2: optional PresenceType presence,
+  3: optional Player player,
+  4: optional double stackAmount,
+  5: optional BetType lastAction,
+  6: optional double putAmount
 }
 
 struct Table {
   //int32 Size = 2;
-  1: i32 Button,
-  2: list<Seat> Seats,
-  3: optional TableState State
+  1: i32 button,
+  2: list<Seat> seats,
+  3: optional TableState state
 }
 
 struct Bet {
-  1: BetType Type,
-  2: optional double Amount,
-  3: optional bool Timeout
+  1: BetType type,
+  2: optional double amount,
+  3: optional bool timeout
 }
 
 struct Game {
-  1: GameType Type,
-  2: GameLimit Limit,
-  3: i32 TableSize
+  1: GameType type,
+  2: GameLimit limit,
+  3: i32 tableSize
 }
 
 struct Mix {
-  1: MixType Type,
-  2: i32 TableSize
+  1: MixType type,
+  2: i32 tableSize
 }
 
 struct Variation {
-  1: VariationType Type,
-  2: optional Game Game,
-  3: optional Mix Mix
+  1: VariationType type,
+  2: optional Game game,
+  3: optional Mix mix
 }
 
 struct Stake {
-  1: double BigBlind,
-  2: optional double SmallBlind,
-  3: optional double Ante,
-  4: optional double BringIn
+  1: double bigBlind,
+  2: optional double smallBlind,
+  3: optional double ante,
+  4: optional double bringIn
 }
 
 struct Hand {
-  1: RankType Rank,
-  2: Cards Cards,
-  3: Cards Value,
-  4: optional Cards High,
-  5: optional Cards Kicker,
-  6: optional string String
+  1: RankType rank,
+  2: Cards cards,
+  3: Cards value,
+  4: optional Cards high,
+  5: optional Cards kicker,
+  6: optional string description
 }

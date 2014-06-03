@@ -63,155 +63,155 @@ enum EventType {
 }
 
 struct AddBet {
-  1: i32 Pos,
-  2: Player Player
+  1: i32 pos,
+  2: Player player
 
-  3: wire.Bet Bet
+  3: wire.Bet bet
 }
 
 struct DiscardCards {
-  1: i32 Pos,
-  2: Player Player,
+  1: i32 pos,
+  2: Player player,
 
-  3: i32 CardsNum
+  3: i32 cardsNum
 }
 
 struct ShowCards {
-  1: i32 Pos,
-  2: Player Player,
+  1: i32 pos,
+  2: Player player,
 
-  3: Cards Cards,
-  4: optional bool Muck
+  3: Cards cards,
+  4: optional bool muck
 }
 
 struct DealCards {
-  1: wire.DealType Type,
-  2: optional Cards Cards,
-  3: optional i32 Pos,
-  4: optional string Player,
-  5: optional i32 CardsNum
+  1: wire.DealType type,
+  2: optional Cards cards,
+  3: optional i32 pos,
+  4: optional Player player,
+  5: optional i32 cardsNum
 }
 
 struct RequireBet {
-  1: i32 Pos,
-  2: string Player,
-  3: double Call,
+  1: i32 pos,
+  2: Player player,
+  3: double call,
   4: wire.MinMax Raise
 }
 
 struct RequireDiscard {
-  1: i32 Pos,
-  2: string Player
+  1: i32 pos,
+  2: Player player
 }
 
 struct DeclarePot {
-  1: double Pot,
-  2: list<double> Side,
-  3: optional double Rake
+  1: double pot,
+  2: list<double> side,
+  3: optional double rake
 }
 
 struct DeclareWinner {
-  1: i32 Pos,
-  2: string Player,
-  3: double Amount
+  1: i32 pos,
+  2: Player player,
+  3: double amount
 }
 
 struct DeclareHand {
-  1: i32 Pos,
-  2: string Player,
-  3: wire.Hand Hand,
-  4: optional Cards Cards
+  1: i32 pos,
+  2: Player player,
+  3: wire.Hand hand,
+  4: optional Cards cards
 }
 
 struct PlayerJoin {
-  1: i32 Pos,
-  2: string Player,
-  3: double Amount
+  1: i32 pos,
+  2: Player player,
+  3: double amount
 }
 
 struct PlayerLeave {
-  1: i32 Pos,
-  2: string Player
+  1: i32 pos,
+  2: Player player
 }
 
 struct TickTimer {
-  1: i32 Pos,
-  2: string Player,
-  3: i32 TimeLeft,
-  4: optional bool TimeBank
+  1: i32 pos,
+  2: Player player,
+  3: i32 timeLeft,
+  4: optional bool timeBank
 }
 
 struct ActionEvent {
-  1: ActionEventType Type,
+  1: ActionEventType type,
 
-  2: optional AddBet BetAdd,
-  3: optional DiscardCards CardsDiscard,
-  4: optional ShowCards CardsShow
+  2: optional AddBet betAdd,
+  3: optional DiscardCards cardsDiscard,
+  4: optional ShowCards cardsShow
 }
 
 struct SeatEvent {
-  1: SeatEventType Type,
-  2: i32 Pos,
-  3: wire.Seat Seat
+  1: SeatEventType type,
+  2: i32 pos,
+  3: wire.Seat seat
 }
 
 struct TableEvent {
-  1: TableEventType Type,
-  2: optional i32 Button,
-  3: optional TableEventState State
+  1: TableEventType type,
+  2: optional i32 button,
+  3: optional TableEventState state
 }
 
 struct GameplayEvent {
-  1: GameplayEventType Type,
-  2: optional wire.Game Game,
-  3: optional wire.Stake Stake
+  1: GameplayEventType type,
+  2: optional wire.Game game,
+  3: optional wire.Stake stake
 }
 
 struct DealEvent {
-  1: DealEventType Type,
+  1: DealEventType type,
 
-  2: optional DealCards DealCards,
-  3: optional RequireBet RequireBet,
-  4: optional RequireDiscard RequireDiscard,
-  5: optional DeclarePot DeclarePot,
-  6: optional DeclareHand DeclareHand,
-  7: optional DeclareWinner DeclareWinner,
-  8: optional TickTimer TickTimer
+  2: optional DealCards dealCards,
+  3: optional RequireBet requireBet,
+  4: optional RequireDiscard requireDiscard,
+  5: optional DeclarePot declarePot,
+  6: optional DeclareHand declareHand,
+  7: optional DeclareWinner declareWinner,
+  8: optional TickTimer tickTimer
 }
 
 struct Play {
-  1: string Id,
-  2: i64 StartAt,
-  3: optional i64 StopAt,
-  4: wire.StreetType Street,
-  5: optional RequireBet Acting,
-  6: optional double Pot,
-  7: optional double Rake,
-  8: optional Cards Board,
-  9: optional Cards Pocket,
-  10: map<Player, double> Winners,
-  11: map<Player, Cards> KnownCards
+  1: string id,
+  2: i64 started,
+  3: optional i64 ended,
+  4: wire.StreetType street,
+  5: optional RequireBet acting,
+  6: optional double pot,
+  7: optional double rake,
+  8: optional Cards board,
+  9: optional Cards pocket,
+  10: map<Player, double> winners,
+  11: map<Player, Cards> pockets
 }
 
 struct Start {
-  1: wire.Table Table,
-  2: wire.Variation Variation,
-  3: wire.Stake Stake,
-  4: Play Play
+  1: wire.Table table,
+  2: wire.Variation variation,
+  3: wire.Stake stake,
+  4: Play play
 }
 
 struct StageEvent {
-  1: StageEventType Type,
-  2: StageType Stage,
-  3: optional wire.StreetType Street,
-  4: optional Play Play
+  1: StageEventType type,
+  2: StageType stage,
+  3: optional wire.StreetType street,
+  4: optional Play play
 }
 
 struct Event {
-  1: EventType Type,
-  2: optional SeatEvent SeatEvent,
-  3: optional ActionEvent ActionEvent,
-  4: optional TableEvent TableEvent,
-  5: optional GameplayEvent GameplayEvent,
-  6: optional StageEvent StageEvent
+  1: EventType type,
+  2: optional SeatEvent seatEvent,
+  3: optional ActionEvent actionEvent,
+  4: optional TableEvent tableEvent,
+  5: optional GameplayEvent gameplayEvent,
+  6: optional StageEvent stageEvent
 }

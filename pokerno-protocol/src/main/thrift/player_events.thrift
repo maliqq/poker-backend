@@ -15,22 +15,22 @@ enum ShowType {
 }
 
 struct AddBet {
-  1: wire.Bet Bet
+  1: wire.Bet bet
 }
 
 struct DiscardCards {
-  1: DiscardType Type,
-  2: Cards Cards,
+  1: DiscardType type,
+  2: Cards cards,
 }
 
 struct ShowCards {
-  1: ShowType Type,
-  2: optional Cards Cards
+  1: ShowType type,
+  2: optional Cards cards
 }
 
 struct JoinTable {
-  1: i32 Pos,
-  2: double Amount
+  1: i32 pos,
+  2: double amount
 }
 
 struct LeaveTable {}
@@ -40,17 +40,17 @@ struct SitOut {}
 struct ComeBack {}
 
 struct BuyIn {
-  1: double Amount
+  1: double amount
 }
 
 struct Rebuy {
-  1: double Amount
+  1: double amount
 }
 
 struct DoubleRebuy {
-  1: double Amount
+  1: double amount
 }
 
 struct AddOn {
-  1: double Amount
+  1: double amount
 }

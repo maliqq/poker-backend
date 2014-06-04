@@ -140,7 +140,13 @@ object PokernoBuild extends Build {
       //version := "0.0.1",
       libraryDependencies ++= testDeps ++ Seq(
         "com.codahale.metrics" % "metrics-core" % "3.0.1",
+        "org.zeromq" % "jzmq" % "3.0.1",
         "redis.clients" % "jedis" % "2.2.1",
+        "org.apache.kafka" %% "kafka" % "0.8.1.1" excludeAll (
+            ExclusionRule(organization = "com.sun.jdmk"),
+            ExclusionRule(organization = "com.sun.jmx"),
+            ExclusionRule(organization = "javax.jms")
+          ),
         "org.slf4j" % "slf4j-simple" % "1.7.5",
         "com.github.scopt" %% "scopt" % scoptVersion
       )

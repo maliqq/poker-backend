@@ -2,7 +2,8 @@ package de.pokerno.backend.server
 
 import org.slf4j.{ Logger, LoggerFactory }
 
-import de.pokerno.model
+import de.pokerno.model.{Variation, Stake}
+import de.pokerno.model.Seat.{State => SeatState}
 import de.pokerno.backend.{ gateway ⇒ gw }
 import de.pokerno.backend.Gateway
 import de.pokerno.backend.gateway.http
@@ -43,7 +44,6 @@ object Node {
     node
   }
   
-  import de.pokerno.model.{Variation, Stake}
   case class CreateRoom(id: String, variation: Variation, stake: Stake)
   
   case class ChangeRoomState(id: String, newState: Room.ChangeState)
@@ -114,10 +114,10 @@ class Node extends Actor with ActorLogging {
               cmd.KickPlayer(player)
             
             case sitOut: message.SitOut =>
-              cmd.ChangePlayerState(player, model.Seat.State.Idle)
+              cmd.ChangePlayerState(player, SeatState.Idle)
             
             case comeBack: message.ComeBack =>
-              cmd.ChangePlayerState(player, model.Seat.State.Ready)
+              cmd.ChangePlayerState(player, SeatState.Ready)
 
             case add: message.AddBet ⇒
               cmd.AddBet(player, add.bet)

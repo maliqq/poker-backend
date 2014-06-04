@@ -24,7 +24,7 @@ object Poker {
       Future.value(hand)
     }
     
-    def compareHands(a: Seq[Card], b: Seq[Card], board: Seq[Card]): Future[thrift.rpc.CompareResult] = {
+    def compareHands(a: Cards, b: Cards, board: Cards): Future[thrift.rpc.CompareResult] = {
       val h1 = Hand.High(a ++ board).get
       val h2 = Hand.High(b ++ board).get
       Future.value(
@@ -33,9 +33,9 @@ object Poker {
     }
     
     def compareHands(a: ByteBuffer, b: ByteBuffer, board: ByteBuffer): Future[thrift.rpc.CompareResult] =
-      compareHands(a.array(): Seq[Card], b.array(): Seq[Card], board.array(): Seq[Card])
+      compareHands(a.array(): Cards, b.array(): Cards, board.array(): Cards)
     
-    def simulateHands(a: Seq[Card], b: Seq[Card], board: Seq[Card], samples: Int): Future[thrift.rpc.SimulateResult] = {
+    def simulateHands(a: Cards, b: Cards, board: Cards, samples: Int): Future[thrift.rpc.SimulateResult] = {
       val h1 = Hand.High(a ++ board).get
       val h2 = Hand.High(b ++ board).get
       val hu = Math.Headsup(a, b, samples) withBoard(board)
@@ -46,7 +46,7 @@ object Poker {
     }
     
     def simulateHands(a: ByteBuffer, b: ByteBuffer, board: ByteBuffer, samples: Int): Future[thrift.rpc.SimulateResult] =
-      simulateHands(a.array(): Seq[Card], b.array(): Seq[Card], board.array(): Seq[Card], samples)
+      simulateHands(a.array(): Cards, b.array(): Cards, board.array(): Cards, samples)
   }
   
   object Service {

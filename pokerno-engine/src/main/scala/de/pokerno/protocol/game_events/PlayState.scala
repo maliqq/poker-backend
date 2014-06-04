@@ -1,6 +1,6 @@
 package de.pokerno.protocol.game_events
 
-import beans._
+import com.fasterxml.jackson.annotation.JsonProperty
 import de.pokerno.gameplay
 import de.pokerno.model.Street
 import com.fasterxml.jackson.annotation.{JsonIgnore, JsonUnwrapped, JsonInclude}

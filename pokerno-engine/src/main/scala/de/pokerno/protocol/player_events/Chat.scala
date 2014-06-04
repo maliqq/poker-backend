@@ -1,7 +1,7 @@
 package de.pokerno.protocol.player_events
 
-import beans._
+import com.fasterxml.jackson.annotation.JsonProperty
 
 sealed case class Chat(
-  @BeanProperty var message: String = null
+  @JsonProperty var message: String = null
 ) extends PlayerEvent {}

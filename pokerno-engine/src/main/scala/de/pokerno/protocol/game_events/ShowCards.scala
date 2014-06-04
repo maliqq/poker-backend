@@ -1,13 +1,13 @@
 package de.pokerno.protocol.game_events
 
-import beans._
+import com.fasterxml.jackson.annotation.JsonProperty
 
 sealed case class ShowCards(
-    @BeanProperty var pos: Int,
+    @JsonProperty var pos: Int,
 
-    @BeanProperty var player: Player,
+    @JsonProperty var player: Player,
 
-    @BeanProperty var cards: Cards,
+    @JsonProperty var cards: Cards,
 
-    @BooleanBeanProperty var muck: Boolean = false
+    @JsonProperty var muck: Boolean = false
   ) extends GameEvent {}

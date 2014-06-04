@@ -1,6 +1,6 @@
 package de.pokerno.protocol.game_events
 
-import beans._
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.{JsonInclude, JsonUnwrapped}
 
 import de.pokerno.poker.Hand
@@ -11,9 +11,9 @@ object DeclareHand {
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 sealed case class DeclareHand(
-    @BeanProperty pos: Integer,
+    @JsonProperty pos: Integer,
 
-    @BeanProperty player: Player,
+    @JsonProperty player: Player,
 
     @JsonUnwrapped hand: Hand
   ) extends GameEvent {}

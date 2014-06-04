@@ -1,7 +1,7 @@
 package de.pokerno.protocol.game_events
 
-import beans._
+import com.fasterxml.jackson.annotation.JsonProperty
 
 sealed case class ButtonChange(
-    @BeanProperty var pos: Int
+    @JsonProperty var pos: Int
 ) extends GameEvent {}

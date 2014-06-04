@@ -1,8 +1,8 @@
 package de.pokerno.protocol.player_events
 
-import beans._
+import com.fasterxml.jackson.annotation.JsonProperty
 import de.pokerno.model.Bet
 
 sealed case class AddBet(
-  @BeanProperty var bet: Bet = null
+  @JsonProperty var bet: Bet = null
 ) extends PlayerEvent {}

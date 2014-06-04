@@ -1,7 +1,7 @@
 package de.pokerno.protocol.player_events
 
-import beans._
+import com.fasterxml.jackson.annotation.JsonProperty
 
 sealed case class ShowCards(
-  @BeanProperty var cards: Cards = null
+  @JsonProperty var cards: Cards = null
 ) extends PlayerEvent {}

@@ -1,7 +1,7 @@
 package de.pokerno.protocol.commands
 
-import beans._
+import com.fasterxml.jackson.annotation.JsonProperty
 
 sealed case class KickPlayer(
-  @BeanProperty var player: Player
+  @JsonProperty var player: Player
 ) extends Command {}

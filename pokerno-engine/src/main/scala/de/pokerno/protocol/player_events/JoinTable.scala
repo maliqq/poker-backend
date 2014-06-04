@@ -1,8 +1,8 @@
 package de.pokerno.protocol.player_events
 
-import beans._
+import com.fasterxml.jackson.annotation.JsonProperty
 
 sealed case class JoinTable(
-    @BeanProperty var pos: Int,
-    @BeanProperty var amount: Decimal
+    @JsonProperty var pos: Int,
+    @JsonProperty var amount: Decimal
 ) extends PlayerEvent {}

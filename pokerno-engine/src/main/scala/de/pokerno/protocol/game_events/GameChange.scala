@@ -1,6 +1,6 @@
 package de.pokerno.protocol.game_events
 
-import beans._
+import com.fasterxml.jackson.annotation.JsonProperty
 import de.pokerno.model.Game
 
 object GameChange {
@@ -8,9 +8,9 @@ object GameChange {
 }
 
 sealed case class GameChange(
-  @BeanProperty game: String,
+  @JsonProperty game: String,
   
-  @BeanProperty limit: String
+  @JsonProperty limit: String
 ) extends GameEvent {
   
 }

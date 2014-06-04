@@ -1,20 +1,20 @@
 package de.pokerno.protocol.game_events
 
-import beans._
+import com.fasterxml.jackson.annotation.JsonProperty
 import de.pokerno.model
 
 sealed case class DeclareStart(
     
-    @BeanProperty table: model.Table,
+    @JsonProperty table: model.Table,
 
-    @BeanProperty variation: model.Variation,
+    @JsonProperty variation: model.Variation,
 
-    @BeanProperty stake: model.Stake
+    @JsonProperty stake: model.Stake
 
 ) extends GameEvent {
     
-    @BeanProperty var play: Option[PlayState] = None
+    @JsonProperty var play: Option[PlayState] = None
     
-    @BeanProperty var pocket: Option[Cards] = None 
+    @JsonProperty var pocket: Option[Cards] = None 
 
 }

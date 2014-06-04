@@ -1,16 +1,16 @@
 package de.pokerno.protocol.game_events
 
-import beans._
+import com.fasterxml.jackson.annotation.JsonProperty
 import de.pokerno.model.Bet
 import com.fasterxml.jackson.annotation.{JsonInclude, JsonUnwrapped}
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 sealed case class DeclareBet(
-    @BeanProperty pos: Int,
+    @JsonProperty pos: Int,
     
-    @BeanProperty player: Player,
+    @JsonProperty player: Player,
     
     @JsonUnwrapped bet: Bet
   ) extends GameEvent {
-  @BeanProperty var timeout: Option[Boolean] = None
+  @JsonProperty var timeout: Option[Boolean] = None
 }

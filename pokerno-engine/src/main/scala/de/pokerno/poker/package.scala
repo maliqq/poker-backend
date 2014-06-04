@@ -10,8 +10,8 @@ package object poker {
     suit ← Suits
   } yield new Card(kind, suit)
   
-  // def Cards(s: String) = CardUtils.parseString(s)
-  // def Cards(a: Seq[_]) = CardUtils.parseSeq(a)
+  def cards(s: String) = Cards.fromString(s)
+  def cards(a: Seq[_]) = Cards.fromSeq(a)
   
   type Cards = Seq[Card]
 

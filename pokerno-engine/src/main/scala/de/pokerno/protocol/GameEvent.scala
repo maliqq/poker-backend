@@ -1,6 +1,6 @@
 package de.pokerno.protocol
 
-import de.pokerno.protocol.{game_events => message}
+import de.pokerno.protocol.{msg => message}
 import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonIgnoreProperties}
 
 object GameEvent extends Codec.Json {

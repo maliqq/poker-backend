@@ -12,7 +12,7 @@ object Cards {
     val matching = for {
       regex(kind, suit) ← regex findAllIn s
     } yield Card.wrap(kind(0), suit(0))
-    matching.toList
+    matching.toSeq
   }
 
 }

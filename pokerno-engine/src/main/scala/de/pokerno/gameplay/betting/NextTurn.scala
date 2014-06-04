@@ -2,13 +2,19 @@ package de.pokerno.gameplay.betting
 
 import concurrent.duration._
 
-import de.pokerno.gameplay.{Betting, Context, StageContext}
+import de.pokerno.gameplay.{Betting, Context, stg}
 
 trait NextTurn {
 
-  val ctx: StageContext
+  val ctx: stg.Context
+
+  // Left(n) - pos n is next
+  // Right(None) - stop deal, everyone folds except one
+  // Right(Some(isShowdown)):
+  // Right(Some(false)) - betting done, wait for action
+  // Right(Some(true)) - betting done, go to showdown
   
-  protected def nextTurn(): Betting.Transition = {
+  protected def nextTurn(): Either[Int, Option[Boolean]] = {
     val round = ctx.gameplay.round
     
     round.seats filter (_._1 inPlay) foreach {
@@ -20,16 +26,13 @@ trait NextTurn {
     }
 
     if (round.seats.filter(_._1 inPot).size < 2) {
-      return Betting.Stop
+      return Right(None)
     }
 
     val playing = round.seats filter (_._1 isPlaying)
-    if (playing.size == 0) {
-      return if (round.seats.exists(_._1.isAllIn))  Betting.Showdown
-             else                                   Betting.Done
-    }
-
-    Betting.Require(playing.head._2)
+    if (playing.size == 0)
+      Right(Some(round.seats.exists(_._1.isAllIn)))
+    else Left(playing.head._2)
   }
 
 }

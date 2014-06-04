@@ -1,7 +1,10 @@
 package de.pokerno.poker
 
 import beans._
+
 import com.fasterxml.jackson.annotation.{JsonProperty, JsonInclude, JsonIgnore, JsonPropertyOrder}
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import de.pokerno.protocol.Serializers.Cards2Binary
 
 object Hand {
   implicit def cards2CardSet(v: Cards): CardSet = new CardSet(v)
@@ -48,32 +51,27 @@ object Hand {
 @JsonInclude(JsonInclude.Include.NON_NULL)
 class Hand(
     private val _cards: CardSet,
-    private val _value: Cards = Seq.empty,
+    @JsonSerialize(converter=classOf[Cards2Binary]) val value: Cards = Seq.empty,
     var rank: Option[Rank.Value] = None,
-    __high: Either[Cards, Boolean] = Right(false),
-    __kicker: Either[Cards, Boolean] = Right(false)) extends Ordered[Hand] {
+    _high: Either[Cards, Boolean] = Right(false),
+    _kicker: Either[Cards, Boolean] = Right(false)) extends Ordered[Hand] {
 
   def cards = _cards
-  def value = _value
   
-  @JsonProperty("cards")    def cardsAsBytes: Array[Byte] = cards.value
-  @JsonProperty("value")    def valueAsBytes: Array[Byte] = value
-  @JsonProperty("high")     def highAsBytes: Array[Byte] = high
-  @JsonProperty("kicker")   def kickerAsBytes: Array[Byte] = kicker
+  @JsonSerialize(converter=classOf[Cards2Binary])
+  @JsonProperty("cards")    def cardsValue: Array[Byte] = cards.value
   
-  private val _kicker: Cards = __kicker match {
+  @JsonSerialize(converter=classOf[Cards2Binary]) val kicker: Cards = _kicker match {
     case Left(_cards) ⇒ _cards
     case Right(true)  ⇒ _cards.value.diff(value).sorted(cards.ordering).reverse.take(5 - value.size)
     case Right(false) ⇒ Seq.empty
   }
-  def kicker = _kicker
-
-  private val _high: Cards = __high match {
+  
+  @JsonSerialize(converter=classOf[Cards2Binary]) val high: Cards = _high match {
     case Left(_cards) ⇒ _cards
     case Right(true)  ⇒ value.sorted(cards.ordering).reverse.take(1)
     case Right(false) ⇒ Seq.empty
   }
-  def high = _high
   
   def ranked(r: Rank.Value) = {
     rank = Some(r)

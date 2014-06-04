@@ -5,7 +5,7 @@ import org.scalatest.matchers._
 import org.scalatest.matchers.ShouldMatchers._
 
 class GameEventSpec extends FunSpec with ClassicMatchers {
-  import game_events._
+  import msg._
   import de.pokerno.model.{DealType, Bet, Street, Game, Stake}
   import de.pokerno.poker.{Cards, Hand}
   
@@ -29,15 +29,15 @@ class GameEventSpec extends FunSpec with ClassicMatchers {
     }
     
     it("DealCards") {
-      val e1 = DealHole(1, new Player("A"), Left(Cards("AsAd")))
+      val e1 = DealHole(1, new Player("A"), Left(Cards.fromString("AsAd")))
       val d1 = GameEvent.encodeAsString(e1)
       d1 should equal("""{"$type":"cards:hole","pos":1,"player":"A","cards":"MTM="}""")
       
-      val e2 = DealDoor(1, new Player("A"), Left(Cards("AsAd")))
+      val e2 = DealDoor(1, new Player("A"), Left(Cards.fromString("AsAd")))
       val d2 = GameEvent.encodeAsString(e2)
       d2 should equal("""{"$type":"cards:door","pos":1,"player":"A","cards":"MTM="}""")
       
-      val e3 = DealBoard(Cards("AsAdAh"))
+      val e3 = DealBoard(Cards.fromString("AsAdAh"))
       val d3 = GameEvent.encodeAsString(e3)
       d3 should equal("""{"$type":"cards:board","cards":"MTMy"}""")
     }
@@ -69,7 +69,7 @@ class GameEventSpec extends FunSpec with ClassicMatchers {
     }
     
     it("DeclareHand") {
-      val e = DeclareHand(1, new Player("A"), Hand.High(Cards("AdAdKhKdJs")).get)
+      val e = DeclareHand(1, new Player("A"), Hand.High(Cards.fromString("AdAdKhKdJs")).get)
       val d = GameEvent.encodeAsString(e)
       d should equal("""{"$type":"hand:","pos":1,"player":"A","rank":"two-pair","cards":"MzMuLyU=","value":"MzMuLw==","high":"My4=","kicker":"JQ==","description":"two pairs, As and Ks"}""")
     }
@@ -146,11 +146,11 @@ class GameEventSpec extends FunSpec with ClassicMatchers {
 //    }
     
     it("ShowCards") {
-      val e1 = ShowCards(1, new Player("A"), Cards("Ad"), muck = true)
+      val e1 = ShowCards(1, new Player("A"), Cards.fromString("Ad"), muck = true)
       val d1 = GameEvent.encodeAsString(e1)
       d1 should equal("""{"$type":"cards:show","pos":1,"player":"A","cards":"Mw==","muck":true}""")
       
-      val e2 = ShowCards(1, new Player("A"), Cards("Ad"), muck = false)
+      val e2 = ShowCards(1, new Player("A"), Cards.fromString("Ad"), muck = false)
       val d2 = GameEvent.encodeAsString(e2)
       d2 should equal("""{"$type":"cards:show","pos":1,"player":"A","cards":"Mw==","muck":false}""")
     }

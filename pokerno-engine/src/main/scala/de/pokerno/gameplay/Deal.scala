@@ -42,7 +42,7 @@ class Deal(val gameplay: Context) extends Actor
   
   import context._
   
-  val ctx = StageContext(gameplay, self)
+  val ctx = new stg.Context(gameplay, self)
   lazy val streets = Streets(ctx)
   
   override def preStart() {

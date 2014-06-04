@@ -1,174 +1,102 @@
 package de.pokerno.replay
-//
-//import de.pokerno.poker.{ Deck, Card, Cards }
-//import de.pokerno.model._
-//import de.pokerno.protocol
-//import de.pokerno.gameplay._
-//import akka.actor.{ Actor, Props, ActorRef, ActorLogging }
-//
-//object Replay {
-//  case class Observe(out: ActorRef)
-//  case class StreetActions(street: Street.Value, actions: List[cmd.Cmd], speed: Int, paused: Boolean)
-//  case object Showdown
-//  case object Stop
-//}
-//
-//class Replay(
-//    id: String,
-//    _table: Table,
-//    _variation: Variation,
-//    _stake: Stake,
-//    deck: Option[Cards])
-//    extends Actor
-//    with ActorLogging
-//    with Dealing.ReplayContext
-//    with Betting.ReplayContext
-//    with Streets.ReplayContext {
-//
-//  val e = new Events(id)
-//  val gameplay = new Context(_table, _variation, _stake, e,
-//    dealer =
-//      if (deck.isDefined)
-//        new Dealer(new Deck(deck.get))
-//      else
-//        new Dealer)
-//
-//  val stageContext = StageContext(gameplay, self)
-//  def t = gameplay.table
-//
-//  val gameOptions = gameplay.game.options
-//  val streetOptions = Streets.Options(gameOptions.group)
-//  var streets = Street.byGameGroup(gameOptions.group)
-//
-//  val play = new Play(gameplay)
-//  play.getStreet = () ⇒ Some(streets.head)
-//
-//  import concurrent.duration._
-//  import de.pokerno.util.ConsoleUtils._
-//
-//  override def preStart {
-//    info("starting replay with gameplay %s", gameplay)
-//    //e.playStart()
-//    //gameplay.rotateGame(stageContext)
-//  }
-//
-//  var firstStreet = true
-//
-//  override def receive = {
-//    case Replay.Observe(out) ⇒
-//      e.broker.subscribe(out, "replay-out")
-//      e.publish(
-//        Events.start(t, gameplay.variation, gameplay.stake, null) //.only(id)
-//      ) { _.all() }
-//
-//    //    case join @ rpc.JoinPlayer(pos, player, amount) ⇒
-//    //      debug("got: %s", join)
-//    //
-//    //      t.addPlayer(pos, player, Some(amount))
-//    //      e.joinTable((player, pos), amount)
-//    //
-//    //    case s @ rpc.ShowCards(cards, player, muck) ⇒
-//    //
-//    //      debug("got: %s", s)
-//    //
-//    //      e.showCards(t.box(player).get, cards, muck)
-//
+
+import de.pokerno.poker.{ Deck, Card, Cards }
+import de.pokerno.model._
+import de.pokerno.protocol
+import de.pokerno.protocol.cmd
+import de.pokerno.gameplay.{Events, Context => Gameplay, stg}
+import akka.actor.{ Actor, Props, ActorRef, ActorLogging }
+
+object Replay {
+  case class Observe(out: ActorRef)
+  
+  case class Street(
+      // which street to play
+      street: de.pokerno.model.Street.Value,
+      actions: Seq[protocol.Command],
+      speed: Int
+    )
+
+  case object Showdown  
+  case object Stop
+}
+
+class Replay(
+    id: String,
+    table: Table, variation: Variation, stake: Stake,
+    deck: Option[Cards]
+  )   extends Actor
+      with ActorLogging {
+
+  val dealer: Dealer = deck.map { cards =>
+      new Dealer(new Deck(cards)) 
+    } getOrElse new Dealer
+  
+  val gameplay = new Gameplay(table, variation, stake, new Events(id), dealer)
+
+  val ctx = new Context(gameplay, self)
+  import ctx._
+  import ctx.gameplay._
+
+  import concurrent.duration._
+  import de.pokerno.gameplay.stages.{PrepareSeats, BringIn, Showdown}
+
+  override def preStart {
+    log.info("starting replay with gameplay %s", gameplay)
+    //e.playStart()
+    //gameplay.rotateGame(stageContext)
+  }
+
+  override def receive = {
+    case Replay.Observe(out) ⇒
+      events.broker.subscribe(out, "replay-out")
+      events.broadcast(Events.start(table, variation, stake))
+
+    case join @ cmd.JoinPlayer(pos, player, amount) ⇒
+      log.debug("got: {}", join)
+  
+      table.takeSeat(pos, player, Some(amount))
+      Events.playerJoin(pos, player, amount)
+  
+    case s @ cmd.ShowCards(cards, player, muck) ⇒
+  
+      log.debug("got: %s", s)
+      table.playerPos(player) map { pos =>
+        events.broadcast(Events.showCards(pos, player, cards, muck))
+      }
+    
 //    case Betting.Stop ⇒ // идем до шоудауна
-//      info("streets done")
-//      gameplay.showdown()
+//      log.info("streets done")
+//      Showdown(ctx)()
 //      context.stop(self)
-//
-//    case a @ Replay.StreetActions(street, actions, speed, paused) ⇒
-//
-//      if (firstStreet) {
-//        gameplay.prepareSeats(stageContext)
-//      }
-//
-//      //debug("got: %s", a)
-//
-//      if (streets.head == street) {
-//        // нужный стрит
-//        streets = streets.drop(1)
-//        // notify street started
-//        e.publish(Events.streetStart(street))
-//
-//        val options = streetOptions(street)
-//
-//        //debug(" | street: %s options: %s", street, options)
-//
-//        /**
-//         * DEALING
-//         */
-//        options.dealing.map { dealOptions ⇒
-//          info("[dealing] started")
-//
-//          val dealActions = actions.filter { action ⇒
-//            action match {
-//              case a: cmd.DealCards ⇒
-//                (a.getType: DealType.Value) == dealOptions.dealType
-//              case _ ⇒ false
-//            }
-//          }.asInstanceOf[List[cmd.DealCards]]
-//
-//          dealing(dealActions, dealOptions, (speed seconds))
-//
-//          info("[dealing] done")
-//        }
-//
-//        /**
-//         * BRING IN
-//         */
-//        if (options.bringIn) {
-//          info("[bring-in] started")
-//          gameplay.bringIn(stageContext)
-//          info("[bring-in] done")
-//        }
-//
-//        /**
-//         * BIG BETS
-//         */
-//        if (options.bigBets) {
-//          info("[big-bets] handled")
-//          gameplay.round.bigBets = true // TODO notify
-//        }
-//
-//        /**
-//         * BETTING
-//         */
-//        if (options.betting) {
-//          info("[betting] started")
-//
-//          val betActions = actions.filter { action ⇒
-//            action.isInstanceOf[cmd.AddBet]
-//          }.asInstanceOf[List[cmd.AddBet]]
-//
-//          betting(betActions, (speed seconds))
-//
-//          info("[betting] done")
-//        }
-//
-//        /**
-//         * DISCARDING
-//         */
-//        //
-//
-//        if (firstStreet) firstStreet = false
-//      }
-//
-//    case Replay.Showdown ⇒
-//      info("[showdown] start")
-//      gameplay.showdown()
-//      info("[showdown] stop")
-//
-//    case Replay.Stop ⇒
-//      e.publish(
-//          Events.playStop()) { _.all() }
-//      context.stop(self)
-//
-//    case x ⇒
-//      warn("unandled: %s", x)
-//  }
-//
-//  override def postStop {
-//  }
-//}
+
+    case a @ Replay.Street(street, actions, _speed) ⇒
+
+      speed = (_speed seconds)
+      if (isFirstStreet) {
+        PrepareSeats(ctx)()
+      }
+
+      if (streets.head == street) {
+        // нужный стрит
+        streets = streets.drop(1)
+        events.broadcast(Events.streetStart(street))
+
+        Streets.buildStages(street, actions)(ctx)
+      }
+
+    case Replay.Showdown ⇒
+      log.info("[showdown] start")
+      Showdown(ctx)()
+      log.info("[showdown] stop")
+
+    case Replay.Stop ⇒
+      events broadcast Events.playStop()
+      context stop self
+
+    case x ⇒ log.warning("unandled: {}", x)
+  }
+
+  override def postStop {
+  }
+}

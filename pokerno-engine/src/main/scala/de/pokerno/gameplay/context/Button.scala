@@ -7,7 +7,7 @@ private[gameplay] trait Button { g: ContextLike ⇒
   
   def setButton(pos: Int) {
     table.button.current = round.acting.current = pos
-    events.publish(Events.buttonChange(table.button)) { _.all() }
+    events.broadcast(Events.buttonChange(table.button))
   }
 
   def moveButton() = round.seats find { case (seat, _) ⇒ seat.isActive } map {

@@ -2,8 +2,8 @@ package de.pokerno.gameplay
 
 import de.pokerno.model.Bet
 
-private[gameplay] trait Bets {
-  val ctx: StageContext
+trait Bets {
+  val ctx: stg.Context
   
   def round: betting.Round = ctx.gameplay.round
   

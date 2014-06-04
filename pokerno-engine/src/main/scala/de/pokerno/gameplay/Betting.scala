@@ -6,7 +6,7 @@ import de.pokerno.model._
 import concurrent.duration._
 import de.pokerno.gameplay.betting.NextTurn
 
-case class Betting(ctx: StageContext, betting: ActorRef) extends Bets with NextTurn {
+case class Betting(ctx: stg.Context, betting: ActorRef) extends Bets with NextTurn {
   
   import ctx.gameplay._
   
@@ -25,7 +25,15 @@ case class Betting(ctx: StageContext, betting: ActorRef) extends Bets with NextT
       if (timer != null) timer.cancel()
       Console printf("[betting] add {}", bet)
       addBet(bet)
-      ctx.ref ! nextTurn()
+      // next turn
+      val turn = nextTurn() match {
+          case Left(pos) =>         Betting.Require(pos)
+          case Right(None) =>       Betting.Stop
+          case Right(Some(true)) => Betting.Showdown
+          case _ =>                 Betting.Done
+        }
+      Console printf("[betting] next turn {}", turn)
+      ctx.ref ! turn
     } else
       Console printf("[betting] not a turn of {}; current acting is {}", player, seat.player)
   }
@@ -53,7 +61,7 @@ case class Betting(ctx: StageContext, betting: ActorRef) extends Bets with NextT
   
 }
 
-private[gameplay] object Betting {
+object Betting {
 
   // start new round
   case object Start
@@ -75,7 +83,7 @@ private[gameplay] object Betting {
   // require bet from this potision
   case class Require(pos: Int) extends Transition
   // start timer
-  case class StartTimer(duration: FiniteDuration) extends Transition
+  case class StartTimer(duration: FiniteDuration)
   // betting timeout - go to next seat
   case object Timeout
   // turn on big bet mode

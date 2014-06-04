@@ -28,7 +28,7 @@ object Kind {
 
   private final val _short = "23456789TJQKA".toList
 
-  final val Seq = List range (0, 12)
+  final val NumericValues = List range (0, 12)
 
   implicit def char2Kind(c: Char): Value.Kind = Kinds(_short.indexOf(c))
   implicit def byte2Kind(b: Byte): Value.Kind = Kinds(b)

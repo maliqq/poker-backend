@@ -121,7 +121,7 @@ class CodecSpec extends FunSpec with ClassicMatchers {
       val events = new gameplay.Events("test")
       val play = new Play("1")
       val ctx = new gameplay.Context(table, game, stake, events, dealer = dealer, play = play)
-      Json.encode(game_events.PlayState(ctx)) should equal("""{}""")
+      Json.encode(msg.PlayState(ctx)) should equal("""{}""")
     }
   }
   

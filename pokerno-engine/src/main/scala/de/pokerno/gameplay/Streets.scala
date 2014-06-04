@@ -3,11 +3,11 @@ package de.pokerno.gameplay
 import de.pokerno.model._
 import akka.actor.{ Actor, Props, ActorLogging, ActorRef }
 
-class StreetStageChain(val street: Street.Value) extends StageChain {
+class StreetStageChain(val street: Street.Value) extends stg.Chain {
   override def toString = f"street:${street}"
 }
 
-case class Streets(ctx: StageContext, stages: Seq[StreetStageChain]) extends Stage {
+case class Streets(ctx: stg.Context, stages: Seq[StreetStageChain]) extends Stage {
   
   import ctx.gameplay._
   
@@ -33,13 +33,13 @@ case class Streets(ctx: StageContext, stages: Seq[StreetStageChain]) extends Sta
   } else ctx.ref ! Streets.Done
 }
 
-private[gameplay] object Streets {
+object Streets {
   case object Next
   case object Done
   
   trait Default {
     import Stages._
-    import de.pokerno.gameplay.stage.{ PostBlinds,  RotateGame, PostAntes, PrepareSeats, Showdown, PlayStart, PlayStop }
+    import de.pokerno.gameplay.stages.{ PostBlinds,  RotateGame, PostAntes, PrepareSeats, Showdown, PlayStart, PlayStop }
     
     lazy val beforeStreets =
       stage[PlayStart]    ("play-start") ~>
@@ -53,13 +53,10 @@ private[gameplay] object Streets {
       stage[PlayStop]     ("play-stop")
   }
 
-  def apply(ctx: StageContext): Streets = {
-    val gameOptions = ctx.gameplay.game.options
+  def apply(ctx: stg.Context): Streets = {
+    import ctx.gameplay.gameOptions
 
-    val streets = Street.byGameGroup(gameOptions.group)
-    val stages = streets.map { street =>
-      new StageBuilder(street, streetOptions(street)).build()
-    }
+    val stages = Street.byGameGroup(gameOptions.group).map(buildStages(_))
 
     Streets(ctx, stages)
   }
@@ -72,55 +69,44 @@ private[gameplay] object Streets {
     discarding: Boolean = false
   )
 
-  class StageBuilder(
-      street: Street.Value,
-      dealing: Option[Tuple2[DealType.Value, Option[Int]]],
-      bringIn: Boolean,
-      bigBets: Boolean,
-      betting: Boolean,
-      discarding: Boolean
-    ) {
-
-    def this(street: Street.Value, opts: StreetOptions) = this(street,
-        dealing     = opts.dealing,
-        bringIn     = opts.bringIn,
-        bigBets     = opts.bigBets,
-        betting     = opts.betting,
-        discarding  = opts.discarding
-      )
-      
-    import Stages.process
-    import stage.{Dealing}
-
+  private def buildStages(street: Street.Value) = {
     def build(): StreetStageChain = {
-      val stages = new StreetStageChain(street)
+      import Stages.process
+      import stages.Dealing
 
-      dealing.map { case (dealType, cardsNum) ⇒
-        stages ~> process("dealing") { ctx ⇒
+      val chain = new StreetStageChain(street)
+
+      val options = streetOptions(street)
+      options.dealing.map { case (dealType, cardsNum) ⇒
+        chain ~> process("dealing") { ctx ⇒
           Dealing(ctx, dealType, cardsNum).apply()
         }
       }
 
-      if (bigBets) {
-        stages ~> process("big-bets") { ctx ⇒
+      if (options.bigBets) {
+        chain ~> process("big-bets") { ctx ⇒
           ctx.ref ! Betting.BigBets
         }
       }
 
-      if (betting) {
-        stages ~> process("betting", Stage.Wait) { ctx ⇒
+      if (options.bringIn) {
+        // TODO
+      }
+
+      if (options.betting) {
+        chain ~> process("betting", Stage.Wait) { ctx ⇒
           ctx.ref ! Betting.Start
         }
       }
 
-      if (discarding) {
-        stages ~> process("discarding") { ctx ⇒  }
+      if (options.discarding) {
+        chain ~> process("discarding") { ctx ⇒  }
       }
 
-      stages
+      chain
     }
 
-    override def toString = f"#[Street ${street}]"
+    build()
   }
 
   import Street._

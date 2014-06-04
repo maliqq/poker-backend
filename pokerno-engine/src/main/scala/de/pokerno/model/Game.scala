@@ -189,15 +189,21 @@ object Game {
       b.toString
     }
   }
+  
+  def apply(game: Game.Limited, limit: Game.Limit): Game =
+    new Game(game, Some(limit), None)
+  
+  def apply(game: Game.Limited, limit: Game.Limit, tableSize: Int): Game =
+    new Game(game, Some(limit), Some(tableSize))
 }
 
-case class Game(
-    @JsonProperty game: Game.Limited,
-    @JsonIgnore var Limit: Option[Game.Limit] = None,
-    @JsonIgnore var TableSize: Option[Int] = None
+class Game(
+    @JsonProperty val game: Game.Limited,
+    _limit: Option[Game.Limit] = None,
+    _tableSize: Option[Int] = None
   ) extends Variation {
   @JsonIgnore val options = Games(game)
-  @JsonIgnore val tableSize: Int = TableSize match {
+  @JsonIgnore val tableSize: Int = _tableSize match {
     case None ⇒ options.maxTableSize
     case Some(size) ⇒
       if (size > options.maxTableSize)
@@ -205,7 +211,7 @@ case class Game(
       else
         size
   }
-  @JsonProperty val limit: Game.Limit = Limit match {
+  @JsonProperty val limit: Game.Limit = _limit match {
     case None    ⇒ options.defaultLimit
     case Some(l) ⇒ l
   }

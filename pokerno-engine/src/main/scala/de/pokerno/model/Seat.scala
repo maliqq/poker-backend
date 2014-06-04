@@ -168,7 +168,7 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   private var _player: Option[Player] = None
   @JsonProperty("player") def player = _player
   def player_=(p: Player) {
-    playerCallbacks.before(_player.getOrElse(null), p)
+    playerCallbacks.before(_player.orNull, p)
 
     _state = State.Taken
     _player = Some(p)

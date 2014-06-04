@@ -4,7 +4,7 @@ import de.pokerno.protocol.GameEvent
 
 import de.pokerno.model._
 import de.pokerno.poker.{ Hand, Card, Cards }
-import de.pokerno.protocol.{game_events => message}
+import de.pokerno.protocol.msg
 import math.{BigDecimal => Decimal}
 
 class Events(id: String) {
@@ -23,83 +23,81 @@ class Events(id: String) {
   def publish(evt: GameEvent)(f: RouteBuilder => Route) {
     broker.publish(Notification(evt, from = Route.One(id), to = f(RouteBuilder)))
   }
+
+  def broadcast(evt: GameEvent) {
+    broker.publish(Notification(evt, from = Route.One(id), to = Route.All))
+  }
   
 }
 
 object Events {
   def playerJoin(pos: Int, player: Player, amount: Decimal) =
-    message.PlayerJoin(pos, player, amount)
+    msg.PlayerJoin(pos, player, amount)
 
   def playerLeave(pos: Int, player: Player) =
-    message.PlayerLeave(pos, player)
+    msg.PlayerLeave(pos, player)
   
   def playerOnline(pos: Int, player: Player) =
-    message.PlayerOnline(pos, player)
+    msg.PlayerOnline(pos, player)
   
   def playerOffline(pos: Int, player: Player) =
-    message.PlayerOffline(pos, player)
+    msg.PlayerOffline(pos, player)
     
   def playerSitOut(pos: Int, player: Player) =
-    message.PlayerSitOut(pos, player)  
+    msg.PlayerSitOut(pos, player)  
   
   def playerComeBack(pos: Int, player: Player) =
-    message.PlayerComeBack(pos, player)
+    msg.PlayerComeBack(pos, player)
   
-  def start(table: Table, variation: Variation, stake: Stake) = message.DeclareStart(table, variation, stake)
+  def start(table: Table, variation: Variation, stake: Stake) = msg.DeclareStart(table, variation, stake)
   def start(ctx: Context, player: Option[Player]) = {
-    val msg = message.DeclareStart(ctx.table, ctx.variation, ctx.stake)
+    val start = msg.DeclareStart(ctx.table, ctx.variation, ctx.stake)
     val play = ctx.play.copy()
-    msg.play = Some(message.PlayState(ctx))
-    msg
+    start.play = Some(msg.PlayState(ctx))
+    start
   }
 
   def playStart() =
-    message.DeclarePlayStart()
+    msg.DeclarePlayStart()
 
   def playStop() =
-    message.DeclarePlayStop()
+    msg.DeclarePlayStop()
 
   def streetStart(name: Street.Value) =
-    message.DeclareStreet(name)
+    msg.DeclareStreet(name)
 
-  def dealCardsNum(pos: Int, player: Player, _type: DealType.Value, cards: Cards) = _type match {
-    case DealType.Hole ⇒ message.DealHole(pos, player, Right(cards.size))
-    case _ ⇒ null
+  def dealBoard(cards: Cards) = msg.DealBoard(cards)
+  def dealPocket(pos: Int, player: Player, _type: DealType.Value, cards: Cards) = _type match {
+    case DealType.Hole => msg.DealHole(pos, player, Left(cards))
+    case DealType.Door => msg.DealDoor(pos, player, Left(cards))
+  }
+  def dealPocketNum(pos: Int, player: Player, _type: DealType.Value, n: Int) = _type match {
+    case DealType.Hole => msg.DealHole(pos, player, Right(n))
+    case DealType.Door => msg.DealDoor(pos, player, Right(n))
   }
   
-  def dealCards(_type: DealType.Value, cards: Cards) = _type match {
-    case DealType.Board => message.DealBoard(cards)
-    case _ => null
-  }
-
-  def dealCards(pos: Int, player: Player, _type: DealType.Value, cards: Cards) = _type match {
-    case DealType.Hole ⇒ message.DealHole(pos, player, Left(cards))
-    case DealType.Door ⇒ message.DealDoor(pos, player, Left(cards))
-    case _ ⇒ null
-  }
-
   def buttonChange(pos: Int) =
-    message.ButtonChange(pos)
+    msg.ButtonChange(pos)
 
   def addBet(pos: Int, player: Player, bet: Bet) =
-    message.DeclareBet(pos, player, bet)
+    msg.DeclareBet(pos, player, bet)
 
   def requireBet(pos: Int, player: Player, call: Decimal, raise: MinMax[Decimal]) = 
-    message.AskBet(pos, player, call = call, raise = raise)
+    msg.AskBet(pos, player, call = call, raise = raise)
 
   def declarePot(total: Decimal, side: Seq[Decimal]) =
-    message.DeclarePot(total, side)
+    msg.DeclarePot(total, side)
 
   def declareWinner(pos: Int, player: Player, amount: Decimal) =
-    message.DeclareWinner(pos, player, amount = amount)
+    msg.DeclareWinner(pos, player, amount = amount)
 
   def declareHand(pos: Int, player: Player, cards: Cards, hand: Hand) =
-    message.DeclareHand(pos, player, hand)
+    msg.DeclareHand(pos, player, hand)
 
   def gameChange(game: Game) =
-    message.GameChange(game)
+    msg.GameChange(game)
 
   def showCards(pos: Int, player: Player, cards: Cards, muck: Boolean = false) =
-    message.ShowCards(pos, player, cards = cards, muck = muck)
+    msg.ShowCards(pos, player, cards = cards, muck = muck)
     
 }

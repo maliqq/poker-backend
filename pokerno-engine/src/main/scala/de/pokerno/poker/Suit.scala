@@ -47,5 +47,5 @@ object Suit {
   }
   implicit def intToSuit(i: Int): Value = Suits(i)
 
-  final val Seq = List range (0, 4)
+  final val NumericValues = List range (0, 4)
 }

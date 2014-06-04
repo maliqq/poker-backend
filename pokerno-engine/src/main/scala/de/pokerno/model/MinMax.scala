@@ -1,6 +1,7 @@
 package de.pokerno.model
 
 import beans._
+import com.fasterxml.jackson.annotation.JsonProperty
 import math.{ BigDecimal ⇒ Decimal }
 
 object MinMax {
@@ -15,5 +16,5 @@ object MinMax {
 }
 
 case class MinMax[T](
-    @BeanProperty val min: T,
-    @BeanProperty val max: T)
+    @JsonProperty val min: T,
+    @JsonProperty val max: T)

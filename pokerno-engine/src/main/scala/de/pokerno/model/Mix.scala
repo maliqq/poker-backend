@@ -8,7 +8,7 @@ object Mix {
 }
 
 case class Mix(
-    @BeanProperty game: Game.Mixed,
+    @JsonProperty game: Game.Mixed,
     @JsonIgnore var _tableSize: Int = Mix.MaxTableSize
     ) extends Variation {
   @JsonIgnore val options = Mixes(game)

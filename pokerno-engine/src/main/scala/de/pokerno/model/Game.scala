@@ -3,7 +3,7 @@ package de.pokerno.model
 import de.pokerno.poker.Hand
 import math.{ BigDecimal ⇒ Decimal }
 
-import com.fasterxml.jackson.annotation.{JsonIgnore, JsonValue}
+import com.fasterxml.jackson.annotation.{JsonIgnore, JsonValue, JsonProperty}
 import beans._
 
 trait Variation {
@@ -192,7 +192,7 @@ object Game {
 }
 
 case class Game(
-    @BeanProperty game: Game.Limited,
+    @JsonProperty game: Game.Limited,
     @JsonIgnore var Limit: Option[Game.Limit] = None,
     @JsonIgnore var TableSize: Option[Int] = None
   ) extends Variation {
@@ -205,7 +205,7 @@ case class Game(
       else
         size
   }
-  @BeanProperty val limit: Game.Limit = Limit match {
+  @JsonProperty val limit: Game.Limit = Limit match {
     case None    ⇒ options.defaultLimit
     case Some(l) ⇒ l
   }

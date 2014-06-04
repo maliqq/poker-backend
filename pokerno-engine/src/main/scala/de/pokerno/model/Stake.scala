@@ -2,11 +2,11 @@ package de.pokerno.model
 
 import math.{ BigDecimal ⇒ Decimal }
 import beans._
-import com.fasterxml.jackson.annotation.{JsonIgnore, JsonInclude}
+import com.fasterxml.jackson.annotation.{JsonIgnore, JsonInclude, JsonProperty}
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 case class Stake(
-    @BeanProperty bigBlind: Decimal,
+    @JsonProperty bigBlind: Decimal,
     @JsonIgnore SmallBlind: Option[Decimal] = None,
     @JsonIgnore Ante: Either[Decimal, Boolean] = Right(false),
     @JsonIgnore BringIn: Either[Decimal, Boolean] = Right(false)) {
@@ -19,9 +19,9 @@ case class Stake(
     case _              ⇒ throw new Error("no amount for %s" format t)
   }
 
-  @BeanProperty val smallBlind: Decimal = SmallBlind getOrElse rate(Bet.SmallBlind)
+  @JsonProperty val smallBlind: Decimal = SmallBlind getOrElse rate(Bet.SmallBlind)
 
-  @BeanProperty val ante: Option[Decimal] = Ante match {
+  @JsonProperty val ante: Option[Decimal] = Ante match {
     case Left(amount) ⇒
       if (amount > .0) Some(amount)
       else None
@@ -30,7 +30,7 @@ case class Stake(
       else None
   }
 
-  @BeanProperty val bringIn: Option[Decimal] = BringIn match {
+  @JsonProperty val bringIn: Option[Decimal] = BringIn match {
     case Left(amount) ⇒
       if (amount > .0) Some(amount)
       else None

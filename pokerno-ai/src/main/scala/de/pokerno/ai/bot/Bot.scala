@@ -3,8 +3,8 @@ package de.pokerno.ai.bot
 import de.pokerno.model._
 import de.pokerno.poker._
 import de.pokerno.backend.Gateway
-import de.pokerno.protocol.{game_events => message}
-import de.pokerno.protocol.{commands => cmd}
+import de.pokerno.protocol.{msg => message}
+import de.pokerno.protocol.cmd
 import math.{ BigDecimal ⇒ Decimal }
 import akka.actor.{ Actor, ActorRef }
 import util.Random

@@ -118,7 +118,7 @@ private[gameplay] case class Showdown(ctx: StageContext) extends Stage {
     }
   }
 
-  private def rank(player: Player, ranking: Hand.Ranking): Tuple2[Seq[Card], Hand] = {
+  private def rank(player: Player, ranking: Hand.Ranking): Tuple2[Cards, Hand] = {
     val pocket = dealer pocket player
     val board = dealer.board
 

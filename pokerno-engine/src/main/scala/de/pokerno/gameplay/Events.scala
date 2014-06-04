@@ -3,7 +3,7 @@ package de.pokerno.gameplay
 import de.pokerno.protocol.GameEvent
 
 import de.pokerno.model._
-import de.pokerno.poker.{ Hand, Card }
+import de.pokerno.poker.{ Hand, Card, Cards }
 import de.pokerno.protocol.{game_events => message}
 import math.{BigDecimal => Decimal}
 
@@ -62,17 +62,17 @@ object Events {
   def streetStart(name: Street.Value) =
     message.DeclareStreet(name)
 
-  def dealCardsNum(pos: Int, player: Player, _type: DealType.Value, cards: Seq[Card]) = _type match {
+  def dealCardsNum(pos: Int, player: Player, _type: DealType.Value, cards: Cards) = _type match {
     case DealType.Hole ⇒ message.DealHole(pos, player, Right(cards.size))
     case _ ⇒ null
   }
   
-  def dealCards(_type: DealType.Value, cards: Seq[Card]) = _type match {
+  def dealCards(_type: DealType.Value, cards: Cards) = _type match {
     case DealType.Board => message.DealBoard(cards)
     case _ => null
   }
 
-  def dealCards(pos: Int, player: Player, _type: DealType.Value, cards: Seq[Card]) = _type match {
+  def dealCards(pos: Int, player: Player, _type: DealType.Value, cards: Cards) = _type match {
     case DealType.Hole ⇒ message.DealHole(pos, player, Left(cards))
     case DealType.Door ⇒ message.DealDoor(pos, player, Left(cards))
     case _ ⇒ null
@@ -93,13 +93,13 @@ object Events {
   def declareWinner(pos: Int, player: Player, amount: Decimal) =
     message.DeclareWinner(pos, player, amount = amount)
 
-  def declareHand(pos: Int, player: Player, cards: Seq[Card], hand: Hand) =
+  def declareHand(pos: Int, player: Player, cards: Cards, hand: Hand) =
     message.DeclareHand(pos, player, hand)
 
   def gameChange(game: Game) =
     message.GameChange(game)
 
-  def showCards(pos: Int, player: Player, cards: Seq[Card], muck: Boolean = false) =
+  def showCards(pos: Int, player: Player, cards: Cards, muck: Boolean = false) =
     message.ShowCards(pos, player, cards = cards, muck = muck)
     
 }

@@ -43,7 +43,7 @@ object Room {
 
 sealed trait Data
 case object NoneRunning extends Data
-case class Running(play: gameplay.Play, ref: ActorRef) extends Data
+case class Running(ctx: gameplay.Context, ref: ActorRef) extends Data
 
 class Room(
   val id: String,
@@ -189,7 +189,7 @@ class Room(
       val startMsg: GameEvent = running match {
         case NoneRunning ⇒
           gameplay.Events.start(table, variation, stake) // TODO: empty play
-        case Running(play, ctx) ⇒
+        case Running(ctx, deal) ⇒
           gameplay.Events.start(ctx, conn.player)
       }
     

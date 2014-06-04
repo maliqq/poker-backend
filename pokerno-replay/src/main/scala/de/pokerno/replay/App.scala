@@ -2,9 +2,9 @@ package de.pokerno.replay
 
 import akka.actor.{ Actor, ActorRef, ActorSystem, Props }
 import com.typesafe.config.ConfigFactory
-import de.pokerno.backend.Gateway
-import de.pokerno.protocol.{Codec => codec}
+import de.pokerno.protocol.GameEvent
 import de.pokerno.gameplay.{Notification, Route => route}
+import de.pokerno.backend.Gateway
 import de.pokerno.backend.gateway.{ Http, http }
 
 class App {
@@ -30,7 +30,7 @@ class App {
       case Notification(msg, from, to) =>
         from match {
           case route.One(id) =>
-            val data = codec.Json.encode(msg)
+            val data = GameEvent.encode(msg)
             roomConnections.get(id) map { conns =>
               conns.map { _.send(data) }
             }
@@ -54,8 +54,6 @@ class App {
     server.start
   }
 
-  import de.pokerno.util.ConsoleUtils._
-
   def parse(filename: String) {
     try {
       val src = scala.io.Source.fromFile(filename)
@@ -64,13 +62,13 @@ class App {
 
     } catch {
       case err: java.io.FileNotFoundException ⇒
-        error(err)
+        Console printf("%s\n", err.getMessage())
 
       case err: ReplayError ⇒
-        error(err)
+        Console printf("Replay error: %s\n", err.getMessage())
 
       case err: Throwable ⇒
-        fatal(err)
+        Console printf("Error: %s\n", err.getMessage())
     }
   }
 }

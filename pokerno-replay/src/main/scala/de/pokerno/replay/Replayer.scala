@@ -1,10 +1,8 @@
 package de.pokerno.replay
 
-import de.pokerno.protocol.{ msg, rpc, cmd }
-import de.pokerno.protocol.Conversions._
 import de.pokerno.poker.{ Card, Deck }
-import de.pokerno.gameplay.{ Replay, Street, Streets }
-import de.pokerno.model.{ Dealer, Player, Table, Stake, Variation, Game, Bet, Seat }
+import de.pokerno.model.{ Dealer, Player, Table, Stake, Variation, Game, Bet, Seat, Street }
+import de.pokerno.replay._
 import akka.actor.{ Actor, ActorSystem, ActorLogging, ActorRef, Props, Kill }
 import de.pokerno.format.text
 
@@ -85,7 +83,10 @@ private[replay] class Replayer(node: ActorRef) extends Actor {
     for (streetName ← scenario.streets) {
       val street: Option[Street.Value] = streetName
       if (street.isDefined)
-        replay ! Replay.StreetActions(street.get, scenario.actions.get(streetName).toList, scenario.speed, scenario.paused)
+        replay ! Replay.Street(
+              street.get,
+              scenario.actions(streetName).toSeq,
+              scenario.speed)
     }
     if (scenario.showdown) replay ! Replay.Showdown
     if (!scenario.paused) replay ! Replay.Stop

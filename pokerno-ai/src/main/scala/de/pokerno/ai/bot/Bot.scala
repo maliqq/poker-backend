@@ -3,9 +3,8 @@ package de.pokerno.ai.bot
 import de.pokerno.model._
 import de.pokerno.poker._
 import de.pokerno.backend.Gateway
-import de.pokerno.protocol.{ msg, rpc }
-import de.pokerno.protocol.Conversions._
-import de.pokerno.protocol.wire.Conversions.{ wire2range, wire2dealCards }
+import de.pokerno.protocol.{game_events => message}
+import de.pokerno.protocol.{commands => cmd}
 import math.{ BigDecimal ⇒ Decimal }
 import akka.actor.{ Actor, ActorRef }
 import util.Random
@@ -19,8 +18,8 @@ trait Context {
   var street: String = ""
   var bet: Decimal = .0
   var pot: Decimal = .0
-  var cards: List[Card] = List.empty
-  var board: List[Card] = List.empty
+  var cards: Cards = Cards.empty
+  var board: Cards = Cards.empty
 }
 
 object Action {
@@ -31,21 +30,32 @@ object Action {
   object Raise
 }
 
-class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var stake: Stake)
+class Bot(room: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var stake: Stake)
     extends Actor with Context with Simple {
+  
   val id: String = f"bot-${pos+1}"//java.util.UUID.randomUUID().toString
   val player = new Player(id)
 
   import context._
 
   override def preStart {
-    deal ! Gateway.Message(self, rpc.JoinPlayer(pos = pos, amount = stack, player = player))
+    join()
+  }
+  
+  def join() {
+    room ! cmd.JoinPlayer(pos, player, stack)
+  }
+  
+  def addBet(b: Bet) {
+    Console printf ("%s*** BOT #%d: %s%s\n", Console.CYAN, pos, b, Console.RESET)
+
+    room ! cmd.AddBet(player, b)
   }
 
   def receive = {
-    case msg.PlayStart() ⇒
-      cards = List[Card]()
-      board = List[Card]()
+    case message.DeclarePlayStart() ⇒
+      cards = Cards.empty
+      board = Cards.empty
       pot = .0
       opponentsNum = 6
 
@@ -53,41 +63,41 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
     //  game = _game
     //  stake = _stake
 
-    case msg.DeclareWinner(_pos, winner, amount) if _pos == pos ⇒
+    case message.DeclareWinner(_pos, winner, amount) if _pos == pos ⇒
       stack += amount
 
-    case msg.StreetStart(name) ⇒
+    case message.DeclareStreet(name) ⇒
       street = name.toString()
 
-    case msg.DeclarePot(total, _side, _rake) ⇒
+    case message.DeclarePot(total, _side, _rake) ⇒
       pot = total
       bet = .0
 
-    case msg.DealCards(_type, _cards, _pos, _player, _cardsNum) ⇒ (_type: DealCards.Value) match {
-      case DealCards.Board ⇒
-        board ++= _cards
-      case DealCards.Hole | DealCards.Door if _pos == pos ⇒
-        cards ++= _cards
-        Console printf ("*** BOT #%d: %s\n", pos, Cards(cards).toConsoleString)
-      case _ ⇒
-    }
+    case message.DealBoard(_cards) =>
+      board ++= (_cards: Cards)
+    
+    case message.DealHole(_pos, player, Left(_cards)) if _pos == pos =>
+      cards ++= (_cards: Cards)
+      Console printf ("*** BOT #%d: %s\n", pos, cards)
+    
+    case message.DealDoor(_pos, player, Left(_cards)) if _pos == pos =>
+      cards ++= (_cards: Cards)
+      Console printf ("*** BOT #%d: %s\n", pos, cards)
 
-    case msg.RequireBet(_pos, _, call, raise) if _pos == pos ⇒
+    case message.AskBet(_pos, _, call, raise) if _pos == pos ⇒
       system.scheduler.scheduleOnce(1 second) {
         decide(call, raise)
       }
 
-    case msg.BetAdd(_pos, _player, _bet) if _pos == pos ⇒
-      bet = _bet.amount
+    case message.DeclareBet(_pos, _player, _bet) if _pos == pos ⇒
+      _bet match {
+        case a: Bet.Active =>
+          bet = a.amount
+      }
 
     case _ ⇒
   }
 
-  def addBet(b: Bet) {
-    Console printf ("%s*** BOT #%d: %s%s\n", Console.CYAN, pos, b, Console.RESET)
-
-    deal ! Gateway.Message(self, rpc.AddBet(id, b))
-  }
 
   def doCheck() = addBet(Bet.check)
   def doFold() {
@@ -107,9 +117,9 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
     addBet(Bet call amount)
   }
 
-  def decide(call: Decimal, raise: Range) =
+  def decide(call: Decimal, raise: MinMax[Decimal]) =
     if (cards.size != 2) {
-      Console printf ("*** can't decide with cards=%s\n", Cards(cards).toConsoleString)
+      Console printf ("*** can't decide with cards=%s\n", cards)
       doFold()
     } else {
 
@@ -120,8 +130,9 @@ class Bot(deal: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
       invoke(decision, call, raise)
     }
 
-  def invoke(decision: Decision, call: Decimal, raise: Range) {
-    val (minRaise, maxRaise) = raise.value
+  def invoke(decision: Decision, call: Decimal, raise: MinMax[Decimal]) {
+    val minRaise = raise.min
+    val maxRaise = raise.max
 
     val min = if (call > stack + bet) stack + bet else call
     val max = decision.maxBet

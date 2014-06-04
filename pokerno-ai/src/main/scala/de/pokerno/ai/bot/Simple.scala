@@ -10,7 +10,7 @@ trait Simple {
   def stack: Decimal
   def bet: Decimal
 
-  def decidePreflop(cards: List[Card]): Decision = {
+  def decidePreflop(cards: Cards): Decision = {
     val group = Tables sklanskyMalmuthGroup (cards.head, cards.last)
     val bb = stake.bigBlind
 
@@ -39,7 +39,7 @@ trait Simple {
   }
 
   def opponentsNum: Int
-  def decideBoard(cards: List[Card], board: List[Card]): Decision = {
+  def decideBoard(cards: Cards, board: Cards): Decision = {
     val chances = Against(opponentsNum) withBoard (cards, board)
 
     Console.printf("chances=%s\n", chances)

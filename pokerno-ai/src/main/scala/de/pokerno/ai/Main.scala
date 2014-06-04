@@ -54,7 +54,7 @@ object Main {
       )
       httpServer.start
   
-      room ! Room.Subscribe(gw, "html-event-source")
+      room ! Room.Observe(gw, "html-event-source")
     }
   }
 }

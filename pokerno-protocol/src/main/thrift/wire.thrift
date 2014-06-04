@@ -128,11 +128,6 @@ enum VariationType {
   MIX = 2
 }
 
-struct Box {
-  1: i32 pos,
-  2: Player player
-}
-
 struct MinMax {
   1: double min,
   2: double max

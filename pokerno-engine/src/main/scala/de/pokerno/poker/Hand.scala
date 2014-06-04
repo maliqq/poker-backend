@@ -4,41 +4,41 @@ import beans._
 import com.fasterxml.jackson.annotation.{JsonProperty, JsonInclude, JsonIgnore, JsonPropertyOrder}
 
 object Hand {
-  implicit def cards2CardSet(v: Seq[Card]): CardSet = new CardSet(v)
+  implicit def cards2CardSet(v: Cards): CardSet = new CardSet(v)
 
   case class InvalidCards(str: String) extends Exception(str)
 
   sealed trait Ranking {
-    def apply(cards: Seq[Card]): Option[Hand]
+    def apply(cards: Cards): Option[Hand]
   }
 
   abstract class HighRanking extends Ranking
   case object High extends HighRanking {
-    def apply(cards: Seq[Card]): Option[Hand] = {
+    def apply(cards: Cards): Option[Hand] = {
       (new CardSet(cards, AceHigh) with HighHand) isHigh
     }
   }
 
   abstract class LowRanking extends Ranking
   case object AceFive extends LowRanking {
-    def apply(cards: Seq[Card]) = None
+    def apply(cards: Cards) = None
   }
   case object AceFive8 extends LowRanking {
-    def apply(cards: Seq[Card]) = None
+    def apply(cards: Cards) = None
   }
   case object AceSix extends LowRanking {
-    def apply(cards: Seq[Card]) = None
+    def apply(cards: Cards) = None
   }
   case object DeuceSix extends LowRanking {
-    def apply(cards: Seq[Card]) = None
+    def apply(cards: Cards) = None
   }
   case object DeuceSeven extends LowRanking {
-    def apply(cards: Seq[Card]) = None
+    def apply(cards: Cards) = None
   }
 
   abstract class BadugiRanking extends Ranking
   case object Badugi extends BadugiRanking {
-    def apply(cards: Seq[Card]): Option[Hand] = {
+    def apply(cards: Cards): Option[Hand] = {
       (new CardSet(cards) with BadugiHand).isBadugi
     }
   }
@@ -48,10 +48,10 @@ object Hand {
 @JsonInclude(JsonInclude.Include.NON_NULL)
 class Hand(
     private val _cards: CardSet,
-    private val _value: Seq[Card] = Seq.empty,
+    private val _value: Cards = Seq.empty,
     var rank: Option[Rank.Value] = None,
-    __high: Either[Seq[Card], Boolean] = Right(false),
-    __kicker: Either[Seq[Card], Boolean] = Right(false)) extends Ordered[Hand] {
+    __high: Either[Cards, Boolean] = Right(false),
+    __kicker: Either[Cards, Boolean] = Right(false)) extends Ordered[Hand] {
 
   def cards = _cards
   def value = _value
@@ -61,14 +61,14 @@ class Hand(
   @JsonProperty("high")     def highAsBytes: Array[Byte] = high
   @JsonProperty("kicker")   def kickerAsBytes: Array[Byte] = kicker
   
-  private val _kicker: Seq[Card] = __kicker match {
+  private val _kicker: Cards = __kicker match {
     case Left(_cards) ⇒ _cards
     case Right(true)  ⇒ _cards.value.diff(value).sorted(cards.ordering).reverse.take(5 - value.size)
     case Right(false) ⇒ Seq.empty
   }
   def kicker = _kicker
 
-  private val _high: Seq[Card] = __high match {
+  private val _high: Cards = __high match {
     case Left(_cards) ⇒ _cards
     case Right(true)  ⇒ value.sorted(cards.ordering).reverse.take(1)
     case Right(false) ⇒ Seq.empty
@@ -82,7 +82,7 @@ class Hand(
 
   def compare(other: Hand): Int = Ranking.compare(this, other)
 
-  private def equalKinds(a: Seq[Card], b: Seq[Card]): Boolean = {
+  private def equalKinds(a: Cards, b: Cards): Boolean = {
     if (a.size != b.size) return false
 
     a.zipWithIndex foreach {

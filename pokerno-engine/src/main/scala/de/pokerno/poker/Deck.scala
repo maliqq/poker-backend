@@ -5,19 +5,19 @@ import util.Random
 object Deck {
   final val FullBoardSize = 5
 
-  def shuffle(cards: Seq[Card] = Cards) = Random.shuffle(cards)
+  def shuffle(cards: Cards = All) = Random.shuffle(cards)
   def apply() = shuffle()
 
   case class NoCardsLeft() extends Exception("No cards left in deck")
 }
 
-class Deck(private var _cards: Seq[Card] = Deck.shuffle()) {
-  private var _discarded: Seq[Card] = List.empty
-  private var _dealt: Seq[Card] = List.empty
-  private var _burned: Seq[Card] = List.empty
+class Deck(private var _cards: Cards = Deck.shuffle()) {
+  private var _discarded: Cards = List.empty
+  private var _dealt: Cards = List.empty
+  private var _burned: Cards = List.empty
 
   def cards = _cards
-  def deal(n: Int): Seq[Card] = {
+  def deal(n: Int): Cards = {
     val cards = _cards take n
     _cards = _cards diff cards
     cards
@@ -28,7 +28,7 @@ class Deck(private var _cards: Seq[Card] = Deck.shuffle()) {
     _burned = List.empty
   }
 
-  def share(n: Int): Seq[Card] = {
+  def share(n: Int): Cards = {
     val cards = deal(n)
     _dealt ++= cards
     cards
@@ -38,15 +38,15 @@ class Deck(private var _cards: Seq[Card] = Deck.shuffle()) {
     _burned ++= deal(n)
   }
 
-  def burn(cards: Seq[Card]) {
+  def burn(cards: Cards) {
     _cards = _cards diff cards
     _burned ++= cards
   }
 
-  def without(cards: Seq[Card]) = new Deck(_cards diff cards)
+  def without(cards: Cards) = new Deck(_cards diff cards)
 
   @throws[Deck.NoCardsLeft]
-  def discard(old: Seq[Card]): Seq[Card] = {
+  def discard(old: Cards): Cards = {
     val n = old.size
 
     if (n > _cards.size + _burned.size) throw Deck.NoCardsLeft()

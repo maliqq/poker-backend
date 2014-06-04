@@ -1,14 +1,18 @@
 package de.pokerno.poker
 
-object CardUtils {
-  def parseBinary(b: Array[Byte]): Seq[Card] = Array(b).map(Card(_))
-  def parseSeq(l: Seq[_]): Seq[Card] = l.map(Card(_))
+object Cards {
 
-  def parseString(s: String): Seq[Card] = {
+  def empty: Cards = Seq.empty
+
+  def fromBinary(b: Array[Byte]): Cards = Array(b).map(Card(_))
+  def fromSeq(l: Seq[_]): Cards = l.map(Card(_))
+
+  def fromString(s: String): Cards = {
     val regex = """(?i)([akqjt2-9]{1})([shdc]{1})""".r
     val matching = for {
       regex(kind, suit) ← regex findAllIn s
     } yield Card.wrap(kind(0), suit(0))
     matching.toList
   }
+
 }

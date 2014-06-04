@@ -26,7 +26,7 @@ object Card {
   private var _all: ListBuffer[Card] = new ListBuffer
   private var _masks: ListBuffer[Int] = new ListBuffer
 
-  final val CardsNum = Cards.size
+  final val CardsNum = All.size
   final val Masks: List[Int] = for {
     kind ← Kinds;
     suit ← Suits
@@ -55,7 +55,7 @@ object Card {
     wrap(kind, suit)
   }
 
-  def wrap(i: Byte) = Cards(i - 1)
-  def wrap(i: Int) = Cards(i)
-  def wrap(kind: Kind.Value.Kind, suit: Suit.Value) = Cards((kind.toInt << 2) + suit.toInt)
+  def wrap(i: Byte) = All(i - 1)
+  def wrap(i: Int) = All(i)
+  def wrap(kind: Kind.Value.Kind, suit: Suit.Value) = All((kind.toInt << 2) + suit.toInt)
 }

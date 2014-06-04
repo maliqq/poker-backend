@@ -5,7 +5,7 @@ private[poker] trait Low {
   self: CardSet ⇒
 
   private[poker] def isLow: Option[Hand] = {
-    val uniq: Seq[Card] = groupKind.values.map(_(0)).toList
+    val uniq: Cards = groupKind.values.map(_(0)).toList
     val lowCards = uniq.reverse take 5
     if (lowCards.size == 0)
       return None

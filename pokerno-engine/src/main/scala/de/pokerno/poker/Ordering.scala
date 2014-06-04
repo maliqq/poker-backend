@@ -1,8 +1,8 @@
 package de.pokerno.poker
 
 object CardOrdering {
-  final val ByHead = Ordering.by[Seq[Card], Card](_ head)
-  final val ByMax = Ordering.by[Seq[Card], Card](_ max)
+  final val ByHead = Ordering.by[Cards, Card](_ head)
+  final val ByMax = Ordering.by[Cards, Card](_ max)
 }
 
 private[poker] case object AceHigh extends Ordering[Card] {
@@ -29,7 +29,7 @@ case object Ranking extends Ordering[Hand] {
 
   def compareRanks(rank1: Rank.Value, rank2: Rank.Value): Int = rank1 compare rank2
 
-  def compareCards(a: Seq[Card], b: Seq[Card]): Int = if (a.size == b.size) {
+  def compareCards(a: Cards, b: Cards): Int = if (a.size == b.size) {
     var result = 0
     a.zipWithIndex.takeWhile {
       case (card, i) ⇒

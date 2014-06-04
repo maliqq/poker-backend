@@ -7,8 +7,8 @@ import de.pokerno.backend.Gateway
 import de.pokerno.backend.gateway.http
 
 import de.pokerno.protocol.GameEvent
-import de.pokerno.protocol.{ player_events => message}
-import de.pokerno.protocol.{ commands => cmd }
+import de.pokerno.protocol.{ msg => message}
+import de.pokerno.protocol.cmd
 
 import de.pokerno.protocol.thrift
 import util.{ Success, Failure }

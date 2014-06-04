@@ -4,7 +4,7 @@ import akka.actor.{ Actor, ActorLogging }
 import com.codahale.metrics._
 import java.util.concurrent.TimeUnit
 
-import de.pokerno.protocol.{game_events => message}
+import de.pokerno.protocol.{msg => message}
 import de.pokerno.model.{Bet, Street}
 import de.pokerno.gameplay.Notification
 

@@ -2,14 +2,14 @@ package de.pokerno.backend.server
 
 import de.pokerno.model.{Player, Seat, Table}
 import de.pokerno.gameplay
-import de.pokerno.protocol.{commands => message}
+import de.pokerno.protocol.cmd
 
 trait JoinLeave {
 
   def table: Table
   def events: gameplay.Events
 
-  protected def joinPlayer(join: message.JoinPlayer) {
+  protected def joinPlayer(join: cmd.JoinPlayer) {
     try {
       table.takeSeat(join.pos, join.player, Some(join.amount))
       events.publish(gameplay.Events.playerJoin(join.pos, join.player, join.amount)) { _.all() }

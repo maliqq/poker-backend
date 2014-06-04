@@ -7,10 +7,7 @@ import de.pokerno.model.Seat.{State => SeatState}
 import de.pokerno.backend.{ gateway ⇒ gw }
 import de.pokerno.backend.Gateway
 import de.pokerno.backend.gateway.http
-import de.pokerno.protocol.{player_events => message}
-import de.pokerno.protocol.{commands => cmd}
-import de.pokerno.protocol.PlayerEvent
-import de.pokerno.protocol.thrift
+import de.pokerno.protocol._
 import com.twitter.finagle.thrift.ThriftServerFramedCodec
 import com.twitter.util.Future
 import org.apache.thrift.protocol.TBinaryProtocol
@@ -107,19 +104,19 @@ class Node extends Actor with ActorLogging {
       actorSelection(id).resolveOne(1 second).onComplete {
         case Success(room) ⇒
           room ! (msg match {
-            case join: message.JoinTable ⇒
+            case join: action.JoinTable ⇒
               cmd.JoinPlayer(join.pos, player, join.amount)
 
-            case leave: message.LeaveTable ⇒
+            case leave: action.LeaveTable ⇒
               cmd.KickPlayer(player)
             
-            case sitOut: message.SitOut =>
+            case sitOut: action.SitOut =>
               cmd.ChangePlayerState(player, SeatState.Idle)
             
-            case comeBack: message.ComeBack =>
+            case comeBack: action.ComeBack =>
               cmd.ChangePlayerState(player, SeatState.Ready)
 
-            case add: message.AddBet ⇒
+            case add: action.AddBet ⇒
               cmd.AddBet(player, add.bet)
           })
 

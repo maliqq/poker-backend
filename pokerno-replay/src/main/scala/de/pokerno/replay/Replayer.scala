@@ -79,7 +79,6 @@ private[replay] class Replayer(node: ActorRef) extends Actor {
     //    replay ! JoinPlayer(pos, seat.player.get, Some(seat.stack))
     // }
 
-    Console printf("ACTIONS: %s\n", scenario.actions)
     for (streetName ← scenario.streets) {
       val street: Option[Street.Value] = streetName
       if (street.isDefined)

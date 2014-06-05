@@ -2,27 +2,28 @@ package de.pokerno.gameplay.stg
 
 import de.pokerno.gameplay.Stage
 
-private[gameplay] class Chain {
-  private var _stages = List[Step]()
+private[gameplay] class Chain[T <: Context] {
+  private var _stages = List[Step[T]]()
   def stages = _stages
   def current = _stages.headOption
   
-  def this(step: Step) = {
+  def this(step: Step[T]) = {
     this()
     this ~> step
   }
 
-  def ~>(step: Step): Chain = {
+  def ~>(step: Step[T]): Chain[T] = {
     _stages :+= step
     this
   }
 
-  def apply(ctx: Context) = {
+  def apply(ctx: T) = {
     var result: Stage.Control = Stage.Next
     if (!stages.isEmpty) {
       _stages = _stages.dropWhile { f ⇒
         Console printf ("[stage] start %s\n", f.name)
         result = f(ctx)
+        Console printf ("[stage] result: %s\n", result)
         Console printf ("[stage] stop %s\n", f.name)
         result == Stage.Next
       }

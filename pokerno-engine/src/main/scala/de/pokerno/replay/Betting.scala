@@ -7,20 +7,24 @@ import de.pokerno.model.{Bet, Seat, Player}
 import concurrent.duration.Duration
 
 private[replay] case class Betting(
-    ctx: Context
+    ctx: Context,
+    actions: Seq[cmd.Command]
 ) extends gameplay.Bets with gameplay.betting.NextTurn {
   
   import ctx._
-  
   import ctx.gameplay._
 
-  def betting(betActions: List[cmd.AddBet], speed: Duration) {
+  private val betActions = actions.filter(_.isInstanceOf[cmd.AddBet]).asInstanceOf[List[cmd.AddBet]]
+
+  Console printf("BET ACTIONS: %s\n", betActions)
+
+  def apply() = {
     def active = round.seats.filter(_._1.isActive)
 
     val (forcedBets, activeBets) = betActions.span(_.bet.isForced)
 
     // пассивные ставки игроков - анте
-    if (isFirstStreet && (gameOptions.hasAnte || stake.ante.isDefined)) {
+    if (!bettingStarted && (gameOptions.hasAnte || stake.ante.isDefined)) {
       if (activeBets.isEmpty) {
         forcedBets.filter(_.bet.isInstanceOf[Bet.Ante]).foreach { ante ⇒
           val player: Player = if (ante.player != null)
@@ -43,7 +47,7 @@ private[replay] case class Betting(
     }
 
     // пассивные ставки игроков - блайнды
-    if (isFirstStreet && gameOptions.hasBlinds && active.size >= 2) {
+    if (!bettingStarted && gameOptions.hasBlinds && active.size >= 2) {
       var sb: Option[Int] = None
       var bb: Option[Int] = None
 
@@ -62,7 +66,7 @@ private[replay] case class Betting(
             val found = seat.player.isDefined && bet.player == seat.player.get
 
             if (!found && sb.get != pos) {
-              Console printf("%s: missing big blind", seat)
+              Console printf("%s: missing big blind\n", seat)
               seat.idle() // помечаем все места от SB до BB как неактивные
             }
 
@@ -80,6 +84,8 @@ private[replay] case class Betting(
         bb = Some(_bb._2)
       }
 
+      Console printf("sb: %s bb: %s\n", sb, bb)
+
       sb.map(forceBet(_, Bet.SmallBlind))
       sleep()
 
@@ -95,36 +101,41 @@ private[replay] case class Betting(
       //          if (!postBlinds) {
       //            gameplay.round.reset()
       //          }
-      nextTurn()
+      nextTurn() match { case Left(pos) => requireBet(pos) }
 
       //debug("activeBets=%s", activeBets)
 
       activeBets.dropWhile { case cmd.AddBet(player, bet) ⇒
         val pos = round.current
         val seat = table.seats(pos)
-        Console printf(" | acting %s", seat)
+
+        Console printf(" | acting #%s %s\n", pos, seat)
 
         def isOurTurn = seat.player.isDefined && seat.player.get == player
 
         if (isOurTurn) {
-          Console printf(" |-- player %s bet %s", seat.player.get, bet)
+          Console printf(" |-- player %s bet %s\n", seat.player.get, bet)
 
           addBet(bet)
 
           sleep()
 
           nextTurn() match {
-            case Left(_) ⇒ true // continue if we have someone to act
+            case Left(pos) ⇒
+              requireBet(pos)
+              true // continue if we have someone to act
             case _       ⇒ false
           }
         } else {
-          Console printf("not our turn, dropping: %s %s", bet, seat)
+          Console printf(" |-- not our turn, dropping: %s %s\n", player, bet)
           true
         }
       }
 
       doneBets()
     }
+
+    bettingStarted = true
   }
   
   private def forceAntes(): Unit = round.seats.filter(_._1.isActive).foreach {

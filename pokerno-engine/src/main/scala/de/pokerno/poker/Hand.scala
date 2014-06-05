@@ -59,7 +59,7 @@ class Hand(
   def cards = _cards
   
   @JsonSerialize(converter=classOf[Cards2Binary])
-  @JsonProperty("cards")    def cardsValue: Array[Byte] = cards.value
+  @JsonProperty("cards")    def cardsValue = cards.value
   
   @JsonSerialize(converter=classOf[Cards2Binary]) val kicker: Cards = _kicker match {
     case Left(_cards) ⇒ _cards

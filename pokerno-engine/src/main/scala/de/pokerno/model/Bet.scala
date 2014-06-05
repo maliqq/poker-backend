@@ -17,13 +17,16 @@ trait Bet {
   }
   
   override def equals(_other: Any): Boolean = {
-    this match {
-      case active: Bet.Active ⇒
-        _other match {
-          case other: Bet.Active =>
-            return super.equals(other) && active.amount == other.amount
+    
+    if (isInstanceOf[Bet.Active]) {
+      val active = asInstanceOf[Bet.Active]
+      _other match {
+        case other: Bet.Active =>
+          return super.equals(other) && active.amount == other.amount
+        case _ =>
       }
     }
+
     super.equals(_other)
   }
   

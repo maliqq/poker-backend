@@ -9,7 +9,7 @@ class OrderingSpec extends FunSpec with ClassicMatchers {
     it("ace high") {
       val ace: Card = Card(51)
       val deuce: Card = Card(0)
-      val cards: List[Card] = List(deuce, Card(2), Card(3), ace)
+      val cards: Cards = List(deuce, Card(2), Card(3), ace)
       cards.max(AceHigh) should equal(ace)
       cards.min(AceHigh) should equal(deuce)
     }
@@ -18,7 +18,7 @@ class OrderingSpec extends FunSpec with ClassicMatchers {
       val ace: Card = Card(51)
       val deuce: Card = Card(0)
       val king: Card = Card(11)
-      val cards: List[Card] = List(deuce, Card(2), king, ace)
+      val cards: Cards = List(deuce, Card(2), king, ace)
       cards.max(AceLow) should equal(king)
       cards.min(AceLow) should equal(ace)
     }

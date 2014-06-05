@@ -193,6 +193,9 @@ object Game {
   def apply(game: Game.Limited, limit: Game.Limit): Game =
     new Game(game, Some(limit), None)
   
+  def apply(game: Game.Limited, tableSize: Int) =
+    new Game(game, None, Some(tableSize))
+  
   def apply(game: Game.Limited, limit: Game.Limit, tableSize: Int): Game =
     new Game(game, Some(limit), Some(tableSize))
 }

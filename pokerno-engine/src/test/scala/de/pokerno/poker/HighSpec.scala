@@ -7,7 +7,7 @@ import org.scalatest.matchers.ShouldMatchers._
 class HighSpec extends FunSpec with ClassicMatchers {
   describe("High") {
 
-    def rainbow(kinds: List[Kind.Value.Kind]): List[Card] = {
+    def rainbow(kinds: List[Kind.Value.Kind]): Cards = {
       var cycle = Suits.iterator
       def nextSuit = if (cycle.hasNext) cycle.next else {
         cycle = Suits.iterator
@@ -16,7 +16,7 @@ class HighSpec extends FunSpec with ClassicMatchers {
 
       for {
         kind ← kinds
-      } yield (Card.wrap(kind, nextSuit))
+      } yield (Card(kind, nextSuit))
     }
 
     it("high card") {
@@ -98,14 +98,14 @@ class HighSpec extends FunSpec with ClassicMatchers {
     }
 
     it("straight") {
-      val deck: List[Card] = (
+      val deck: Cards = (
           for { kind ← Kinds }
-          yield Card.wrap(kind, Suit.Spade)
+          yield Card(kind, Suit.Spade)
         ).toList
         
       (1 to 6) foreach {
         case i ⇒
-          val cards: List[Card] = deck.slice(i, i + 7).zipWithIndex map {
+          val cards: Cards = deck.slice(i, i + 7).zipWithIndex map {
             case (card, i) ⇒
               if (i < 3) new Card(card.kind, Suit.Heart)
               else card
@@ -137,7 +137,7 @@ class HighSpec extends FunSpec with ClassicMatchers {
 
     it("flush") {
       for (suit ← Suits) {
-        val deck: List[Card] = (for { kind ← Kinds } yield Card.wrap(kind, suit)).toList
+        val deck: Cards = (for { kind ← Kinds } yield Card(kind, suit)).toList
         (0 to 6) foreach {
           case i ⇒
             val cards = deck.slice(i, i + 7)
@@ -153,9 +153,9 @@ class HighSpec extends FunSpec with ClassicMatchers {
 
     it("full house") {
       for (kind ← Kinds) {
-        val set: List[Card] = Suits.take(3).map(Card.wrap(kind, _))
+        val set: Cards = Suits.take(3).map(Card(kind, _))
         val minor: Kind.Value.Kind = (Kinds.toSet - kind).head
-        val pair: List[Card] = List(Card.wrap(minor, Suit.Diamond), Card.wrap(minor, Suit.Club))
+        val pair: Cards = List(Card(minor, Suit.Diamond), Card(minor, Suit.Club))
         val value = set ++ pair
         val hand: Option[Hand] = Hand.High(value)
         assert(hand.isDefined)
@@ -170,9 +170,9 @@ class HighSpec extends FunSpec with ClassicMatchers {
 
     it("four kind") {
       for (kind ← Kinds) {
-        val quad: List[Card] = for { suit ← Suits }
-                               yield Card.wrap(kind, suit)
-        val other3 = (Kinds.toSet - kind).take(3).map(Card.wrap(_, Suit.Spade))
+        val quad: Cards = for { suit ← Suits }
+                               yield Card(kind, suit)
+        val other3 = (Kinds.toSet - kind).take(3).map(Card(_, Suit.Spade))
         val value = quad ++ other3
         val hand: Option[Hand] = Hand.High(value)
         assert(hand.isDefined)
@@ -188,9 +188,9 @@ class HighSpec extends FunSpec with ClassicMatchers {
 
     it("straight flush") {
       for (suit ← Suits) {
-        val deck: List[Card] = (
+        val deck: Cards = (
             for { kind ← Kinds }
-            yield Card.wrap(kind, suit)
+            yield Card(kind, suit)
           ).toList
           
         (1 to 6) foreach {

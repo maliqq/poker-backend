@@ -21,7 +21,7 @@ private[replay] class Context(
   private val _streets = Street.byGameGroup(gameOptions.group)
   
   var speed: Duration = null
-  def isFirstStreet: Boolean = streets.head == _streets.head 
+  var bettingStarted: Boolean = false
   
   var streets = _streets
 }

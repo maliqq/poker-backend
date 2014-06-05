@@ -27,7 +27,12 @@ case class Betting(ctx: stg.Context, betting: ActorRef) extends Bets with NextTu
       addBet(bet)
       // next turn
       val turn = nextTurn() match {
-          case Left(pos) =>         Betting.Require(pos)
+          case Left(pos) =>
+            
+            requireBet(pos)
+            
+            Betting.StartTimer(30 seconds)
+
           case Right(None) =>       Betting.Stop
           case Right(Some(true)) => Betting.Showdown
           case _ =>                 Betting.Done

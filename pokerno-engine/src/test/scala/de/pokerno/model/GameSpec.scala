@@ -21,7 +21,7 @@ class GameSpec extends FunSpec with ClassicMatchers {
           gameWithDefaults.limit should equal(options.defaultLimit)
           gameWithDefaults.tableSize should equal(options.maxTableSize)
 
-          val gameWithExceededTableSize = new Game(limited, TableSize = Some(options.maxTableSize + 1))
+          val gameWithExceededTableSize = Game(limited, tableSize = options.maxTableSize + 1)
           gameWithExceededTableSize.tableSize should equal(options.maxTableSize)
       }
     }

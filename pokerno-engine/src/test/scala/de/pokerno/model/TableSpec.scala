@@ -12,6 +12,11 @@ class TableSpec extends FunSpec with ClassicMatchers {
       table.button.current should equal(0)
     }
 
+    it("toString") {
+      val table = new Table(6)
+      table.toString() should equal("")
+    }
+
     it("add player") {
       val table = new Table(6)
       val player = new Player("1")

@@ -12,6 +12,8 @@ class Round(
   ) {
   
   private var _acting = new Ring(table.seats)
+  _acting.current = table.button.current
+
   def acting = _acting
   def current = _acting.current
   
@@ -30,13 +32,15 @@ class Round(
   def call = _call
   
   // current raise range
-  private var _raise: Option[MinMax[Decimal]] = None
+  private final val noRaise = MinMax[Decimal](.0, .0)
+
+  private var _raise: MinMax[Decimal] = noRaise
   def raise = _raise
   
   def clear() {
     raiseCount = 0
     _call = .0
-    _raise = None
+    _raise = noRaise
     _acting.current = table.button
     // FIXME
     //pot.complete()
@@ -62,6 +66,7 @@ class Round(
     val bet = betType match {
       case Bet.Ante =>        Bet.ante(amt)
       case Bet.SmallBlind =>  Bet.sb(amt)
+      case Bet.BigBlind =>    Bet.bb(amt)
       case Bet.BringIn =>     Bet.bringIn(amt)
       case Bet.Straddle =>    Bet.straddle(amt)
       case Bet.GuestBlind =>  Bet.gb(amt)
@@ -80,10 +85,10 @@ class Round(
     val total = seat.total
 
     if (total <= _call || raiseCount >= MaxRaiseCount)
-      _raise = None
+      _raise = noRaise
     else {
       val (min, max) = limit raise (total, blind + _call, pot.total)
-      _raise = Some(MinMax(List(total, min) min, List(total, max) min))
+      _raise = MinMax(List(total, min) min, List(total, max) min)
     }
     
     seat
@@ -93,18 +98,18 @@ class Round(
     val seat = table.seats(current)
     val player = seat.player.get
 
-    val _posting = _bet match {
+    var _posting = _bet match {
       case Bet.AllIn =>
         Bet.raise(seat.total)
-      case Bet.Call(amt) if amt == 0 =>
-        Bet.Call(List(_call, seat.total).min - seat.put.get)
+      case Bet.Call(amt) if amt == null || amt == 0 =>
+        Bet.Call(List(_call, seat.total).min - seat.putAmount)
       case _ =>
         _bet
     }
     
-    if (!seat.canBet(_posting, stake, _call, _raise.get)) {
-      Console printf("bet %s is not valid; call=%.2f raise=%s %s", _posting, _call, _raise, seat)
-      Bet.fold
+    if (!seat.canBet(_posting, stake, _call, _raise)) {
+      Console printf("bet %s is not valid; call=%.2f raise=%s %s\n", _posting, _call, _raise, seat)
+      _posting = Bet.fold
     }
 
     val diff = seat postBet _posting
@@ -113,8 +118,8 @@ class Round(
       if (_posting.isRaise)
         raiseCount += 1
 
-      if (!_posting.isCall && seat.put.get > _call)
-        _call = seat.put.get
+      if (!_posting.isCall && seat.putAmount > _call)
+        _call = seat.putAmount
 
       pot add (player, diff, seat.isAllIn)
     }

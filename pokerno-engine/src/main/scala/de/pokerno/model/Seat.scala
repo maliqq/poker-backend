@@ -194,7 +194,7 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   def putAmount: Decimal = _put.getOrElse(.0)
 
   // total stack
-  def total = _stack.get + _put.get
+  def total = stackAmount + putAmount
   def totalAmount = total
 
   def net(amt: Decimal)(f: ⇒ State.Value) {
@@ -202,7 +202,7 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
     // TODO: check < 0
     _stack = Some(amt + stackAmount)
     // FIXME
-    _state = if (_stack.get == 0) State.AllIn else f
+    _state = if (stackAmount == 0) State.AllIn else f
   }
 
   private val stackCallbacks = new Callbacks[Decimal]()
@@ -313,9 +313,9 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
 
   private def _canCall(amt: Decimal, toCall: Decimal): Boolean = {
     // call all-in
-    (amt + _put.get < toCall && amt == _stack.get ||
+    amt + stackAmount < toCall && amt == stackAmount ||
       // call exact amount
-      amt + _put.get == toCall && amt <= _stack.get)
+      amt + putAmount == toCall && amt <= stackAmount
   }
 
   def call(amt: Decimal): Decimal = {
@@ -331,7 +331,7 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   }
 
   private def _didCall(amt: Decimal): Boolean = {
-    amt <= _put.get
+    amt <= putAmount
   }
 
   // BET
@@ -347,10 +347,10 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
       case Bet.Check ⇒
         canCheck(_call)
   
-      case Bet.Call(amt) if isActive ⇒
+      case Bet.Call(amt) if amt != null && amt > 0 && isActive ⇒
         canCall(amt, _call)
   
-      case Bet.Raise(amt) if isActive ⇒
+      case Bet.Raise(amt) if amt != null && amt > 0 && isActive ⇒
         canRaise(amt, _raise)
   
       case f: Bet.Forced ⇒
@@ -418,7 +418,7 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
 
   override def toString =
     if (_player.isDefined)
-      "%s - %s (%.2f - %.2f)".format(_player get, _state, _stack, _put)
+      "%s - %s (%.2f - %.2f)".format(_player get, _state, stackAmount, putAmount)
     else "(empty)"
 
 }

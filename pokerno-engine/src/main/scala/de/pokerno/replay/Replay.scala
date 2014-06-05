@@ -24,9 +24,8 @@ object Replay {
 class Replay(
     id: String,
     table: Table, variation: Variation, stake: Stake,
-    deck: Option[Cards]
-  )   extends Actor
-      with ActorLogging {
+    deck: Option[Cards])
+  extends Actor with ActorLogging {
 
   val dealer: Dealer = deck.map { cards =>
       new Dealer(new Deck(cards)) 
@@ -42,8 +41,8 @@ class Replay(
   import de.pokerno.gameplay.stages.{PrepareSeats, BringIn, Showdown}
 
   override def preStart {
-    log.info("starting replay with gameplay %s", gameplay)
-    //e.playStart()
+    log.info("starting replay {}", id)
+    ctx broadcast Events.playStart()
     //gameplay.rotateGame(stageContext)
   }
 
@@ -52,15 +51,11 @@ class Replay(
       events.broker.subscribe(out, "replay-out")
       events.broadcast(Events.start(table, variation, stake))
 
-    case join @ cmd.JoinPlayer(pos, player, amount) ⇒
-      log.debug("got: {}", join)
+    // case join @ cmd.JoinPlayer(pos, player, amount) ⇒
+    //   table.takeSeat(pos, player, Some(amount))
+    //   ctx broadcast Events.playerJoin(pos, player, amount)
   
-      table.takeSeat(pos, player, Some(amount))
-      Events.playerJoin(pos, player, amount)
-  
-    case s @ cmd.ShowCards(cards, player, muck) ⇒
-  
-      log.debug("got: %s", s)
+    case show @ cmd.ShowCards(cards, player, muck) ⇒
       table.playerPos(player) map { pos =>
         events.broadcast(Events.showCards(pos, player, cards, muck))
       }
@@ -72,14 +67,17 @@ class Replay(
 
     case a @ Replay.Street(street, actions, _speed) ⇒
 
+      log.debug("actions: {}", actions)
+
       speed = (_speed seconds)
-      if (isFirstStreet) {
+      if (!bettingStarted) {
         PrepareSeats(ctx)()
       }
 
       if (streets.head == street) {
         // нужный стрит
         streets = streets.drop(1)
+        log.info("[street] {}", street)
         events.broadcast(Events.streetStart(street))
 
         Streets.buildStages(street, actions)(ctx)
@@ -98,5 +96,6 @@ class Replay(
   }
 
   override def postStop {
+    log.info("replay {} stopped", id)
   }
 }

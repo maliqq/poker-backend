@@ -38,7 +38,7 @@ class Deal(val gameplay: Context) extends Actor
     with ActorLogging
     with betting.Handler
     with NextTurn
-    with Streets.Default {
+    with Stages.Default {
   
   import context._
   

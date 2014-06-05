@@ -3,29 +3,22 @@ package de.pokerno.replay
 import de.pokerno.model.{Street, DealType}
 import de.pokerno.protocol.cmd
 import de.pokerno.gameplay
-import de.pokerno.gameplay.StreetStageChain
+import de.pokerno.gameplay.stg
+import de.pokerno.gameplay.StreetStages
 import de.pokerno.gameplay.Streets.streetOptions
 
 private[replay] object Streets {
 
+  import gameplay.stages.BringIn
+
   def buildStages(street: Street.Value, actions: Seq[de.pokerno.protocol.Command]) = {
     def build() = {
-      import gameplay.Stages.{process, stage}
-      import gameplay.stages.BringIn
-
-      val stages = new StreetStageChain(street)
+      val builder = new stg.Builder[Context]()
       
       val options = streetOptions(street)
       options.dealing.map { case (dealType, cardsNum) ⇒
-        val dealActions = actions.filter { action ⇒
-          action match {
-            case a: cmd.DealCards ⇒   a._type == dealType
-            case _ ⇒                  false
-          }
-        }.asInstanceOf[List[cmd.DealCards]]
-
-        stages ~> process("dealing") { ctx =>
-          //Dealing(ctx, dealActions, dealType, cardsNum)()
+        builder.process("dealing") { ctx =>
+          Dealing(ctx, dealType, cardsNum, actions)()
         }
       }
 
@@ -34,14 +27,12 @@ private[replay] object Streets {
       }
 
       if (options.betting) {
-        val betActions = actions.filter(_.isInstanceOf[cmd.AddBet]).asInstanceOf[List[cmd.AddBet]]
-
-        stages ~> process("betting") { ctx =>
-          //Betting(ctx, betActions)()
+        builder.process("betting") { ctx =>
+          Betting(ctx, actions)()
         }
       }
 
-      stages
+      new StreetStages[Context](street, builder.build())
     }
 
     build()

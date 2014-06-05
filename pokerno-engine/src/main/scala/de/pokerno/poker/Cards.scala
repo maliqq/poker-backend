@@ -3,7 +3,7 @@ package de.pokerno.poker
 object Cards {
 
   def empty: Cards = Seq.empty
-
+  
   def fromBinary(b: Array[Byte]): Cards = Array(b).map(Card(_))
   def fromSeq(l: Seq[_]): Cards = l.map(Card(_))
 
@@ -11,7 +11,7 @@ object Cards {
     val regex = """(?i)([akqjt2-9]{1})([shdc]{1})""".r
     val matching = for {
       regex(kind, suit) ← regex findAllIn s
-    } yield Card.wrap(kind(0), suit(0))
+    } yield Card(kind.charAt(0), suit.charAt(0))
     matching.toSeq
   }
 

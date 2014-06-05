@@ -3,11 +3,12 @@ package de.pokerno.gameplay
 import de.pokerno.model._
 import akka.actor.{ Actor, Props, ActorLogging, ActorRef }
 
-class StreetStageChain(val street: Street.Value) extends stg.Chain {
+class StreetStages[T <: stg.Context](val street: Street.Value, val stages: stg.Chain[T]) {
+  def apply(ctx: T) = stages(ctx)
   override def toString = f"street:${street}"
 }
 
-case class Streets(ctx: stg.Context, stages: Seq[StreetStageChain]) extends Stage {
+case class Streets(ctx: stg.Context, stages: Seq[StreetStages[stg.Context]]) extends Stage {
   
   import ctx.gameplay._
   
@@ -37,22 +38,6 @@ object Streets {
   case object Next
   case object Done
   
-  trait Default {
-    import Stages._
-    import de.pokerno.gameplay.stages.{ PostBlinds,  RotateGame, PostAntes, PrepareSeats, Showdown, PlayStart, PlayStop }
-    
-    lazy val beforeStreets =
-      stage[PlayStart]    ("play-start") ~>
-      stage[PrepareSeats] ("prepare-seats") ~>
-      stage[RotateGame]   ("rotate-game") ~>
-      stage[PostAntes]    ("post-antes") ~>
-      stage[PostBlinds]   ("post-blinds")
-
-    lazy val afterStreets =
-      stage[Showdown]     ("showdown") ~>
-      stage[PlayStop]     ("play-stop")
-  }
-
   def apply(ctx: stg.Context): Streets = {
     import ctx.gameplay.gameOptions
 
@@ -70,21 +55,20 @@ object Streets {
   )
 
   private def buildStages(street: Street.Value) = {
-    def build(): StreetStageChain = {
-      import Stages.process
+    def build(): StreetStages[stg.Context] = {
       import stages.Dealing
 
-      val chain = new StreetStageChain(street)
+      val builder = new stg.Builder[stg.Context]()
 
       val options = streetOptions(street)
       options.dealing.map { case (dealType, cardsNum) ⇒
-        chain ~> process("dealing") { ctx ⇒
+        builder.process("dealing") { ctx ⇒
           Dealing(ctx, dealType, cardsNum).apply()
         }
       }
 
       if (options.bigBets) {
-        chain ~> process("big-bets") { ctx ⇒
+        builder.process("big-bets") { ctx ⇒
           ctx.ref ! Betting.BigBets
         }
       }
@@ -94,16 +78,16 @@ object Streets {
       }
 
       if (options.betting) {
-        chain ~> process("betting", Stage.Wait) { ctx ⇒
+        builder.process("betting", Stage.Wait) { ctx ⇒
           ctx.ref ! Betting.Start
         }
       }
 
       if (options.discarding) {
-        chain ~> process("discarding") { ctx ⇒  }
+        builder.process("discarding") { ctx ⇒  }
       }
 
-      chain
+      new StreetStages(street, builder.build())
     }
 
     build()

@@ -35,9 +35,8 @@ class Table(@JsonIgnore val size: Int) {
     b.append("size=%d\n" format size)
     b.append("button=%d\n" format (button: Int))
     
-    b.append(seats.zipWithIndex map {
-      case (seat, index) ⇒
-        "Seat %d: %s" format (index, seat.toString())
+    b.append(seats.zipWithIndex map { case (seat, index) ⇒
+      "Seat %d: %s" format (index, seat.toString())
     } mkString "\n")
     
     b.toString()

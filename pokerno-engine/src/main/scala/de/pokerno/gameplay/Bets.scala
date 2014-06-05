@@ -11,7 +11,7 @@ trait Bets {
   def requireBet(pos: Int) {
     val seat = round requireBet pos
     val player = seat.player.get
-    ctx broadcast Events.requireBet(pos, player, round.call, round.raise.get)
+    ctx broadcast Events.requireBet(pos, player, round.call, round.raise)
   }
 
   // add bet

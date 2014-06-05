@@ -7,6 +7,11 @@ import org.scalatest.matchers.ShouldMatchers._
 class SeatSpec extends FunSpec with ClassicMatchers {
 
   describe("Seat") {
+    it("toString") {
+      val seat = new Seat
+      seat.toString() should equal("")
+    }
+    
     it("put") {
       val seat = new Seat
 

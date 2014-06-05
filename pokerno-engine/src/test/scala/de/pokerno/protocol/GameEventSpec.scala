@@ -121,7 +121,7 @@ class GameEventSpec extends FunSpec with ClassicMatchers {
     }
     
     it("GameChange") {
-      val game = Game(Game.Texas, Some(Game.NoLimit), Some(9))
+      val game = Game(Game.Texas, Game.NoLimit, 9)
       val e = GameChange(game)
       val d = GameEvent.encodeAsString(e)
       d should equal("""{"$type":"game:","game":"texas","limit":"no-limit"}""")

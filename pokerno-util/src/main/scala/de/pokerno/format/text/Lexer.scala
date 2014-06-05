@@ -172,7 +172,7 @@ object Lexer {
     }
 
     object Deal {
-      private[text] def fromParams(params: Array[String]): Tuple3[QuotedString, Array[Byte], Integer] = {
+      private[text] def fromParams(params: Array[String]): Tuple3[QuotedString, String, Integer] = {
         if (params.length == 1) // board
           return (null, params(0), null)
         if (params.length == 2 && params(1).matches("^\\d+$"))
@@ -182,8 +182,8 @@ object Lexer {
     }
 
     @Tag(name = "DEAL")
-    case class Deal(player: QuotedString, cards: Array[Byte], cardsNum: Integer) extends Token {
-      def this(args: Tuple3[QuotedString, Array[Byte], Integer]) = this(args._1, args._2, args._3)
+    case class Deal(player: QuotedString, cards: String, cardsNum: Integer) extends Token {
+      def this(args: Tuple3[QuotedString, String, Integer]) = this(args._1, args._2, args._3)
       def this(params: Array[String]) = this(Deal.fromParams(params))
     }
 

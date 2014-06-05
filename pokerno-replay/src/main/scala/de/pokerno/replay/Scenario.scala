@@ -2,7 +2,7 @@ package de.pokerno.replay
 
 import de.pokerno.format.text.Lexer.{ Token, BettingSemantic, Tags ⇒ tags }
 import de.pokerno.model._
-import de.pokerno.poker.Card
+import de.pokerno.poker.{ Card, Cards}
 import de.pokerno.protocol.cmd
 
 import de.pokerno.format.text
@@ -35,7 +35,7 @@ private[replay] class Scenario(val name: String) {
     streets(streets.size - 1)
   }
 
-  val actions = collection.mutable.Map[String, Seq[de.pokerno.protocol.Command]]()
+  val actions = collection.mutable.Map[String, collection.mutable.ListBuffer[de.pokerno.protocol.Command]]()
 
   var showdown: Boolean = false
 
@@ -59,8 +59,8 @@ private[replay] class Scenario(val name: String) {
           speed = duration
 
       case tags.Street(name) ⇒
-        streets +: name
-        actions(name) = Seq[de.pokerno.protocol.Command]()
+        streets += name
+        actions(name) = collection.mutable.ListBuffer[de.pokerno.protocol.Command]()
         processor = processStreet
 
       case tags.Showdown() ⇒
@@ -76,19 +76,19 @@ private[replay] class Scenario(val name: String) {
         Console printf ("UNHANDLED: %s\n", x)
     }
 
-  def bet(player: String, bet: Bet): Unit = {
+  def bet(player: Player, bet: Bet): Unit = {
     val t = table.getOrElse(throw ReplayError("betting before TABLE"))
 
     for (seat ← t.seats) {
-      if (seat != null && seat.player == player) {
-        actions(currentStreet) :+ cmd.AddBet(seat.player.get, bet)
+      if (seat.player.orNull == player) {
+        actions(currentStreet) += cmd.AddBet(seat.player.get, bet)
       }
     }
 
   }
   
   def action(a: de.pokerno.protocol.Command) = {
-    actions(currentStreet) :+ a
+    actions(currentStreet) += a
   }
 
   def processStreet(tok: Token) = tok match {
@@ -130,7 +130,8 @@ private[replay] class Scenario(val name: String) {
           bet(player.unquote, Bet.fold)
       }
 
-    case tags.Deal(player, cards, cardsNum) ⇒
+    case tags.Deal(player, _cards, cardsNum) ⇒
+      val cards = Cards.fromString(_cards)
       
       this action (if (player != null)
         cmd.DealCards(DealType.Hole, if (cards != null) Left(cards) else Right(Some(cardsNum)), Some(player.unquote))
@@ -151,8 +152,7 @@ private[replay] class Scenario(val name: String) {
     case tags.Seat(pos, name, stack) ⇒
       val t = table.getOrElse(throw ReplayError("SEAT is declared before TABLE"))
       val player = name.unquote
-      t.seats(pos).player = player
-      t.seats(pos).buyIn(stack)
+      t.takeSeat(pos, player, Some(stack))
 
     case tags.Stake(sb, bb, ante) ⇒
       stake = Some(

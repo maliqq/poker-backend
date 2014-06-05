@@ -52,14 +52,14 @@ object PokernoBuild extends Build {
   val finagleVersion  = "6.16.0"
 
   override lazy val settings = super.settings ++ Seq(
-    organization := "de.pokerno"
-    ,scalaVersion := "2.10.3"
-    //,exportJars := true,
+    organization := "de.pokerno",
+    scalaVersion := "2.10.3",
+    //exportJars := true,
     //testOptions in Test += Tests.Argument("-oF"),
-    ,javacOptions ++= Seq("-source", "1.7", "-target", "1.7")
-    //,scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-language:implicitConversions", "-language:postfixOps")
-    //,resolvers += "spray repo" at "http://repo.spray.io"
-    //,resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
+    javacOptions ++= Seq("-source", "1.7", "-target", "1.7")
+    //scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-language:implicitConversions", "-language:postfixOps"),
+    //resolvers += "spray repo" at "http://repo.spray.io",
+    //resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
   )
   
   lazy val deps = Seq(
@@ -67,6 +67,7 @@ object PokernoBuild extends Build {
     "org.slf4j" % "slf4j-simple" % "1.7.5",
     "com.typesafe.akka" %% "akka-actor" % akkaVersion,
     //"com.twitter" % "ostrich" % "2.3.0"
+    "org.scala-lang" % "scala-reflect" % "2.10.3",
     "com.twitter" %% "util-core" % "6.10.0",
     "commons-codec" % "commons-codec" % "1.9"
   )
@@ -92,7 +93,7 @@ object PokernoBuild extends Build {
       )
     ) ++ assemblySettings 
   ).settings(
-    //ScroogeSBT.scroogeBuildOptions in Compile := Seq(),
+    ScroogeSBT.scroogeBuildOptions in Compile := Seq("--finagle"),
     ScroogeSBT.scroogeThriftOutputFolder in Compile <<= (sourceDirectory) { _ / "main/scala" }
   )
   

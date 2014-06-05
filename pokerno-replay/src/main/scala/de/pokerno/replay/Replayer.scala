@@ -60,7 +60,6 @@ private[replay] class Replayer(node: ActorRef) extends Actor {
   }
 
   import context._
-  import collection.JavaConversions._
 
   private def replay(scenario: Scenario) {
     val table = scenario.table.getOrElse(
@@ -75,11 +74,12 @@ private[replay] class Replayer(node: ActorRef) extends Actor {
     val replay = system.actorOf(Props(classOf[Replay], scenario.name, table, variation, stake, deck))
     replay ! Replay.Observe(node)
 
-    //    table.seatsAsList.zipWithIndex foreach { case (seat, pos) =>
-    //      if (!seat.isEmpty)
-    //        replay ! rpc.JoinPlayer(pos, seat.player.get, seat.stack)
-    //    }
+    // table.seats.zipWithIndex foreach { case (seat, pos) =>
+    //  if (!seat.isEmpty)
+    //    replay ! JoinPlayer(pos, seat.player.get, Some(seat.stack))
+    // }
 
+    Console printf("ACTIONS: %s\n", scenario.actions)
     for (streetName ← scenario.streets) {
       val street: Option[Street.Value] = streetName
       if (street.isDefined)

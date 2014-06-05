@@ -23,8 +23,7 @@ private[gameplay] class Chain[T <: Context] {
       _stages = _stages.dropWhile { f ⇒
         Console printf ("[stage] start %s\n", f.name)
         result = f(ctx)
-        Console printf ("[stage] result: %s\n", result)
-        Console printf ("[stage] stop %s\n", f.name)
+        Console printf ("[stage] stop %s -> %s\n", f.name, result)
         result == Stage.Next
       }
     }

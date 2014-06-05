@@ -16,8 +16,6 @@ private[replay] case class Betting(
 
   private val betActions = actions.filter(_.isInstanceOf[cmd.AddBet]).asInstanceOf[List[cmd.AddBet]]
 
-  Console printf("BET ACTIONS: %s\n", betActions)
-
   def apply() = {
     def active = round.seats.filter(_._1.isActive)
 
@@ -91,19 +89,14 @@ private[replay] case class Betting(
 
       bb.map(forceBet(_, Bet.BigBlind))
       sleep()
-
-      //gameplay.round.reset
-      //nextTurn()//.foreach { x => self ! x }
     }
 
     // активные ставки игроков
     if (!activeBets.isEmpty) {
-      //          if (!postBlinds) {
-      //            gameplay.round.reset()
-      //          }
-      nextTurn() match { case Left(pos) => requireBet(pos) }
-
-      //debug("activeBets=%s", activeBets)
+      nextTurn() match {
+        case Left(pos) => requireBet(pos)
+        case _ =>
+      }
 
       activeBets.dropWhile { case cmd.AddBet(player, bet) ⇒
         val pos = round.current

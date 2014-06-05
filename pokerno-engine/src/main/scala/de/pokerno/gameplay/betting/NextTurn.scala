@@ -13,10 +13,10 @@ trait NextTurn {
   // Right(Some(isShowdown)):
   // Right(Some(false)) - betting done, wait for action
   // Right(Some(true)) - betting done, go to showdown
+
+  import ctx.gameplay._
   
   protected def nextTurn(): Either[Int, Option[Boolean]] = {
-    val round = ctx.gameplay.round
-    
     round.seats filter (_._1 inPlay) foreach {
       case (seat, pos) ⇒
         if (!seat.didCall(round.call)) {

@@ -22,8 +22,6 @@ private[replay] case class Dealing(
     }
   }.asInstanceOf[List[cmd.DealCards]]
 
-  Console printf("\nDEALCARD: %s\n\n",dealActions)
-
   private val _perPlayer = collection.mutable.HashMap[Player, cmd.DealCards]()
   dealActions.foreach { action ⇒
     action.player map { p =>

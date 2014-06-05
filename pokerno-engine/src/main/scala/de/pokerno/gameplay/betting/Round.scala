@@ -11,13 +11,25 @@ class Round(
     stake: Stake
   ) {
   
-  private var _acting = new Ring(table.seats)
-  _acting.current = table.button.current
+  private var _current = table.button.current
+  private var _oldCurrent = _current
 
-  def acting = _acting
-  def current = _acting.current
+  def current = _current
+  def current_=(pos: Int) = {
+    _current = pos
+    pos
+  }
   
-  @JsonIgnore val seats = table.seatsFrom(_acting.current)
+  private var _seats = table.seatsFrom(_current)
+  def seats = {
+    // update seats from new position
+    if (_current != _oldCurrent) {
+      _oldCurrent = _current
+      _seats = table.seatsFrom(_current)
+    }
+    _seats
+  }
+
   @JsonIgnore var bigBets: Boolean = false
   
   @JsonProperty val pot = new Pot
@@ -41,7 +53,7 @@ class Round(
     raiseCount = 0
     _call = .0
     _raise = noRaise
-    _acting.current = table.button
+    _current = table.button.current
     // FIXME
     //pot.complete()
   }
@@ -56,7 +68,8 @@ class Round(
   }
 
   def forceBet(pos: Int, betType: Bet.ForcedType): Tuple2[Seat, Bet] = {
-    _acting.current = pos
+    current = pos
+
     val seat = table.seats(current)
 
     _call = stake amount betType
@@ -76,7 +89,7 @@ class Round(
   }
 
   def requireBet(pos: Int): Seat = {
-    _acting.current = pos
+    current = pos
     
     val seat = table.seats(current)
     val limit = game.limit

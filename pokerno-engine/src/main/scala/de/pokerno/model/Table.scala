@@ -19,6 +19,7 @@ class Table(@JsonIgnore val size: Int) {
 
   private val _button = new Ring(seats)
   def button = _button
+  def button_=(pos: Int) = _button.current = pos
   
   @JsonProperty("button") def getButton: Int = button
   

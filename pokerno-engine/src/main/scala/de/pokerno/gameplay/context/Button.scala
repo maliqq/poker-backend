@@ -6,7 +6,7 @@ import de.pokerno.gameplay.Events
 private[gameplay] trait Button { g: ContextLike ⇒
   
   def setButton(pos: Int) {
-    table.button.current = round.acting.current = pos
+    table.button = round.current = pos
     events.broadcast(Events.buttonChange(table.button))
   }
 

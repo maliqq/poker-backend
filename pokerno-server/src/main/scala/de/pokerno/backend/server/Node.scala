@@ -40,10 +40,19 @@ object Node {
 
     node
   }
+
+  import com.fasterxml.jackson.annotation.JsonProperty
   
-  case class CreateRoom(id: String, variation: Variation, stake: Stake)
+  case class CreateRoom(
+    @JsonProperty id: String,
+    @JsonProperty variation: Variation,
+    @JsonProperty stake: Stake
+  )
   
-  case class ChangeRoomState(id: String, newState: Room.ChangeState)
+  case class ChangeRoomState(
+    id: String,
+    newState: Room.ChangeState
+  )
   
   class Service extends thrift.rpc.Node.FutureIface {
     def createRoom(id: String,

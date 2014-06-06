@@ -77,13 +77,13 @@ class GameEventSpec extends FunSpec with ClassicMatchers {
     it("DeclarePlayStart") {
       val e = DeclarePlayStart()
       val d = GameEvent.encodeAsString(e)
-      d should equal("""{"$type":"stage:"}""")
+      d should equal("""{"$type":"play:start"}""")
     }
     
     it("DeclarePlayStop") {
       val e = DeclarePlayStop()
       val d = GameEvent.encodeAsString(e)
-      d should equal("""{"$type":"stage:"}""")
+      d should equal("""{"$type":"play:stop"}""")
     }
     
     it("DeclarePot") {
@@ -105,7 +105,7 @@ class GameEventSpec extends FunSpec with ClassicMatchers {
     it("DeclareStreet") {
       val e = DeclareStreet(Street.Preflop)
       val d = GameEvent.encodeAsString(e)
-      d should equal("""{"$type":"stage:","name":"preflop"}""")
+      d should equal("""{"$type":"street:","name":"preflop"}""")
     }
     
     it("DeclareWinner") {
@@ -124,7 +124,8 @@ class GameEventSpec extends FunSpec with ClassicMatchers {
       val game = Game(Game.Texas, Game.NoLimit, 9)
       val e = GameChange(game)
       val d = GameEvent.encodeAsString(e)
-      d should equal("""{"$type":"game:","game":"texas","limit":"no-limit"}""")
+      throw new Exception(d)
+      d should equal("""{"$type":"game:","type":"texas","limit":"no-limit"}""")
     }
     
     it("JoinPlayer") {

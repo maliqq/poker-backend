@@ -4,8 +4,7 @@ import de.pokerno.protocol.{action => message}
 import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonIgnoreProperties}
 
 object PlayerEvent extends Codec.Json {
-  def decode(data: Array[Byte]) =
-    mapper.readValue(data, classOf[PlayerEvent])
+  def decode(data: Array[Byte]): PlayerEvent = decode[PlayerEvent](data)
 }
 
 @JsonSubTypes(Array(

@@ -4,5 +4,5 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import de.pokerno.model.Bet
 
 sealed case class AddBet(
-  @JsonProperty var bet: Bet = null
+  @JsonProperty var bet: Bet
 ) extends PlayerEvent {}

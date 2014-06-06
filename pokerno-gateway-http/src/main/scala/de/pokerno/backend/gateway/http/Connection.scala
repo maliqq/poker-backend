@@ -61,6 +61,8 @@ class HttpConnection(
   }
 
   def send(msg: Any) = write(msg)
+
+  override def toString = f"room:$room session:$sessionId player:$player"
 }
 
 trait ChannelConnections[T <: Connection] {

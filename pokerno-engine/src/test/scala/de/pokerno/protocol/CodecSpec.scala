@@ -10,7 +10,6 @@ class CodecSpec extends FunSpec with ClassicMatchers {
   import de.pokerno.poker.Deck
   
   object Json extends Codec.Json {
-    def encode(v: Any) = mapper.writeValueAsString(v)
   }
   
   describe("Json") {
@@ -30,11 +29,19 @@ class CodecSpec extends FunSpec with ClassicMatchers {
     
     it("Game") {
       
-      val game1 = new Game(Game.Texas, Some(Game.NoLimit))
-      Json.encode(game1) should equal("""{"game":"texas","limit":"no-limit"}""")
+      val game1 = Game(Game.Texas, Game.NoLimit)
+      Json.encode(game1) should equal("""{"game":{"type":"texas","tableSize":10,"limit":"no-limit"}}""")
       
-      val game2 = new Mix(Game.Horse)
-      Json.encode(game2) should equal("""{"game":"horse"}""")
+      val game2 = Mix(Game.Horse)
+      Json.encode(game2) should equal("""{"mix":{"type":"horse","tableSize":8}}""")
+    }
+    
+    it("Variation") {
+      val game: Variation = Game(Game.Texas, Game.NoLimit)
+      Json.encode(game) should equal("""{"game":{"type":"texas","tableSize":10,"limit":"no-limit"}}""")
+      
+      val mix: Variation = Mix(Game.Horse)
+      Json.encode(mix) should equal("""{"mix":{"type":"horse","tableSize":8}}""")
     }
     
     it("Table") {

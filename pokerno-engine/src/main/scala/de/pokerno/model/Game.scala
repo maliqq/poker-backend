@@ -6,11 +6,6 @@ import math.{ BigDecimal ⇒ Decimal }
 import com.fasterxml.jackson.annotation.{JsonIgnore, JsonValue, JsonProperty}
 import beans._
 
-trait Variation {
-  @JsonIgnore def isMixed: Boolean = this.isInstanceOf[Mix]
-  @JsonIgnore def tableSize: Int
-}
-
 object Game {
   implicit def string2limit(v: String): Option[Limit] = v match {
     case "no-limit" | "nolimit" | "no" ⇒
@@ -201,12 +196,12 @@ object Game {
 }
 
 class Game(
-    @JsonProperty val game: Game.Limited,
+    @JsonProperty val `type`: Game.Limited,
     _limit: Option[Game.Limit] = None,
     _tableSize: Option[Int] = None
   ) extends Variation {
-  @JsonIgnore val options = Games(game)
-  @JsonIgnore val tableSize: Int = _tableSize match {
+  @JsonIgnore val options = Games(`type`)
+  @JsonProperty val tableSize: Int = _tableSize match {
     case None ⇒ options.maxTableSize
     case Some(size) ⇒
       if (size > options.maxTableSize)
@@ -218,5 +213,5 @@ class Game(
     case None    ⇒ options.defaultLimit
     case Some(l) ⇒ l
   }
-  override def toString = "%s %s %s-max" format (game, limit, tableSize)
+  override def toString = "%s %s %s-max" format (`type`, limit, tableSize)
 }

@@ -4,7 +4,8 @@ import org.slf4j.LoggerFactory
 import de.pokerno.gameplay._
 import de.pokerno.backend.{ gateway ⇒ gw }
 import akka.actor.{ ActorSystem, Props }
-import de.pokerno.backend.server.Config
+import de.pokerno.backend.server.{Config, Node}
+import de.pokerno.protocol.Codec.{Json => codec}
 
 private[pokerno] case class Options(
   val configFile: Option[String] = None,
@@ -139,29 +140,38 @@ object Main {
 
   def main(args: Array[String]) {
     backend.server.Poker.Service(new java.net.InetSocketAddress("127.0.0.1", 9091))
-//    optionParser.parse(args, options) map { opts ⇒
-//      val config: Option[Config] = if (opts.configFile.isDefined) {
-//        val f = new java.io.FileInputStream(opts.configFile.get)
-//
-//        try Some(Config.from(f))
-//        catch {
-//          case _: java.io.FileNotFoundException ⇒
-//            log.error("Config file not found!")
-//            None
-//
-//          case e: com.fasterxml.jackson.core.JsonParseException ⇒
-//            log.error("Invalid JSON: {}", e.getMessage)
-//            None
-//        }
-//      } else Some(opts.config)
-//
-//      config match {
-//        case Some(c) ⇒
-//          val node = backend.server.Node.start(c)
-//        case None ⇒
-//          System.exit(0)
-//      }
-//    }
+    optionParser.parse(args, options) map { opts ⇒
+      // read config
+      val config: Config = opts.configFile.map { path =>
+        val f = new java.io.FileInputStream(path)
+
+        try Config.from(f)
+        catch {
+          case _: java.io.FileNotFoundException ⇒
+            log.error("Config file not found!")
+            null
+
+          case e: com.fasterxml.jackson.core.JsonParseException ⇒
+            log.error("Invalid JSON: {}", e.getMessage)
+            null
+        }
+        
+      }.getOrElse(opts.config)
+      
+      // start
+      val node = Node.start(config)
+
+      // restore state from file
+      opts.restoreFile map { path =>
+        try {
+          val f = new java.io.FileInputStream(path)
+          val msgs = codec.decodeValuesFromStream[Node.CreateRoom](f)
+          msgs.foreach { node ! _ }
+        } catch { case err: Throwable =>
+          log.warn("can't restore from {}: {}", Array[AnyRef](path, err.getMessage):_*)
+        }
+      }
+    }
   }
 
 }

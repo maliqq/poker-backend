@@ -4,13 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import de.pokerno.model.Game
 
 object GameChange {
-  def apply(game: Game): GameChange = GameChange(game.game.toString(), game.limit.toString())
+  def apply(g: Game): GameChange = GameChange(g.`type`, g.limit)
 }
 
 sealed case class GameChange(
-  @JsonProperty game: String,
-  
-  @JsonProperty limit: String
-) extends GameEvent {
-  
-}
+  @JsonProperty game: Game.Limited,
+  @JsonProperty limit: Game.Limit
+) extends GameEvent {}

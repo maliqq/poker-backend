@@ -5,12 +5,6 @@ import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonIgnoreProperties}
 
 object GameEvent extends Codec.Json {
   def encode(e: GameEvent) = encodeAsBytes(e)
-  
-  def encodeAsBytes(e: GameEvent): Array[Byte] =
-    mapper.writeValueAsBytes(e)
-
-  def encodeAsString(e: GameEvent): String =
-    mapper.writeValueAsString(e)
 }
 
 @JsonSubTypes(Array(

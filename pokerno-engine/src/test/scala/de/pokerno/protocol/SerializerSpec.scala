@@ -11,7 +11,6 @@ class SerializerSpec extends FunSpec with ClassicMatchers {
   import com.fasterxml.jackson.databind.annotation.JsonSerialize
   
   object Json extends Codec.Json {
-    def encode(v: Any) = mapper.writeValueAsString(v)
   }
   
   case class CardsWrapper(

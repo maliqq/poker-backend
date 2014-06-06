@@ -8,15 +8,15 @@ object Mix {
 }
 
 case class Mix(
-    @JsonProperty game: Game.Mixed,
+    @JsonProperty `type`: Game.Mixed,
     @JsonIgnore var _tableSize: Int = Mix.MaxTableSize
     ) extends Variation {
-  @JsonIgnore val options = Mixes(game)
+  @JsonIgnore val options = Mixes(`type`)
   if (_tableSize > Mix.MaxTableSize)
     _tableSize = Mix.MaxTableSize
-  @JsonIgnore val tableSize = _tableSize
+  @JsonProperty val tableSize = _tableSize
   @JsonIgnore val games = options.map { option ⇒
     new Game(option._1, Some(option._2), Some(tableSize))
   }
-  override def toString = game.toString
+  override def toString = "%s %s-max" format (`type`.toString, tableSize)
 }

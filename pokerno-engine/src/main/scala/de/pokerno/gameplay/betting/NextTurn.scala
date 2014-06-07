@@ -2,11 +2,11 @@ package de.pokerno.gameplay.betting
 
 import concurrent.duration._
 
-import de.pokerno.gameplay.{Betting, Context, stg}
+import de.pokerno.gameplay.{Betting, stg, Context => Gameplay}
 
 trait NextTurn {
 
-  val ctx: stg.Context
+  val gameplay: Gameplay
 
   // Left(n) - pos n is next
   // Right(None) - stop deal, everyone folds except one
@@ -14,7 +14,7 @@ trait NextTurn {
   // Right(Some(false)) - betting done, wait for action
   // Right(Some(true)) - betting done, go to showdown
 
-  import ctx.gameplay._
+  import gameplay._
   
   protected def nextTurn(): Either[Int, Option[Boolean]] = {
     round.seats filter (_._1 inPlay) foreach {

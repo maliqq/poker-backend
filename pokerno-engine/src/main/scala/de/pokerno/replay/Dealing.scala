@@ -77,7 +77,7 @@ private[replay] case class Dealing(
       case _ ⇒ null
     }
     
-    ctx broadcast Events.dealPocket(pos, player, _type, cardsDealt)
+    events broadcast Events.dealPocket(pos, player, _type, cardsDealt)
   }
   
   private def dealBoard(_cards: Either[Cards, Option[Int]]) {
@@ -93,7 +93,7 @@ private[replay] case class Dealing(
       case _ ⇒ null
     }
     
-    ctx broadcast Events.dealBoard(cards)
+    events broadcast Events.dealBoard(cards)
   }
   
 }

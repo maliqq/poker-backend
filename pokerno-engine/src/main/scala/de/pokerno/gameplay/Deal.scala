@@ -36,14 +36,14 @@ trait DealCycle { a: Actor ⇒
 
 class Deal(val gameplay: Context) extends Actor
     with ActorLogging
-    with betting.Handler
-    with NextTurn
     with Stages.Default {
   
   import context._
   
   val ctx = new stg.Context(gameplay, self)
-  lazy val streets = Streets(ctx)
+  val btx = new betting.Context(gameplay, self)
+  
+  lazy private val onStreets = Streets(ctx)
   
   override def preStart() {
     log.info("[deal] start")
@@ -58,24 +58,58 @@ class Deal(val gameplay: Context) extends Actor
   override def postStop() {
   }
 
-  def receive = handleStreets
+  def receive = receiveStreets
 
-  def handleStreets: Receive = {
+  def receiveStreets: Receive = {
     case Betting.Start ⇒
       log.info("[betting] start")
       // FIXME
       //gameplay.round.reset()
-      context.become(handleBetting)
-      self ! nextTurn()
+      context.become(receiveBets)
+      self ! btx.decideNextTurn()
 
     case Streets.Next ⇒
       log.info("streets next")
-      streets.apply()
+      onStreets.apply()
 
     case Streets.Done ⇒
       log.info("streets done")
       afterStreets.apply(ctx)
       done()
+  }
+  
+  def receiveBets: Receive = {
+    case Betting.Add(player, bet) ⇒
+      btx.add(player, bet)
+
+    case Betting.Stop ⇒
+      log.info("[betting] stop")
+      context.become(receiveStreets)
+      self ! Streets.Done
+
+    case Betting.Showdown ⇒
+      // TODO XXX FIXME WTF?
+      log.warning("[betting] showdown")
+      context.become(receiveStreets)
+      self ! Streets.Next
+
+    case Betting.Done ⇒
+      log.info("[betting] done")
+      btx.doneBets()
+      context.become(receiveStreets)
+      onStreets.apply()
+
+    case Betting.StartTimer(duration) ⇒
+      btx.timer = system.scheduler.scheduleOnce(duration, self, Betting.Timeout)
+
+    case Betting.Timeout ⇒
+      log.info("[betting] timeout")
+      btx.timeout()
+      self ! btx.decideNextTurn()
+
+    case Betting.BigBets ⇒
+      log.info("[betting] big bets")
+      btx.bigBets()
   }
 
   private def cancel() {

@@ -9,10 +9,12 @@ import concurrent.duration.Duration
 private[replay] case class Betting(
     ctx: Context,
     actions: Seq[cmd.Command]
-) extends gameplay.Bets with gameplay.betting.NextTurn {
+) extends gameplay.Betting with gameplay.betting.NextTurn {
   
   import ctx._
   import ctx.gameplay._
+  
+  val gameplay = ctx.gameplay
 
   private val betActions = actions.filter(_.isInstanceOf[cmd.AddBet]).asInstanceOf[List[cmd.AddBet]]
 

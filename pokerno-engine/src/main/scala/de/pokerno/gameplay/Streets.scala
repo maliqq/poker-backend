@@ -17,15 +17,15 @@ case class Streets(ctx: stg.Context, stages: Seq[StreetStages[stg.Context]]) ext
   def apply() = if (iterator.hasNext) {
     val stage = iterator.next()
 
-    ctx.gameplay.street = Some(stage.street)
-    ctx broadcast Events.streetStart(stage.street)
+    street = Some(stage.street)
+    events broadcast Events.streetStart(stage.street)
 
     stage(ctx) match {
       case Stage.Next | Stage.Skip ⇒
         ctx.ref ! Streets.Next
 
       case Stage.Wait ⇒
-        println("waiting")
+        // wait until betting completes
 
       case x ⇒
         throw new MatchError("unhandled stage transition: %s".format(x))

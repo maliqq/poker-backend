@@ -4,8 +4,10 @@ import de.pokerno.gameplay.{Events, Stage, stg}
 
 case class PlayStart(ctx: stg.Context) extends Stage {
   
+  import ctx.gameplay._
+  
   def apply() = {
-    ctx broadcast Events.playStart()
+    events broadcast Events.playStart()
   }
 
 }

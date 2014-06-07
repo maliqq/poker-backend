@@ -47,6 +47,11 @@ class CodecSpec extends FunSpec with ClassicMatchers {
   }
   
   describe("Json.encode") {
+    it("Cards") {
+      val cards = de.pokerno.poker.Cards.fromString("7dTd")
+      Json.encode(cards: Array[Byte]) should equal(""""FyM="""")
+    }
+    
     it("Stake") {
       val stake1 = new Stake(100.0)
       Json.encode(stake1) should equal("""{"bigBlind":100.0,"smallBlind":50.00}""") // FIXME????

@@ -51,9 +51,14 @@ object Events {
   
   def start(table: Table, variation: Variation, stake: Stake) = msg.DeclareStart(table, variation, stake)
   def start(ctx: Context, player: Option[Player]) = {
+    // build start message for player or watcher
     val start = msg.DeclareStart(ctx.table, ctx.variation, ctx.stake)
     val play = ctx.play.copy()
     start.play = Some(msg.PlayState(ctx))
+    // include information on own cards
+    player map { p =>
+      start.pocket = ctx.dealer.pocketOption(p) orNull // FIXME null bullshit
+    }
     start
   }
 

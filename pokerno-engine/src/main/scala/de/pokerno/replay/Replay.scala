@@ -42,7 +42,7 @@ class Replay(
 
   override def preStart {
     log.info("starting replay {}", id)
-    ctx broadcast Events.playStart()
+    events broadcast Events.playStart()
     //gameplay.rotateGame(stageContext)
   }
 

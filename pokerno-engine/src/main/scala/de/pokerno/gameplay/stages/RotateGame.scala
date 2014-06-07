@@ -10,7 +10,7 @@ case class RotateGame(ctx: stg.Context) extends Stage {
     if (variation.isMixed && gameRotation.hasNext) {
       game = gameRotation.next
       
-      ctx broadcast Events.gameChange(game)
+      events broadcast Events.gameChange(game)
     }
 
 }

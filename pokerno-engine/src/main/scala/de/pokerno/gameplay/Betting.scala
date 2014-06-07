@@ -6,64 +6,48 @@ import de.pokerno.model._
 import concurrent.duration._
 import de.pokerno.gameplay.betting.NextTurn
 
-case class Betting(ctx: stg.Context, betting: ActorRef) extends Bets with NextTurn {
+trait Betting {
+  val gameplay: Context
   
-  import ctx.gameplay._
+  import gameplay._
   
-  var timer: Cancellable = null
-  
-  // turn on big bets
-  def bigBets() {
-    round.bigBets = true
+  // require bet
+  def requireBet(pos: Int) {
+    val seat = round requireBet pos
+    val player = seat.player.get
+    events broadcast Events.requireBet(pos, player, round.call, round.raise)
   }
-  
+
   // add bet
-  def add(player: Player, bet: Bet) {
+  def addBet(bet: Bet) {
+    val (seat, posted) = round.addBet(bet)
     val pos = round.current
-    val seat = table.seats(pos)
-    if (seat.player == player) {
-      if (timer != null) timer.cancel()
-      Console printf("[betting] add {}", bet)
-      addBet(bet)
-      // next turn
-      val turn = nextTurn() match {
-          case Left(pos) =>
-            
-            requireBet(pos)
-            
-            Betting.StartTimer(30 seconds)
-
-          case Right(None) =>       Betting.Stop
-          case Right(Some(true)) => Betting.Showdown
-          case _ =>                 Betting.Done
-        }
-      Console printf("[betting] next turn {}", turn)
-      ctx.ref ! turn
-    } else
-      Console printf("[betting] not a turn of {}; current acting is {}", player, seat.player)
+    val player = seat.player.get
+    events broadcast Events.addBet(pos, player, posted)
   }
   
-  // timeout bet
-  def timeout() {
+  def addBetWithTimeout(bet: Bet) {
+    val (seat, posted) = round.addBet(bet)
     val pos = round.current
-    val seat = table.seats(pos)
-    
-    val bet: Bet = seat.state match {
-      case Seat.State.Away ⇒
-        // force fold
-        Bet.fold//(timeout = true)
-
-      case _ ⇒
-        // force check/fold
-        if (round.call == 0 || seat.didCall(round.call))
-          Bet.check//(timeout = true)
-        else Bet.fold//(timeout = true)
-    }
-
-    Console printf("[betting] timeout")
-    addBetWithTimeout(bet)
+    val player = seat.player.get
+    val event = Events.addBet(pos, player, posted)
+    event.timeout = Some(true)
+    events broadcast event
   }
-  
+
+  // force bet
+  def forceBet(pos: Int, betType: Bet.ForcedType) {
+    val (seat, posted) = round.forceBet(pos, betType)
+    val player = seat.player.get
+    events broadcast Events.addBet(pos, player, posted)
+  }
+
+  // current betting round finished
+  def doneBets() {
+    events broadcast Events.declarePot(round.pot.total,
+        round.pot.sidePots.map(_.total))
+    round complete()
+  }
 }
 
 object Betting {
@@ -88,7 +72,7 @@ object Betting {
   // require bet from this potision
   case class Require(pos: Int) extends Transition
   // start timer
-  case class StartTimer(duration: FiniteDuration)
+  case class StartTimer(duration: FiniteDuration) extends Transition
   // betting timeout - go to next seat
   case object Timeout
   // turn on big bet mode

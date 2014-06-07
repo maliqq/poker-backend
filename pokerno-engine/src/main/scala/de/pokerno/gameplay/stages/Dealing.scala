@@ -20,9 +20,9 @@ case class Dealing(ctx: stg.Context, _type: DealType.Value, cardsNum: Option[Int
           val cards = dealer dealPocket (n, player)
 
           if (_type == DealType.Hole) {
-            ctx.publish(Events.dealPocket(pos, player, _type, cards)) { _.only(player) }
-            ctx.publish(Events.dealPocketNum(pos, player, _type, cards.length)) { _.except(player) }
-          } else ctx broadcast Events.dealPocket(pos, player, _type, cards)
+            events.publish(Events.dealPocket(pos, player, _type, cards)) { _.only(player) }
+            events.publish(Events.dealPocketNum(pos, player, _type, cards.length)) { _.except(player) }
+          } else events broadcast Events.dealPocket(pos, player, _type, cards)
       }
 
     case DealType.Board if cardsNum.isDefined ⇒
@@ -30,7 +30,7 @@ case class Dealing(ctx: stg.Context, _type: DealType.Value, cardsNum: Option[Int
       Console printf("dealing board %d cards\n", cardsNum.get)
 
       val cards = dealer dealBoard (cardsNum.get)
-      ctx broadcast Events.dealBoard(cards)
+      events broadcast Events.dealBoard(cards)
 
     case _ ⇒
     // TODO

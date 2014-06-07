@@ -37,8 +37,6 @@ object Room {
 
   case class Observe(observer: ActorRef, name: String)
   
-//  class Service extends thrift.rpc.Room.FutureIface {}
-
 }
 
 sealed trait Data
@@ -65,9 +63,9 @@ class Room(
   import concurrent.duration._
   import Room._
 
-  val watchers = observe(classOf[Watchers], f"room-$id-watchers")
-  val logger = observe(classOf[Journal], f"room-$id-log", "/tmp", id)
-  val metrics = observe(classOf[Metrics], f"room-$id-metrics")
+  val watchers  = observe(classOf[Watchers], f"room-$id-watchers")
+  val logger    = observe(classOf[Journal], f"room-$id-journal", "/tmp", id)
+  val metrics   = observe(classOf[Metrics], f"room-$id-metrics")
 
   log.info("starting room {}", id)
   startWith(State.Waiting, NoneRunning)
@@ -113,7 +111,7 @@ class Room(
 
     // first deal in active state
     case Event(gameplay.Deal.Start, NoneRunning) ⇒
-      stay()// using spawnDeal
+      stay() using startDeal()
 
     // current deal cancelled
     case Event(gameplay.Deal.Cancel, Running(_, deal)) ⇒
@@ -198,7 +196,7 @@ class Room(
       watchers ! Watchers.Watch(conn)
 
       // start new deal if needed
-      if (running == NoneRunning && canStart) goto(Room.State.Active)
+      if (running == NoneRunning && canStart) toActive()
       else stay()
 
     case Event(Disconnect(conn), _) ⇒

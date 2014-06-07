@@ -27,10 +27,10 @@ object Node {
 
     config.rpc.map { rpcConfig ⇒
       log.info("starting rpc with config: {}", rpcConfig)
+      Node.Service(node, new java.net.InetSocketAddress(rpcConfig.host, rpcConfig.port))
     }
 
     config.http.map { httpConfig ⇒
-      log.info("starting HTTP gateway")
       val httpGateway = system.actorOf(Props(classOf[gw.Http.Gateway], Some(node)), name = "http-gateway")
 
       log.info("starting HTTP server with config: {}", httpConfig)
@@ -54,20 +54,65 @@ object Node {
     newState: Room.ChangeState
   )
   
-  class Service extends thrift.rpc.Node.FutureIface {
+  case class SendCommand(
+    id: String,
+    command: cmd.Command
+  )
+  
+  class Service(node: ActorRef) extends thrift.rpc.Node.FutureIface {
+    import java.nio.ByteBuffer
+    
     def createRoom(id: String,
         variation: thrift.Variation,
         stake: thrift.Stake,
-        table: thrift.Table): Future[Unit] = {
-      Future.value(())
+        table: thrift.Table): Future[Unit] = Future{}
+    
+    def maintenance: Future[Unit] = Future{}
+    
+    def close(id: String): Future[Unit] = Future{}
+    
+    def pause(id: String, reason: thrift.rpc.PauseReason): Future[Unit] = Future{}
+    
+    def resume(id: String): Future[Unit] = Future{}
+    
+    def cancelCurrentDeal(id: String) = Future{}
+
+    def joinPlayer(id: String, player: String, pos: Int, amount: Double): Future[Unit] = Future{}
+    
+    def kickPlayer(id: String, player: String, reason: thrift.rpc.KickReason): Future[Unit] = Future{
+      node ! SendCommand(id, cmd.KickPlayer(player))
     }
     
-    def maintenance: Future[Unit] = Future.value(())
+    def dealCards(id: String, dealType: de.pokerno.protocol.thrift.DealType, cards: ByteBuffer, cardsNum: Int, player: String): Future[Unit] = Future{}
+    
+    def addBet(id: String, player: String, bet: de.pokerno.protocol.thrift.Bet): Future[Unit] = Future{}
+    
+    def discardCards(id: String, player: String, cards: ByteBuffer, standPat: Boolean): Future[Unit] = Future{}
+    
+    def showCards(id: String, player: String, cards: ByteBuffer, muck: Boolean): Future[Unit] = Future{}
+    
+    def leave(id: String, player: String): Future[Unit] = Future{}
+    
+    def sitOut(id: String, player: String): Future[Unit] = Future{}
+    
+    def comeBack(id: String, player: String): Future[Unit] = Future{}
+    
+    def offline(id: String, player: String): Future[Unit] = Future{}
+    
+    def online(id: String, player: String): Future[Unit] = Future{}
+    
+    def buyIn(id: String, player: String, amount: Double): Future[Unit] = Future{}
+    
+    def rebuy(id: String, player: String, amount: Double): Future[Unit] = Future{}
+    
+    def doubleRebuy(id: String, player: String, amount: Double): Future[Unit] = Future{}
+    
+    def addon(id: String, player: String, amount: Double): Future[Unit] = Future{}
   }
   
   object Service {
-    def apply(addr: java.net.InetSocketAddress) = {
-      Thrift.serve[thrift.rpc.Node.FinagledService, thrift.rpc.Node.FutureIface](new Service, "NodeService", addr)
+    def apply(node: ActorRef, addr: java.net.InetSocketAddress) = {
+      Thrift.serve[thrift.rpc.Node.FinagledService, thrift.rpc.Node.FutureIface](new Service(node), "NodeService", addr)
     }
   }
 }
@@ -148,6 +193,14 @@ class Node extends Actor with ActorLogging {
         case Success(room) ⇒
           room ! newState
         case Failure(_) ⇒
+          log.warning("Room not found: {}", id)
+      }
+    
+    case Node.SendCommand(id, cmd) =>
+      actorSelection(id).resolveOne(1 second).onComplete {
+        case Success(room) =>
+          room ! cmd
+        case Failure(_) =>
           log.warning("Room not found: {}", id)
       }
 

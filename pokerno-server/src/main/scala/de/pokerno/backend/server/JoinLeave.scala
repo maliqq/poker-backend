@@ -11,13 +11,13 @@ trait JoinLeave {
 
   protected def joinPlayer(join: cmd.JoinPlayer) {
     try {
-      table.takeSeat(join.pos, join.player, Some(join.amount))
+      table.takeSeat(join.pos, join.player, Option(join.amount))
       events.publish(gameplay.Events.playerJoin(join.pos, join.player, join.amount)) { _.all() }
     } catch {
       case err: Seat.IsTaken        ⇒
       case err: Table.AlreadyJoined ⇒
     }
-  }
+  } 
 
   protected def leavePlayer(player: Player) {
     table.playerPos(player) map { pos =>

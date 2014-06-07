@@ -17,17 +17,13 @@ enum KickReason {}
 service Node {
   void createRoom(1: string id, 2: wire.Variation variation, 3: wire.Stake stake, 4: wire.Table table)
   void maintenance()
-}
 
-service Room {
   void close(1: string id)
   void pause(1: string id, 2: PauseReason reason)
   void resume(1: string id)
   void cancelCurrentDeal(1: string id)
-}
 
-service Deal {
-  void joinPlayer(1: string id, 2: Player player, 3: i32 Pos, 4: double amount)
+  void joinPlayer(1: string id, 2: Player player, 3: i32 pos, 4: double amount)
   void kickPlayer(1: string id, 2: Player player, 3: KickReason reason)
 
   void dealCards(1: string id, 2: wire.DealType dealType, 3: Cards cards, 4: i32 cardsNum, 5: Player player)

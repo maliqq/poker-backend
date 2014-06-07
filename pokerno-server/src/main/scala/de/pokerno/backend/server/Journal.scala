@@ -85,7 +85,7 @@ class Journal(storageDir: String, room: String) extends Actor with ActorLogging 
         flush()
 
       case x: Any ⇒
-        log.info("unhandled: {}", x)
+        log.debug("unhandled: {}", x)
     }
   }
 

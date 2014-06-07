@@ -3,7 +3,7 @@ package de.pokerno.backend.server
 import de.pokerno.backend.{ gateway ⇒ gw }
 
 object Config {
-  final val defaultHost = "localhost"
+  final val defaultHost = "127.0.0.1"
 
   object Http {
     final val defaultPort = 8080
@@ -15,7 +15,9 @@ object Config {
 
     case class Api(
       var port: Int = Api.defaultPort,
-      var path: String = Api.defaultPath)
+      var path: String = Api.defaultPath) {
+      override def toString = f"$port/$path"
+    }
   }
 
   object Rpc {
@@ -25,7 +27,9 @@ object Config {
 
   case class Rpc(
     var host: String = Rpc.defaultHost,
-    var port: Int = Rpc.defaultPort)
+    var port: Int = Rpc.defaultPort) {
+    override def toString = f"$host:$port" 
+  }
 
   import com.fasterxml.jackson.databind.ObjectMapper
 
@@ -43,5 +47,4 @@ case class Config(
 
   def rpcConfig =
     rpc.getOrElse(Config.Rpc())
-
 }

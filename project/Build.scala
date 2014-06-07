@@ -93,7 +93,7 @@ object PokernoBuild extends Build {
       )
     ) ++ assemblySettings 
   ).settings(
-    ScroogeSBT.scroogeBuildOptions in Compile := Seq("--finagle"),
+    ScroogeSBT.scroogeBuildOptions in Compile := Seq("--finagle", "-s"),
     ScroogeSBT.scroogeThriftOutputFolder in Compile <<= (sourceDirectory) { _ / "main/scala" }
   )
   

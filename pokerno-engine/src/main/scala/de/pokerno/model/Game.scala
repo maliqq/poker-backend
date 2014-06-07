@@ -3,19 +3,21 @@ package de.pokerno.model
 import de.pokerno.poker.Hand
 import math.{ BigDecimal ⇒ Decimal }
 
-import com.fasterxml.jackson.annotation.{JsonIgnore, JsonValue, JsonProperty}
+import com.fasterxml.jackson.annotation.{JsonIgnore, JsonValue, JsonProperty, JsonCreator}
 import beans._
 
 object Game {
-  implicit def string2limit(v: String): Option[Limit] = v match {
-    case "no-limit" | "nolimit" | "no" ⇒
-      Some(NoLimit)
-    case "fixed-limit" | "fixedlimit" | "fixed" ⇒
-      Some(FixedLimit)
-    case "pot-limit" | "potlimit" | "pot" ⇒
-      Some(PotLimit)
-    case _ ⇒
-      None
+  object Limit {
+    implicit def string2limit(v: String): Limit = v match {
+      case "no-limit" | "nolimit" | "no" ⇒
+        NoLimit
+      case "fixed-limit" | "fixedlimit" | "fixed" ⇒
+        FixedLimit
+      case "pot-limit" | "potlimit" | "pot" ⇒
+        PotLimit
+      case _ ⇒
+        null // throw?
+    }
   }
 
   trait Limit {
@@ -40,31 +42,31 @@ object Game {
   trait Limited
 
   object Limited {
-    implicit def string2Limited(v: String): Option[Limited] = v match {
+    implicit def string2Limited(v: String): Limited = v match {
       case "texas" | "texas-holdem" | "holdem" ⇒
-        Some(Texas)
+        Texas
       case "omaha" ⇒
-        Some(Omaha)
+        Omaha
       case "omaha8" | "omaha-8" ⇒
-        Some(Omaha8)
+        Omaha8
       case "stud" ⇒
-        Some(Stud)
+        Stud
       case "stud8" | "stud-8" ⇒
-        Some(Stud8)
+        Stud8
       case "razz" ⇒
-        Some(Razz)
+        Razz
       case "london" ⇒
-        Some(London)
+        London
       case "five-card" ⇒
-        Some(FiveCard)
+        FiveCard
       case "single27" | "single-27" ⇒
-        Some(Single27)
+        Single27
       case "triple27" | "triple-27" ⇒
-        Some(Triple27)
+        Triple27
       case "badugi" ⇒
-        Some(Badugi)
+        Badugi
       case _ ⇒
-        None
+        null // throw?
     }
   }
 
@@ -107,12 +109,12 @@ object Game {
   trait Mixed
 
   object Mixed {
-    implicit def string2Mixed(v: String): Option[Mixed] = v match {
+    implicit def string2Mixed(v: String): Mixed = v match {
       case "eight" | "8-game" | "eight-game" ⇒
-        Some(Game.Eight)
+        Game.Eight
       case "horse" ⇒
-        Some(Game.Horse)
-      case _ ⇒ None
+        Game.Horse
+      case _ ⇒ null // throw?
     }
   }
 
@@ -214,4 +216,11 @@ class Game(
     case Some(l) ⇒ l
   }
   override def toString = "%s %s %s-max" format (`type`, limit, tableSize)
+  
+  @JsonCreator
+  def this(
+      @JsonProperty("type") _type: String,
+      @JsonProperty("limit") _limit: String,
+      @JsonProperty("tableSize") _size: Int
+    ) = this(_type: Game.Limited, Some(_limit: Game.Limit), Some(_size))
 }

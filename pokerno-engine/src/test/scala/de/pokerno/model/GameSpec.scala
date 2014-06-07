@@ -153,22 +153,22 @@ class GameSpec extends FunSpec with ClassicMatchers {
 
   describe("implicits") {
     it("limited") {
-      ("texas": Option[Game.Limited]) should equal(Some(Game.Texas))
-      ("omaha": Option[Game.Limited]) should equal(Some(Game.Omaha))
-      ("omaha8": Option[Game.Limited]) should equal(Some(Game.Omaha8))
-      ("stud": Option[Game.Limited]) should equal(Some(Game.Stud))
-      ("stud8": Option[Game.Limited]) should equal(Some(Game.Stud8))
-      ("razz": Option[Game.Limited]) should equal(Some(Game.Razz))
-      ("london": Option[Game.Limited]) should equal(Some(Game.London))
-      ("five-card": Option[Game.Limited]) should equal(Some(Game.FiveCard))
-      ("single27": Option[Game.Limited]) should equal(Some(Game.Single27))
-      ("triple27": Option[Game.Limited]) should equal(Some(Game.Triple27))
-      ("badugi": Option[Game.Limited]) should equal(Some(Game.Badugi))
+      ("texas": Game.Limited) should equal(Game.Texas)
+      ("omaha": Game.Limited) should equal(Game.Omaha)
+      ("omaha8": Game.Limited) should equal(Game.Omaha8)
+      ("stud": Game.Limited) should equal(Game.Stud)
+      ("stud8": Game.Limited) should equal(Game.Stud8)
+      ("razz": Game.Limited) should equal(Game.Razz)
+      ("london": Game.Limited) should equal(Game.London)
+      ("five-card": Game.Limited) should equal(Game.FiveCard)
+      ("single27": Game.Limited) should equal(Game.Single27)
+      ("triple27": Game.Limited) should equal(Game.Triple27)
+      ("badugi": Game.Limited) should equal(Game.Badugi)
     }
 
     it("mixed") {
-      ("horse": Option[Game.Mixed]) should equal(Some(Game.Horse))
-      ("eight": Option[Game.Mixed]) should equal(Some(Game.Eight))
+      ("horse": Game.Mixed) should equal(Game.Horse)
+      ("eight": Game.Mixed) should equal(Game.Eight)
     }
   }
 

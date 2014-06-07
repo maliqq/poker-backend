@@ -1,8 +1,9 @@
 package de.pokerno.model
 
 import math.{ BigDecimal ⇒ Decimal }
+
 import beans._
-import com.fasterxml.jackson.annotation.{JsonIgnore, JsonInclude, JsonProperty}
+import com.fasterxml.jackson.annotation.{JsonIgnore, JsonInclude, JsonProperty, JsonCreator}
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 case class Stake(
@@ -10,6 +11,14 @@ case class Stake(
     @JsonIgnore SmallBlind: Option[Decimal] = None,
     @JsonIgnore Ante: Either[Decimal, Boolean] = Right(false),
     @JsonIgnore BringIn: Either[Decimal, Boolean] = Right(false)) {
+  
+  @JsonCreator
+  def this(
+      @JsonProperty("bigBlind") _bb: Decimal,
+      @JsonProperty("smallBlind") _sb: Decimal,
+      @JsonProperty("ante") _ante: Decimal,
+      @JsonProperty("bringIn") _bringIn: Decimal
+  ) = this(_bb, Option[Decimal](_sb), if (_ante == null) Right(false) else Left(_ante), if (_bringIn == null) Right(false) else Left(_bringIn))
 
   def amount(t: Bet.ForcedType): Decimal = t match {
     case Bet.BringIn    ⇒ bringIn.get

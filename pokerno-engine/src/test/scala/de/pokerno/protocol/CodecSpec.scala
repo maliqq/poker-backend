@@ -12,7 +12,41 @@ class CodecSpec extends FunSpec with ClassicMatchers {
   object Json extends Codec.Json {
   }
   
-  describe("Json") {
+  describe("Json.decode") {
+    it("Game") {
+      val game = Json.decodeFromString[Game]("""{"game":{"type":"texas","limit":"fixed-limit","tableSize":2}}""")
+      game.`type` should equal(Game.Texas)
+      game.limit should equal(Game.FixedLimit)
+      game.tableSize should equal(2)
+    }
+    
+    it("Mix") {
+      val mix = Json.decodeFromString[Mix]("""{"mix":{"type":"horse","tableSize":2}}""")
+      mix.`type` should equal(Game.Horse)
+      mix.tableSize should equal(2)
+    }
+    
+    it("Stake") {
+      val stake1 = Json.decodeFromString[Stake]("""{"bigBlind":100}""")
+      stake1.bigBlind should equal(100)
+      
+      val stake2 = Json.decodeFromString[Stake]("""{"bigBlind":50,"smallBlind":20}""")
+      stake2.smallBlind should equal(20)
+      
+      val stake3 = Json.decodeFromString[Stake]("""{"bigBlind":100,"ante":10}""")
+      stake3.ante.get should equal(10)
+      
+      val stake4 = Json.decodeFromString[Stake]("""{"bigBlind":100,"bringIn":10}""")
+      stake4.bringIn.get should equal(10)
+      
+      val stake5 = Json.decodeFromString[Stake]("""{"bigBlind":100,"smallBlind":null,"ante":null,"bringIn":null}""")
+      stake5.smallBlind should equal(50.0)
+      stake5.ante should be(None)
+      stake5.bringIn should be(None)
+    }
+  }
+  
+  describe("Json.encode") {
     it("Stake") {
       val stake1 = new Stake(100.0)
       Json.encode(stake1) should equal("""{"bigBlind":100.0,"smallBlind":50.00}""") // FIXME????

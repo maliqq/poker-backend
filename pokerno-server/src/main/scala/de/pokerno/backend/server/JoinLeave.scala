@@ -1,10 +1,11 @@
 package de.pokerno.backend.server
 
+import akka.actor.ActorLogging
 import de.pokerno.model.{Player, Seat, Table}
 import de.pokerno.gameplay
 import de.pokerno.protocol.cmd
 
-trait JoinLeave {
+trait JoinLeave { _: ActorLogging =>
 
   def table: Table
   def events: gameplay.Events
@@ -15,7 +16,11 @@ trait JoinLeave {
       events.publish(gameplay.Events.playerJoin(join.pos, join.player, join.amount)) { _.all() }
     } catch {
       case err: Seat.IsTaken        ⇒
+        val seat = table.seats(join.pos) 
+        log.warning("Can't join player {} at {}: seat is taken ({})", join.player, join.pos, seat)
+        
       case err: Table.AlreadyJoined ⇒
+        log.warning("Can't join player {} at {}: already joined", join.player, join.pos)
     }
   } 
 
@@ -25,7 +30,6 @@ trait JoinLeave {
       events.publish(gameplay.Events.playerLeave(pos, seat.player.get)) { _.all() } // FIXME unify
       table.clearSeat(pos)
     }
-    table.removePlayer(player)
   }
 
 }

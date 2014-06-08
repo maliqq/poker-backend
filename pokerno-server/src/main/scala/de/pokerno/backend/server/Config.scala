@@ -6,11 +6,9 @@ object Config {
   final val defaultHost = "127.0.0.1"
 
   object Http {
-    final val defaultPort = 8080
-
     object Api {
       final val defaultPath = "/_api"
-      final val defaultPort = 8080
+      final val defaultPort = 8081
     }
 
     case class Api(
@@ -22,7 +20,7 @@ object Config {
 
   object Rpc {
     final val defaultHost = "localhost"
-    final val defaultPort = 8081
+    final val defaultPort = 9091
   }
 
   case class Rpc(
@@ -40,8 +38,12 @@ object Config {
 case class Config(
     var host: String = "localhost",
     var http: Option[gw.http.Config] = None,
+    var api: Option[Config.Http.Api] = None,
     var rpc: Option[Config.Rpc] = None) {
 
+  def apiConfig =
+    api.getOrElse(Config.Http.Api())
+  
   def httpConfig =
     http.getOrElse(gw.http.Config())
 

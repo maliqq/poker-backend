@@ -8,16 +8,13 @@ import de.pokerno.backend.{ gateway ⇒ gw }
 import de.pokerno.backend.Gateway
 import de.pokerno.backend.gateway.http
 import de.pokerno.protocol._
-import com.twitter.finagle.thrift.ThriftServerFramedCodec
-import com.twitter.util.Future
-import org.apache.thrift.protocol.TBinaryProtocol
 
 import akka.actor.{ Actor, ActorLogging, ActorRef, Props, ActorSystem }
 
 object Node {
 
   val log = LoggerFactory.getLogger(getClass)
-  lazy val system = ActorSystem("node")
+  implicit val system = ActorSystem("node")
 
   def start(config: Config): ActorRef = {
     log.info("starting with config: {}", config)
@@ -27,15 +24,21 @@ object Node {
 
     config.rpc.map { rpcConfig ⇒
       log.info("starting rpc with config: {}", rpcConfig)
-      Node.Service(node, new java.net.InetSocketAddress(rpcConfig.host, rpcConfig.port))
+      Service(node, new java.net.InetSocketAddress(rpcConfig.host, rpcConfig.port))
     }
-
+    
     config.http.map { httpConfig ⇒
       val httpGateway = system.actorOf(Props(classOf[gw.Http.Gateway], Some(node)), name = "http-gateway")
 
       log.info("starting HTTP server with config: {}", httpConfig)
       val server = new gw.http.Server(httpGateway, httpConfig)
       server.start
+    }
+    
+    config.api.map { apiConfig =>
+      import spray.can.Http
+      val httpApi = system.actorOf(Props(classOf[Api]), name = "http-api")
+      akka.io.IO(Http) ! Http.Bind(httpApi, config.host, port = apiConfig.port)
     }
 
     node
@@ -59,62 +62,6 @@ object Node {
     command: cmd.Command
   )
   
-  class Service(node: ActorRef) extends thrift.rpc.Node.FutureIface {
-    import java.nio.ByteBuffer
-    
-    def createRoom(id: String,
-        variation: thrift.Variation,
-        stake: thrift.Stake,
-        table: thrift.Table): Future[Unit] = Future{}
-    
-    def maintenance: Future[Unit] = Future{}
-    
-    def close(id: String): Future[Unit] = Future{}
-    
-    def pause(id: String, reason: thrift.rpc.PauseReason): Future[Unit] = Future{}
-    
-    def resume(id: String): Future[Unit] = Future{}
-    
-    def cancelCurrentDeal(id: String) = Future{}
-
-    def joinPlayer(id: String, player: String, pos: Int, amount: Double): Future[Unit] = Future{}
-    
-    def kickPlayer(id: String, player: String, reason: thrift.rpc.KickReason): Future[Unit] = Future{
-      node ! SendCommand(id, cmd.KickPlayer(player))
-    }
-    
-    def dealCards(id: String, dealType: de.pokerno.protocol.thrift.DealType, cards: ByteBuffer, cardsNum: Int, player: String): Future[Unit] = Future{}
-    
-    def addBet(id: String, player: String, bet: de.pokerno.protocol.thrift.Bet): Future[Unit] = Future{}
-    
-    def discardCards(id: String, player: String, cards: ByteBuffer, standPat: Boolean): Future[Unit] = Future{}
-    
-    def showCards(id: String, player: String, cards: ByteBuffer, muck: Boolean): Future[Unit] = Future{}
-    
-    def leave(id: String, player: String): Future[Unit] = Future{}
-    
-    def sitOut(id: String, player: String): Future[Unit] = Future{}
-    
-    def comeBack(id: String, player: String): Future[Unit] = Future{}
-    
-    def offline(id: String, player: String): Future[Unit] = Future{}
-    
-    def online(id: String, player: String): Future[Unit] = Future{}
-    
-    def buyIn(id: String, player: String, amount: Double): Future[Unit] = Future{}
-    
-    def rebuy(id: String, player: String, amount: Double): Future[Unit] = Future{}
-    
-    def doubleRebuy(id: String, player: String, amount: Double): Future[Unit] = Future{}
-    
-    def addon(id: String, player: String, amount: Double): Future[Unit] = Future{}
-  }
-  
-  object Service {
-    def apply(node: ActorRef, addr: java.net.InetSocketAddress) = {
-      Thrift.serve[thrift.rpc.Node.FinagledService, thrift.rpc.Node.FutureIface](new Service(node), "NodeService", addr)
-    }
-  }
 }
 
 class Node extends Actor with ActorLogging {

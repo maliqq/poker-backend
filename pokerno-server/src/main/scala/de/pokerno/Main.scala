@@ -88,6 +88,23 @@ object Main {
         rpc = Some(c.config.rpcConfig.copy(port = value))
       ))
     }
+    
+    
+    // --http-api
+    opt[Unit]("http-api") text "HTTP API" action { (value, c) ⇒
+      val config = c.config.api
+      if (config.isDefined) c // skip
+      else c.copy(config = c.config.copy(
+        api = Some(c.config.apiConfig)
+      ))
+    }
+
+    // --http-api-port 3000
+    opt[Int]("http-api-port") text "HTTP API port" action { (value, c) ⇒
+      c.copy(config = c.config.copy(
+          api = Some(c.config.apiConfig.copy(port = value))
+      ))
+    }
 //
 //    // --stomp
 //    opt[Unit]("stomp") text "STOMP with default options" action { (value, c) ⇒

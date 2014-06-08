@@ -12,6 +12,8 @@ case class Play(val id: String = java.util.UUID.randomUUID().toString()) {
   private var _ended: java.util.Date = null
   @JsonProperty def ended = _ended
   def end(): Unit = _ended = new java.util.Date()
+  
+  @JsonProperty var street: Option[Street.Value] = None
 
   var winners: Map[Player, Decimal] = Map.empty
   var knownCards: Map[Player, List[Card]] = Map.empty

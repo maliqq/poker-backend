@@ -14,7 +14,7 @@ class Round(
   private var _current = table.button.current
   private var _oldCurrent = _current
 
-  def current = _current
+  @JsonProperty def current = _current
   def current_=(pos: Int) = {
     _current = pos
     pos
@@ -41,13 +41,13 @@ class Round(
 
   // current amount to call
   private var _call: Decimal = .0
-  def call = _call
+  @JsonProperty def call = _call
   
   // current raise range
   private final val noRaise = MinMax[Decimal](.0, .0)
 
   private var _raise: MinMax[Decimal] = noRaise
-  def raise = _raise
+  @JsonProperty def raise = _raise
   
   def clear() {
     raiseCount = 0

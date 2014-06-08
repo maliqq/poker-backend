@@ -133,7 +133,10 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   @JsonProperty("offline") def offlineStatus: java.lang.Boolean = if (isOffline) true else null
 
   def online() {
-    if (!isEmpty) presence = Some(Presence.Online)
+    if (!isEmpty) {
+      presence = Some(Presence.Online)
+      if (isAway) ready()
+    }
   }
 
   def isOnline = _presence == Some(Presence.Online)
@@ -252,7 +255,7 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
    */
   // CHECK
   def canCheck(toCall: Decimal): Boolean = {
-    _put == toCall
+    putAmount == toCall
   }
 
   def check(): Decimal = {
@@ -382,6 +385,9 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
 
   def isReady =
     state == State.Ready
+  
+  def isAway =
+    state == State.Away
 
   def isPlaying =
     state == State.Play

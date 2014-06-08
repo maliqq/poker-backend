@@ -133,7 +133,7 @@ class Room(
 
     // add bet when deal is active
     case Event(addBet: cmd.AddBet, Running(_, deal)) ⇒
-      deal ! addBet // pass to deal
+      deal ! gameplay.Betting.Add(addBet.player, addBet.bet) // pass to deal
       stay()
 
     case Event(join: cmd.JoinPlayer, _) ⇒

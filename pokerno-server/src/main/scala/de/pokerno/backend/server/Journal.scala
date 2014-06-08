@@ -21,8 +21,8 @@ class Journal(storageDir: String, room: String) extends Actor with ActorLogging 
 
   def receive = {
     case Notification(e, from, to) ⇒ e match {
-      case msg.DeclarePlayStart() ⇒
-        val id = "new-uuid"//play.id
+      case msg.DeclarePlayStart(playState) ⇒
+        val id = playState.play.id
         writer = new java.io.OutputStreamWriter(new java.io.FileOutputStream(new java.io.File(dir.getPath, id + ext), true))
 
       case msg.ButtonChange(pos) ⇒

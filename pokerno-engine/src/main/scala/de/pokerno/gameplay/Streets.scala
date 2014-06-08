@@ -17,7 +17,7 @@ case class Streets(ctx: stg.Context, stages: Seq[StreetStages[stg.Context]]) ext
   def apply() = if (iterator.hasNext) {
     val stage = iterator.next()
 
-    play.street = Some(stage.street)
+    play.street = stage.street
     events broadcast Events.streetStart(stage.street)
 
     stage(ctx) match {

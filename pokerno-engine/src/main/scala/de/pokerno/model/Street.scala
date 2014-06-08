@@ -1,5 +1,10 @@
 package de.pokerno.model
 
+import com.fasterxml.jackson.module.scala.JsonScalaEnumeration
+import com.fasterxml.jackson.core.`type`.TypeReference
+
+class StreetRef extends TypeReference[Street.type]
+
 object Street extends Enumeration {
   private def value(name: String) = new Val(nextId, name)
 

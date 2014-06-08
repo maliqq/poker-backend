@@ -6,6 +6,7 @@ package de.pokerno.protocol
 //import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 
 object Serializers {
+  
   import de.pokerno.poker.Cards
   
   class Cards2Binary extends com.fasterxml.jackson.databind.util.StdConverter[Cards, Array[Byte]] {

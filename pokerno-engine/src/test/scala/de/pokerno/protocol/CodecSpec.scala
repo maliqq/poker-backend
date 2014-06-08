@@ -44,6 +44,20 @@ class CodecSpec extends FunSpec with ClassicMatchers {
       stake5.ante should be(None)
       stake5.bringIn should be(None)
     }
+    
+    it("Bet") {
+      val call = Json.decodeFromString[Bet]("""{"call":10}""")
+      call.isInstanceOf[Bet.Call] should be(true)
+      
+      val raise = Json.decodeFromString[Bet]("""{"raise":1000}""")
+      raise.isInstanceOf[Bet.Raise] should be(true)
+      
+      val check = Json.decodeFromString[Bet]("""{"check":true}""")
+      check should equal(Bet.Check)
+      
+      val fold = Json.decodeFromString[Bet]("""{"fold":true}""")
+      fold should equal(Bet.Fold)
+    }
   }
   
   describe("Json.encode") {

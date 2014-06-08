@@ -1,18 +1,20 @@
 package de.pokerno.protocol
 
 import de.pokerno.protocol.{action => message}
-import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonIgnoreProperties}
+import com.fasterxml.jackson.annotation.{JsonTypeInfo, JsonSubTypes, JsonIgnoreProperties}
 
 object PlayerEvent extends Codec.Json {
   def decode(data: Array[Byte]): PlayerEvent = decode[PlayerEvent](data)
+  def decode(data: String): PlayerEvent = decodeFromString[PlayerEvent](data)
 }
 
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.WRAPPER_OBJECT)
 @JsonSubTypes(Array(
-  new JsonSubTypes.Type(name = "table:join",      value = classOf[message.JoinTable]),
-  new JsonSubTypes.Type(name = "table:leave",     value = classOf[message.LeaveTable]),
-  new JsonSubTypes.Type(name = "bet:add",         value = classOf[message.AddBet]),
-  new JsonSubTypes.Type(name = "cards:discard",   value = classOf[message.DiscardCards]),
-  new JsonSubTypes.Type(name = "cards:show",      value = classOf[message.ShowCards])
+  new JsonSubTypes.Type(name = "join",      value = classOf[message.JoinTable]),
+  new JsonSubTypes.Type(name = "leave",     value = classOf[message.LeaveTable]),
+  new JsonSubTypes.Type(name = "bet",       value = classOf[message.AddBet]),
+  new JsonSubTypes.Type(name = "discard",   value = classOf[message.DiscardCards]),
+  new JsonSubTypes.Type(name = "show",      value = classOf[message.ShowCards])
 ))
 @JsonIgnoreProperties(ignoreUnknown = true)
 abstract class PlayerEvent extends Message {}

@@ -17,7 +17,6 @@ object Codec {
     def encode[T](v: T) =
       mapper.writeValueAsString(v)
 
-
     def encodeAsBytes[T](v: T) =
       mapper.writeValueAsBytes(v)
 

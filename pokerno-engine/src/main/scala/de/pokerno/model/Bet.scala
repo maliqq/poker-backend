@@ -2,10 +2,34 @@ package de.pokerno.model
 
 import math.{ BigDecimal ⇒ Decimal }
 import java.util.Locale
-import com.fasterxml.jackson.annotation.{JsonIgnore, JsonValue, JsonAutoDetect, JsonProperty, JsonPropertyOrder}
+import com.fasterxml.jackson.annotation.{JsonIgnore, JsonValue, JsonAutoDetect, JsonProperty, JsonPropertyOrder, JsonCreator}
+import com.fasterxml.jackson.databind.annotation.{JsonDeserialize}
 
 import beans._
 
+@JsonCreator
+class BetLike(
+    @JsonProperty("call")   val call: Option[Decimal] = None,
+    @JsonProperty("raise")  val raise: Option[Decimal] = None,
+    @JsonProperty("fold")   val fold: Option[Boolean] = None,
+    @JsonProperty("check")  val check: Option[Boolean] = None
+) {
+  def bet = call.map { amt =>
+    Bet.call(amt)
+  } orElse raise.map { amt =>
+    Bet.raise(amt)
+  } orElse fold.map { fold =>
+    Bet.fold
+  } orElse check.map { check =>
+    Bet.check
+  } getOrElse Bet.fold
+}
+
+class BetConverter extends com.fasterxml.jackson.databind.util.StdConverter[BetLike, Bet] {
+  def convert(b: BetLike): Bet = b.bet
+}
+
+@JsonDeserialize(converter = classOf[BetConverter])
 @JsonAutoDetect(isGetterVisibility = JsonAutoDetect.Visibility.NONE)
 trait Bet {
   def name: String

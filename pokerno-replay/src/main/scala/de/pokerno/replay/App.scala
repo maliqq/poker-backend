@@ -47,8 +47,7 @@ class App {
     val server = new http.Server(gw,
       http.Config(
         port = 8080,
-        webSocket = Right(true),
-        handlers = List(("api-handler", () ⇒ new ApiHandler(replayer)))
+        webSocket = Right(true)
       )
     )
     server.start

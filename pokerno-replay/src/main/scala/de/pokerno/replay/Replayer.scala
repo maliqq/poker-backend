@@ -13,26 +13,19 @@ private[replay] object Replayer {
 private[replay] case class ReplayError(msg: String) extends Exception(msg)
 
 private[replay] class Replayer(node: ActorRef) extends Actor {
-  import io.netty.handler.codec.http
-  import io.netty.channel.{ ChannelHandlerContext, ChannelFutureListener }
-  import http.HttpHeaders._
-
   def receive = {
     // http request
-    case (id: String, content: String, ctx: ChannelHandlerContext, resp: http.DefaultFullHttpResponse) ⇒
-      resp.headers().add(Names.CONTENT_TYPE, "application/json")
-
+    case (id: String, content: String, ctx: spray.routing.RequestContext) ⇒
+      
       def sendError(err: Throwable) {
-        resp.setStatus(http.HttpResponseStatus.UNPROCESSABLE_ENTITY)
-        resp.content().writeBytes(
-          """{"status": "error", "error": "%s"}""".format(err.getMessage).getBytes)
+        ctx.complete("""{"status": "error", "error": "%s"}""".format(err.getMessage))
       }
 
       try {
         val src = scala.io.Source.fromString(content)
         val scenario = Scenario.parse(id, src)
         replay(scenario)
-        resp.content().writeBytes("""{"status": "ok"}""".getBytes)
+        ctx.complete("""{"status": "ok"}""")
       } catch {
         case err: ReplayError ⇒
           sendError(err)
@@ -44,8 +37,6 @@ private[replay] class Replayer(node: ActorRef) extends Actor {
           err.printStackTrace()
           sendError(new Exception("something went wrong"))
       }
-
-      ctx.channel.writeAndFlush(resp).addListener(ChannelFutureListener.CLOSE)
 
     // console request
     case Replayer.Replay(scenario) ⇒

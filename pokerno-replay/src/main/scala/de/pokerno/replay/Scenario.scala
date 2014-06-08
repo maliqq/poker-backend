@@ -164,10 +164,10 @@ private[replay] class Scenario(val name: String) {
 
     case tags.Game(game, limit) ⇒
       val t = table.getOrElse(throw ReplayError("GAME is declared before TABLE"))
-      val g: Option[Game.Limited] = game 
-      g.orElse(throw ReplayError("unknown game"))
-      val l: Option[Game.Limit] = if (limit != null) limit else None
-      variation = Some(new Game(g.get, limit, Some(t.size)))
+      val g: Game.Limited = game 
+      if (g == null) throw ReplayError("unknown game")
+      val l: Game.Limit = limit
+      variation = Some(new Game(g, Option(l), Some(t.size)))
 
     case tags.Button(pos) ⇒
       val t = table.getOrElse(throw ReplayError("BUTTON is declared before TABLE"))

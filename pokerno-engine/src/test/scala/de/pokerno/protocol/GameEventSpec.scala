@@ -74,11 +74,11 @@ class GameEventSpec extends FunSpec with ClassicMatchers {
       d should equal("""{"$type":"hand:","pos":1,"player":"A","rank":"two-pair","cards":"MzMuLyU=","value":"MzMuLw==","high":"My4=","kicker":"JQ==","description":"two pairs, As and Ks"}""")
     }
     
-    it("DeclarePlayStart") {
-      val e = DeclarePlayStart()
-      val d = GameEvent.encodeAsString(e)
-      d should equal("""{"$type":"play:start"}""")
-    }
+//    it("DeclarePlayStart") {
+//      val e = DeclarePlayStart()
+//      val d = GameEvent.encodeAsString(e)
+//      d should equal("""{"$type":"play:start"}""")
+//    }
     
     it("DeclarePlayStop") {
       val e = DeclarePlayStop()

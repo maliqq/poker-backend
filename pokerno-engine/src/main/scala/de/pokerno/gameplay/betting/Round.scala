@@ -60,8 +60,8 @@ class Round(
   
   def complete() {
     table.seats.filter(_ inPlay) map { seat ⇒
+      seat.reset()
       seat.play()
-      seat.clearPut()
     }
 
     clear()

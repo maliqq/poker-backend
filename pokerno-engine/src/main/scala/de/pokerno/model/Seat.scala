@@ -97,11 +97,23 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   // presence
   private var _presence: Option[Presence.Value] = None
 
-  private var _lastSeenOnline: java.util.Date = null
+  private var _lastSeenOnline: Option[java.util.Date] = None
   def lastSeenOnline = _lastSeenOnline
-
-  def lastSeenOnlineBefore(millis: Long) = {
-    _lastSeenOnline != null && _lastSeenOnline.before(new java.util.Date(millis))
+  
+  def clear() {
+    _presence = None
+    _state = State.Empty
+    _player = None
+    _lastSeenOnline = None
+    _put = None
+    _stack = None
+    _lastAction = None
+  }
+  
+  // reset before betting
+  def reset() {
+    _put = None
+    _lastAction = None
   }
 
   @JsonIgnore def presence = _presence
@@ -116,8 +128,8 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   presenceCallbacks.bind(On) {
     case (_old, _new) ⇒
       _new match {
-        case Some(Presence.Online) ⇒
-          _lastSeenOnline = new java.util.Date()
+        case Some(Presence.Offline) ⇒
+          _lastSeenOnline = Some(new java.util.Date())
         case _ ⇒ // nothing
       }
   }
@@ -229,10 +241,6 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   def put(amount: Decimal)(f: ⇒ State.Value) {
     net(-amount)(f)
     _put = Some(amount + putAmount)
-  }
-  def clearPut() {
-    _put = None
-    _lastAction = None
   }
 
   /**

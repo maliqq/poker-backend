@@ -12,7 +12,7 @@ object Table {
 class Table(@JsonIgnore val size: Int) {
   import Table._
   
-  private val _seats = collection.mutable.LinearSeq.fill(size) { new Seat }
+  private val _seats = List.fill(size) { new Seat }
   def seats = _seats
   
   @JsonProperty("seats") def getSeats: List[Seat] = seats.toList
@@ -54,12 +54,16 @@ class Table(@JsonIgnore val size: Int) {
     addPlayer(at, player)
   }
 
-  def clearSeat(pos: Int): Unit =
-    seats(pos) = new Seat
+  def clearSeat(pos: Int): Unit = {
+    val seat = seats(pos)
+    seat.player map(removePlayer(_))
+    seat.clear()
+  }
 
   def playerPos(player: Player): Option[Int] =    _seating.get(player)
   def hasPlayer(player: Player): Boolean =        _seating.contains(player)
-  def addPlayer(at: Int, player: Player): Unit =  _seating(player) = at
-  def removePlayer(player: Player): Unit =        _seating.remove(player)
+  
+  private def addPlayer(at: Int, player: Player): Unit =  _seating(player) = at
+  private def removePlayer(player: Player): Unit =        _seating.remove(player)
 
 }

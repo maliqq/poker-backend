@@ -12,13 +12,18 @@ case class PrepareSeats(ctx: stg.Context) extends Stage {
         if (seat.canPlayNextDeal)     seat.play()
         else if (seat.isAllIn)        seat.idle()
         
-        if (seat.lastSeenOnlineBefore(System.currentTimeMillis() - 10.minutes.toMillis)) {
-          table.clearSeat(pos)
-        }
-        seat.clearPut()
+//        seat.lastSeenOnline map { date =>
+//          if (date.before(new java.util.Date(System.currentTimeMillis - 10.minutes.toMillis))) {
+//            seat.clear()
+//          }
+//        }
+      
+        //seat.clearPut()
     }
     
-    if (table.seats.count(_.canPlayNextDeal) <= 1) throw Stage.Exit
+    if (table.seats.count(_.canPlayNextDeal) <= 1) {
+      throw Stage.Exit
+    }
   }
   
 }

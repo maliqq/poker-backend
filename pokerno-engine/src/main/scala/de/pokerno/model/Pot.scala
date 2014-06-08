@@ -84,7 +84,7 @@ class SidePot(val capFrom: Decimal = 0, val cap: Option[Decimal] = None) {
 class Pot {
   @JsonIgnore var main: SidePot = new SidePot
   @JsonProperty var side: List[SidePot] = List.empty
-  @JsonIgnore var inactive: List[SidePot] = List.empty
+  private var inactive: List[SidePot] = List.empty
 
   @JsonProperty def total: Decimal = sidePots.map(_.total).sum
 

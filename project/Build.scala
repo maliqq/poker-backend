@@ -56,9 +56,9 @@ object PokernoBuild extends Build {
     scalaVersion := "2.10.3",
     //exportJars := true,
     //testOptions in Test += Tests.Argument("-oF"),
-    javacOptions ++= Seq("-source", "1.7", "-target", "1.7")
+    javacOptions ++= Seq("-source", "1.7", "-target", "1.7"),
     //scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-language:implicitConversions", "-language:postfixOps"),
-    //resolvers += "spray repo" at "http://repo.spray.io",
+    resolvers += "spray repo" at "http://repo.spray.io"
     //resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
   )
   
@@ -141,6 +141,8 @@ object PokernoBuild extends Build {
       //version := "0.0.1",
       libraryDependencies ++= testDeps ++ Seq(
         "com.codahale.metrics" % "metrics-core" % "3.0.1",
+        "io.spray" % "spray-can" % "1.2.1",
+        "io.spray" % "spray-routing" % "1.2.1",
         "org.zeromq" % "jzmq" % "3.0.1",
         "redis.clients" % "jedis" % "2.2.1",
         "org.apache.kafka" %% "kafka" % "0.8.1.1" excludeAll (

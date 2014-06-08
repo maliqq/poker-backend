@@ -1,9 +1,8 @@
 package de.pokerno.protocol.msg
 
-import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnore, JsonUnwrapped, JsonInclude}
 import de.pokerno.gameplay
 import de.pokerno.model.Street
-import com.fasterxml.jackson.annotation.{JsonIgnore, JsonUnwrapped, JsonInclude}
 
 object PlayState {
   def apply(ctx: gameplay.Context) = new PlayState(ctx)

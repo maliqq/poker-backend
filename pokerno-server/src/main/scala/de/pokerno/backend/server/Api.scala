@@ -1,7 +1,12 @@
 package de.pokerno.backend.server
 
 import akka.actor.{Actor, ActorLogging, ActorSystem}
-import spray.routing.HttpService
+import akka.pattern.ask
+
+import spray.routing.{HttpService, RequestContext}
+import spray.http._
+import util.{Success, Failure}
+import concurrent.duration._
 
 class Api extends Actor with ActorLogging with Api.Service {
   def actorRefFactory = context
@@ -9,21 +14,15 @@ class Api extends Actor with ActorLogging with Api.Service {
 }
 
 object Api {
-  trait Service extends HttpService {
+  trait Service extends HttpService { a: ActorLogging =>
+    val codec = de.pokerno.protocol.Codec.Json
+    
+    implicit def executionContext = actorRefFactory.dispatcher
+
     val route = pathPrefix("rooms" / Segment) { roomId =>
       pathEnd {
-        get {
-          complete("table state")
-        }
-      } ~
-      path("table") {
-        get {
-          complete("table")
-        }
-      } ~
-      path("play") {
-        get {
-          complete("play")
+        get { ctx =>
+          askRoom(roomId, Room.PlayState, ctx)
         }
       }
     } ~ path("rooms") {
@@ -43,5 +42,22 @@ object Api {
         complete("OK")
       }
     }
-  }
+    
+    def askRoom(roomId: String, msg: Any, ctx: RequestContext) {
+      actorRefFactory.actorSelection(f"../node-localhost/$roomId").resolveOne(1 second).onComplete {
+        case Success(room) =>
+          val f = room.ask(msg)(1 second)
+          f.onComplete {
+            case Success(resp) =>
+              ctx.complete(codec.encodeAsString(resp))
+            case Failure(err) =>
+              log.error("Error while asking {} for room {}: {}", msg, roomId, err.getCause.getMessage)
+              ctx.complete(StatusCodes.InternalServerError)
+          }
+        case Failure(_) =>
+          log.error("Room not found: {}", roomId)
+          ctx.complete(StatusCodes.NotFound)
+      }
+    }
+  } 
 }

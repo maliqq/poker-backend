@@ -7,8 +7,7 @@ import de.pokerno.backend.Gateway
 import de.pokerno.backend.gateway.http
 
 import de.pokerno.protocol.GameEvent
-import de.pokerno.protocol.{ msg => message}
-import de.pokerno.protocol.cmd
+import de.pokerno.protocol.{ cmd, api, msg => message}
 
 import de.pokerno.protocol.thrift
 import util.{ Success, Failure }
@@ -36,6 +35,8 @@ object Room {
   case object Resume extends ChangeState
 
   case class Observe(observer: ActorRef, name: String)
+  
+  case object PlayState
   
 }
 
@@ -212,7 +213,15 @@ class Room(
     case Event(kick: cmd.KickPlayer, _) ⇒
       leavePlayer(kick.player)
       stay()
-
+   
+    case Event(PlayState, NoneRunning) =>
+      sender ! api.PlayState(table, variation, stake)
+      stay()
+      
+    case Event(PlayState, Running(ctx, _)) =>
+      sender ! api.PlayState(ctx)
+      stay()
+      
     case Event(x: Any, _) ⇒
       log.warning("unhandled: {}", x)
       stay()

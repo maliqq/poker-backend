@@ -42,18 +42,16 @@ trait Presence { a: Actor ⇒
   case class Away(player: model.Player)
 
   def playerOffline(player: model.Player) {
-    table.playerPos(player) map { pos =>
-      val seat = table.seats(pos)
+    table.playerSeat(player) map { seat =>
       seat.offline()
-      events broadcast gameplay.Events.playerOffline(pos, player)
+      events broadcast gameplay.Events.playerOffline(seat)
     }
     
     awayTimers.schedule(player, waitReconnect, Away(player))
   }
 
   def playerAway(player: model.Player) {
-    table.playerPos(player) map { pos =>
-      val seat = table.seats(pos)
+    table.playerSeat(player) map { seat =>
       seat.away()
       autoKickTimers.schedule(player, waitReconnect, cmd.KickPlayer(player))
       // TODO: notify away
@@ -64,10 +62,9 @@ trait Presence { a: Actor ⇒
   }
 
   def playerOnline(player: model.Player) {
-    table.playerPos(player) map { pos =>
-      val seat = table.seats(pos)
+    table.playerSeat(player) map { seat =>
       seat.online()
-      events broadcast gameplay.Events.playerOnline(pos, player)
+      events broadcast gameplay.Events.playerOnline(seat)
     }
     
     awayTimers.cancel(player)

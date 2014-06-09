@@ -12,8 +12,8 @@ trait JoinLeave { _: ActorLogging =>
 
   protected def joinPlayer(join: cmd.JoinPlayer) {
     try {
-      table.takeSeat(join.pos, join.player, Option(join.amount))
-      events.publish(gameplay.Events.playerJoin(join.pos, join.player, join.amount)) { _.all() }
+      val seat = table.takeSeat(join.pos, join.player, Option(join.amount))
+      events broadcast gameplay.Events.playerJoin(seat)
     } catch {
       case err: Seat.IsTaken        ⇒
         val seat = table.seats(join.pos) 
@@ -27,7 +27,7 @@ trait JoinLeave { _: ActorLogging =>
   protected def leavePlayer(player: Player) {
     table.playerPos(player) map { pos =>
       val seat = table.seats(pos)
-      events.publish(gameplay.Events.playerLeave(pos, seat.player.get)) { _.all() } // FIXME unify
+      events broadcast gameplay.Events.playerLeave(seat)
       table.clearSeat(pos)
     }
   }

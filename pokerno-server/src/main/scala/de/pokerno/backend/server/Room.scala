@@ -145,6 +145,9 @@ class Room(
       // TODO broadcast
       stay()
     
+    case Event(cmd.AdvanceStack(player, amount), _) =>
+      stay()
+      
     case Event(cmd.ChangePlayerState(player, newState), _) =>
       stay()
 //    case Event(sitout: cmd.SitOut, _) =>

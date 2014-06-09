@@ -1,5 +1,6 @@
 package de.pokerno.replay
 
+import org.slf4j.LoggerFactory
 import de.pokerno.gameplay
 import de.pokerno.gameplay.stg
 import de.pokerno.protocol.cmd
@@ -14,6 +15,7 @@ private[replay] case class Betting(
   import ctx._
   import ctx.gameplay._
   
+  val log = LoggerFactory.getLogger(getClass)
   val gameplay = ctx.gameplay
 
   private val betActions = actions.filter(_.isInstanceOf[cmd.AddBet]).asInstanceOf[List[cmd.AddBet]]
@@ -64,7 +66,7 @@ private[replay] case class Betting(
             val found = seat.player.isDefined && bet.player == seat.player.get
 
             if (!found && sb.get.pos != seat.pos) {
-              Console printf("%s: missing big blind\n", seat)
+              log.warn("{}: missing big blind", seat)
               seat.idle() // помечаем все места от SB до BB как неактивные
             }
 
@@ -106,12 +108,12 @@ private[replay] case class Betting(
         val pos = round.current
         val seat = table.seats(pos)
 
-        Console printf(" | acting #%s %s\n", pos, seat)
+        log.info(" | acting #{} {}", pos, seat)
 
         def isOurTurn = seat.player.isDefined && seat.player.get == player
 
         if (isOurTurn) {
-          Console printf(" |-- player %s bet %s\n", seat.player.get, bet)
+          log.info(" |-- player %s bet %s" format(seat.player.get, bet))
 
           addBet(bet)
 
@@ -124,7 +126,7 @@ private[replay] case class Betting(
             case _       ⇒ false
           }
         } else {
-          Console printf(" |-- not our turn, dropping: %s %s\n", player, bet)
+          log.warn(" |-- not our turn, dropping: %s $s" format(player, bet))
           true
         }
       }

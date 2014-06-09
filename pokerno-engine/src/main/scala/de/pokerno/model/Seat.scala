@@ -2,6 +2,7 @@ package de.pokerno.model
 
 import math.{ BigDecimal ⇒ Decimal }
 
+import org.slf4j.LoggerFactory
 import com.fasterxml.jackson.annotation.{JsonIgnore, JsonProperty, JsonInclude, JsonAutoDetect, JsonPropertyOrder}
 import beans._
 
@@ -94,6 +95,8 @@ class Seat(
     private val _pos: Int = -1,
     private var _state: Seat.State.Value = Seat.State.Empty
     ) {
+
+  @JsonIgnore val log = LoggerFactory.getLogger(getClass)
   
   def this(_state: Seat.State.Value) = this(-1, _state)
   
@@ -396,7 +399,7 @@ class Seat(
       case Bet.Check                        ⇒ check()
       case f: Bet.Forced if f.amount > 0    ⇒ force(f)
       case x ⇒
-        Console printf("unhandled postBet: %s", x)
+        log.warn("unhandled postBet: {}", x)
         0
     }
 

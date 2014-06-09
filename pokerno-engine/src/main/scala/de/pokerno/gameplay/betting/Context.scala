@@ -1,5 +1,6 @@
 package de.pokerno.gameplay.betting
 
+import org.slf4j.LoggerFactory
 import de.pokerno.model.{Player, Bet, Seat}
 import akka.actor.{ActorRef, Cancellable}
 import de.pokerno.gameplay.{Betting, Context => Gameplay}
@@ -8,6 +9,8 @@ import concurrent.duration._
 class Context(val gameplay: Gameplay, ref: ActorRef) extends Betting with NextTurn {
   
   import gameplay._
+
+  val log = LoggerFactory.getLogger(getClass)
   
   var timer: Cancellable = null
   
@@ -32,12 +35,12 @@ class Context(val gameplay: Gameplay, ref: ActorRef) extends Betting with NextTu
     val seat = table.seats(pos)
     if (seat.player.get == player) { // FIXME: player.get
       if (timer != null) timer.cancel()
-      Console printf("[betting] add {}", bet)
+      log.info("[betting] add {}", bet)
       addBet(bet)
       // next turn
       ref ! decideNextTurn()
     } else
-      Console printf("[betting] not a turn of %s; current acting is %s", player, seat.player)
+      log.warn(f"[betting] not a turn of $player; current acting is ${seat.player}")
   }
   
   // timeout bet

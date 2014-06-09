@@ -12,11 +12,11 @@ case class Dealing(ctx: stg.Context, _type: DealType.Value, cardsNum: Option[Int
       var n: Int = cardsNum getOrElse (0)
       if (n <= 0 || n > gameOptions.pocketSize) n = game.options.pocketSize
 
-      Console printf("dealing %s %d cards\n", _type, n)
-
       table.seats filter (_.isActive) foreach { seat =>
         val player = seat.player.get
         val cards = dealer dealPocket (n, player)
+        
+        assert(cards.size == n)
 
         if (_type == DealType.Hole) {
           events.publish(Events.dealPocket(seat, _type, cards)) { _.only(player) }
@@ -26,9 +26,10 @@ case class Dealing(ctx: stg.Context, _type: DealType.Value, cardsNum: Option[Int
 
     case DealType.Board if cardsNum.isDefined ⇒
 
-      Console printf("dealing board %d cards\n", cardsNum.get)
-
       val cards = dealer dealBoard (cardsNum.get)
+    
+      assert(cards.size == cardsNum.get)
+    
       events broadcast Events.dealBoard(cards)
 
     case _ ⇒

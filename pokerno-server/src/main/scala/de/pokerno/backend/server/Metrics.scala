@@ -13,6 +13,7 @@ object Metrics {
 
 class Metrics(id: String) extends Actor with ActorLogging {
   final val metrics = new MetricRegistry
+  //val reporter = ConsoleReporter.forRegistry(metrics).build()
 
   val players         = metrics.counter("players")
 

@@ -1,11 +1,13 @@
 package de.pokerno.gameplay.betting
 
+import org.slf4j.LoggerFactory
 import de.pokerno.model._
 import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnore, JsonInclude}
 import math.{ BigDecimal ⇒ Decimal }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
+  val log = LoggerFactory.getLogger(getClass)
   
   private var _current = table.button.current
   private var _oldCurrent = _current
@@ -121,7 +123,7 @@ class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
     }
     
     if (!seat.canBet(_posting, stake, _call, _raise)) {
-      Console printf("bet %s is not valid; call=%.2f raise=%s %s\n", _posting, callAmount, _raise, seat)
+      log.warn("bet %s is not valid; call=%.2f raise=%s %s\n" format(_posting, callAmount, _raise, seat))
       _posting = Bet.fold
     }
 

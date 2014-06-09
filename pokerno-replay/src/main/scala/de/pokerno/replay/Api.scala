@@ -22,7 +22,7 @@ private[replay] class Api extends Actor with ActorLogging with ApiService {
 trait ApiService extends HttpService {
   implicit def executionContext = actorRefFactory.dispatcher
 
-  val route = path("api" / "scenario") {
+  val route = path("_api" / "scenario") {
     respondWithHeaders(
         `Access-Control-Allow-Origin`(AllOrigins),
         `Access-Control-Allow-Headers`("*")) {
@@ -40,7 +40,7 @@ trait ApiService extends HttpService {
   }
   
   def submit(id: String, content: String, ctx: RequestContext) {
-    actorRefFactory.actorSelection("../replay").resolveOne(1 second).onComplete {
+    actorRefFactory.actorSelection("../replayer").resolveOne(1 second).onComplete {
       case Success(ref) =>
         ref ! (id, content, ctx)
       case Failure(_) =>

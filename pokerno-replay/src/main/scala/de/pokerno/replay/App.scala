@@ -8,7 +8,7 @@ import de.pokerno.backend.Gateway
 import de.pokerno.backend.gateway.{ Http, http }
 
 class App {
-  val system = ActorSystem("poker-replayer")
+  implicit val system = ActorSystem("poker-replayer")
 
   // node emulation
   val node = system.actorOf(Props(new Actor {
@@ -44,13 +44,11 @@ class App {
   val replayer = system.actorOf(Props(classOf[Replayer], node), "replayer")
 
   def startHttpServer() {
-    val server = new http.Server(gw,
-      http.Config(
-        port = 8080,
-        webSocket = Right(true)
-      )
-    )
+    val server = new http.Server(gw, http.Config(port = 8081, webSocket = Right(true)))
     server.start
+    
+    val api = system.actorOf(Props(classOf[Api]), name = "api")
+    akka.io.IO(spray.can.Http) ! spray.can.Http.Bind(api, "localhost", port = 8080)
   }
 
   def parse(filename: String) {

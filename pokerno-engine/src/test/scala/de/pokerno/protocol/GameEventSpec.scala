@@ -10,11 +10,11 @@ class GameEventSpec extends FunSpec with ClassicMatchers {
   import de.pokerno.poker.{Cards, Hand}
   
   describe("GameEvent") {
-    it("AskBet") {
-      val e = AskBet(1, new Player("A"), 1000, (1000.0, 1000.0))
-      val d = GameEvent.encodeAsString(e)
-      d should equal("""{"$type":"bet:ask","pos":1,"player":"A","call":1000,"raise":{"min":1000.0,"max":1000.0}}""")
-    }
+//    it("AskBet") {
+//      val e = AskBet(1, new Player("A"), 1000, (1000.0, 1000.0))
+//      val d = GameEvent.encodeAsString(e)
+//      d should equal("""{"$type":"bet:ask","pos":1,"player":"A","call":1000,"raise":{"min":1000.0,"max":1000.0}}""")
+//    }
     
     it("AskDiscard") {
       val e = AskDiscard(1, new Player("A"))

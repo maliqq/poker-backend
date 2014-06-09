@@ -13,9 +13,10 @@ trait Betting {
   
   // require bet
   def requireBet(pos: Int) {
-    val seat = round requireBet pos
-    val player = seat.player.get
-    events broadcast Events.requireBet(pos, player, round.call, round.raise)
+    round requireBet pos
+    round.acting map { acting =>
+      events broadcast Events.requireBet(acting)
+    }
   }
 
   // add bet

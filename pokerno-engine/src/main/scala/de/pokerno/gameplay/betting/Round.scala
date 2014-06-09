@@ -5,19 +5,20 @@ import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnore, JsonInclude}
 import math.{ BigDecimal ⇒ Decimal }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-class Round(
-    table: Table,
-    game: Game,
-    stake: Stake
-  ) {
+class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
   
   private var _current = table.button.current
   private var _oldCurrent = _current
-
-  @JsonProperty def current = _current
+  
+  def current = _current
   def current_=(pos: Int) = {
     _current = pos
     pos
+  }
+  
+  @JsonProperty def acting: Option[Acting] = _call map { call =>
+    val seat = table.seats(_current)
+    Acting(_current, seat.player, call, _raise)
   }
   
   private var _seats = table.seatsFrom(_current)
@@ -40,19 +41,18 @@ class Round(
   private var raiseCount: Int = 0
 
   // current amount to call
-  private var _call: Decimal = .0
-  @JsonProperty def call = _call
+  private var _call: Option[Decimal] = None
+  def call = _call
+  def callAmount: Decimal = _call.getOrElse(.0)
   
   // current raise range
-  private final val noRaise = MinMax[Decimal](.0, .0)
-
-  private var _raise: MinMax[Decimal] = noRaise
-  @JsonProperty def raise = _raise
+  private var _raise: Option[Tuple2[Decimal, Decimal]] = None
+  def raise = _raise
   
   def clear() {
     raiseCount = 0
-    _call = .0
-    _raise = noRaise
+    _call = None
+    _raise = None
     _current = table.button.current
     // FIXME
     //pot.complete()
@@ -71,19 +71,13 @@ class Round(
     current = pos
 
     val seat = table.seats(current)
-
-    _call = stake amount betType
+    val amount = stake amount betType
+    
+    _call = Some(amount)
 
     val stack = seat.stack.get
-    val amt = List(stack, _call) min
-    val bet = betType match {
-      case Bet.Ante =>        Bet.ante(amt)
-      case Bet.SmallBlind =>  Bet.sb(amt)
-      case Bet.BigBlind =>    Bet.bb(amt)
-      case Bet.BringIn =>     Bet.bringIn(amt)
-      case Bet.Straddle =>    Bet.straddle(amt)
-      case Bet.GuestBlind =>  Bet.gb(amt)
-    }
+    val amt = List(stack, amount) min
+    val bet = betType.force(amt)
 
     addBet(bet)
   }
@@ -97,11 +91,11 @@ class Round(
     val blind = if (bigBets) stake.bigBlind * 2 else stake.bigBlind
     val total = seat.total
 
-    if (total <= _call || raiseCount >= MaxRaiseCount)
-      _raise = noRaise
+    if (total <= callAmount || raiseCount >= MaxRaiseCount)
+      _raise = None
     else {
-      val (min, max) = limit raise (total, blind + _call, pot.total)
-      _raise = MinMax(List(total, min) min, List(total, max) min)
+      val (min, max) = limit raise (total, blind + callAmount, pot.total)
+      _raise = Some(List(total, min) min, List(total, max) min)
     }
     
     seat
@@ -115,13 +109,13 @@ class Round(
       case Bet.AllIn =>
         Bet.raise(seat.total)
       case Bet.Call(amt) if amt == null || amt == 0 =>
-        Bet.Call(List(_call, seat.total).min - seat.putAmount)
+        Bet.Call(List(callAmount, seat.total).min - seat.putAmount)
       case _ =>
         _bet
     }
     
     if (!seat.canBet(_posting, stake, _call, _raise)) {
-      Console printf("bet %s is not valid; call=%.2f raise=%s %s\n", _posting, _call, _raise, seat)
+      Console printf("bet %s is not valid; call=%.2f raise=%s %s\n", _posting, callAmount, _raise, seat)
       _posting = Bet.fold
     }
 
@@ -131,8 +125,8 @@ class Round(
       if (_posting.isRaise)
         raiseCount += 1
 
-      if (!_posting.isCall && seat.putAmount > _call)
-        _call = seat.putAmount
+      if (!_posting.isCall && seat.putAmount > callAmount)
+        _call = Some(seat.putAmount)
 
       pot add (player, diff, seat.isAllIn)
     }

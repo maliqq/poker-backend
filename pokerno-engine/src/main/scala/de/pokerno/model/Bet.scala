@@ -101,9 +101,13 @@ object Bet {
   
   trait ForcedType {
     @JsonValue def name: String
+    
+    def force(amt: Decimal): Bet
   }
+
   object Ante extends ForcedType {
     def name = "ante"
+    def force(amt: Decimal) = Bet.ante(amt)
   }
   case class Ante(amount: Decimal) extends Forced {
     def name = Ante.name
@@ -111,6 +115,7 @@ object Bet {
   }
   object BringIn extends ForcedType {
     def name = "bring-in"
+    def force(amt: Decimal) = Bet.bringIn(amt)
   }
   case class BringIn(amount: Decimal) extends Forced {
     def name = BringIn.name
@@ -118,6 +123,7 @@ object Bet {
   }
   object SmallBlind extends ForcedType {
     def name = "small-blind"
+    def force(amt: Decimal) = Bet.sb(amt)
   }
   case class SmallBlind(amount: Decimal) extends Forced {
     def name = SmallBlind.name
@@ -125,6 +131,7 @@ object Bet {
   }
   object BigBlind extends ForcedType {
     def name = "big-blind"
+    def force(amt: Decimal) = Bet.bb(amt)
   }
   case class BigBlind(amount: Decimal) extends Forced {
     def name = BigBlind.name
@@ -132,6 +139,7 @@ object Bet {
   }
   object GuestBlind extends ForcedType {
     def name = "guest-blind"
+    def force(amt: Decimal) = Bet.gb(amt)
   }
   case class GuestBlind(amount: Decimal) extends Forced {
     def name = GuestBlind.name
@@ -139,6 +147,7 @@ object Bet {
   }
   object Straddle extends ForcedType {
     def name = "straddle"
+    def force(amt: Decimal) = Bet.straddle(amt)
   }
   case class Straddle(amount: Decimal) extends Forced {
     def name = Straddle.name

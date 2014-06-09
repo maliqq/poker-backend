@@ -87,8 +87,8 @@ object Events {
   def addBet(pos: Int, player: Player, bet: Bet) =
     msg.DeclareBet(pos, player, bet)
 
-  def requireBet(pos: Int, player: Player, call: Decimal, raise: MinMax[Decimal]) = 
-    msg.AskBet(pos, player, call = call, raise = raise)
+  def requireBet(acting: betting.Acting) = 
+    msg.AskBet(acting)
 
   def declarePot(total: Decimal, side: Seq[Decimal]) =
     msg.DeclarePot(total, side)

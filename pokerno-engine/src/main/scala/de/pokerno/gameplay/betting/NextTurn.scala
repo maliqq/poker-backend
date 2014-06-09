@@ -19,7 +19,7 @@ trait NextTurn {
   protected def nextTurn(): Either[Int, Option[Boolean]] = {
     round.seats filter (_._1 inPlay) foreach {
       case (seat, pos) ⇒
-        if (!seat.didCall(round.call)) {
+        if (!seat.didCall(round.callAmount)) {
           //warn("not called, still playing: %s", seat)
           seat.play()
         }

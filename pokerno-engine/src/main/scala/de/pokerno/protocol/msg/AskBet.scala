@@ -1,14 +1,8 @@
 package de.pokerno.protocol.msg
 
-import com.fasterxml.jackson.annotation.JsonProperty
-import de.pokerno.model.MinMax
+import com.fasterxml.jackson.annotation.{JsonProperty, JsonUnwrapped}
+import de.pokerno.gameplay.betting.Acting
 
 sealed case class AskBet(
-    @JsonProperty var pos: Int,
-
-    @JsonProperty var player: Player,
-
-    @JsonProperty var call: Decimal,
-
-    @JsonProperty var raise: MinMax[Decimal]
+    @JsonUnwrapped var acting: Acting
   ) extends GameEvent {}

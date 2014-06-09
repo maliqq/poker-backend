@@ -300,12 +300,18 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
   }
 
   // RAISE
-  def canRaise(amt: Decimal, toRaise: MinMax[Decimal]): Boolean = {
+  def canRaise(amt: Decimal, toRaise: Tuple2[Decimal, Decimal]): Boolean = {
     inPlay && _canRaise(amt, toRaise)
   }
 
-  private def _canRaise(amt: Decimal, toRaise: MinMax[Decimal]): Boolean = {
-    amt <= total && amt >= toRaise.min && amt <= toRaise.max
+//  case class GreaterThanMax(amount: Decimal, max: Decimal)
+//    extends Error("amount=%.2f max=%.2f" format (amount, max))
+//
+//  case class LessThanMin(amount: Decimal, min: Decimal)
+//    extends Error("amount=%.2f min=%.2f" format (amount, min))
+//
+  private def _canRaise(amt: Decimal, toRaise: Tuple2[Decimal, Decimal]): Boolean = {
+    amt <= total && amt >= toRaise._1 && amt <= toRaise._2
   }
 
   def raise(amt: Decimal): Decimal = {
@@ -350,19 +356,21 @@ class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
     inPlay || isPostedBB
   }
   
-  def canBet(bet: Bet, stake: Stake, _call: Decimal, _raise: MinMax[Decimal]): Boolean =
+  def canBet(bet: Bet, stake: Stake, _call: Option[Decimal], _raise: Option[Tuple2[Decimal, Decimal]]): Boolean =
     bet match {
       case Bet.Fold ⇒
         canFold || notActive
   
       case Bet.Check ⇒
-        canCheck(_call)
+        _call.isEmpty || canCheck(_call.get)
   
-      case Bet.Call(amt) if amt != null && amt > 0 && isActive ⇒
-        canCall(amt, _call)
+      // FIXME check on null
+      case Bet.Call(amt) if _call.isDefined && isActive ⇒
+        canCall(amt, _call.get)
   
-      case Bet.Raise(amt) if amt != null && amt > 0 && isActive ⇒
-        canRaise(amt, _raise)
+      // FIXME check on null
+      case Bet.Raise(amt) if _raise.isDefined && isActive ⇒
+        canRaise(amt, _raise.get)
   
       case f: Bet.Forced ⇒
         canForce(f.amount, stake.amount(f.betType))

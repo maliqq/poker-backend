@@ -44,11 +44,11 @@ class App {
   val replayer = system.actorOf(Props(classOf[Replayer], node), "replayer")
 
   def startHttpServer() {
-    val server = new http.Server(gw, http.Config(port = 8081, webSocket = Right(true)))
-    server.start
-    
     val api = system.actorOf(Props(classOf[Api]), name = "api")
-    akka.io.IO(spray.can.Http) ! spray.can.Http.Bind(api, "localhost", port = 8080)
+    akka.io.IO(spray.can.Http) ! spray.can.Http.Bind(api, "localhost", port = 8082)
+    
+    val server = new http.Server(gw, http.Config(port = 8083, webSocket = Right(true)))
+    server.start
   }
 
   def parse(filename: String) {

@@ -1,8 +1,8 @@
-package de.pokerno
+package de.pokerno.replay
 
 import jline.console.ConsoleReader
 
-private[pokerno] case class Config(file: Option[String] = None, http: Boolean = false)
+private[replay] case class Config(file: Option[String] = None, http: Boolean = false)
 
 object Main {
   //
@@ -37,7 +37,7 @@ object Main {
 
   def main(args: Array[String]) {
     parser.parse(args, config) foreach { c ⇒
-      val app = new replay.App
+      val app = new App
       app.startHttpServer()
 
       if (c.http) {}

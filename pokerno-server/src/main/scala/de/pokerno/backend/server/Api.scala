@@ -44,7 +44,7 @@ object Api {
     }
     
     def askRoom(roomId: String, msg: Any, ctx: RequestContext) {
-      actorRefFactory.actorSelection(f"../node-localhost/$roomId").resolveOne(1 second).onComplete {
+      actorRefFactory.actorSelection(f"../node-main/$roomId").resolveOne(1 second).onComplete {
         case Success(room) =>
           val f = room.ask(msg)(1 second)
           f.onComplete {

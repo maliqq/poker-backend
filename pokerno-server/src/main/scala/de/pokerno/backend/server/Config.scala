@@ -8,7 +8,7 @@ object Config {
   object Http {
     object Api {
       final val defaultPath = "/_api"
-      final val defaultPort = 8081
+      final val defaultPort = 8080
     }
 
     case class Api(

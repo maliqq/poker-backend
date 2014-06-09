@@ -31,7 +31,7 @@ case class Config(
 }
 
 object Server {
-  final val defaultPort = 8080
+  final val defaultPort = 8081
 }
 
 case class Server(gw: ActorRef, config: Config) {

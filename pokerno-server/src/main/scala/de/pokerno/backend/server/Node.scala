@@ -19,8 +19,8 @@ object Node {
   def start(config: Config): ActorRef = {
     log.info("starting with config: {}", config)
 
-    log.info("starting node {}", config.host)
-    val node = system.actorOf(Props(classOf[Node]), name = f"node-${config.host}")
+    log.info("starting node at {}", config.host)
+    val node = system.actorOf(Props(classOf[Node]), name = "node-main")
 
     config.rpc.map { rpcConfig ⇒
       log.info("starting rpc with config: {}", rpcConfig)

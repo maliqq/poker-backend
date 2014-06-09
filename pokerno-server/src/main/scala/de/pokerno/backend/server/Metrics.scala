@@ -11,7 +11,7 @@ import de.pokerno.gameplay.Notification
 object Metrics {
 }
 
-class Metrics extends Actor with ActorLogging {
+class Metrics(id: String) extends Actor with ActorLogging {
   final val metrics = new MetricRegistry
 
   val players         = metrics.counter("players")
@@ -95,14 +95,11 @@ class Metrics extends Actor with ActorLogging {
   }
 
   private def report() {
-    Console printf ("""~~~
-                     | players: %d
-                     | plays last 15m: %f
-                     | avg pot=%.2f
-                     | players per flop=%.2f%%
-                     |~~~""".stripMargin, players.getCount(),
+    Console printf ("[metrics] room %s stats: players: %d plays/hour: %f avg pot=%.2f players per flop=%.2f%%\n", id, 
+      players.getCount(),
       plays.getFifteenMinuteRate() * 3600,
       pots.getSnapshot().getMedian() / 100.0,
       playersPerFlop.getMeanRate())
   }
+  
 }

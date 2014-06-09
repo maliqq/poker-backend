@@ -66,7 +66,7 @@ class Room(
 
   val watchers  = observe(classOf[Watchers], f"room-$id-watchers")
   val logger    = observe(classOf[Journal], f"room-$id-journal", "/tmp", id)
-  val metrics   = observe(classOf[Metrics], f"room-$id-metrics")
+  val metrics   = observe(classOf[Metrics], f"room-$id-metrics", id)
 
   log.info("starting room {}", id)
   startWith(State.Waiting, NoneRunning)

@@ -14,17 +14,17 @@ case class PostBlinds(ctx: stg.Context) extends Stage with Betting {
   def apply() = if (gameOptions.hasBlinds) {
     moveButton() // FIXME
     
-    val active      = round.seats filter (_._1 isActive)      map (_._2)
-    val waitingBB   = round.seats filter (_._1 isWaitingBB)   map (_._2)
+    val active      = round.seats filter (_ isActive)
+    val waitingBB   = round.seats filter (_ isWaitingBB)
 
     if (active.size + waitingBB.size < 2) {
       // TODO
     } else {
       val Seq(sb, bb, _*) = if (active.size == 2) active.reverse else active
 
-      forceBet(sb, Bet.SmallBlind)
+      forceBet(sb.pos, Bet.SmallBlind)
       
-      forceBet(bb, Bet.BigBlind)
+      forceBet(bb.pos, Bet.BigBlind)
     }
   }
   

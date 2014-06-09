@@ -90,10 +90,18 @@ object Seat {
 @JsonPropertyOrder(Array("state","player","stack","put","action"))
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonAutoDetect(isGetterVisibility = JsonAutoDetect.Visibility.NONE)
-class Seat(private var _state: Seat.State.Value = Seat.State.Empty) {
+class Seat(
+    private val _pos: Int = -1,
+    private var _state: Seat.State.Value = Seat.State.Empty
+    ) {
+  
+  def this(_state: Seat.State.Value) = this(-1, _state)
+  
   import Seat._
   import Seat.Callbacks._
 
+  def pos = _pos
+  
   // presence
   private var _presence: Option[Presence.Value] = None
 

@@ -17,7 +17,7 @@ private[replay] case class Dealing(
   
   private val dealActions = actions.filter { action ⇒
     action match {
-      case a: cmd.DealCards ⇒   a._type == _type
+      case a: cmd.DealCards ⇒   a.`type` == _type
       case _ ⇒                  false
     }
   }.asInstanceOf[List[cmd.DealCards]]
@@ -44,7 +44,7 @@ private[replay] case class Dealing(
         val player = seat.player.get
         if (_perPlayer.contains(player)) {
           val d = _perPlayer(player)
-          dealPocket(d._type, d.cards, Some(player))
+          dealPocket(d.`type`, d.cards, Some(player))
         } else {
           dealPocket(_type, Right(None), Some(player))
         }
@@ -55,15 +55,14 @@ private[replay] case class Dealing(
   }
 
   private def dealPocket(_type: DealType.Value, _cards: Either[Cards, Option[Int]], _player: Option[Player]) {
-    val (player: Player, pos: Int) = _player match {
+    val seat = _player match {
       case Some(p) ⇒
-        (p, table.playerPos(p).get)
+        table.playerSeat(p).get
 
       case None ⇒
-        val pos = round.current
-        val seat = table.seats(pos)
-        (seat.player.get, pos)
+        table.seats(round.current)
     }
+    val player = seat.player.get
     
     val pocketSize = gameOptions.pocketSize
     val max = pocketSize - dealer.pocketOption(player).map(_.size).getOrElse(0)
@@ -77,7 +76,7 @@ private[replay] case class Dealing(
       case _ ⇒ null
     }
     
-    events broadcast Events.dealPocket(pos, player, _type, cardsDealt)
+    events broadcast Events.dealPocket(seat, _type, cardsDealt)
   }
   
   private def dealBoard(_cards: Either[Cards, Option[Int]]) {

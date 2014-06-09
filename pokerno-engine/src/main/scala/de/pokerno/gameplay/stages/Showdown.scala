@@ -15,9 +15,10 @@ case class Showdown(ctx: stg.Context) extends Stage {
   import ctx.gameplay._
   
   def apply() = {
-    val stillInPot = table.seats.zipWithIndex filter (_._1 inPot)
+    val stillInPot = table.seats filter (_.inPot)
+    
     if (stillInPot.size == 1) {
-      declareExclusiveWinner(round.pot, stillInPot head)
+      declareExclusiveWinner(stillInPot.head, round.pot)
     } else if (stillInPot.size > 1) {
       var hiHands: Option[Map[Player, Hand]] = None
       var loHands: Option[Map[Player, Hand]] = None
@@ -51,14 +52,12 @@ case class Showdown(ctx: stg.Context) extends Stage {
     sorted.takeWhile(_._2 == max._2)
   }
 
-  private def declareExclusiveWinner(pot: Pot, box: Tuple2[Seat, Int]) = {
-    val (seat, pos) = box
+  private def declareExclusiveWinner(seat: Seat, pot: Pot) = {
     pot.sidePots foreach { side ⇒
       val amount = side.total
       val winner = seat.player.get
       seat wins amount
-      events.broadcast(
-        Events.declareWinner(pos, winner, amount))
+      events broadcast Events.declareWinner(seat, amount)
     }
   }
 
@@ -105,12 +104,10 @@ case class Showdown(ctx: stg.Context) extends Stage {
           total)
       }
 
-      winners foreach {
-        case (winner, amount) ⇒
-          table.playerPos(winner) map { pos =>
-            val seat = table.seats(pos)
-            seat wins amount
-            events.broadcast(Events.declareWinner(pos, winner, amount))
+      winners foreach { case (winner, amount) ⇒
+        table.playerSeat(winner) map { seat =>
+          seat wins amount
+          events broadcast Events.declareWinner(seat, amount)
         }
       }
     }
@@ -137,13 +134,12 @@ case class Showdown(ctx: stg.Context) extends Stage {
   private def showHands(ranking: Hand.Ranking): Map[Player, Hand] = {
     var hands: Map[Player, Hand] = Map.empty
 
-    table.seats.zipWithIndex filter (_._1 inPot) foreach {
-      case (seat, pos) ⇒
-        val (pocket, hand) = rank(seat.player get, ranking)
-        val player = seat.player.get
-        hands += (player -> hand)
-        //events.publish(message.ShowCards(pos = pos, player = player, cards = pocket))
-        events.broadcast(Events.declareHand(pos, player, pocket, hand))
+    table.seats filter (_.inPot) foreach { seat =>
+      val (pocket, hand) = rank(seat.player get, ranking)
+      val player = seat.player.get
+      hands += (player -> hand)
+      //events.publish(message.ShowCards(pos = pos, player = player, cards = pocket))
+      events broadcast Events.declareHand(seat, pocket, hand)
     }
     hands
   }

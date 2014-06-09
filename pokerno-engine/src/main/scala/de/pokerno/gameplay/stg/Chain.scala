@@ -21,9 +21,9 @@ private[gameplay] class Chain[T <: Context] {
     var result: Stage.Control = Stage.Next
     if (!stages.isEmpty) {
       _stages = _stages.dropWhile { f ⇒
-        Console printf ("[stage] start %s\n", f.name)
+        //Console printf ("[stage] start %s\n", f.name)
         result = f(ctx)
-        Console printf ("[stage] stop %s -> %s\n", f.name, result)
+        Console printf ("[stage] %s -> %s\n", f.name, result)
         result == Stage.Next
       }
     }

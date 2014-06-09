@@ -70,11 +70,11 @@ class Deal(val gameplay: Context) extends Actor
       self ! btx.decideNextTurn()
 
     case Streets.Next ⇒
-      log.info("streets next")
+      log.info("[streets] next")
       onStreets.apply()
 
     case Streets.Done ⇒
-      log.info("streets done")
+      log.info("[streets] done")
       afterStreets.apply(ctx)
       done()
   }
@@ -85,12 +85,14 @@ class Deal(val gameplay: Context) extends Actor
 
     case Betting.Stop ⇒
       log.info("[betting] stop")
+      btx.doneBets()
       context.become(receiveStreets)
       self ! Streets.Done
 
     case Betting.Showdown ⇒
       // TODO XXX FIXME WTF?
       log.warning("[betting] showdown")
+      btx.doneBets()
       context.become(receiveStreets)
       self ! Streets.Next
 

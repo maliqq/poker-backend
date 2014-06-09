@@ -1,9 +1,10 @@
 package de.pokerno.protocol.cmd
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import de.pokerno.model.DealType
 
 sealed case class DealCards(
-  _type: DealType.Value,
-  cards: Either[Cards, Option[Int]] = Right(None),
-  player: Option[Player] = None
+  @JsonProperty `type`: DealType.Value,
+  @JsonProperty cards: Either[Cards, Option[Int]] = Right(None),
+  @JsonProperty player: Option[Player] = None
 ) extends Command {}

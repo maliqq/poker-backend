@@ -10,11 +10,11 @@ case class BringIn(ctx: stg.Context) extends Stage {
   import ctx.gameplay._
   
   def apply() = {
-    val (_, pos) = round.seats filter (_._1.isActive) minBy { case (_seat, _pos) ⇒
+    val seat = round.seats filter (_.isActive) minBy { _seat ⇒
       dealer.pocket(_seat.player.get).last
     }
     
-    setButton(pos)
+    setButton(seat.pos)
     
     // FIXME wtf?
     //ctx.ref ! Betting.Require(stake.bringIn get, game.limit)

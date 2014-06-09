@@ -14,15 +14,14 @@ case class Dealing(ctx: stg.Context, _type: DealType.Value, cardsNum: Option[Int
 
       Console printf("dealing %s %d cards\n", _type, n)
 
-      table.seats.zipWithIndex filter (_._1 isActive) foreach {
-        case (seat, pos) ⇒
-          val player = seat.player.get
-          val cards = dealer dealPocket (n, player)
+      table.seats filter (_.isActive) foreach { seat =>
+        val player = seat.player.get
+        val cards = dealer dealPocket (n, player)
 
-          if (_type == DealType.Hole) {
-            events.publish(Events.dealPocket(pos, player, _type, cards)) { _.only(player) }
-            events.publish(Events.dealPocketNum(pos, player, _type, cards.length)) { _.except(player) }
-          } else events broadcast Events.dealPocket(pos, player, _type, cards)
+        if (_type == DealType.Hole) {
+          events.publish(Events.dealPocket(seat, _type, cards)) { _.only(player) }
+          events.publish(Events.dealPocketNum(seat, _type, cards.length)) { _.except(player) }
+        } else events broadcast Events.dealPocket(seat, _type, cards)
       }
 
     case DealType.Board if cardsNum.isDefined ⇒

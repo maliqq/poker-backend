@@ -19,7 +19,7 @@ private[replay] case class Betting(
   private val betActions = actions.filter(_.isInstanceOf[cmd.AddBet]).asInstanceOf[List[cmd.AddBet]]
 
   def apply() = {
-    def active = round.seats.filter(_._1.isActive)
+    def active = round.seats.filter(_.isActive)
 
     val (forcedBets, activeBets) = betActions.span(_.bet.isForced)
 
@@ -35,10 +35,9 @@ private[replay] case class Betting(
             seat.player.get
           }
 
-          table.playerPos(player) map { pos =>
-            val seat = table.seats(pos)
+          table.playerSeat(player) map { seat =>
             if (seat.isActive)
-              forceBet(pos, Bet.Ante)
+              forceBet(seat.pos, Bet.Ante)
           }
         }
       } else forceAntes()
@@ -48,30 +47,29 @@ private[replay] case class Betting(
 
     // пассивные ставки игроков - блайнды
     if (!bettingStarted && gameOptions.hasBlinds && active.size >= 2) {
-      var sb: Option[Int] = None
-      var bb: Option[Int] = None
+      var sb: Option[Seat] = None
+      var bb: Option[Seat] = None
 
       forcedBets.find(_.bet.isInstanceOf[Bet.SmallBlind]) foreach { bet ⇒
-        sb = active.find {
-          case (seat, pos) ⇒
-            seat.player.isDefined && bet.player == seat.player.get
-        }.map(_._2)
+        sb = active.find { seat =>
+          seat.player.isDefined && bet.player == seat.player.get
+        }
       }
 
       if (sb.isDefined) {
         // FIXME
         //gameplay.setButton(sbPos - 1) // put button before SB
         forcedBets.find(_.bet.isInstanceOf[Bet.BigBlind]) foreach { bet ⇒
-          bb = active.find { case (seat, pos) ⇒
+          bb = active.find { seat ⇒
             val found = seat.player.isDefined && bet.player == seat.player.get
 
-            if (!found && sb.get != pos) {
+            if (!found && sb.get.pos != seat.pos) {
               Console printf("%s: missing big blind\n", seat)
               seat.idle() // помечаем все места от SB до BB как неактивные
             }
 
             found
-          }.map(_._2)
+          }
         }
         
       } else {
@@ -80,16 +78,20 @@ private[replay] case class Betting(
 
         // default blind positions
         val Seq(_sb, _bb, _*) = active // ???
-        sb = Some(_sb._2)
-        bb = Some(_bb._2)
+        sb = Some(_sb)
+        bb = Some(_bb)
       }
 
       Console printf("sb: %s bb: %s\n", sb, bb)
 
-      sb.map(forceBet(_, Bet.SmallBlind))
+      sb.map { seat =>
+        forceBet(seat.pos, Bet.SmallBlind)
+      }
       sleep()
 
-      bb.map(forceBet(_, Bet.BigBlind))
+      bb.map { seat =>
+        forceBet(seat.pos, Bet.BigBlind)
+      }
       sleep()
     }
 
@@ -133,9 +135,8 @@ private[replay] case class Betting(
     bettingStarted = true
   }
   
-  private def forceAntes(): Unit = round.seats.filter(_._1.isActive).foreach {
-    case (seat, pos) ⇒
-      forceBet(pos, Bet.Ante)
+  private def forceAntes(): Unit = round.seats.filter(_.isActive).foreach { seat =>
+    forceBet(seat.pos, Bet.Ante)
   }
   
 }

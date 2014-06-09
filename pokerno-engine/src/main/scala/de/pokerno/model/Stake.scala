@@ -8,9 +8,9 @@ import com.fasterxml.jackson.annotation.{JsonIgnore, JsonInclude, JsonProperty, 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 case class Stake(
     @JsonProperty bigBlind: Decimal,
-    @JsonIgnore SmallBlind: Option[Decimal] = None,
-    @JsonIgnore Ante: Either[Decimal, Boolean] = Right(false),
-    @JsonIgnore BringIn: Either[Decimal, Boolean] = Right(false)) {
+    @JsonIgnore _smallBlind: Option[Decimal] = None,
+    @JsonIgnore _ante: Either[Decimal, Boolean] = Right(false),
+    @JsonIgnore _bringIn: Either[Decimal, Boolean] = Right(false)) {
   
   @JsonCreator
   def this(
@@ -28,9 +28,9 @@ case class Stake(
     case _              ⇒ throw new Error("no amount for %s" format t)
   }
 
-  @JsonProperty val smallBlind: Decimal = SmallBlind getOrElse rate(Bet.SmallBlind)
+  @JsonProperty val smallBlind: Decimal = _smallBlind getOrElse rate(Bet.SmallBlind)
 
-  @JsonProperty val ante: Option[Decimal] = Ante match {
+  @JsonProperty val ante: Option[Decimal] = _ante match {
     case Left(amount) ⇒
       if (amount > .0) Some(amount)
       else None
@@ -39,7 +39,7 @@ case class Stake(
       else None
   }
 
-  @JsonProperty val bringIn: Option[Decimal] = BringIn match {
+  @JsonProperty val bringIn: Option[Decimal] = _bringIn match {
     case Left(amount) ⇒
       if (amount > .0) Some(amount)
       else None

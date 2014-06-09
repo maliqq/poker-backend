@@ -22,16 +22,12 @@ trait Betting {
   // add bet
   def addBet(bet: Bet) {
     val (seat, posted) = round.addBet(bet)
-    val pos = round.current
-    val player = seat.player.get
-    events broadcast Events.addBet(pos, player, posted)
+    events broadcast Events.addBet(seat, posted)
   }
   
   def addBetWithTimeout(bet: Bet) {
     val (seat, posted) = round.addBet(bet)
-    val pos = round.current
-    val player = seat.player.get
-    val event = Events.addBet(pos, player, posted)
+    val event = Events.addBet(seat, posted)
     event.timeout = Some(true)
     events broadcast event
   }
@@ -39,8 +35,7 @@ trait Betting {
   // force bet
   def forceBet(pos: Int, betType: Bet.ForcedType) {
     val (seat, posted) = round.forceBet(pos, betType)
-    val player = seat.player.get
-    events broadcast Events.addBet(pos, player, posted)
+    events broadcast Events.addBet(seat, posted)
   }
 
   // current betting round finished

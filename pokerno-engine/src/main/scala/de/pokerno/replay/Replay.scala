@@ -56,8 +56,8 @@ class Replay(
     //   ctx broadcast Events.playerJoin(pos, player, amount)
   
     case show @ cmd.ShowCards(cards, player, muck) ⇒
-      table.playerPos(player) map { pos =>
-        events.broadcast(Events.showCards(pos, player, cards, muck))
+      table.playerSeat(player) map { seat =>
+        events broadcast Events.showCards(seat, cards, muck)
       }
     
 //    case Betting.Stop ⇒ // идем до шоудауна

@@ -10,9 +10,8 @@ private[gameplay] trait Button { g: ContextLike ⇒
     events.broadcast(Events.buttonChange(table.button))
   }
 
-  def moveButton() = round.seats find { case (seat, _) ⇒ seat.isActive } map {
-    case (_, pos) ⇒
-      setButton(pos)
+  def moveButton() = round.seats find(_.isActive) map { seat =>
+    setButton(seat.pos)
   }
 
 }

@@ -17,22 +17,21 @@ trait NextTurn {
   import gameplay._
   
   protected def nextTurn(): Either[Int, Option[Boolean]] = {
-    round.seats filter (_._1 inPlay) foreach {
-      case (seat, pos) ⇒
-        if (!seat.didCall(round.callAmount)) {
-          //warn("not called, still playing: %s", seat)
-          seat.play()
-        }
+    round.seats filter (_.inPlay) foreach { seat =>
+      if (!seat.didCall(round.callAmount)) {
+        //warn("not called, still playing: %s", seat)
+        seat.play()
+      }
     }
 
-    if (round.seats.filter(_._1 inPot).size < 2) {
+    if (round.seats.filter(_.inPot).size < 2) {
       return Right(None)
     }
 
-    val playing = round.seats filter (_._1 isPlaying)
-    if (playing.size == 0)
-      Right(Some(round.seats.exists(_._1.isAllIn)))
-    else Left(playing.head._2)
+    val playing = round.seats filter (_.isPlaying)
+    
+    if (playing.size > 0)  Left(playing.head.pos)
+    else                   Right(Some(round.seats.exists(_.isAllIn)))
   }
 
 }

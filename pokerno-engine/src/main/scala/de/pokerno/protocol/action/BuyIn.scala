@@ -1,5 +1,7 @@
 package de.pokerno.protocol.action
 
-import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonValue
 
-sealed case class BuyIn() extends PlayerEvent {}
+sealed case class BuyIn(
+  @JsonValue val amount: Decimal
+) extends PlayerEvent {}

@@ -58,6 +58,10 @@ class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
     //pot.complete()
   }
   
+  def calling() {
+    _call = Some(_call.getOrElse(0))
+  }
+  
   def complete() {
     table.seats.filter(_ inPlay) map { seat ⇒
       seat.reset()
@@ -84,6 +88,8 @@ class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
 
   def requireBet(pos: Int): Seat = {
     current = pos
+    
+    calling()
     
     val seat = table.seats(current)
     val limit = game.limit

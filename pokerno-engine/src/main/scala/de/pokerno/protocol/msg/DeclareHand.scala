@@ -1,7 +1,7 @@
 package de.pokerno.protocol.msg
 
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.annotation.{JsonInclude, JsonUnwrapped}
+import com.fasterxml.jackson.annotation.{JsonProperty, JsonInclude, JsonUnwrapped}
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
 
 import de.pokerno.poker.Hand
 
@@ -15,7 +15,7 @@ sealed case class DeclareHand(
 
     @JsonProperty player: Player,
     
-    @JsonProperty cards: Cards,
+    @JsonSerialize(converter=classOf[Cards2Binary]) @JsonProperty cards: Cards,
 
     @JsonProperty hand: Hand
   ) extends GameEvent {}

@@ -10,24 +10,22 @@ class Dealer(private var _deck: Deck = new Deck) {
   def board = _board
   @JsonProperty("board") def boardAsBytes: Array[Byte] = _board
 
-  private var _pockets: Map[Player, Cards] = Map.empty
+  private var _pockets: collection.mutable.Map[Player, Cards] = collection.mutable.Map.empty
   
-  def pocket(p: Player): Cards = _pockets(p)
-  def pocketOption(p: Player): Option[Cards] = _pockets.get(p)
+  def pocket(p: Player): Cards = _pockets.getOrElse(p, Cards.empty)
 
-  def dealPocket(cards: Cards, p: Player): Cards = {
-    _deck.burn(cards)
-    val pocket = _pockets getOrElse (p, List.empty)
-    _pockets += (p -> (pocket ++ cards))
+  def dealtPocket(cards: Cards, p: Player): Cards = {
+    _pockets(p) = pocket(p) ++ cards
     cards
   }
-
+  
   def dealPocket(n: Int, p: Player): Cards = {
     val cards = _deck share n
-    dealPocket(cards, p)
+    _deck.burn(cards)
+    dealtPocket(cards, p)
   }
-
-  def dealBoard(cards: Cards): Cards = {
+  
+  def dealtBoard(cards: Cards) = {
     _deck.burn(cards)
     _board ++= cards
     cards
@@ -36,12 +34,13 @@ class Dealer(private var _deck: Deck = new Deck) {
   def dealBoard(n: Int): Cards = {
     _deck.burn(1)
     val cards = _deck deal n
-    dealBoard(cards)
+    dealtBoard(cards)
   }
 
   def discard(old: Cards, p: Player): Cards = {
-    val cards = _deck discard old // FIXME validate old
-    _pockets += (p -> cards)
+    val replace = pocket(p).toSet & old.toSet
+    val cards = _deck discard replace.toList
+    _pockets(p) = cards
     cards
   }
 

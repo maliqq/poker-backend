@@ -61,7 +61,9 @@ class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
   }
   
   def calling() {
-    _call = Some(_call.getOrElse(0))
+    if (_call.isEmpty) {
+      _call = Some(0)
+    }
   }
   
   def complete() {

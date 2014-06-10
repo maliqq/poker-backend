@@ -2,6 +2,9 @@ package de.pokerno
 
 package object poker {
 
+  // TODO
+  //type Card = Byte
+
   final val Kinds: List[Kind.Value.Kind] =
     Kind.Value.values.toList.asInstanceOf[List[Kind.Value.Kind]]
   

@@ -6,6 +6,8 @@ import org.slf4j.LoggerFactory
 import com.fasterxml.jackson.annotation.{JsonIgnore, JsonProperty, JsonInclude, JsonAutoDetect, JsonPropertyOrder}
 import beans._
 
+import de.pokerno.poker.Cards
+
 import com.fasterxml.jackson.module.scala.JsonScalaEnumeration
 import com.fasterxml.jackson.core.`type`.TypeReference
 
@@ -115,6 +117,7 @@ class Seat(
     _presence = None
     _state = State.Empty
     _player = None
+    _cards = None
     _lastSeenOnline = None
     _put = None
     _stack = None
@@ -205,6 +208,30 @@ class Seat(
       if (_state != State.Empty)
         throw Seat.IsTaken()
   }
+  
+  // cards dealt
+  import de.pokerno.poker.MaskedCards
+  private var _cards: Option[MaskedCards] = None
+  private var _masks: Array[Boolean] = Array()
+  
+  def pocket(cards: Cards, hidden: Boolean) {
+    Console printf("==== %s%s%s\n", _cards.map { _.masked.toList }, cards, hidden)
+    if (_cards.isEmpty) {
+      _cards = Some(new MaskedCards(cards, hidden))
+    } else {
+      Console printf("applying %s\n", cards)
+      _cards = _cards.map { _ :+ (cards, hidden) }
+    }
+  }
+  
+  def hole(cards: Cards) = pocket(cards, true) // hidden
+  def door(cards: Cards) = pocket(cards, false) // visible
+  
+  def show(indexes: Array[Int]) {
+    _cards.map { _./:(indexes) }
+  }
+  
+  @JsonProperty("cards") def cards = _cards.map { _.masked }
 
   // current stack
   private var _stack: Option[Decimal] = None

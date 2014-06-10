@@ -5,12 +5,19 @@ import math.{ BigDecimal ⇒ Decimal }
 import beans._
 import com.fasterxml.jackson.annotation.{JsonIgnore, JsonInclude, JsonProperty, JsonCreator}
 
+object Stake {
+  def apply(bigBlind: Decimal,
+      smallBlind: Option[Decimal] = None,
+      ante: Either[Decimal, Boolean] = Right(false),
+      bringIn: Either[Decimal, Boolean] = Right(false)) = new Stake(bigBlind, smallBlind, ante, bringIn)
+}
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
-case class Stake(
-    @JsonProperty bigBlind: Decimal,
-    @JsonIgnore _smallBlind: Option[Decimal] = None,
-    @JsonIgnore _ante: Either[Decimal, Boolean] = Right(false),
-    @JsonIgnore _bringIn: Either[Decimal, Boolean] = Right(false)) {
+class Stake(
+    @JsonProperty val bigBlind: Decimal,
+    _smallBlind: Option[Decimal] = None,
+    _ante: Either[Decimal, Boolean] = Right(false),
+    _bringIn: Either[Decimal, Boolean] = Right(false)) {
   
   @JsonCreator
   def this(

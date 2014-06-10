@@ -19,9 +19,13 @@ case class Dealing(ctx: stg.Context, _type: DealType.Value, cardsNum: Option[Int
         assert(cards.size == n)
 
         if (_type == DealType.Hole) {
+          seat.hole(cards)
           events.publish(Events.dealPocket(seat, _type, cards)) { _.only(player) }
-          events.publish(Events.dealPocketNum(seat, _type, cards.length)) { _.except(player) }
-        } else events broadcast Events.dealPocket(seat, _type, cards)
+          events.publish(Events.dealPocketNum(seat, _type, cards.size)) { _.except(player) }
+        } else {
+          seat.door(cards)
+          events broadcast Events.dealPocket(seat, _type, cards)
+        }
       }
 
     case DealType.Board if cardsNum.isDefined ⇒

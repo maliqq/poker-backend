@@ -16,3 +16,30 @@ object Cards {
   }
 
 }
+
+class MaskedCards(value: Array[Byte], hidden: Boolean) {
+  private var _cards: Array[Byte] = value.map { c =>
+    if (hidden) Bits.makeHidden(c)
+    else c
+  }
+  
+  def :+(value: Array[Byte], hidden: Boolean) = {
+    _cards ++= value.map { c =>
+      if (hidden) Bits.makeHidden(c)
+      else c
+    }
+    this
+  }
+  
+  def /:(indexes: Array[Int]) {
+    _cards = _cards.zipWithIndex.map { case (c, i) =>
+      if (indexes.contains(i)) Bits.makeVisible(c)
+      else c
+    }
+  }
+  
+  def masked: Array[Byte] = _cards.map { b =>
+    if (Bits.isVisible(b)) b
+    else 0.toByte
+  }
+}

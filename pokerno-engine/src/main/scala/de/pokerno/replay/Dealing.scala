@@ -65,13 +65,13 @@ private[replay] case class Dealing(
     val player = seat.player.get
     
     val pocketSize = gameOptions.pocketSize
-    val max = pocketSize - dealer.pocketOption(player).map(_.size).getOrElse(0)
+    val max = pocketSize - dealer.pocket(player).size
     val cardsDealt = _cards match {
       case Right(n) ⇒
         dealer.dealPocket(List(n.getOrElse(pocketSize), max).min, player)
 
       case Left(cards) ⇒
-        dealer.dealPocket(cards.take(max), player)
+        dealer.dealtPocket(cards.take(max), player)
 
       case _ ⇒ null
     }
@@ -87,7 +87,7 @@ private[replay] case class Dealing(
         dealer.dealBoard(List(n.getOrElse(_cardsNum.get), max).min)
 
       case Left(cards) if !cards.isEmpty ⇒
-        dealer.dealBoard(cards.take(max))
+        dealer.dealtBoard(cards.take(max))
 
       case _ ⇒ null
     }

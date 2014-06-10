@@ -96,7 +96,7 @@ class Seat(
     private var _state: Seat.State.Value = Seat.State.Empty
     ) {
 
-  @JsonIgnore val log = LoggerFactory.getLogger(getClass)
+  private val log = LoggerFactory.getLogger(getClass)
   
   def this(_state: Seat.State.Value) = this(-1, _state)
   

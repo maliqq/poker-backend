@@ -49,8 +49,8 @@ class Metrics(id: String) extends Actor with ActorLogging {
     case bet: message.DeclareBet ⇒
       handleBet(bet)
 
-    case message.DeclarePot(pot, _, _) ⇒
-      lastPot = pot.toDouble
+    case message.DeclarePot(pot) ⇒
+      lastPot = pot.total.toDouble
 
     case message.DeclareStreet(street) ⇒
 
@@ -88,7 +88,7 @@ class Metrics(id: String) extends Actor with ActorLogging {
     case _ ⇒
   }
 
-  private def handleBet(bet: message.DeclareBet) = bet.bet match {
+  private def handleBet(bet: message.DeclareBet) = bet.action match {
     case Bet.Fold ⇒
       folds.inc()
 

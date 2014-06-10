@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import de.pokerno.model
 
 sealed case class DeclareStart(
+    @JsonProperty id: String,
     
     @JsonProperty table: model.Table,
 

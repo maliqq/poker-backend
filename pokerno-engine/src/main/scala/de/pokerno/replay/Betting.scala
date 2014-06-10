@@ -15,7 +15,7 @@ private[replay] case class Betting(
   import ctx._
   import ctx.gameplay._
   
-  val log = LoggerFactory.getLogger(getClass)
+  private val log = LoggerFactory.getLogger(getClass)
   val gameplay = ctx.gameplay
 
   private val betActions = actions.filter(_.isInstanceOf[cmd.AddBet]).asInstanceOf[List[cmd.AddBet]]

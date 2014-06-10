@@ -190,7 +190,7 @@ class Room(
       // send start message
       val startMsg: GameEvent = running match {
         case NoneRunning ⇒
-          gameplay.Events.start(table, variation, stake) // TODO: empty play
+          gameplay.Events.start(id, table, variation, stake) // TODO: empty play
         case Running(ctx, deal) ⇒
           gameplay.Events.start(ctx, conn.player)
       }
@@ -218,7 +218,7 @@ class Room(
       stay()
    
     case Event(PlayState, NoneRunning) =>
-      sender ! api.PlayState(table, variation, stake)
+      sender ! api.PlayState(id, table, variation, stake)
       stay()
       
     case Event(PlayState, Running(ctx, _)) =>
@@ -238,7 +238,7 @@ class Room(
   initialize()
 
   private def startDeal(): Running = {
-    val ctx = new gameplay.Context(table, variation, stake, events)
+    val ctx = new gameplay.Context(id, table, variation, stake, events)
     val deal = actorOf(Props(classOf[gameplay.Deal], ctx))
     Running(ctx, deal)
   }

@@ -31,7 +31,7 @@ class Replay(
       new Dealer(new Deck(cards)) 
     } getOrElse new Dealer
   
-  val gameplay = new Gameplay(table, variation, stake, new Events(id), dealer)
+  val gameplay = new Gameplay(id, table, variation, stake, new Events(id), dealer)
 
   val ctx = new Context(gameplay, self)
   import ctx._
@@ -49,7 +49,7 @@ class Replay(
   override def receive = {
     case Replay.Observe(out) ⇒
       events.broker.subscribe(out, "replay-out")
-      events.broadcast(Events.start(table, variation, stake))
+      events broadcast Events.start(id, table, variation, stake)
 
     // case join @ cmd.JoinPlayer(pos, player, amount) ⇒
     //   table.takeSeat(pos, player, Some(amount))

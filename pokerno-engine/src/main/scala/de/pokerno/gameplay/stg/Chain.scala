@@ -4,7 +4,7 @@ import org.slf4j.LoggerFactory
 import de.pokerno.gameplay.Stage
 
 private[gameplay] class Chain[T <: Context] {
-  val log = LoggerFactory.getLogger(getClass)
+  private val log = LoggerFactory.getLogger(getClass)
 
   private var _stages = List[Step[T]]()
   def stages = _stages

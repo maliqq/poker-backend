@@ -10,7 +10,7 @@ class Context(val gameplay: Gameplay, ref: ActorRef) extends Betting with NextTu
   
   import gameplay._
 
-  val log = LoggerFactory.getLogger(getClass)
+  private val log = LoggerFactory.getLogger(getClass)
   
   var timer: Cancellable = null
   

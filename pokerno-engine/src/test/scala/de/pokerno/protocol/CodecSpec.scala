@@ -73,10 +73,10 @@ class CodecSpec extends FunSpec with ClassicMatchers {
       val stake2 = new Stake(0.5, Some(0.2))
       Json.encode(stake2) should equal("""{"bigBlind":0.5,"smallBlind":0.2}""")
       
-      val stake3 = new Stake(100.0, Some(50.0), Ante = Left(10.0))
+      val stake3 = new Stake(100.0, Some(50.0), _ante = Left(10.0))
       Json.encode(stake3) should equal("""{"bigBlind":100.0,"smallBlind":50.0,"ante":10.0}""")
       
-      val stake4 = new Stake(100.0, Some(50.0), Ante = Left(10.0), BringIn = Left(20.0))
+      val stake4 = new Stake(100.0, _smallBlind = Some(50.0), _ante = Left(10.0), _bringIn = Left(20.0))
       Json.encode(stake4) should equal("""{"bigBlind":100.0,"smallBlind":50.0,"ante":10.0,"bringIn":20.0}""")
     }
     
@@ -180,7 +180,7 @@ class CodecSpec extends FunSpec with ClassicMatchers {
       dealer.dealBoard(3)
       val events = new gameplay.Events("test")
       val play = new Play("1")
-      val ctx = new gameplay.Context(table, game, stake, events, dealer = dealer, play = play)
+      val ctx = new gameplay.Context("test", table, game, stake, events, dealer = dealer, play = play)
       Json.encode(msg.PlayState(ctx)) should equal("""{}""")
     }
   }

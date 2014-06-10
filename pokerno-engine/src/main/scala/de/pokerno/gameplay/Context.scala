@@ -25,6 +25,7 @@ trait ContextLike extends context.Button {
 // TODO
 //private[gameplay]
 class Context(
+    val id: String,
     val table: Table,
     val variation: Variation,
     val stake: Stake,

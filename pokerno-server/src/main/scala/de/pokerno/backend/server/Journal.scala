@@ -34,7 +34,7 @@ class Journal(storageDir: String, room: String) extends Actor with ActorLogging 
       case bet: msg.DeclareBet ⇒
         val player = bet.player
         
-        bet.bet match {
+        bet.action match {
           case Bet.Ante(amt) => 
             write("%s: posts ante %.2f", player, amt)
           case Bet.SmallBlind(amt) =>
@@ -72,11 +72,11 @@ class Journal(storageDir: String, room: String) extends Actor with ActorLogging 
             write("Dealt %d cards to %s", cardsNum, player)
         }  
 
-      case msg.DeclarePot(total, side, rake) ⇒
-        write("Pot is %.2f", total)
+      case msg.DeclarePot(pot) ⇒
+        write("Pot is %.2f", pot.total)
 
-      case msg.DeclareHand(pos, player, hand) ⇒
-        write("%s shows %s (%s)", player, hand.cards, hand.description)
+      case msg.DeclareHand(pos, player, cards, hand) ⇒
+        write("%s shows %s (%s)", player, cards, hand.description)
 
       case msg.DeclareWinner(pos, player, amount) ⇒
         write("%s collected %.2f from pot", player, amount)

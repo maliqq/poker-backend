@@ -49,10 +49,10 @@ object Events {
   def playerComeBack(seat: Seat) =
     msg.PlayerComeBack(seat.pos, seat.player.get)
   
-  def start(table: Table, variation: Variation, stake: Stake) = msg.DeclareStart(table, variation, stake)
+  def start(id: String, table: Table, variation: Variation, stake: Stake) = msg.DeclareStart(id, table, variation, stake)
   def start(ctx: Context, player: Option[Player]) = {
     // build start message for player or watcher
-    val start = msg.DeclareStart(ctx.table, ctx.variation, ctx.stake)
+    val start = msg.DeclareStart(ctx.id, ctx.table, ctx.variation, ctx.stake)
     val play = ctx.play.copy()
     start.play = Some(msg.PlayState(ctx))
     // include information on own cards
@@ -90,14 +90,14 @@ object Events {
   def requireBet(acting: betting.Acting) = 
     msg.AskBet(acting)
 
-  def declarePot(total: Decimal, side: Seq[Decimal]) =
-    msg.DeclarePot(total, side)
+  def declarePot(pot: Pot) =
+    msg.DeclarePot(pot)
 
   def declareWinner(seat: Seat, amount: Decimal) =
     msg.DeclareWinner(seat.pos, seat.player.get, amount = amount)
 
   def declareHand(seat: Seat, cards: Cards, hand: Hand) =
-    msg.DeclareHand(seat.pos, seat.player.get, hand)
+    msg.DeclareHand(seat.pos, seat.player.get, cards, hand)
 
   def gameChange(game: Game) =
     msg.GameChange(game)

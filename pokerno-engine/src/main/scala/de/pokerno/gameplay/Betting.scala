@@ -40,8 +40,7 @@ trait Betting {
 
   // current betting round finished
   def doneBets() {
-    events broadcast Events.declarePot(round.pot.total,
-        round.pot.sidePots.map(_.total))
+    events broadcast Events.declarePot(round.pot)
     round complete()
   }
 }

@@ -83,14 +83,16 @@ class SidePot(val capFrom: Decimal = 0, val cap: Option[Decimal] = None) {
 
 class Pot {
   @JsonIgnore var main: SidePot = new SidePot
-  @JsonProperty var side: List[SidePot] = List.empty
+  private var _side: List[SidePot] = List.empty
   private var inactive: List[SidePot] = List.empty
 
+  def side = _side
+  
   @JsonProperty def total: Decimal = sidePots.map(_.total).sum
 
   import collection.mutable.ListBuffer
   
-  def sidePots: List[SidePot] = {
+  @JsonProperty("side") def sidePots: List[SidePot] = {
     var pots = new ListBuffer[SidePot]
     if (main.isActive)
       pots += main
@@ -107,10 +109,10 @@ class Pot {
     if (main.capFrom <= amount) {
       //Console printf("splitting main: %s for member %s with amount %s/%s", main, member, amount, left)
       val (_new, _old) = main split (member, _amount, left)
-      side :+= _old
+      _side :+= _old
       main = _new
     } else {
-      var (skip, _side) = side.span { sidePot ⇒
+      var (skip, newSide) = side.span { sidePot ⇒
         sidePot.capFrom <= amount
       }
 
@@ -119,14 +121,14 @@ class Pot {
         skip = skip.dropRight(1)
         _current
       } else {
-        val _current = _side.head
-        _side = _side.drop(1)
+        val _current = newSide.head
+        newSide = newSide.drop(1)
         _current
       }
 
       //Console printf("splitting side: %s for member %s with amount %s/%s and current cap", current, member, amount, left)
       val (_new, _old) = current split (member, _amount, left, current.cap)
-      side = skip ++ List(_old, _new) ++ _side
+      _side = skip ++ List(_old, _new) ++ newSide
     }
     //Console printf("main=%s\nside=%s", main, side)
   }
@@ -134,7 +136,7 @@ class Pot {
   def complete() {
     inactive ++= side ++ List(main)
     main = new SidePot
-    side = List.empty
+    _side = List.empty
   }
 
   private def allocate(member: Player, amount: Decimal) =

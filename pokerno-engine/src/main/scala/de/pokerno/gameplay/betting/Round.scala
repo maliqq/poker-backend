@@ -7,7 +7,7 @@ import math.{ BigDecimal ⇒ Decimal }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
-  val log = LoggerFactory.getLogger(getClass)
+  private val log = LoggerFactory.getLogger(getClass)
   
   private var _current = table.button.current
   private var _oldCurrent = _current

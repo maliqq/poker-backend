@@ -22,24 +22,24 @@ class StakeSpec extends FunSpec with ClassicMatchers {
     }
 
     it("ante true") {
-      val stake = new Stake(100, Ante = Right(true))
+      val stake = new Stake(100, _ante = Right(true))
       val anteRate = Rates(Bet.Ante)
       stake.ante.get should equal(100 * anteRate)
     }
 
     it("ante value") {
-      val stake = new Stake(100, Ante = Left(10))
+      val stake = new Stake(100, _ante = Left(10))
       stake.ante.get should equal(10)
     }
 
     it("bring in true") {
-      val stake = new Stake(100, BringIn = Right(true))
+      val stake = new Stake(100, _bringIn = Right(true))
       val bringInRate = Rates(Bet.BringIn)
       stake.bringIn.get should equal(100 * bringInRate)
     }
 
     it("bring in value") {
-      val stake = new Stake(100, BringIn = Left(10))
+      val stake = new Stake(100, _bringIn = Left(10))
       stake.bringIn.get should equal(10)
     }
   }

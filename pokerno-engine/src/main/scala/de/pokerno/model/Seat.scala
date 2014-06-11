@@ -244,7 +244,7 @@ class Seat(
   private var _cards: Option[MaskedCards] = None
   private var _masks: Array[Boolean] = Array()
   
-  def pocket(cards: Cards, hidden: Boolean) {
+  private def pocket(cards: Cards, hidden: Boolean) {
     _cards = if (_cards.isEmpty)
       Some(new MaskedCards(cards, hidden))
     else

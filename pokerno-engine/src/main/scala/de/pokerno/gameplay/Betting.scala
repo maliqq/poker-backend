@@ -20,9 +20,10 @@ trait Betting {
   }
 
   // add bet
-  def addBet(bet: Bet, timeout: Option[Boolean] = None) {
+  def addBet(bet: Bet, timeout: Boolean = false) {
     val (seat, posted) = round.addBet(bet)
-    events broadcast Events.addBet(seat, posted, timeout)
+    val _timeout = if (timeout) Some(true) else None
+    events broadcast Events.addBet(seat, posted, _timeout)
   }
 
   // force bet
@@ -58,9 +59,8 @@ object Betting {
   // betting done - wait for next street to occur
   case object Done extends Transition
   // require bet from this potision
-  case class Require(pos: Int) extends Transition
-  // start timer
-  case class StartTimer(duration: FiniteDuration) extends Transition
+  case class Require(seat: Seat) extends Transition
+
   // betting timeout - go to next seat
   case object Timeout
   // turn on big bet mode

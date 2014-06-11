@@ -19,48 +19,49 @@ class Context(val gameplay: Gameplay, ref: ActorRef) extends Betting with NextTu
     round.bigBets = true
   }
   
-  def decideNextTurn(): Betting.Transition = nextTurn() match {
-    case Left(seat) =>
-      requireBet(seat)
-      Betting.StartTimer(15 seconds)
-
-    case Right(None) =>       Betting.Stop
-    case Right(Some(true)) => Betting.Showdown
-    case _ =>                 Betting.Done
-  }
-  
   // add bet
-  def add(player: Player, bet: Bet) {
-    val seat = round.acting.get
-    
-    // FIXME player.get
-    if (seat.player.get == player) {
-      if (timer != null) timer.cancel()
-      log.info("[betting] add {}", bet)
-      addBet(bet)
-      // next turn
-      ref ! decideNextTurn()
-    } else
-      log.warn(f"[betting] not a turn of $player; current acting is ${seat.player}")
-  }
+  def add(player: Player, bet: Bet): Unit =
+    round.acting match {
+      case Some(seat) =>
+        seat.player match { case Some(p) if p == player =>
+            
+          if (timer != null) timer.cancel()
+          log.info("[betting] add {}", bet)
+          addBet(bet)
+          // next turn
+          ref ! nextTurn()
+            
+        case None =>
+          log.error("[betting] add: round.acting.player == None")
+            
+        case _ =>
+          log.warn(f"[betting] add: not a turn of $player; current acting is ${seat.player}")
+        }
+        
+      case None =>
+        log.error("[betting] add: round.acting == None")
+    }
   
   // timeout bet
-  def timeout() {
-    val seat = round.acting.get
+  def timeout(): Unit = round.acting match {
+    case Some(seat) =>
+      val bet: Bet = seat.state match {
+        case Seat.State.Away ⇒
+          // force fold
+          Bet.fold
+  
+        case _ ⇒
+          // force check/fold
+          if (round.call == 0 || seat.didCall(round.callAmount))
+            Bet.check
+          else Bet.fold
+      }
+  
+      addBet(bet, timeout = true)
+      ref ! nextTurn()
     
-    val bet: Bet = seat.state match {
-      case Seat.State.Away ⇒
-        // force fold
-        Bet.fold
-
-      case _ ⇒
-        // force check/fold
-        if (round.call == 0 || seat.didCall(round.callAmount))
-          Bet.check
-        else Bet.fold
-    }
-
-    addBet(bet, timeout = Some(true))
+    case None =>
+      log.error("[betting] timeout: round.acting == None")
   }
   
 }

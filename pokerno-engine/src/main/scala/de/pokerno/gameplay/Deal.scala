@@ -66,7 +66,7 @@ class Deal(val gameplay: Context) extends Actor
       // FIXME
       //gameplay.round.reset()
       context.become(receiveBets)
-      self ! btx.decideNextTurn()
+      self ! btx.nextTurn()
 
     case Streets.Next ⇒
       log.info("[streets] next")
@@ -101,13 +101,13 @@ class Deal(val gameplay: Context) extends Actor
       context.become(receiveStreets)
       onStreets.apply()
 
-    case Betting.StartTimer(duration) ⇒
-      btx.timer = system.scheduler.scheduleOnce(duration, self, Betting.Timeout)
+    case Betting.Require(seat) ⇒
+      btx.requireBet(seat)
+      btx.timer = system.scheduler.scheduleOnce(30 seconds, self, Betting.Timeout)
 
     case Betting.Timeout ⇒
       log.info("[betting] timeout")
       btx.timeout()
-      self ! btx.decideNextTurn()
 
     case Betting.BigBets ⇒
       log.info("[betting] big bets")

@@ -2,7 +2,7 @@ package de.pokerno.protocol.msg
 
 import de.pokerno.model.DealType
 
-import com.fasterxml.jackson.annotation.{JsonProperty, JsonInclude, JsonIgnore}
+import com.fasterxml.jackson.annotation.{JsonProperty, JsonUnwrapped, JsonInclude, JsonIgnore}
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -22,15 +22,15 @@ abstract class DealCards(
     }
 }
 
+import de.pokerno.model.Position
+
 sealed case class DealHole(
-    @JsonProperty pos: Int,
-    @JsonProperty player: Player,
+    @JsonUnwrapped position: Position,
     @JsonIgnore _cards: Either[Cards, Int]
   ) extends DealCards(_cards)
 
 sealed case class DealDoor(
-    @JsonProperty pos: Int,
-    @JsonProperty player: Player,
+    @JsonUnwrapped position: Position,
     @JsonIgnore _cards: Either[Cards, Int]    
   ) extends DealCards(_cards)
 

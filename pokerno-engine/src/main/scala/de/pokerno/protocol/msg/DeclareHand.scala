@@ -4,16 +4,11 @@ import com.fasterxml.jackson.annotation.{JsonProperty, JsonInclude, JsonUnwrappe
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 
 import de.pokerno.poker.Hand
-
-object DeclareHand {
-  def apply(pos: Int, player: Player, cards: Cards, hand: Hand) = new DeclareHand(pos, player, cards, hand)
-}
+import de.pokerno.model.Position
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 sealed case class DeclareHand(
-    @JsonProperty pos: Integer,
-
-    @JsonProperty player: Player,
+    @JsonUnwrapped position: Position,
     
     @JsonSerialize(converter=classOf[Cards2Binary]) @JsonProperty cards: Cards,
 

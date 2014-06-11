@@ -1,15 +1,14 @@
 package de.pokerno.protocol.msg
 
-import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.{JsonProperty, JsonUnwrapped}
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import de.pokerno.model.Position
 
 sealed case class ShowCards(
-    @JsonProperty var pos: Int,
-
-    @JsonProperty var player: Player,
+    @JsonUnwrapped position: Position,
 
     @JsonSerialize(converter = classOf[Cards2Binary])
-    @JsonProperty var cards: Cards,
+    @JsonProperty cards: Cards,
 
-    @JsonProperty var muck: Boolean = false
+    @JsonProperty muck: Boolean = false
   ) extends GameEvent {}

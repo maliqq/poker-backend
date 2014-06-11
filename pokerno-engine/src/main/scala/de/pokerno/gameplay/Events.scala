@@ -31,23 +31,18 @@ class Events(id: String) {
 }
 
 object Events {
-  def playerJoin(seat: Seat) =
-    msg.PlayerJoin(seat.pos, seat.player.get, seat.stackAmount)
+  def playStart(ctx: Context)         = msg.DeclarePlayStart(msg.PlayState(ctx))
+  def playStop()                      = msg.DeclarePlayStop()
+  def streetStart(name: Street.Value) = msg.DeclareStreet(name)
+  def buttonChange(pos: Int)          = msg.ButtonChange(pos)
+  def gameChange(game: Game)          = msg.GameChange(game)
 
-  def playerLeave(seat: Seat) =
-    msg.PlayerLeave(seat.pos, seat.player.get)
-  
-  def playerOnline(seat: Seat) =
-    msg.PlayerOnline(seat.pos, seat.player.get)
-  
-  def playerOffline(seat: Seat) =
-    msg.PlayerOffline(seat.pos, seat.player.get)
-    
-  def playerSitOut(seat: Seat) =
-    msg.PlayerSitOut(seat.pos, seat.player.get)  
-  
-  def playerComeBack(seat: Seat) =
-    msg.PlayerComeBack(seat.pos, seat.player.get)
+  def playerJoin(seat: Seat)      = msg.PlayerJoin(seat)
+  def playerLeave(seat: Seat)     = msg.PlayerLeave(seat)
+  def playerOnline(seat: Seat)    = msg.PlayerOnline(seat)
+  def playerOffline(seat: Seat)   = msg.PlayerOffline(seat)
+  def playerSitOut(seat: Seat)    = msg.PlayerSitOut(seat)
+  def playerComeBack(seat: Seat)  = msg.PlayerComeBack(seat)
   
   def start(id: String, table: Table, variation: Variation, stake: Stake) = msg.DeclareStart(id, table, variation, stake)
   def start(ctx: Context, player: Option[Player]) = {
@@ -62,51 +57,25 @@ object Events {
     start
   }
 
-  def playStart(ctx: Context) =
-    msg.DeclarePlayStart(msg.PlayState(ctx))
-
-  def playStop() =
-    msg.DeclarePlayStop()
-
-  def streetStart(name: Street.Value) =
-    msg.DeclareStreet(name)
-
-  def dealBoard(cards: Cards) = msg.DealBoard(cards)
   def dealPocket(seat: Seat, _type: DealType.Value, cards: Cards) = _type match {
-    case DealType.Hole => msg.DealHole(seat.pos, seat.player.get, Left(cards))
-    case DealType.Door => msg.DealDoor(seat.pos, seat.player.get, Left(cards))
+    case DealType.Hole => msg.DealHole(seat, Left(cards))
+    case DealType.Door => msg.DealDoor(seat, Left(cards))
   }
   def dealPocketNum(seat: Seat, _type: DealType.Value, n: Int) = _type match {
-    case DealType.Hole => msg.DealHole(seat.pos, seat.player.get, Right(n))
-    case DealType.Door => msg.DealDoor(seat.pos, seat.player.get, Right(n))
+    case DealType.Hole => msg.DealHole(seat, Right(n))
+    case DealType.Door => msg.DealDoor(seat, Right(n))
   }
+  def dealBoard(cards: Cards)   = msg.DealBoard(cards)
   
-  def askBuyIn {
-    
-  }
-  
-  def buttonChange(pos: Int) =
-    msg.ButtonChange(pos)
-
-  def addBet(seat: Seat, bet: Bet, timeout: Option[Boolean] = None) =
-    msg.DeclareBet(seat.pos, seat.player.get, bet, timeout)
-
-  def requireBet(seat: Seat) = 
-    msg.AskBet(seat.pos, seat.player.get, seat.call.get, seat.raise)
-
-  def declarePot(pot: Pot) =
-    msg.DeclarePot(pot)
-
-  def declareWinner(seat: Seat, amount: Decimal) =
-    msg.DeclareWinner(seat.pos, seat.player.get, amount = amount)
-
-  def declareHand(seat: Seat, cards: Cards, hand: Hand) =
-    msg.DeclareHand(seat.pos, seat.player.get, cards, hand)
-
-  def gameChange(game: Game) =
-    msg.GameChange(game)
-
-  def showCards(seat: Seat, cards: Cards, muck: Boolean = false) =
-    msg.ShowCards(seat.pos, seat.player.get, cards = cards, muck = muck)
+  def addBet(seat: Seat, bet: Bet, timeout: Option[Boolean] = None)
+                                = msg.DeclareBet(seat, bet, timeout)
+  def requireBet(seat: Seat)    = msg.AskBet(seat)
+  def declarePot(pot: Pot)      = msg.DeclarePot(pot)
+  def declareWinner(seat: Seat, amount: Decimal)
+                                = msg.DeclareWinner(seat, amount)
+  def declareHand(seat: Seat, cards: Cards, hand: Hand)
+                                = msg.DeclareHand(seat, cards, hand)
+  def showCards(seat: Seat, cards: Cards, muck: Boolean = false)
+                                = msg.ShowCards(seat, cards, muck)
     
 }

@@ -1,10 +1,9 @@
 package de.pokerno.model
 
 import org.scalatest._
-import org.scalatest.matchers._
-import org.scalatest.matchers.ShouldMatchers._
+import org.scalatest.Matchers._
 
-class SeatSpec extends FunSpec with ClassicMatchers {
+class SeatSpec extends FunSpec {
 
   describe("Seat") {
     it("toString") {
@@ -237,6 +236,35 @@ class SeatSpec extends FunSpec with ClassicMatchers {
       it("raise") {
 
       }
+    }
+    
+    describe("validate") {
+//      it("fold") {
+//        Bet.fold.isValid(1000, 10, 10, (10.0, 10.0)) should be(true)
+//      }
+//
+//      it("check") {
+//        Bet.check.isValid(1000, 10, 10, (.0, .0)) should be(true)
+//        Bet.check.isValid(1000, 10, 100, (.0, .0)) should be(false)
+//      }
+//
+//      it("call") {
+//        val range: Range = (.0, .0)
+//        val stack = 1000
+//        val put = 10
+//        Bet.call(100).isValid(stack, put, 100, range) should be(true)
+//        Bet.call(2000).isValid(stack, put, 100, range) should be(false)
+//        Bet.call(100).isValid(stack, put, 200, range) should be(false)
+//      }
+//
+//      it("raise") {
+//        val range: Range = (100.0, 200.0)
+//        val stack = 1000
+//        val put = 50
+//        Bet.raise(100).isValid(stack, put, 100, range) should be(true)
+//        Bet.raise(300).isValid(stack, put, 100, range) should be(false)
+//        Bet.raise(50).isValid(stack, put, 200, range) should be(false)
+//      }
     }
   }
 

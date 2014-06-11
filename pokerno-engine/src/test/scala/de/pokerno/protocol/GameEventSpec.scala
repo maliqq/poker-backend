@@ -1,10 +1,9 @@
 package de.pokerno.protocol
 
 import org.scalatest._
-import org.scalatest.matchers._
-import org.scalatest.matchers.ShouldMatchers._
+import org.scalatest.Matchers._
 
-class GameEventSpec extends FunSpec with ClassicMatchers {
+class GameEventSpec extends FunSpec {
   import msg._
   import de.pokerno.model.{DealType, Bet, Street, Game, Limit, GameType, Stake}
   import de.pokerno.poker.{Cards, Hand}

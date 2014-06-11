@@ -1,10 +1,9 @@
 package de.pokerno.poker
 
 import org.scalatest._
-import org.scalatest.matchers._
-import org.scalatest.matchers.ShouldMatchers._
+import org.scalatest.Matchers._
 
-class OrderingSpec extends FunSpec with ClassicMatchers {
+class OrderingSpec extends FunSpec {
   describe("Ordering") {
     it("ace high") {
       val ace: Card = Card(51)

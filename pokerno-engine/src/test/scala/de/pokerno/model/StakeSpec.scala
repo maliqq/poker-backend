@@ -1,10 +1,9 @@
 package de.pokerno.model
 
 import org.scalatest._
-import org.scalatest.matchers._
-import org.scalatest.matchers.ShouldMatchers._
+import org.scalatest.Matchers._
 
-class StakeSpec extends FunSpec with ClassicMatchers {
+class StakeSpec extends FunSpec {
 
   describe("Rates") {
     it("rates") {

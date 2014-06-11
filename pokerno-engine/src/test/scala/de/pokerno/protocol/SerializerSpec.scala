@@ -1,10 +1,9 @@
 package de.pokerno.protocol
 
 import org.scalatest._
-import org.scalatest.matchers._
-import org.scalatest.matchers.ShouldMatchers._
+import org.scalatest.Matchers._
 
-class SerializerSpec extends FunSpec with ClassicMatchers {
+class SerializerSpec extends FunSpec {
 
   import de.pokerno.poker.Cards
   import com.fasterxml.jackson.annotation.JsonUnwrapped

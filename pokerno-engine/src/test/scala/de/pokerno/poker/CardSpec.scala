@@ -1,10 +1,9 @@
 package de.pokerno.poker
 
 import org.scalatest._
-import org.scalatest.matchers._
-import org.scalatest.matchers.ShouldMatchers._
+import org.scalatest.Matchers._
 
-class CardSpec extends FunSpec with ClassicMatchers {
+class CardSpec extends FunSpec {
   describe("Card") {
     it("all") {
       Card.CardsNum should equal(52)
@@ -13,7 +12,7 @@ class CardSpec extends FunSpec with ClassicMatchers {
 
     describe("parse int") {
       it("invalid") {
-        Card.fromInt(-1)
+        an [Card.Invalid] should be thrownBy(Card.fromInt(-1))
       }
       
       it("deuce") {
@@ -33,10 +32,10 @@ class CardSpec extends FunSpec with ClassicMatchers {
 
     describe("parse string") {
       it("invalid suit") {
-        Card.fromString("Kj")
+        an [Card.ParseError] should be thrownBy(Card.fromString("Kj"))
       }
       it("invalid kind") {
-        Card.fromString("Xh")
+        an [Card.ParseError] should be thrownBy(Card.fromString("Xh"))
       }
       
       it("parse string") {
@@ -53,8 +52,8 @@ class CardSpec extends FunSpec with ClassicMatchers {
   }
 
   describe("Cards") {
-    it("parse error") {
-      Cards.fromString("hello")
+    it("parse empty result") {
+      Cards.fromString("hello") shouldBe empty
     }
     
     it("parse string") {

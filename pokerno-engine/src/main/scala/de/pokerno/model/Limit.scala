@@ -4,24 +4,23 @@ import math.{ BigDecimal ⇒ Decimal }
 
 import com.fasterxml.jackson.annotation.JsonValue
 
-trait Limit {
+abstract class Limit(@JsonValue val name: String) {
+  override def toString = name
+    
   def raise(total: Decimal, bb: Decimal, potSize: Decimal): Tuple2[Decimal, Decimal]
 }
 
 object Limit {
-  case object None extends Limit {
+  case object None extends Limit("no-limit") {
     def raise(total: Decimal, bb: Decimal, potSize: Decimal) = (bb, total)
-    @JsonValue override def toString = "no-limit"
   }
 
-  case object Fixed extends Limit {
+  case object Fixed extends Limit("fixed-limit") {
     def raise(total: Decimal, bb: Decimal, potSize: Decimal) = (bb, bb)
-    @JsonValue override def toString = "fixed-limit"
   }
 
-  case object Pot extends Limit {
+  case object Pot extends Limit("pot-limit") {
     def raise(total: Decimal, bb: Decimal, potSize: Decimal) = (bb, potSize)
-    @JsonValue override def toString = "pot-limit"
   }
   
   implicit def string2limit(v: String): Limit = v match {

@@ -1,10 +1,9 @@
 package de.pokerno.model
 
 import org.scalatest._
-import org.scalatest.matchers._
-import org.scalatest.matchers.ShouldMatchers._
+import org.scalatest.Matchers._
 
-class PotSpec extends FunSpec with ClassicMatchers {
+class PotSpec extends FunSpec {
   describe("Pot") {
     implicit def string2player(s: String) = new Player(s)
 

@@ -101,7 +101,7 @@ object Bet {
   
   trait ForcedType {
     @JsonValue def name: String
-    
+
     def force(amt: Decimal): Bet
   }
 

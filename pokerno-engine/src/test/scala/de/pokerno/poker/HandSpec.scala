@@ -1,10 +1,9 @@
 package de.pokerno.poker
 
 import org.scalatest._
-import org.scalatest.matchers._
-import org.scalatest.matchers.ShouldMatchers._
+import org.scalatest.Matchers._
 
-class HandSpec extends FunSpec with ClassicMatchers {
+class HandSpec extends FunSpec {
   describe("Hand.Cards") {
     it("has gaps") {
       val cards = Cards.fromString("AsKsQs7s8s9s").sorted(AceHigh)

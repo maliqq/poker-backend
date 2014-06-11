@@ -1,11 +1,10 @@
 package de.pokerno.protocol
 
 import org.scalatest._
-import org.scalatest.matchers._
-import org.scalatest.matchers.ShouldMatchers._
+import org.scalatest.Matchers._
 import math.{BigDecimal => Decimal}
 
-class CodecSpec extends FunSpec with ClassicMatchers {
+class CodecSpec extends FunSpec {
 
   import de.pokerno.model._
   import de.pokerno.poker.Deck

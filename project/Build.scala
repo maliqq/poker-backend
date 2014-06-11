@@ -73,7 +73,7 @@ object PokernoBuild extends Build {
   )
   
   lazy val testDeps = Seq(
-    "org.scalatest" %% "scalatest" % "1.9.2" % "test",
+    "org.scalatest" %% "scalatest" % "2.2.0" % "test",
     "com.typesafe.akka" %% "akka-testkit" % akkaVersion
   )
 

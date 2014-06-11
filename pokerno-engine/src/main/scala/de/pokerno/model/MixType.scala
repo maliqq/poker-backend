@@ -2,16 +2,14 @@ package de.pokerno.model
 
 import com.fasterxml.jackson.annotation.JsonValue
 
-trait MixType
+abstract class MixType(@JsonValue val name: String) {
+  override def toString = name
+}
 
 object MixType {
   
-  case object Horse extends MixType {
-    @JsonValue override def toString = "horse"
-  }
-  case object Eight extends MixType {
-    @JsonValue override def toString = "eight"
-  }
+  case object Horse extends MixType("horse")
+  case object Eight extends MixType("eight")
   
   implicit def string2Mixed(v: String): MixType = v match {
     case "eight" | "8-game" | "eight-game" ⇒

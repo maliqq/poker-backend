@@ -1,10 +1,10 @@
 package de.pokerno.poker
 
 import org.scalatest._
+import org.scalatest.Matchers._
 import org.scalatest.matchers._
-import org.scalatest.matchers.ShouldMatchers._
 
-class BadugiSpec extends FunSpec with ClassicMatchers {
+class BadugiSpec extends FunSpec {
   describe("Badugi") {
     // AaBbCcDd
     val kinds = Kinds

@@ -39,12 +39,7 @@ object Suit {
   }
 
   implicit def valueToInt(suit: Value): Int = suit.toInt
-  implicit def charToSuit(char: Char): Value = char match {
-    case 's' ⇒ Spade
-    case 'h' ⇒ Heart
-    case 'd' ⇒ Diamond
-    case 'c' ⇒ Club
-  }
+  implicit def charToSuit(char: Char): Value = Suits("shdc".indexOf(char))
   implicit def intToSuit(i: Int): Value = Suits(i)
 
   final val NumericValues = List range (0, 4)

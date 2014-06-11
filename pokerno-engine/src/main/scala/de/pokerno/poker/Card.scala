@@ -3,7 +3,7 @@ package de.pokerno.poker
 import collection.mutable.ListBuffer
 
 object Card {
-  case class BadCard(value: Any)      extends Exception("bad card: %s (%s)".format(value, value.getClass.getName))
+  case class Invalid(value: Any)      extends Exception("invalid card: %s (%s)".format(value, value.getClass.getName))
   case class ParseError(s: String)    extends Exception("can't parse card: %s" format s)
 
   private var _all: ListBuffer[Card] = new ListBuffer
@@ -19,9 +19,9 @@ object Card {
   implicit def fromSymbol(s: Symbol): Card = fromString(s.name replace ("_", ""))
   implicit def fromByte(b: Byte): Card = fromInt(b - 1)
 
-  @throws[BadCard]
+  @throws[Invalid]
   implicit def fromInt(i: Int): Card = {
-    if (i < 0 || i >= CardsNum) throw BadCard(i)
+    if (i < 0 || i >= CardsNum) throw Invalid(i)
     apply(i)
   }
 
@@ -38,11 +38,13 @@ object Card {
   
   def apply(kind: Kind.Value.Kind, suit: Suit.Value) = All((kind.toInt << 2) + suit.toInt)
 
-  def apply(s: String)  = fromString(s)
-  def apply(i: Byte)    = All(i - 1)
-  def apply(i: Int)     = All(i)
-  def apply(x: Any)     = throw BadCard(x)
-
+  def apply(c: Any): Card = c match {
+    case s: String => fromString(s)
+    case i: Byte => All(i - 1)
+    case i: Int => All(i)
+    case _ => throw Invalid(c)
+  }
+  
 }
 
 class Card(val kind: Kind.Value.Kind, val suit: Suit.Value) extends Ordered[Card] {

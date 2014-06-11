@@ -1,10 +1,9 @@
 package de.pokerno.model
 
 import org.scalatest._
-import org.scalatest.matchers._
-import org.scalatest.matchers.ShouldMatchers._
+import org.scalatest.Matchers._
 
-class DealerSpec extends FunSpec with ClassicMatchers {
+class DealerSpec extends FunSpec {
   describe("Dealer") {
     it("deal board") {
       val dealer = new Dealer

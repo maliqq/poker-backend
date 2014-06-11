@@ -1,10 +1,9 @@
 package de.pokerno.poker
 
 import org.scalatest._
-import org.scalatest.matchers._
-import org.scalatest.matchers.ShouldMatchers._
+import org.scalatest.Matchers._
 
-class MathSpec extends FunSpec with ClassicMatchers {
+class MathSpec extends FunSpec {
   describe("Math") {
     it("Sample") {
       val sample = new Math.Sample

@@ -1,10 +1,9 @@
 package de.pokerno.poker
 
 import org.scalatest._
-import org.scalatest.matchers._
-import org.scalatest.matchers.ShouldMatchers._
+import org.scalatest.Matchers._
 
-class SuitSpec extends FunSpec with ClassicMatchers {
+class SuitSpec extends FunSpec {
   describe("Suit") {
     it("all") {
       val s: Suit.Value = 0

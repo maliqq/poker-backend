@@ -1,22 +1,18 @@
 package de.pokerno.model
 
 import org.scalatest._
-import org.scalatest.matchers._
-import org.scalatest.matchers.ShouldMatchers._
+import org.scalatest.Matchers._
 
-class BetSpec extends FunSpec with ClassicMatchers {
+class BetSpec extends FunSpec {
   describe("Bet") {
     it("amount") {
-//      Bet.check.amount should equal(.0)
-//      Bet.fold.amount should equal(.0)
-//      Bet.allIn.amount should equal(.0)
       Bet.call(1.0).amount should equal(1.0)
       Bet.raise(2.0).amount should equal(2.0)
       Bet.sb(1.0).amount should equal(1.0)
       Bet.bb(2.0).amount should equal(2.0)
       Bet.ante(1.0).amount should equal(1.0)
     }
-
+    
     it("bet type") {
       Bet.check should equal(Bet.Check)
       Bet.fold should equal(Bet.Fold)
@@ -34,35 +30,6 @@ class BetSpec extends FunSpec with ClassicMatchers {
       Bet.call(1.0).toString should equal("Call 1.00")
       Bet.raise(2.0).toString should equal("Raise 2.00")
     }
-    //
-    //    describe("isValid") {
-    //      it("fold") {
-    //        Bet.fold.isValid(1000, 10, 10, (10.0, 10.0)) should be(true)
-    //      }
-    //
-    //      it("check") {
-    //        Bet.check.isValid(1000, 10, 10, (.0, .0)) should be(true)
-    //        Bet.check.isValid(1000, 10, 100, (.0, .0)) should be(false)
-    //      }
-    //
-    //      it("call") {
-    //        val range: Range = (.0, .0)
-    //        val stack = 1000
-    //        val put = 10
-    //        Bet.call(100).isValid(stack, put, 100, range) should be(true)
-    //        Bet.call(2000).isValid(stack, put, 100, range) should be(false)
-    //        Bet.call(100).isValid(stack, put, 200, range) should be(false)
-    //      }
-    //
-    //      it("raise") {
-    //        val range: Range = (100.0, 200.0)
-    //        val stack = 1000
-    //        val put = 50
-    //        Bet.raise(100).isValid(stack, put, 100, range) should be(true)
-    //        Bet.raise(300).isValid(stack, put, 100, range) should be(false)
-    //        Bet.raise(50).isValid(stack, put, 200, range) should be(false)
-    //      }
-    //    }
 
     it("type checks") {
       Array(

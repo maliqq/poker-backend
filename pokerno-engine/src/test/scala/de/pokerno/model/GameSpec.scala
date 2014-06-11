@@ -1,10 +1,9 @@
 package de.pokerno.model
 
 import org.scalatest._
-import org.scalatest.matchers._
-import org.scalatest.matchers.ShouldMatchers._
+import org.scalatest.Matchers._
 
-class GameSpec extends FunSpec with ClassicMatchers {
+class GameSpec extends FunSpec {
   import GameType._
   import MixType._
 

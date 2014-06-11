@@ -1,10 +1,9 @@
 package de.pokerno.model
 
 import org.scalatest._
-import org.scalatest.matchers._
-import org.scalatest.matchers.ShouldMatchers._
+import org.scalatest.Matchers._
 
-class MixSpec extends FunSpec with ClassicMatchers {
+class MixSpec extends FunSpec {
   describe("Mix") {
     it("max table size") {
       Mix.MaxTableSize should equal(8)

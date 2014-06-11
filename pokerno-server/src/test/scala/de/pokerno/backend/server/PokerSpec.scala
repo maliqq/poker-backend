@@ -1,10 +1,9 @@
 package de.pokerno.backend.server
 
 import org.scalatest._
-import org.scalatest.matchers._
-import org.scalatest.matchers.ShouldMatchers._
+import org.scalatest.Matchers._
 
-class PokerSpec extends FunSpec with ClassicMatchers {
+class PokerSpec extends FunSpec {
   describe("Poker") {
     it("sample") {
     }

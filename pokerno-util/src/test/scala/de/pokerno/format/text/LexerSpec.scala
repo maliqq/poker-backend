@@ -1,10 +1,9 @@
 package de.pokerno.format.text
 
 import org.scalatest._
-import org.scalatest.matchers._
-import org.scalatest.matchers.ShouldMatchers._
+import org.scalatest.Matchers._
 
-class LexerSpec extends FunSpec with ClassicMatchers {
+class LexerSpec extends FunSpec {
   describe("Lexer") {
     import Lexer.QuotedString
 

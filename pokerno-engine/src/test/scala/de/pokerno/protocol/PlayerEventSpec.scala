@@ -1,11 +1,10 @@
 package de.pokerno.protocol
 
 import org.scalatest._
-import org.scalatest.matchers._
-import org.scalatest.matchers.ShouldMatchers._
+import org.scalatest.Matchers._
 import de.pokerno.protocol.{action => message}
 
-class PlayerEventSpec extends FunSpec with ClassicMatchers {
+class PlayerEventSpec extends FunSpec {
   describe("PlayerEvent") {
     it("AddBet") {
       val bet = PlayerEvent.decode("""{"bet":{"check":true}}""")

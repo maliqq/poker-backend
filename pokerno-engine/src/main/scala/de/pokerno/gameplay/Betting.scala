@@ -12,36 +12,29 @@ trait Betting {
   import gameplay._
   
   // require bet
-  def requireBet(pos: Int) {
-    round requireBet pos
-    round.acting map { acting =>
-      events broadcast Events.requireBet(acting)
+  def requireBet(seat: Seat) {
+    round.requireBet(seat)
+    round.acting map { seat =>
+      events broadcast Events.requireBet(seat)
     }
   }
 
   // add bet
-  def addBet(bet: Bet) {
+  def addBet(bet: Bet, timeout: Option[Boolean] = None) {
     val (seat, posted) = round.addBet(bet)
-    events broadcast Events.addBet(seat, posted)
-  }
-  
-  def addBetWithTimeout(bet: Bet) {
-    val (seat, posted) = round.addBet(bet)
-    val event = Events.addBet(seat, posted)
-    event.timeout = Some(true)
-    events broadcast event
+    events broadcast Events.addBet(seat, posted, timeout)
   }
 
   // force bet
-  def forceBet(pos: Int, betType: Bet.ForcedType) {
-    val (seat, posted) = round.forceBet(pos, betType)
+  def forceBet(seat: Seat, betType: Bet.ForcedType) {
+    val posted = round.forceBet(seat, betType)
     events broadcast Events.addBet(seat, posted)
   }
 
   // current betting round finished
   def doneBets() {
     events broadcast Events.declarePot(round.pot)
-    round complete()
+    round.complete()
   }
 }
 

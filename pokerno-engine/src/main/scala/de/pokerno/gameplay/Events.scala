@@ -84,11 +84,11 @@ object Events {
   def buttonChange(pos: Int) =
     msg.ButtonChange(pos)
 
-  def addBet(seat: Seat, bet: Bet) =
-    msg.DeclareBet(seat.pos, seat.player.get, bet)
+  def addBet(seat: Seat, bet: Bet, timeout: Option[Boolean] = None) =
+    msg.DeclareBet(seat.pos, seat.player.get, bet, timeout)
 
-  def requireBet(acting: betting.Acting) = 
-    msg.AskBet(acting)
+  def requireBet(seat: Seat) = 
+    msg.AskBet(seat.pos, seat.player.get, seat.call.get, seat.raise)
 
   def declarePot(pot: Pot) =
     msg.DeclarePot(pot)

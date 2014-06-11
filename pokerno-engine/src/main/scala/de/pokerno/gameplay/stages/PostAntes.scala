@@ -16,7 +16,7 @@ case class PostAntes(ctx: stg.Context) extends Stage with Betting {
 
     if (gameOptions.hasAnte || stake.ante.isDefined) {
       round.seats filter (_.isActive) foreach { seat =>
-        forceBet(seat.pos, Bet.Ante)
+        forceBet(seat, Bet.Ante)
       }
   
       doneBets()

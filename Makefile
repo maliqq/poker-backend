@@ -2,6 +2,8 @@ start:
 	sbt "project pokerno-server" "run --rpc --http-api --websocket --restore ./restore.json"
 start-replayer:
 	sbt "project pokerno-replay" "run --http"
+compile:
+	sbt "project pokerno-server" compile
 build:
 	sbt "project pokerno-server" assembly
 build-deps:

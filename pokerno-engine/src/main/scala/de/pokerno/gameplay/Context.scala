@@ -39,6 +39,6 @@ class Context(
   
   def gameOptions = game.options
 
-  override def toString = f"table:${table} stake: ${stake} game: ${game}"
+  override def toString = f"table:${table} game: ${game} stake: ${stake}"
 
 }

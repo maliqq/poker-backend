@@ -20,8 +20,8 @@ class Context(val gameplay: Gameplay, ref: ActorRef) extends Betting with NextTu
   }
   
   def decideNextTurn(): Betting.Transition = nextTurn() match {
-    case Left(pos) =>
-      requireBet(pos)
+    case Left(seat) =>
+      requireBet(seat)
       Betting.StartTimer(15 seconds)
 
     case Right(None) =>       Betting.Stop
@@ -31,9 +31,10 @@ class Context(val gameplay: Gameplay, ref: ActorRef) extends Betting with NextTu
   
   // add bet
   def add(player: Player, bet: Bet) {
-    val pos = round.current
-    val seat = table.seats(pos)
-    if (seat.player.get == player) { // FIXME: player.get
+    val seat = round.acting.get
+    
+    // FIXME player.get
+    if (seat.player.get == player) {
       if (timer != null) timer.cancel()
       log.info("[betting] add {}", bet)
       addBet(bet)
@@ -45,22 +46,21 @@ class Context(val gameplay: Gameplay, ref: ActorRef) extends Betting with NextTu
   
   // timeout bet
   def timeout() {
-    val pos = round.current
-    val seat = table.seats(pos)
+    val seat = round.acting.get
     
     val bet: Bet = seat.state match {
       case Seat.State.Away ⇒
         // force fold
-        Bet.fold//(timeout = true)
+        Bet.fold
 
       case _ ⇒
         // force check/fold
         if (round.call == 0 || seat.didCall(round.callAmount))
-          Bet.check//(timeout = true)
-        else Bet.fold//(timeout = true)
+          Bet.check
+        else Bet.fold
     }
 
-    addBetWithTimeout(bet)
+    addBet(bet, timeout = Some(true))
   }
   
 }

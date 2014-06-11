@@ -2,37 +2,33 @@ package de.pokerno.gameplay.betting
 
 import org.slf4j.LoggerFactory
 import de.pokerno.model._
+import de.pokerno.gameplay.{Context => Gameplay}
 import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnore, JsonInclude}
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import math.{ BigDecimal ⇒ Decimal }
+
+class Seat2Acting extends com.fasterxml.jackson.databind.util.StdConverter[Option[Seat], Option[ActingSeat]] {
+  override def convert(seat: Option[Seat]): Option[ActingSeat] = seat.map(ActingSeat.seat2acting(_))
+}
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
   private val log = LoggerFactory.getLogger(getClass)
   
-  private var _current = table.button.current
-  private var _oldCurrent = _current
-  
-  def current = _current
-  def current_=(pos: Int) = {
-    _current = pos
-    pos
-  }
-  
-  @JsonProperty def acting: Option[Acting] = _call map { call =>
-    val seat = table.seats(_current)
-    Acting(_current, seat.player, call, _raise)
-  }
-  
   private var _seats = table.seatsFrom(_current)
-  def seats = {
-    // update seats from new position
-    if (_current != _oldCurrent) {
-      _oldCurrent = _current
-      _seats = table.seatsFrom(_current)
-    }
-    _seats
+  def seats = _seats
+  
+  private var _current = table.button.current
+  
+  //def current = _current
+  
+  private var _acting: Option[Seat] = None
+  @JsonSerialize(converter = classOf[Seat2Acting]) def acting = _acting
+  private def acting_=(seat: Seat) {
+    _acting.map(_.notActing())
+    _acting = Some(seat)
   }
-
+  
   @JsonIgnore var bigBets: Boolean = false
   
   @JsonProperty val pot = new Pot
@@ -44,26 +40,18 @@ class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
 
   // current amount to call
   private var _call: Option[Decimal] = None
-  def call = _call
+  @JsonProperty def call = _call
+  def call_=(amt: Decimal) = _call = Some(amt)
   def callAmount: Decimal = _call.getOrElse(.0)
   
-  // current raise range
-  private var _raise: Option[Tuple2[Decimal, Decimal]] = None
-  def raise = _raise
-  
-  def clear() {
+  def reset() {
     raiseCount = 0
     _call = None
-    _raise = None
+    _acting = None
     _current = table.button.current
+    _seats = table.seatsFrom(_current)
     // FIXME
     //pot.complete()
-  }
-  
-  def calling() {
-    if (_call.isEmpty) {
-      _call = Some(0)
-    }
   }
   
   def complete() {
@@ -72,47 +60,46 @@ class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
       seat.play()
     }
 
-    clear()
+    reset()
   }
 
-  def forceBet(pos: Int, betType: Bet.ForcedType): Tuple2[Seat, Bet] = {
-    current = pos
+  def forceBet(seat: Seat, betType: Bet.ForcedType): Bet = {
+    acting = seat
 
-    val seat = table.seats(current)
     val amount = stake amount betType
     
-    _call = Some(amount)
+    call = amount
+    seat.call = amount
 
     val stack = seat.stack.get
     val amt = List(stack, amount) min
     val bet = betType.force(amt)
 
-    addBet(bet)
+    addBet(seat, bet)
   }
 
-  def requireBet(pos: Int): Seat = {
-    current = pos
+  def requireBet(seat: Seat) = {
+    acting = seat
     
-    calling()
+    seat.call = callAmount
     
-    val seat = table.seats(current)
     val limit = game.limit
 
     val blind = if (bigBets) stake.bigBlind * 2 else stake.bigBlind
     val total = seat.total
 
     if (total <= callAmount || raiseCount >= MaxRaiseCount)
-      _raise = None
+      seat.disableRaise()
     else {
       val (min, max) = limit raise (total, blind + callAmount, pot.total)
-      _raise = Some(List(total, min) min, List(total, max) min)
+      seat.raise = (List(total, min) min, List(total, max) min)
     }
-    
-    seat
   }
   
-  def addBet(_bet: Bet): Tuple2[Seat, Bet] = {
-    val seat = table.seats(current)
+  // FIXME
+  def addBet(_bet: Bet): Tuple2[Seat, Bet] = (acting.get, addBet(acting.get, _bet))
+  
+  def addBet(seat: Seat, _bet: Bet): Bet = {
     val player = seat.player.get
 
     var _posting = _bet match {
@@ -124,8 +111,8 @@ class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
         _bet
     }
     
-    if (!seat.canBet(_posting, stake, _call, _raise)) {
-      log.warn("bet %s is not valid; call=%.2f raise=%s %s\n" format(_posting, callAmount, _raise, seat))
+    if (!seat.canBet(_posting, stake)) {
+      log.warn("bet %s is not valid; call=%.2f seat=%s\n" format(_posting, callAmount, seat))
       _posting = Bet.fold
     }
 
@@ -136,12 +123,12 @@ class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
         raiseCount += 1
 
       if (!_posting.isCall && seat.putAmount > callAmount)
-        _call = Some(seat.putAmount)
+        call = seat.putAmount
 
       pot add (player, diff, seat.isAllIn)
     }
 
-    (seat, _posting)
+    _posting
   }
 
 }

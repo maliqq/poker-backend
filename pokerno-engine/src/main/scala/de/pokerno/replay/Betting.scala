@@ -32,14 +32,13 @@ private[replay] case class Betting(
           val player: Player = if (ante.player != null)
             ante.player
           else {
-            val pos = round.current
-            val seat = table.seats(pos)
+            val seat = round.acting.get
             seat.player.get
           }
 
           table.playerSeat(player) map { seat =>
             if (seat.isActive)
-              forceBet(seat.pos, Bet.Ante)
+              forceBet(seat, Bet.Ante)
           }
         }
       } else forceAntes()
@@ -87,12 +86,12 @@ private[replay] case class Betting(
       Console printf("sb: %s bb: %s\n", sb, bb)
 
       sb.map { seat =>
-        forceBet(seat.pos, Bet.SmallBlind)
+        forceBet(seat, Bet.SmallBlind)
       }
       sleep()
 
       bb.map { seat =>
-        forceBet(seat.pos, Bet.BigBlind)
+        forceBet(seat, Bet.BigBlind)
       }
       sleep()
     }
@@ -105,10 +104,9 @@ private[replay] case class Betting(
       }
 
       activeBets.dropWhile { case cmd.AddBet(player, bet) ⇒
-        val pos = round.current
-        val seat = table.seats(pos)
+        val seat = round.acting.get
 
-        log.info(" | acting #{} {}", pos, seat)
+        log.info(" | acting #{} {}", seat.pos, seat)
 
         def isOurTurn = seat.player.isDefined && seat.player.get == player
 
@@ -138,7 +136,7 @@ private[replay] case class Betting(
   }
   
   private def forceAntes(): Unit = round.seats.filter(_.isActive).foreach { seat =>
-    forceBet(seat.pos, Bet.Ante)
+    forceBet(seat, Bet.Ante)
   }
   
 }

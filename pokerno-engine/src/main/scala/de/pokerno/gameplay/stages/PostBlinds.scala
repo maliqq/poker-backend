@@ -22,9 +22,9 @@ case class PostBlinds(ctx: stg.Context) extends Stage with Betting {
     } else {
       val Seq(sb, bb, _*) = if (active.size == 2) active.reverse else active
 
-      forceBet(sb.pos, Bet.SmallBlind)
+      forceBet(sb, Bet.SmallBlind)
       
-      forceBet(bb.pos, Bet.BigBlind)
+      forceBet(bb, Bet.BigBlind)
     }
   }
   

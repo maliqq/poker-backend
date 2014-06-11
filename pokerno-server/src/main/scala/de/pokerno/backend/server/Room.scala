@@ -146,6 +146,9 @@ class Room(
       stay()
     
     case Event(cmd.AdvanceStack(player, amount), _) =>
+      table.playerSeat(player).map { seat =>
+        seat.buyIn(amount)
+      }
       stay()
       
     case Event(cmd.ChangePlayerState(player, newState), _) =>

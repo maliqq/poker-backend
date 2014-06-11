@@ -2,6 +2,7 @@ package de.pokerno.gameplay.betting
 
 import concurrent.duration._
 
+import de.pokerno.model.Seat
 import de.pokerno.gameplay.{Betting, stg, Context => Gameplay}
 
 trait NextTurn {
@@ -16,7 +17,7 @@ trait NextTurn {
 
   import gameplay._
   
-  protected def nextTurn(): Either[Int, Option[Boolean]] = {
+  protected def nextTurn(): Either[Seat, Option[Boolean]] = {
     round.seats filter (_.inPlay) foreach { seat =>
       if (!seat.didCall(round.callAmount)) {
         //warn("not called, still playing: %s", seat)
@@ -30,7 +31,7 @@ trait NextTurn {
 
     val playing = round.seats filter (_.isPlaying)
     
-    if (playing.size > 0)  Left(playing.head.pos)
+    if (playing.size > 0)  Left(playing.head)
     else                   Right(Some(round.seats.exists(_.isAllIn)))
   }
 

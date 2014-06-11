@@ -10,7 +10,9 @@ sealed case class DeclareBet(
     
     @JsonProperty player: Player,
     
-    @JsonProperty action: Bet
+    @JsonProperty action: Bet,
+    
+    @JsonProperty timeout: Option[Boolean] = None
   ) extends GameEvent {
-  @JsonProperty var timeout: Option[Boolean] = None
+  
 }

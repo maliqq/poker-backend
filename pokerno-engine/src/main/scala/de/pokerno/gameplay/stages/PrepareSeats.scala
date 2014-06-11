@@ -9,6 +9,7 @@ case class PrepareSeats(ctx: stg.Context) extends Stage {
   def apply() = {
     table.seats.zipWithIndex.foreach {
       case (seat, pos) ⇒
+        seat.clearCards()
         if (seat.canPlayNextDeal)     seat.play()
         else if (seat.isAllIn)        seat.idle()
         
@@ -17,8 +18,6 @@ case class PrepareSeats(ctx: stg.Context) extends Stage {
 //            seat.clear()
 //          }
 //        }
-      
-        //seat.clearPut()
     }
     
     if (table.seats.count(_.canPlayNextDeal) <= 1) {

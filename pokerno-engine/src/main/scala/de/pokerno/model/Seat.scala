@@ -13,6 +13,18 @@ import com.fasterxml.jackson.core.`type`.TypeReference
 
 class SeatStateRef extends TypeReference[Seat.State.type]
 
+object ActingSeat {
+  implicit def seat2acting(seat: Seat): ActingSeat = ActingSeat(seat.pos, seat.player, seat.call, seat.raise)
+}
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+case class ActingSeat(
+    @JsonProperty pos: Int,
+    @JsonProperty player: Option[Player],
+    @JsonProperty call: Option[Decimal],
+    @JsonProperty raise: Option[Tuple2[Decimal, Decimal]]
+)  {}
+
 object Seat {
   object State extends Enumeration {
     def state(name: String) = new Val(nextId, name)
@@ -113,17 +125,6 @@ class Seat(
   private var _lastSeenOnline: Option[java.util.Date] = None
   def lastSeenOnline = _lastSeenOnline
   
-  def clear() {
-    _presence = None
-    _state = State.Empty
-    _player = None
-    _cards = None
-    _lastSeenOnline = None
-    _put = None
-    _stack = None
-    _lastAction = None
-  }
-  
   // reset before betting
   def reset() {
     _put = None
@@ -215,13 +216,10 @@ class Seat(
   private var _masks: Array[Boolean] = Array()
   
   def pocket(cards: Cards, hidden: Boolean) {
-    Console printf("==== %s%s%s\n", _cards.map { _.masked.toList }, cards, hidden)
-    if (_cards.isEmpty) {
-      _cards = Some(new MaskedCards(cards, hidden))
-    } else {
-      Console printf("applying %s\n", cards)
-      _cards = _cards.map { _ :+ (cards, hidden) }
-    }
+    _cards = if (_cards.isEmpty)
+      Some(new MaskedCards(cards, hidden))
+    else
+      _cards.map { _ :+ (cards, hidden) }
   }
   
   def hole(cards: Cards) = pocket(cards, true) // hidden
@@ -232,6 +230,7 @@ class Seat(
   }
   
   @JsonProperty("cards") def cards = _cards.map { _.masked }
+  def clearCards() = _cards = None
 
   // current stack
   private var _stack: Option[Decimal] = None
@@ -325,7 +324,7 @@ class Seat(
   // ANTE, BRING_IN, SMALL_BLIND, BIG_BLIND, GUEST_BLIND, STRADDLE
   def canForce(amt: Decimal, toCall: Decimal): Boolean = {
     // TODO
-    canCall(amt, toCall)
+    inPlay && _canCall(amt, toCall)
   }
 
   def force(bet: Bet.Forced): Decimal = {
@@ -336,22 +335,32 @@ class Seat(
     _lastAction = Some(bet)
     amt
   }
-
-  // RAISE
-  def canRaise(amt: Decimal, toRaise: Tuple2[Decimal, Decimal]): Boolean = {
-    inPlay && _canRaise(amt, toRaise)
+  
+  def notActing() {
+    _raise = None
+    _call = None
   }
 
-//  case class GreaterThanMax(amount: Decimal, max: Decimal)
-//    extends Error("amount=%.2f max=%.2f" format (amount, max))
-//
-//  case class LessThanMin(amount: Decimal, min: Decimal)
-//    extends Error("amount=%.2f min=%.2f" format (amount, min))
-//
+  // RAISE
+  private var _raise: Option[Tuple2[Decimal, Decimal]] = None
+  def raise = _raise
+  
+  def disableRaise() {
+    _raise = None
+  }
+  
+  def raise_=(range: Tuple2[Decimal, Decimal]) = {
+    _raise = Some(range)
+  }
+  
+  def canRaise(amt: Decimal): Boolean = {
+    inPlay && _raise.map(_canRaise(amt, _)).getOrElse(false)
+  }
+
   private def _canRaise(amt: Decimal, toRaise: Tuple2[Decimal, Decimal]): Boolean = {
     amt <= total && amt >= toRaise._1 && amt <= toRaise._2
   }
-
+  
   def raise(amt: Decimal): Decimal = {
     val diff = amt - putAmount
     put(diff) {
@@ -362,11 +371,19 @@ class Seat(
   }
 
   // CALL
-  def canCall(amt: Decimal, toCall: Decimal): Boolean = {
-    inPlay && _canCall(amt, toCall)
+  private var _call: Option[Decimal] = None
+  def call = _call
+  
+  def callAmount: Decimal = call.getOrElse(0)
+  
+  def canCall(amt: Decimal): Boolean = {
+    inPlay &&
+      _call.map(_canCall(amt, _)).getOrElse(false)
   }
-
-  private def _canCall(amt: Decimal, toCall: Decimal): Boolean = {
+  
+  def call_=(amt: Decimal) = _call = Some(amt)
+  
+  def _canCall(amt: Decimal, toCall: Decimal) = {
     // call all-in
     amt + stackAmount < toCall && amt == stackAmount ||
       // call exact amount
@@ -394,7 +411,7 @@ class Seat(
     inPlay || isPostedBB
   }
   
-  def canBet(bet: Bet, stake: Stake, _call: Option[Decimal], _raise: Option[Tuple2[Decimal, Decimal]]): Boolean =
+  def canBet(bet: Bet, stake: Stake): Boolean =
     bet match {
       case Bet.Fold ⇒
         canFold || notActive
@@ -404,11 +421,11 @@ class Seat(
   
       // FIXME check on null
       case Bet.Call(amt) if _call.isDefined && isActive ⇒
-        canCall(amt, _call.get)
+        canCall(amt)
   
       // FIXME check on null
       case Bet.Raise(amt) if _raise.isDefined && isActive ⇒
-        canRaise(amt, _raise.get)
+        canRaise(amt)
   
       case f: Bet.Forced ⇒
         canForce(f.amount, stake.amount(f.betType))

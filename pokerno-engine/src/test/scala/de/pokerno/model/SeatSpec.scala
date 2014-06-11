@@ -221,17 +221,17 @@ class SeatSpec extends FunSpec with ClassicMatchers {
         seat.player = new Player("1")
         seat.buyIn(1000)
         seat.play
-        seat.canCall(500, 500) should be(true)
-        seat.canCall(499, 500) should be(false)
-        seat.canCall(500, 499) should be(false)
-        seat.canCall(1000, 1000) should be(true)
-        seat.canCall(1000, 1001) should be(true)
-        seat.canCall(1001, 1002) should be(false)
+        seat._canCall(500, 500) should be(true)
+        seat._canCall(499, 500) should be(false)
+        seat._canCall(500, 499) should be(false)
+        seat._canCall(1000, 1000) should be(true)
+        seat._canCall(1000, 1001) should be(true)
+        seat._canCall(1001, 1002) should be(false)
         seat.raise(500)
-        seat.canCall(500, 1000) should be(true)
-        seat.canCall(500, 500) should be(false)
+        seat._canCall(500, 1000) should be(true)
+        seat._canCall(500, 500) should be(false)
         seat.fold
-        seat.canCall(500, 1000) should be(false)
+        seat._canCall(500, 1000) should be(false)
       }
 
       it("raise") {

@@ -60,7 +60,7 @@ private[replay] case class Dealing(
         table.playerSeat(p).get
 
       case None ⇒
-        table.seats(round.current)
+        round.acting.get
     }
     val player = seat.player.get
     

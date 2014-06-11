@@ -168,6 +168,9 @@ class CodecSpec extends FunSpec with ClassicMatchers {
       val game = new Game(Game.Texas)
       val stake = new Stake(100)
       val round = new gameplay.betting.Round(table, game, stake)
+      val seat = new Seat(1)
+      seat.player = new Player("A")
+      round.requireBet(seat)
       Json.encode(round) should equal("""{"pot":{"side":[],"total":0}}""")
     }
     

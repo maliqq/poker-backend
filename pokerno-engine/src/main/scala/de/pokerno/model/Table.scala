@@ -12,16 +12,12 @@ object Table {
 class Table(@JsonIgnore val size: Int) {
   import Table._
   
-  private val _seats = List.tabulate(size) { i => new Seat(i) }
-  def seats = _seats
+  private val _seats = collection.mutable.MutableList.tabulate(size) { i => new Seat(i) }
+  @JsonProperty def seats = _seats
   
-  @JsonProperty("seats") def getSeats: List[Seat] = seats.toList
-
   private val _button = new Ring(seats)
-  def button = _button
+  @JsonProperty def button = _button
   def button_=(pos: Int) = _button.current = pos
-  
-  @JsonProperty("button") def getButton: Int = button
   
   def seatsFrom(from: Int): Seq[Seat] = {
     val (before, after) = seats.zipWithIndex span (_._2 <= from)
@@ -58,7 +54,7 @@ class Table(@JsonIgnore val size: Int) {
   def clearSeat(pos: Int): Unit = {
     val seat = seats(pos)
     seat.player map(removePlayer(_))
-    seat.clear()
+    _seats(pos) = new Seat(pos)
   }
 
   def playerPos(player: Player): Option[Int] =    _seating.get(player)

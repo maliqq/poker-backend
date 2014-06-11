@@ -6,8 +6,10 @@ import de.pokerno.gameplay.Events
 private[gameplay] trait Button { g: ContextLike ⇒
   
   def setButton(pos: Int) {
-    table.button = round.current = pos
-    events.broadcast(Events.buttonChange(table.button))
+    table.button = pos
+    round.reset()
+    
+    events broadcast Events.buttonChange(table.button)
   }
 
   def moveButton() = round.seats find(_.isActive) map { seat =>

@@ -6,23 +6,24 @@ import beans._
 object Mix {
   final val MaxTableSize = 8
   
-  def apply(_type: Game.Mixed, _tableSize: Int = Mix.MaxTableSize) = new Mix(_type, _tableSize)
+  def apply(`type`: MixType): Mix = Mix(`type`, MaxTableSize)
 }
 
-class Mix(
-    @JsonProperty val `type`: Game.Mixed,
-    _tableSize: Int = Mix.MaxTableSize
+case class Mix(
+    @JsonProperty `type`: MixType,
+    @JsonProperty tableSize: Int
     ) extends Variation {
-  @JsonIgnore     val options = Mixes(`type`)
-  @JsonProperty   val tableSize = if (_tableSize > Mix.MaxTableSize) Mix.MaxTableSize else _tableSize
-  @JsonIgnore     val games = options.map { option ⇒
-                                new Game(option._1, Some(option._2), Some(tableSize))
-                              }
+  
+  @JsonIgnore val options = Mixes(`type`)
+  @JsonIgnore val games = options.map { option ⇒
+                            Game(option._1, option._2, tableSize)
+                          }
+
   override def toString = "%s %s-max" format (`type`.toString, tableSize)
   
   @JsonCreator
   def this(
-      @JsonProperty("type") _type: String,
-      @JsonProperty("size") _size: Int
-    ) = this(_type: Game.Mixed, _size)
+      @JsonProperty("type") `type`: String,
+      @JsonProperty("tableSize") tableSize: Int
+    ) = this(`type`: MixType, tableSize)
 }

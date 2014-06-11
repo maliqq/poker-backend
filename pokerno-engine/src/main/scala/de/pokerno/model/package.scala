@@ -13,26 +13,26 @@ package object model {
   
   import de.pokerno.poker.Hand
   
-  final val Games: Map[Game.Limited, Game.Options] = Map(
-    Game.Texas -> Game.Options(
+  final val Games: Map[GameType, Game.Options] = Map(
+    GameType.Texas -> Game.Options(
       group = Game.Holdem,
       hasBoard = true,
       hasBlinds = true,
       maxTableSize = 10,
       hiRanking = Some(Hand.High),
       pocketSize = 2,
-      defaultLimit = Game.NoLimit),
+      defaultLimit = Limit.None),
 
-    Game.Omaha -> Game.Options(
+    GameType.Omaha -> Game.Options(
       group = Game.Holdem,
       hasBoard = true,
       hasBlinds = true,
       maxTableSize = 10,
       pocketSize = 4,
       hiRanking = Some(Hand.High),
-      defaultLimit = Game.PotLimit),
+      defaultLimit = Limit.Pot),
 
-    Game.Omaha8 -> Game.Options(
+    GameType.Omaha8 -> Game.Options(
       group = Game.Holdem,
       hasBoard = true,
       hasBlinds = true,
@@ -40,9 +40,9 @@ package object model {
       pocketSize = 4,
       hiRanking = Some(Hand.High),
       loRanking = Some(Hand.AceFive8),
-      defaultLimit = Game.PotLimit),
+      defaultLimit = Limit.Pot),
 
-    Game.Stud -> Game.Options(
+    GameType.Stud -> Game.Options(
       group = Game.SevenCard,
       hasAnte = true,
       hasBringIn = true,
@@ -50,9 +50,9 @@ package object model {
       maxTableSize = 8,
       pocketSize = 7,
       hiRanking = Some(Hand.High),
-      defaultLimit = Game.FixedLimit),
+      defaultLimit = Limit.Fixed),
 
-    Game.Stud8 -> Game.Options(
+    GameType.Stud8 -> Game.Options(
       group = Game.SevenCard,
       hasAnte = true,
       hasBringIn = true,
@@ -61,9 +61,9 @@ package object model {
       pocketSize = 7,
       hiRanking = Some(Hand.High),
       loRanking = Some(Hand.AceFive8),
-      defaultLimit = Game.FixedLimit),
+      defaultLimit = Limit.Fixed),
 
-    Game.Razz -> Game.Options(
+    GameType.Razz -> Game.Options(
       group = Game.SevenCard,
       hasAnte = true,
       hasBringIn = true,
@@ -71,9 +71,9 @@ package object model {
       maxTableSize = 8,
       pocketSize = 7,
       hiRanking = Some(Hand.AceFive),
-      defaultLimit = Game.FixedLimit),
+      defaultLimit = Limit.Fixed),
 
-    Game.London -> Game.Options(
+    GameType.London -> Game.Options(
       group = Game.SevenCard,
       hasAnte = true,
       hasBringIn = true,
@@ -81,9 +81,9 @@ package object model {
       maxTableSize = 8,
       pocketSize = 7,
       hiRanking = Some(Hand.AceSix),
-      defaultLimit = Game.FixedLimit),
+      defaultLimit = Limit.Fixed),
 
-    Game.FiveCard -> Game.Options(
+    GameType.FiveCard -> Game.Options(
       group = Game.SingleDraw,
       hasBlinds = true,
       discards = true,
@@ -92,9 +92,9 @@ package object model {
       pocketSize = 5,
       streetsNum = 1,
       hiRanking = Some(Hand.High),
-      defaultLimit = Game.FixedLimit),
+      defaultLimit = Limit.Fixed),
 
-    Game.Single27 -> Game.Options(
+    GameType.Single27 -> Game.Options(
       group = Game.SingleDraw,
       hasBlinds = true,
       discards = true,
@@ -103,9 +103,9 @@ package object model {
       pocketSize = 5,
       streetsNum = 1,
       hiRanking = Some(Hand.DeuceSeven),
-      defaultLimit = Game.FixedLimit),
+      defaultLimit = Limit.Fixed),
 
-    Game.Triple27 -> Game.Options(
+    GameType.Triple27 -> Game.Options(
       group = Game.TripleDraw,
       hasBlinds = true,
       discards = true,
@@ -114,9 +114,9 @@ package object model {
       pocketSize = 5,
       streetsNum = 3,
       hiRanking = Some(Hand.DeuceSeven),
-      defaultLimit = Game.FixedLimit),
+      defaultLimit = Limit.Fixed),
 
-    Game.Badugi -> Game.Options(
+    GameType.Badugi -> Game.Options(
       group = Game.TripleDraw,
       hasBlinds = true,
       discards = true,
@@ -125,17 +125,17 @@ package object model {
       pocketSize = 4,
       streetsNum = 3,
       hiRanking = Some(Hand.Badugi),
-      defaultLimit = Game.FixedLimit))
+      defaultLimit = Limit.Fixed))
 
-  final val Mixes: Map[Game.Mixed, List[Tuple2[Game.Limited, Game.Limit]]] = Map(
-    Game.Horse -> List(Game.Texas, Game.Omaha8, Game.Razz, Game.Stud, Game.Stud8).map((_, Game.FixedLimit)),
-    Game.Eight -> List(
-      (Game.Triple27, Game.FixedLimit),
-      (Game.Texas, Game.FixedLimit),
-      (Game.Omaha8, Game.FixedLimit),
-      (Game.Razz, Game.FixedLimit),
-      (Game.Stud, Game.FixedLimit),
-      (Game.Stud8, Game.FixedLimit),
-      (Game.Texas, Game.NoLimit),
-      (Game.Omaha, Game.PotLimit)))
+  final val Mixes: Map[MixType, List[Tuple2[GameType, Limit]]] = Map(
+    MixType.Horse -> List(GameType.Texas, GameType.Omaha8, GameType.Razz, GameType.Stud, GameType.Stud8).map((_, Limit.Fixed)),
+    MixType.Eight -> List(
+      (GameType.Triple27, Limit.Fixed),
+      (GameType.Texas, Limit.Fixed),
+      (GameType.Omaha8, Limit.Fixed),
+      (GameType.Razz, Limit.Fixed),
+      (GameType.Stud, Limit.Fixed),
+      (GameType.Stud8, Limit.Fixed),
+      (GameType.Texas, Limit.None),
+      (GameType.Omaha, Limit.Pot)))
 }

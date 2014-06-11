@@ -37,7 +37,7 @@ object Main {
       val variation = if (config.mixedGame.isDefined)
         new Mix(config.mixedGame.get, config.tableSize)
       else
-        new Game(config.limitedGame.get, Some(Game.NoLimit), Some(config.tableSize))
+        new Game(config.limitedGame.get, Some(Limit.None), Some(config.tableSize))
       val stake = new Stake(config.betSize, Ante = Right(true))
       val cycle = system.actorOf(Props(classOf[DealCycle], variation, stake), name = "deal-process")
       val playing = system.actorOf(Props(classOf[play.Play], cycle, config.tableSize), name = "play-process")

@@ -18,7 +18,7 @@ object ActingSeat {
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-case class ActingSeat(
+sealed case class ActingSeat(
     @JsonProperty pos: Int,
     @JsonProperty player: Option[Player],
     @JsonProperty call: Option[Decimal],

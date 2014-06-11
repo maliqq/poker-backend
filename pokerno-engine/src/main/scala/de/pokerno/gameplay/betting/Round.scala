@@ -15,17 +15,16 @@ class Seat2Acting extends com.fasterxml.jackson.databind.util.StdConverter[Optio
 class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
   private val log = LoggerFactory.getLogger(getClass)
   
-  private var _seats = table.seatsFrom(_current)
+  private var _seats = table.fromButton
   def seats = _seats
   
-  private var _current = table.button.current
-  
-  //def current = _current
+  @JsonProperty def current = acting map(_.pos)
   
   private var _acting: Option[Seat] = None
   @JsonSerialize(converter = classOf[Seat2Acting]) def acting = _acting
   private def acting_=(seat: Seat) {
     _acting.map(_.notActing())
+    _seats = table.seatsFrom(seat.pos)
     _acting = Some(seat)
   }
   
@@ -48,8 +47,7 @@ class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
     raiseCount = 0
     _call = None
     _acting = None
-    _current = table.button.current
-    _seats = table.seatsFrom(_current)
+    _seats = table.fromButton
     // FIXME
     //pot.complete()
   }

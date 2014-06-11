@@ -3,6 +3,7 @@ package de.pokerno.protocol
 import org.scalatest._
 import org.scalatest.matchers._
 import org.scalatest.matchers.ShouldMatchers._
+import math.{BigDecimal => Decimal}
 
 class CodecSpec extends FunSpec with ClassicMatchers {
 
@@ -15,14 +16,14 @@ class CodecSpec extends FunSpec with ClassicMatchers {
   describe("Json.decode") {
     it("Game") {
       val game = Json.decodeFromString[Game]("""{"game":{"type":"texas","limit":"fixed-limit","tableSize":2}}""")
-      game.`type` should equal(Game.Texas)
-      game.limit should equal(Game.FixedLimit)
+      game.`type` should equal(GameType.Texas)
+      game.limit should equal(Limit.Fixed)
       game.tableSize should equal(2)
     }
     
     it("Mix") {
       val mix = Json.decodeFromString[Mix]("""{"mix":{"type":"horse","tableSize":2}}""")
-      mix.`type` should equal(Game.Horse)
+      mix.`type` should equal(MixType.Horse)
       mix.tableSize should equal(2)
     }
     
@@ -67,33 +68,35 @@ class CodecSpec extends FunSpec with ClassicMatchers {
     }
     
     it("Stake") {
-      val stake1 = new Stake(100.0)
+      val stake1 = Stake(100.0)
       Json.encode(stake1) should equal("""{"bigBlind":100.0,"smallBlind":50.00}""") // FIXME????
       
-      val stake2 = new Stake(0.5, Some(0.2))
+      val stake2 = Stake(0.5, Some(0.2))
       Json.encode(stake2) should equal("""{"bigBlind":0.5,"smallBlind":0.2}""")
       
-      val stake3 = new Stake(100.0, Some(50.0), _ante = Left(10.0))
+      val stake3 = Stake(100.0, Some(50.0), ante = Left(10.0))
       Json.encode(stake3) should equal("""{"bigBlind":100.0,"smallBlind":50.0,"ante":10.0}""")
       
-      val stake4 = new Stake(100.0, _smallBlind = Some(50.0), _ante = Left(10.0), _bringIn = Left(20.0))
+      // FIXME
+      import math.{BigDecimal => Decimal}
+      val stake4 = Stake(100.0: Decimal, Some(50.0: Decimal), ante = Left(10.0: Decimal), bringIn = Left(20.0: Decimal))
       Json.encode(stake4) should equal("""{"bigBlind":100.0,"smallBlind":50.0,"ante":10.0,"bringIn":20.0}""")
     }
     
     it("Game") {
       
-      val game1 = Game(Game.Texas, Game.NoLimit)
+      val game1 = Game(GameType.Texas, Limit.None)
       Json.encode(game1) should equal("""{"game":{"type":"texas","tableSize":10,"limit":"no-limit"}}""")
       
-      val game2 = Mix(Game.Horse)
+      val game2 = Mix(MixType.Horse)
       Json.encode(game2) should equal("""{"mix":{"type":"horse","tableSize":8}}""")
     }
     
     it("Variation") {
-      val game: Variation = Game(Game.Texas, Game.NoLimit)
+      val game: Variation = Game(GameType.Texas, Limit.None)
       Json.encode(game) should equal("""{"game":{"type":"texas","tableSize":10,"limit":"no-limit"}}""")
       
-      val mix: Variation = Mix(Game.Horse)
+      val mix: Variation = Mix(MixType.Horse)
       Json.encode(mix) should equal("""{"mix":{"type":"horse","tableSize":8}}""")
     }
     
@@ -165,8 +168,8 @@ class CodecSpec extends FunSpec with ClassicMatchers {
     
     it("betting.Round") {
       val table = new Table(1)
-      val game = new Game(Game.Texas)
-      val stake = new Stake(100)
+      val game = Game(GameType.Texas)
+      val stake = Stake(100)
       val round = new gameplay.betting.Round(table, game, stake)
       val seat = new Seat(1)
       seat.player = new Player("A")
@@ -176,8 +179,8 @@ class CodecSpec extends FunSpec with ClassicMatchers {
     
     it("PlayState") {
       val table = new Table(1)
-      val game = new Game(Game.Texas)
-      val stake = new Stake(100)
+      val game = Game(GameType.Texas)
+      val stake = Stake(100)
       val deck = new Deck
       val dealer = new Dealer(deck)
       dealer.dealBoard(3)

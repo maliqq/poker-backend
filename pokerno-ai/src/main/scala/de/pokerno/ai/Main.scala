@@ -39,7 +39,7 @@ object Main {
 
   def main(args: Array[String]) {
     parser.parse(args, Config()) map { c =>
-      val game = new Game(Game.Texas, Some(Game.FixedLimit), Some(c.tableSize))
+      val game = new Game(Game.Texas, Some(Limit.Fixed), Some(c.tableSize))
       val stake = new Stake(c.stake)
       
       val system = ActorSystem("poker-ai")

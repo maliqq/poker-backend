@@ -4,126 +4,8 @@ import de.pokerno.poker.Hand
 import math.{ BigDecimal ⇒ Decimal }
 
 import com.fasterxml.jackson.annotation.{JsonIgnore, JsonValue, JsonProperty, JsonCreator}
-import beans._
 
 object Game {
-  object Limit {
-    implicit def string2limit(v: String): Limit = v match {
-      case "no-limit" | "nolimit" | "no" ⇒
-        NoLimit
-      case "fixed-limit" | "fixedlimit" | "fixed" ⇒
-        FixedLimit
-      case "pot-limit" | "potlimit" | "pot" ⇒
-        PotLimit
-      case _ ⇒
-        null // throw?
-    }
-  }
-
-  trait Limit {
-    def raise(total: Decimal, bb: Decimal, potSize: Decimal): Tuple2[Decimal, Decimal]
-  }
-
-  case object NoLimit extends Limit {
-    def raise(total: Decimal, bb: Decimal, potSize: Decimal) = (bb, total)
-    @JsonValue override def toString = "no-limit"
-  }
-
-  case object FixedLimit extends Limit {
-    def raise(total: Decimal, bb: Decimal, potSize: Decimal) = (bb, bb)
-    @JsonValue override def toString = "fixed-limit"
-  }
-
-  case object PotLimit extends Limit {
-    def raise(total: Decimal, bb: Decimal, potSize: Decimal) = (bb, potSize)
-    @JsonValue override def toString = "pot-limit"
-  }
-
-  trait Limited
-
-  object Limited {
-    implicit def string2Limited(v: String): Limited = v match {
-      case "texas" | "texas-holdem" | "holdem" ⇒
-        Texas
-      case "omaha" ⇒
-        Omaha
-      case "omaha8" | "omaha-8" ⇒
-        Omaha8
-      case "stud" ⇒
-        Stud
-      case "stud8" | "stud-8" ⇒
-        Stud8
-      case "razz" ⇒
-        Razz
-      case "london" ⇒
-        London
-      case "five-card" ⇒
-        FiveCard
-      case "single27" | "single-27" ⇒
-        Single27
-      case "triple27" | "triple-27" ⇒
-        Triple27
-      case "badugi" ⇒
-        Badugi
-      case _ ⇒
-        null // throw?
-    }
-  }
-
-  case object Texas extends Limited {
-    @JsonValue override def toString = "texas"
-  }
-  case object Omaha extends Limited {
-    @JsonValue override def toString = "omaha"
-  }
-  case object Omaha8 extends Limited {
-    @JsonValue override def toString = "omaha8"
-  }
-
-  case object Stud extends Limited {
-    @JsonValue override def toString = "stud"
-  }
-  case object Stud8 extends Limited {
-    @JsonValue override def toString = "stud8"
-  }
-  case object Razz extends Limited {
-    @JsonValue override def toString = "razz"
-  }
-  case object London extends Limited {
-    @JsonValue override def toString = "london"
-  }
-
-  case object FiveCard extends Limited {
-    @JsonValue override def toString = "five-card"
-  }
-  case object Single27 extends Limited {
-    @JsonValue override def toString = "single27"
-  }
-  case object Triple27 extends Limited {
-    @JsonValue override def toString = "triple27"
-  }
-  case object Badugi extends Limited {
-    @JsonValue override def toString = "badugi"
-  }
-
-  trait Mixed
-
-  object Mixed {
-    implicit def string2Mixed(v: String): Mixed = v match {
-      case "eight" | "8-game" | "eight-game" ⇒
-        Game.Eight
-      case "horse" ⇒
-        Game.Horse
-      case _ ⇒ null // throw?
-    }
-  }
-
-  case object Horse extends Mixed {
-    @JsonValue override def toString = "horse"
-  }
-  case object Eight extends Mixed {
-    @JsonValue override def toString = "eight"
-  }
 
   trait Group
   case object Holdem extends Group
@@ -152,7 +34,7 @@ object Game {
       hiRanking: Option[Hand.Ranking] = None,
       loRanking: Option[Hand.Ranking] = None,
 
-      defaultLimit: Limit = NoLimit) {
+      defaultLimit: Limit = Limit.None) {
 
     // на случай когда колода задается вручную
     def minDeckSize = {
@@ -175,52 +57,54 @@ object Game {
       if (hiRanking.isDefined) b.append(" hi-ranking=%s", hiRanking.get)
       if (loRanking.isDefined) b.append(" lo-ranking=%s", loRanking.get)
 
-      if (hasBlinds) b.append(" ✓blinds")
-      if (hasAnte) b.append(" ✓ante")
-      if (hasBringIn) b.append(" ✓bring-in")
-      if (hasBoard) b.append(" ✓board")
-      if (hasVela) b.append(" ✓vela")
-      if (discards) b.append(" ✓discards")
-      if (reshuffle) b.append(" ✓reshuffle")
+      if (hasBlinds)    b.append(" ✓blinds")
+      if (hasAnte)      b.append(" ✓ante")
+      if (hasBringIn)   b.append(" ✓bring-in")
+      if (hasBoard)     b.append(" ✓board")
+      if (hasVela)      b.append(" ✓vela")
+      if (discards)     b.append(" ✓discards")
+      if (reshuffle)    b.append(" ✓reshuffle")
 
       b.toString
     }
   }
   
-  def apply(game: Game.Limited, limit: Game.Limit): Game =
-    new Game(game, Some(limit), None)
+  def apply(`type`: GameType, limit: Option[Limit] = None, tableSize: Option[Int] = None): Game = {
+    val options = Games(`type`)
+    
+    val _limit: Limit = limit match {
+      case None    ⇒ options.defaultLimit
+      case Some(l) ⇒ l
+    }
+    
+    val _tableSize = tableSize match {
+      case None ⇒ options.maxTableSize
+      case Some(size) ⇒
+        if (size > options.maxTableSize)
+          options.maxTableSize
+        else
+          size
+    }
+    
+    Game(`type`, _limit, _tableSize)
+  }
   
-  def apply(game: Game.Limited, tableSize: Int) =
-    new Game(game, None, Some(tableSize))
+  def apply(`type`: GameType, limit: Limit): Game =
+    apply(`type`, Some(limit), None)
+    
+  def apply(`type`: GameType, tableSize: Int): Game =
+    apply(`type`, None, Some(tableSize))
   
-  def apply(game: Game.Limited, limit: Game.Limit, tableSize: Int): Game =
-    new Game(game, Some(limit), Some(tableSize))
 }
 
-class Game(
-    @JsonProperty val `type`: Game.Limited,
-    _limit: Option[Game.Limit] = None,
-    _tableSize: Option[Int] = None
+@JsonCreator
+case class Game(
+    @JsonProperty `type`: GameType,
+    @JsonProperty limit: Limit,
+    @JsonProperty tableSize: Int
   ) extends Variation {
-  @JsonIgnore val options = Games(`type`)
-  @JsonProperty val tableSize: Int = _tableSize match {
-    case None ⇒ options.maxTableSize
-    case Some(size) ⇒
-      if (size > options.maxTableSize)
-        options.maxTableSize
-      else
-        size
-  }
-  @JsonProperty val limit: Game.Limit = _limit match {
-    case None    ⇒ options.defaultLimit
-    case Some(l) ⇒ l
-  }
-  override def toString = "%s %s %s-max" format (`type`, limit, tableSize)
   
-  @JsonCreator
-  def this(
-      @JsonProperty("type") _type: String,
-      @JsonProperty("limit") _limit: String,
-      @JsonProperty("tableSize") _size: Int
-    ) = this(_type: Game.Limited, Some(_limit: Game.Limit), Some(_size))
+  @JsonIgnore val options = Games(`type`)
+  
+  override def toString = "%s %s %s-max" format (`type`, limit, tableSize)
 }

@@ -81,6 +81,10 @@ object Events {
     case DealType.Door => msg.DealDoor(seat.pos, seat.player.get, Right(n))
   }
   
+  def askBuyIn {
+    
+  }
+  
   def buttonChange(pos: Int) =
     msg.ButtonChange(pos)
 

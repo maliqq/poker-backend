@@ -6,7 +6,7 @@ import org.scalatest.matchers.ShouldMatchers._
 
 class GameEventSpec extends FunSpec with ClassicMatchers {
   import msg._
-  import de.pokerno.model.{DealType, Bet, Street, Game, Stake}
+  import de.pokerno.model.{DealType, Bet, Street, Game, Limit, GameType, Stake}
   import de.pokerno.poker.{Cards, Hand}
   
   describe("GameEvent") {
@@ -121,7 +121,7 @@ class GameEventSpec extends FunSpec with ClassicMatchers {
     }
     
     it("GameChange") {
-      val game = Game(Game.Texas, Game.NoLimit, 9)
+      val game = Game(GameType.Texas, Limit.None, 9)
       val e = GameChange(game)
       val d = GameEvent.encodeAsString(e)
       throw new Exception(d)

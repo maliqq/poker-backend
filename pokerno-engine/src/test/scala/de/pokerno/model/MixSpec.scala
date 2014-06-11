@@ -11,13 +11,13 @@ class MixSpec extends FunSpec with ClassicMatchers {
     }
 
     it("new") {
-      val horse = new Mix(Game.Horse)
+      val horse = Mix(MixType.Horse)
       horse.games.size should equal(5)
       horse.games.foreach { g ⇒
-        g.limit should equal(Game.FixedLimit)
+        g.limit should equal(Limit.Fixed)
       }
 
-      val eight = new Mix(Game.Eight)
+      val eight = Mix(MixType.Eight)
       eight.games.size should equal(8)
     }
   }

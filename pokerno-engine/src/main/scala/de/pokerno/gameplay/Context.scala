@@ -34,6 +34,14 @@ class Context(
     val play: Play = new Play
   ) extends ContextLike {
   
+  def this(id: String, table: Table, variation: Variation, stake: Stake) = this(
+      id,
+      table,
+      variation,
+      stake,
+      new Events(id)
+      )
+  
   lazy val round: betting.Round = new betting.Round(table, game, stake)
   lazy val gameRotation = new Rotation(variation.asInstanceOf[Mix].games)
   

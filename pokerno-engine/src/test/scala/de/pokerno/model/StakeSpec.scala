@@ -17,29 +17,29 @@ class StakeSpec extends FunSpec with ClassicMatchers {
 
   describe("Stake") {
     it("small blind") {
-      val stake = new Stake(100)
+      val stake = Stake(100)
       stake.smallBlind should equal(50)
     }
 
     it("ante true") {
-      val stake = new Stake(100, _ante = Right(true))
+      val stake = Stake(100, ante = Right(true))
       val anteRate = Rates(Bet.Ante)
       stake.ante.get should equal(100 * anteRate)
     }
 
     it("ante value") {
-      val stake = new Stake(100, _ante = Left(10))
+      val stake = Stake(100, ante = Left(10))
       stake.ante.get should equal(10)
     }
 
     it("bring in true") {
-      val stake = new Stake(100, _bringIn = Right(true))
+      val stake = Stake(100, bringIn = Right(true))
       val bringInRate = Rates(Bet.BringIn)
       stake.bringIn.get should equal(100 * bringInRate)
     }
 
     it("bring in value") {
-      val stake = new Stake(100, _bringIn = Left(10))
+      val stake = Stake(100, bringIn = Left(10))
       stake.bringIn.get should equal(10)
     }
   }

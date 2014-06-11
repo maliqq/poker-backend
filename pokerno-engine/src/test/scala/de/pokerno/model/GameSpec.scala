@@ -5,6 +5,9 @@ import org.scalatest.matchers._
 import org.scalatest.matchers.ShouldMatchers._
 
 class GameSpec extends FunSpec with ClassicMatchers {
+  import GameType._
+  import MixType._
+
   describe("Game") {
     it("max table size") {
       Game.MaxTableSize should equal(10)
@@ -17,7 +20,7 @@ class GameSpec extends FunSpec with ClassicMatchers {
     it("new game with defaults") {
       Games.foreach {
         case (limited, options) ⇒
-          val gameWithDefaults = new Game(limited)
+          val gameWithDefaults = Game(limited)
           gameWithDefaults.limit should equal(options.defaultLimit)
           gameWithDefaults.tableSize should equal(options.maxTableSize)
 
@@ -29,14 +32,14 @@ class GameSpec extends FunSpec with ClassicMatchers {
     it("toString") {
       Games.foreach {
         case (limited, options) ⇒
-          val g1 = new Game(limited, Some(Game.FixedLimit), Some(6))
-          g1.toString should equal(f"$limited ${Game.FixedLimit} 6-max")
+          val g1 = Game(limited, Some(Limit.Fixed), Some(6))
+          g1.toString should equal(f"$limited ${Limit.Fixed} 6-max")
 
-          val g2 = new Game(limited, Some(Game.PotLimit), Some(6))
-          g2.toString should equal(f"$limited ${Game.PotLimit} 6-max")
+          val g2 = Game(limited, Some(Limit.Pot), Some(6))
+          g2.toString should equal(f"$limited ${Limit.Pot} 6-max")
 
-          val g3 = new Game(limited, Some(Game.NoLimit), Some(6))
-          g3.toString should equal(f"$limited ${Game.NoLimit} 6-max")
+          val g3 = Game(limited, Some(Limit.None), Some(6))
+          g3.toString should equal(f"$limited ${Limit.None} 6-max")
       }
     }
   }
@@ -46,23 +49,23 @@ class GameSpec extends FunSpec with ClassicMatchers {
       val bb = 20
       val stack = 1000
       val pot = 350; {
-        val (min, max) = Game.NoLimit.raise(stack, bb, pot)
+        val (min, max) = Limit.None.raise(stack, bb, pot)
         min should equal(bb)
         max should equal(stack)
       }; {
-        val (min, max) = Game.NoLimit.raise(stack, bb, pot)
+        val (min, max) = Limit.None.raise(stack, bb, pot)
         min should equal(bb)
         max should equal(stack)
       }; {
-        val (min, max) = Game.PotLimit.raise(stack, bb, pot)
+        val (min, max) = Limit.Pot.raise(stack, bb, pot)
         min should equal(bb)
         max should equal(pot)
       }; {
-        val (min, max) = Game.PotLimit.raise(stack, bb, pot)
+        val (min, max) = Limit.Pot.raise(stack, bb, pot)
         min should equal(bb)
         max should equal(pot)
       }; {
-        val (min, max) = Game.FixedLimit.raise(stack, bb, pot)
+        val (min, max) = Limit.Fixed.raise(stack, bb, pot)
         min should equal(bb)
         max should equal(bb)
       }
@@ -71,22 +74,22 @@ class GameSpec extends FunSpec with ClassicMatchers {
 
   describe("type checks") {
     it("Game.Limit") {
-      Array(Game.NoLimit, Game.FixedLimit, Game.PotLimit) foreach { l ⇒
-        l.isInstanceOf[Game.Limit] should be(true)
+      Array(Limit.None, Limit.Fixed, Limit.Pot) foreach { l ⇒
+        l.isInstanceOf[Limit] should be(true)
       }
     }
-    it("Game.Limited") {
-      Array(Game.Texas, Game.Omaha, Game.Omaha8,
-        Game.Stud, Game.Stud8, Game.Razz, Game.London,
-        Game.FiveCard, Game.Single27, Game.Triple27, Game.Badugi
+    it("GameType") {
+      Array(Texas, Omaha, Omaha8,
+        Stud, Stud8, Razz, London,
+        FiveCard, Single27, Triple27, Badugi
       ) foreach { g ⇒
-          g.isInstanceOf[Game.Limited] should be(true)
+          g.isInstanceOf[GameType] should be(true)
         }
     }
 
     it("Game.Mixed") {
-      Array(Game.Horse, Game.Eight) foreach { g ⇒
-        g.isInstanceOf[Game.Mixed] should be(true)
+      Array(MixType.Horse, MixType.Eight) foreach { g ⇒
+        g.isInstanceOf[MixType] should be(true)
       }
     }
 
@@ -97,7 +100,7 @@ class GameSpec extends FunSpec with ClassicMatchers {
     }
 
     it("group") {
-      Array(Game.Texas, Game.Omaha, Game.Omaha8) foreach { g ⇒
+      Array(Texas, Omaha, Omaha8) foreach { g ⇒
         val o = Games(g)
         o.group should equal(Game.Holdem)
         o.hasBlinds should be(true)
@@ -109,7 +112,7 @@ class GameSpec extends FunSpec with ClassicMatchers {
         o.maxTableSize should equal(10)
       }
 
-      Array(Game.FiveCard, Game.Single27) foreach { g ⇒
+      Array(FiveCard, Single27) foreach { g ⇒
         val o = Games(g)
         o.group should equal(Game.SingleDraw)
         o.discards should be(true)
@@ -119,10 +122,10 @@ class GameSpec extends FunSpec with ClassicMatchers {
         o.hasBringIn should be(false)
         o.hasVela should be(false)
         o.maxTableSize should equal(6)
-        o.defaultLimit should equal(Game.FixedLimit)
+        o.defaultLimit should equal(Limit.Fixed)
       }
 
-      Array(Game.Triple27, Game.Badugi) foreach { g ⇒
+      Array(Triple27, Badugi) foreach { g ⇒
         val o = Games(g)
         o.group should equal(Game.TripleDraw)
         o.discards should be(true)
@@ -132,10 +135,10 @@ class GameSpec extends FunSpec with ClassicMatchers {
         o.hasBringIn should be(false)
         o.hasVela should be(false)
         o.maxTableSize should equal(6)
-        o.defaultLimit should equal(Game.FixedLimit)
+        o.defaultLimit should equal(Limit.Fixed)
       }
 
-      Array(Game.Stud, Game.Stud8, Game.Razz, Game.London) foreach { g ⇒
+      Array(Stud, Stud8, Razz, London) foreach { g ⇒
         val o = Games(g)
         o.group should equal(Game.SevenCard)
         o.discards should be(false)
@@ -146,29 +149,29 @@ class GameSpec extends FunSpec with ClassicMatchers {
         o.hasVela should be(true)
         o.pocketSize should equal(7)
         o.maxTableSize should equal(8)
-        o.defaultLimit should equal(Game.FixedLimit)
+        o.defaultLimit should equal(Limit.Fixed)
       }
     }
   }
 
   describe("implicits") {
     it("limited") {
-      ("texas": Game.Limited) should equal(Game.Texas)
-      ("omaha": Game.Limited) should equal(Game.Omaha)
-      ("omaha8": Game.Limited) should equal(Game.Omaha8)
-      ("stud": Game.Limited) should equal(Game.Stud)
-      ("stud8": Game.Limited) should equal(Game.Stud8)
-      ("razz": Game.Limited) should equal(Game.Razz)
-      ("london": Game.Limited) should equal(Game.London)
-      ("five-card": Game.Limited) should equal(Game.FiveCard)
-      ("single27": Game.Limited) should equal(Game.Single27)
-      ("triple27": Game.Limited) should equal(Game.Triple27)
-      ("badugi": Game.Limited) should equal(Game.Badugi)
+      ("texas": GameType) should equal(Texas)
+      ("omaha": GameType) should equal(Omaha)
+      ("omaha8": GameType) should equal(Omaha8)
+      ("stud": GameType) should equal(Stud)
+      ("stud8": GameType) should equal(Stud8)
+      ("razz": GameType) should equal(Razz)
+      ("london": GameType) should equal(London)
+      ("five-card": GameType) should equal(FiveCard)
+      ("single27": GameType) should equal(Single27)
+      ("triple27": GameType) should equal(Triple27)
+      ("badugi": GameType) should equal(Badugi)
     }
 
     it("mixed") {
-      ("horse": Game.Mixed) should equal(Game.Horse)
-      ("eight": Game.Mixed) should equal(Game.Eight)
+      ("horse": MixType) should equal(Horse)
+      ("eight": MixType) should equal(Eight)
     }
   }
 
@@ -179,13 +182,13 @@ class GameSpec extends FunSpec with ClassicMatchers {
     def potSize = 999
 
     describe("NoLimit") {
-      Game.NoLimit.raise(stack, bb, potSize) should equal((bb, stack))
+      Limit.None.raise(stack, bb, potSize) should equal((bb, stack))
     }
     describe("FixedLimit") {
-      Game.FixedLimit.raise(stack, bb, potSize) should equal((bb, bb))
+      Limit.Fixed.raise(stack, bb, potSize) should equal((bb, bb))
     }
     describe("PotLimit") {
-      Game.PotLimit.raise(stack, bb, potSize) should equal((bb, potSize))
+      Limit.Pot.raise(stack, bb, potSize) should equal((bb, potSize))
     }
   }
 }

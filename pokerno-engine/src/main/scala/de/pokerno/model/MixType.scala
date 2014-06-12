@@ -1,9 +1,10 @@
 package de.pokerno.model
 
-import com.fasterxml.jackson.annotation.JsonValue
+import com.fasterxml.jackson.annotation.{JsonValue, JsonIgnore, JsonCreator}
 
-abstract class MixType(@JsonValue val name: String) {
-  override def toString = name
+abstract class MixType(val name: String) {
+  @JsonValue override def toString = name
+  @JsonIgnore lazy val options = Mixes(this)
 }
 
 object MixType {

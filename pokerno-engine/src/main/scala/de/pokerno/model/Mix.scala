@@ -14,9 +14,10 @@ case class Mix(
     @JsonProperty tableSize: Int
     ) extends Variation {
   
-  @JsonIgnore val options = Mixes(`type`)
+  def options = `type`.options
+  
   @JsonIgnore val games = options.map { option ⇒
-                            Game(option._1, option._2, tableSize)
+                            new Game(option._1, option._2, tableSize)
                           }
 
   override def toString = "%s %s-max" format (`type`.toString, tableSize)

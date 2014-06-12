@@ -3,7 +3,7 @@ package de.pokerno.model
 import math.{ BigDecimal ⇒ Decimal }
 import java.util.Locale
 import util.control.Breaks._
-import com.fasterxml.jackson.annotation.{ JsonValue, JsonIgnore, JsonProperty }
+import com.fasterxml.jackson.annotation.{ JsonValue, JsonIgnore, JsonProperty, JsonPropertyOrder }
 
 class SidePot(val capFrom: Decimal = 0, val cap: Option[Decimal] = None) {
   // members
@@ -81,18 +81,20 @@ class SidePot(val capFrom: Decimal = 0, val cap: Option[Decimal] = None) {
   }
 }
 
+@JsonPropertyOrder(Array("total", "side"))
 class Pot {
   @JsonIgnore var main: SidePot = new SidePot
-  private var _side: List[SidePot] = List.empty
-  private var inactive: List[SidePot] = List.empty
-
-  def side = _side
   
-  @JsonProperty def total: Decimal = sidePots.map(_.total).sum
+  private var _side: List[SidePot] = List.empty
+  @JsonProperty def side = _side
+  
+  private var inactive: List[SidePot] = List.empty
+  
+  @JsonProperty def total: Decimal = _side.map(_.total).sum
 
   import collection.mutable.ListBuffer
   
-  @JsonProperty("side") def sidePots: List[SidePot] = {
+  def sidePots: List[SidePot] = {
     var pots = new ListBuffer[SidePot]
     if (main.isActive)
       pots += main
@@ -132,12 +134,17 @@ class Pot {
     }
     //Console printf("main=%s\nside=%s", main, side)
   }
-
+  
   def complete() {
-    inactive ++= side ++ List(main)
+    if (main.isActive) _side ++= List(main)
     main = new SidePot
-    _side = List.empty
   }
+
+//  def complete() {
+//    inactive ++= side ++ List(main)
+//    main = new SidePot
+//    _side = List.empty
+//  }
 
   private def allocate(member: Player, amount: Decimal) =
     side.foldLeft[Decimal](amount) {

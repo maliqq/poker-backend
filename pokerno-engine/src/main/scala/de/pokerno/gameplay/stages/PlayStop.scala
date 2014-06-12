@@ -7,8 +7,9 @@ case class PlayStop(ctx: stg.Context) extends Stage {
   import ctx.gameplay._
   
   def apply() = {
-    events broadcast Events.playStop()
     play.end()
+    table.playStop()
+    events broadcast Events.playStop()
   }
 
 }

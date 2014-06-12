@@ -2,6 +2,7 @@ package de.pokerno.model.seat
 
 import de.pokerno.model.{Seat, Bet, Stake}
 import math.{BigDecimal => Decimal}
+import de.pokerno.util.Colored._
 
 trait Validations { seat: Seat =>
   
@@ -38,21 +39,21 @@ trait Validations { seat: Seat =>
   
   def _canCall(amt: Decimal, toCall: Decimal) = {
     // call all-in
-    amt + stackAmount < toCall && amt == stackAmount ||
-      // call exact amount
-      amt + putAmount == toCall && amt <= stackAmount
+    amt == stackAmount && amt + putAmount < toCall ||
+    // call exact amount
+    amt <= stackAmount && amt + putAmount == toCall
   }
   
-  def didCall(amt: Decimal): Boolean = {
-    isAllIn || _didCall(amt)
+  def isCalled(amt: Decimal): Boolean = {
+    isAllIn || _isCalled(amt)
   }
-
-  private def _didCall(amt: Decimal): Boolean = {
+  
+  private def _isCalled(amt: Decimal): Boolean = {
     amt <= putAmount
   }
   
   def canBet: Boolean = {
-    inPlay || isPostedBB
+    inPlay || isPostingBB
   }
   
   def canBet(bet: Bet, stake: Stake): Boolean =

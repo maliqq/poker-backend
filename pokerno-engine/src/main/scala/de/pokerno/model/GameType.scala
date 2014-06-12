@@ -1,25 +1,49 @@
 package de.pokerno.model
 
-import com.fasterxml.jackson.annotation.JsonValue
+import com.fasterxml.jackson.annotation.{JsonCreator, JsonIgnore, JsonValue}
 
-abstract class GameType(@JsonValue val name: String) {
+trait GameType {
+  @JsonValue def name: String
   override def toString = name
+  lazy val options = Games(this)
 }
 
 object GameType {
-  case object Texas extends GameType("texas")
-  case object Omaha extends GameType("omaha")
-  case object Omaha8 extends GameType("omaha8")
+  case object Texas extends GameType {
+    def name = "texas"
+  }
+  case object Omaha extends GameType {
+    def name = "omaha"
+  }
+  case object Omaha8 extends GameType {
+    def name = "omaha8"
+  }
 
-  case object Stud extends GameType("stud")
-  case object Stud8 extends GameType("stud8")
-  case object Razz extends GameType("razz")
-  case object London extends GameType("london")
+  case object Stud extends GameType {
+    def name = "stud"
+  }
+  case object Stud8 extends GameType {
+    def name = "stud8"
+  }
+  case object Razz extends GameType {
+    def name = "razz"
+  }
+  case object London extends GameType {
+    def name = "london"
+  }
 
-  case object FiveCard extends GameType("five-card")
-  case object Single27 extends GameType("single27")
-  case object Triple27 extends GameType("triple27")
-  case object Badugi extends GameType("badugi")
+  case object FiveCard extends GameType {
+    def name = "five-card"
+  }
+  case object Single27 extends GameType {
+    def name = "single27"
+  }
+  case object Triple27 extends GameType {
+    def name = "triple27"
+  }
+  case object Badugi extends GameType {
+    def name = "badugi"
+  }
   
   implicit def string2GameType(v: String): GameType = v match {
     case "texas" | "texas-holdem" | "holdem" ⇒
@@ -45,7 +69,7 @@ object GameType {
     case "badugi" ⇒
       Badugi
     case _ ⇒
-      null // throw?
+      throw new Exception("can't build game type: %s" format(v))
   }
 
 }

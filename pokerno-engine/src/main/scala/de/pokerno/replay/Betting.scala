@@ -43,7 +43,7 @@ private[replay] case class Betting(
           }
         }
       } else forceAntes()
-      doneBets()
+      complete()
       sleep()
     }
 
@@ -134,7 +134,7 @@ private[replay] case class Betting(
         }
       }
 
-      doneBets()
+      complete()
     }
 
     bettingStarted = true

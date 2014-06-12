@@ -13,6 +13,7 @@ class SeatStateRef extends TypeReference[Seat.State.type]
 
 object ActingSeat {
   implicit def seat2acting(seat: Seat): ActingSeat = ActingSeat(seat.pos, seat.player, seat.call, seat.raise)
+  implicit def acting2position(acting: ActingSeat): Position = Position(acting.pos, acting.player)
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -67,19 +68,20 @@ object Seat {
 @JsonAutoDetect(isGetterVisibility = JsonAutoDetect.Visibility.NONE)
 class Seat(
     private val _pos: Int = -1,
-    private[model] var _state: Seat.State.Value = Seat.State.Empty
+    initialState: Seat.State.Value = Seat.State.Empty 
     )
       extends seat.States with seat.Actions with seat.Validations {
 
   import Seat._
   import seat.Callbacks._
 
-  private[model] val log = LoggerFactory.getLogger(getClass)
+  @JsonIgnore protected val log = LoggerFactory.getLogger(getClass)
   
+  @JsonIgnore protected var _state: State.Value = initialState
   def this(_state: Seat.State.Value) = this(-1, _state)
   
   // reset before betting
-  def reset() {
+  def clearAction() {
     _put = None
     _action = None
   }
@@ -88,7 +90,7 @@ class Seat(
   def pos = _pos
 
   // STATE
-  @JsonScalaEnumeration(classOf[SeatStateRef]) @JsonProperty("state") def state = _state
+  @JsonScalaEnumeration(classOf[SeatStateRef]) @JsonProperty def state = _state
 
   def state_=(newState: State.Value) {
     val _old = _state
@@ -113,7 +115,7 @@ class Seat(
   }
 
   // PLAYER
-  private[model] var _player: Option[Player] = None
+  private var _player: Option[Player] = None
   @JsonProperty def player = _player
   def player_=(p: Player) {
     playerCallbacks.before(_player.orNull, p)
@@ -176,7 +178,7 @@ class Seat(
   def stackAmount: Decimal = _stack.getOrElse(.0)
 
   // PUT
-  private[model] var _put: Option[Decimal] = None
+  @JsonIgnore protected var _put: Option[Decimal] = None
   @JsonProperty def put = _put
   def putAmount: Decimal = _put.getOrElse(.0)
 
@@ -215,12 +217,12 @@ class Seat(
   }
   
   // ACTION
-  private[model] var _action: Option[Bet] = None
+  @JsonIgnore protected var _action: Option[Bet] = None
   @JsonProperty def action = _action
 
   // RAISE
-  private[model] var _raise: Option[Tuple2[Decimal, Decimal]] = None
-  def raise = _raise
+  @JsonIgnore protected var _raise: Option[Tuple2[Decimal, Decimal]] = None
+  @JsonIgnore def raise = _raise
   def disableRaise() {
     _raise = None
   }
@@ -229,8 +231,8 @@ class Seat(
   }
 
   // CALL
-  private[model] var _call: Option[Decimal] = None
-  def call = _call
+  @JsonIgnore protected var _call: Option[Decimal] = None
+  @JsonIgnore def call = _call
   def callAmount: Decimal = call.getOrElse(0)
   def call_=(amt: Decimal) = _call = Some(amt)
 
@@ -262,8 +264,14 @@ class Seat(
   def clearCards() = _cards = None
 
   override def toString =
-    if (_player.isDefined)
-      "%s - %s (%.2f - %.2f)".format(_player get, _state, stackAmount, putAmount)
-    else "(empty)"
+    if (_player.isDefined) {
+      val b = new StringBuilder
+      b.append("%s - %s (".format(_player get, _state))
+      b.append("%.2f - %.2f".format(stackAmount, putAmount))
+      if (_call.isDefined) b.append(" / call: %.2f".format(_call.get))
+      if (_raise.isDefined) b.append(" / raise: %.2f..%.2f".format(_raise.get._1, _raise.get._2))
+      b.append(")")
+      b.toString
+    } else "(empty)"
 
 }

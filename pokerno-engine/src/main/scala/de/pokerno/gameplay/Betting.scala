@@ -33,9 +33,10 @@ trait Betting {
   }
 
   // current betting round finished
-  def doneBets() {
+  def complete() {
+    round.reset()
+    table.roundComplete()
     events broadcast Events.declarePot(round.pot)
-    round.complete()
   }
 }
 

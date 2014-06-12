@@ -3,6 +3,7 @@ package de.pokerno.gameplay.betting
 import org.slf4j.LoggerFactory
 import de.pokerno.model._
 import de.pokerno.gameplay.{Context => Gameplay}
+import de.pokerno.util.Colored._
 import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnore, JsonInclude}
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import math.{ BigDecimal ⇒ Decimal }
@@ -40,7 +41,7 @@ class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
   // current amount to call
   private var _call: Option[Decimal] = None
   @JsonProperty def call = _call
-  def call_=(amt: Decimal) = _call = Some(amt)
+  @JsonIgnore def call_=(amt: Decimal) = _call = Some(amt)
   def callAmount: Decimal = _call.getOrElse(.0)
   
   def reset() {
@@ -48,19 +49,9 @@ class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
     _call = None
     _acting = None
     _seats = table.fromButton
-    // FIXME
-    //pot.complete()
+    pot.complete()
   }
   
-  def complete() {
-    table.seats.filter(_ inPlay) map { seat ⇒
-      seat.reset()
-      seat.play()
-    }
-
-    reset()
-  }
-
   def forceBet(seat: Seat, betType: Bet.ForcedType): Bet = {
     acting = seat
 
@@ -110,7 +101,7 @@ class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
     }
     
     if (!seat.canBet(_posting, stake)) {
-      log.warn("bet %s is not valid; call=%.2f seat=%s\n" format(_posting, callAmount, seat))
+      warn("bet %s is not valid; call=%.2f seat=%s\n", _posting, callAmount, seat)
       _posting = Bet.fold
     }
 

@@ -16,62 +16,38 @@ trait States {
   def state: State.Value
   def state_=(v: State.Value)
   def total: Decimal
+    
+  def isEmpty       = state == State.Empty
+  def isTaken       = state == State.Taken
+  def isReady       = state == State.Ready
+  def isAway        = state == State.Away
+  def isIdle        = state == State.Idle
+  def isAuto        = state == State.Auto
+  def isPostingBB   = state == State.PostBB
+  def isWaitingBB   = state == State.WaitBB
+  def isBetting     = state == State.Bet
+  def isFolded      = state == State.Fold
+  def isAllIn       = state == State.AllIn
+  def isPlaying     = state == State.Play
   
-  def play(): Unit =
-    state = State.Play
+  def playing()     = state = State.Play
+  def idle()        = state = State.Idle
+  def ready()       = state = if (total == 0) State.Idle else State.Ready
+  def away()        = state = State.Away
 
-  def idle(): Unit =
-    state = State.Idle
-
-  def ready(): Unit =
-    state = if (total == 0) State.Idle else State.Ready
-
-  def away(): Unit =
-    state = State.Away
-  
-  def isEmpty =
-    state == State.Empty
-
-  def isTaken =
-    state == State.Taken
-
-  def isReady =
-    state == State.Ready
-  
-  def isAway =
-    state == State.Away
-
-  def isPlaying =
-    state == State.Play
-
-  def isFold =
-    state == State.Fold
-
-  def isAllIn =
-    state == State.AllIn
-
-  def isWaitingBB =
-    state == State.WaitBB
-
-  def isPostedBB =
-    state == State.PostBB
-
-  def canPlayNextDeal =
-    isReady || isPlaying || isFold
+  def canPlay =
+    isReady || isPlaying // || isFold
 
   def isActive =
-    state == State.Play || state == State.PostBB
+    isPlaying || isPostingBB
 
   def notActive =
-    state == State.Away || state == State.Idle || state == State.Auto
+    isAway || isIdle || isAuto
 
   def inPlay =
-    state == State.Play || state == State.Bet
-
-  //  def goesToShowdown =
-  //    state == State.Bet || state == State.AllIn
+    isPlaying || isBetting
 
   def inPot =
-    inPlay || state == State.AllIn
+    inPlay || isAllIn
 
 }

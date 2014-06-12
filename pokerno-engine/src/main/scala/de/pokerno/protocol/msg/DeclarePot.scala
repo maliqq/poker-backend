@@ -1,11 +1,11 @@
 package de.pokerno.protocol.msg
 
 import com.fasterxml.jackson.annotation.{JsonProperty, JsonInclude}
-import de.pokerno.model.Pot
+import de.pokerno.model.{Pot, SidePot}
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 sealed case class DeclarePot(
-    @JsonProperty pot: Pot
+    @JsonProperty pot: Pot,
 
-    //@JsonProperty var rake: Option[Decimal] = None
+    @JsonProperty rake: Option[SidePot] = None
   ) extends GameEvent {}

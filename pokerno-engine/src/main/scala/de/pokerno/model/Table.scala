@@ -64,5 +64,21 @@ class Table(@JsonIgnore val size: Int) {
   
   private def addPlayer(at: Int, player: Player): Unit =  _seating(player) = at
   private def removePlayer(player: Player): Unit =        _seating.remove(player)
+  
+  // gameplay logic
+  def playStart() = seats foreach { seat =>
+    if (seat.canPlay) seat.playing()
+    else if (seat.isAllIn) seat.idle()
+  }
+  
+  def roundComplete() = seats foreach { seat ⇒
+    seat.clearAction()
+    if (seat.inPot) seat.playing()
+  }
+  
+  def playStop() = seats.foreach { seat =>
+    seat.clearCards()
+    if (seat.isFolded) seat.playing()
+  }
 
 }

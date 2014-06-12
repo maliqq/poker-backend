@@ -12,19 +12,16 @@ trait NextTurn {
   import gameplay._
   
   def nextTurn(): Betting.Transition = {
-    round.seats filter (_.inPlay) foreach { seat =>
-      if (!seat.didCall(round.callAmount)) {
-        //warn("not called, still playing: %s", seat)
-        seat.play()
-      }
+    round.seats.filter(_.inPlay) foreach { seat =>
+      if (!seat.isCalled(round.callAmount)) seat.playing()
     }
-
+    
     if (round.seats.filter(_.inPot).size < 2)
       Betting.Stop
     else {
       val playing = round.seats filter (_.isPlaying)
       
-      if (playing.size > 0)
+      if (playing.size > 1)
         Betting.Require(playing.head)
       else {
         if (playing.size - round.seats.count(_.isAllIn) <= 1)

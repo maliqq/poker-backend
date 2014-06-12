@@ -4,6 +4,7 @@ import de.pokerno.poker.Hand
 import math.{ BigDecimal ⇒ Decimal }
 
 import com.fasterxml.jackson.annotation.{JsonIgnore, JsonValue, JsonProperty, JsonCreator}
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 
 object Game {
 
@@ -69,6 +70,12 @@ object Game {
     }
   }
   
+  @JsonCreator
+  def apply(@JsonProperty("type") `type`: String, @JsonProperty("limit") limit: String, @JsonProperty("tableSize") tableSize: Option[Int]): Game = {
+    Console printf("type=%s limit=%s size=%d", `type`, limit, tableSize)
+    new Game(`type`: GameType, limit: Limit, tableSize.get)
+  }
+  
   def apply(`type`: GameType, limit: Option[Limit] = None, tableSize: Option[Int] = None): Game = {
     val options = Games(`type`)
     
@@ -86,25 +93,33 @@ object Game {
           size
     }
     
-    Game(`type`, _limit, _tableSize)
+    new Game(`type`, _limit, _tableSize)
   }
   
   def apply(`type`: GameType, limit: Limit): Game =
-    apply(`type`, Some(limit), None)
+    Game(`type`, Some(limit), None)
     
   def apply(`type`: GameType, tableSize: Int): Game =
-    apply(`type`, None, Some(tableSize))
+    Game(`type`, None, Some(tableSize))
   
 }
 
-@JsonCreator
-case class Game(
-    @JsonProperty `type`: GameType,
-    @JsonProperty limit: Limit,
-    @JsonProperty tableSize: Int
+class GameBuilder {
+  @JsonProperty var `type`: String = null
+  @JsonProperty var limit: String = null
+  @JsonProperty var tableSize: Integer = null
+  
+  def build(): Game = Game(`type`: GameType, Option(limit: Limit), Option[Int](tableSize))
+}
+
+@JsonDeserialize(builder = classOf[GameBuilder])
+class Game(
+    @JsonProperty val `type`: GameType,
+    @JsonProperty val limit: Limit,
+    @JsonProperty val tableSize: Int
   ) extends Variation {
   
-  @JsonIgnore val options = Games(`type`)
+  def options = `type`.options
   
   override def toString = "%s %s %s-max" format (`type`, limit, tableSize)
 }

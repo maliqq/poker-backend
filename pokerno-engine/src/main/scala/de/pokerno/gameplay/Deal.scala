@@ -23,8 +23,8 @@ trait DealCycle { a: Actor ⇒
   import context._
 
   final val minimumReadyPlayersToStart = 2
-  final val firstDealAfter = (10 seconds)
-  final val nextDealAfter = (5 seconds)
+  final val firstDealAfter = 5.seconds
+  final val nextDealAfter = 5.seconds
 
   def table: Table
 
@@ -46,11 +46,11 @@ class Deal(val gameplay: Context) extends Actor
   lazy private val onStreets = Streets(ctx)
   
   override def preStart() {
-    log.info("[deal] start")
     beforeStreets.apply(ctx) match {
       case Stage.Next ⇒
         self ! Streets.Next
       case Stage.Exit ⇒
+        log.warning("[stage] exit")
         cancel()
     }
   }
@@ -84,20 +84,20 @@ class Deal(val gameplay: Context) extends Actor
 
     case Betting.Stop ⇒
       log.info("[betting] stop")
-      btx.doneBets()
+      btx.complete()
       context.become(receiveStreets)
       self ! Streets.Done
 
     case Betting.Showdown ⇒
       // TODO XXX FIXME WTF?
       log.warning("[betting] showdown")
-      btx.doneBets()
+      btx.complete()
       context.become(receiveStreets)
       self ! Streets.Next
 
     case Betting.Done ⇒
       log.info("[betting] done")
-      btx.doneBets()
+      btx.complete()
       context.become(receiveStreets)
       onStreets.apply()
 
@@ -115,13 +115,11 @@ class Deal(val gameplay: Context) extends Actor
   }
 
   private def cancel() {
-    log.info("[deal] cancel")
     parent ! Deal.Cancel
     context stop self
   }
 
   private def done() {
-    log.info("[deal] done")
     parent ! Deal.Done
     context stop self
   }

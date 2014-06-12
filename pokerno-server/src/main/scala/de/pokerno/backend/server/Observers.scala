@@ -9,7 +9,7 @@ trait Observers {
   a: Actor ⇒
 
   def events: gameplay.Events
-  def id: String
+  def roomId: String
 
   import context._
 

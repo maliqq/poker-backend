@@ -22,18 +22,36 @@ abstract class DealCards(
     }
 }
 
-import de.pokerno.model.Position
+import de.pokerno.model.{Seat, Position}
 
-sealed case class DealHole(
-    @JsonUnwrapped position: Position,
-    @JsonIgnore _cards: Either[Cards, Int]
+object DealHole {
+  def apply(seat: Seat, cards: Either[Cards, Int]): DealHole = new DealHole(seat, cards)
+  def unapply(v: DealHole): Option[(Position, Either[Cards, Int])] = Some((
+      v.position,
+      if (v.cardsNum.isDefined) Right(v.cardsNum.get)
+      else Left(v.cards)
+    ))
+}
+
+sealed class DealHole(
+    @JsonUnwrapped val position: Position,
+    _cards: Either[Cards, Int]
   ) extends DealCards(_cards)
 
-sealed case class DealDoor(
-    @JsonUnwrapped position: Position,
-    @JsonIgnore _cards: Either[Cards, Int]    
+object DealDoor {
+  def apply(seat: Seat, cards: Either[Cards, Int]): DealDoor = new DealDoor(seat, cards)
+  def unapply(v: DealDoor): Option[(Position, Either[Cards, Int])] = Some((
+      v.position,
+      if (v.cardsNum.isDefined) Right(v.cardsNum.get)
+      else Left(v.cards)
+    ))
+}
+
+sealed class DealDoor(
+    @JsonUnwrapped val position: Position,
+    _cards: Either[Cards, Int]
   ) extends DealCards(_cards)
 
 sealed case class DealBoard(
-    @JsonIgnore _cards: Cards = null
-) extends DealCards(Left(_cards))
+    @JsonSerialize(converter = classOf[Cards2Binary]) cards: Cards
+) extends GameEvent

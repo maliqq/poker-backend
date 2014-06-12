@@ -179,13 +179,13 @@ object Main {
 
       // restore state from file
       opts.restoreFile map { path =>
-        try {
+        //try {
           val f = new java.io.FileInputStream(path)
           val msgs = codec.decodeValuesFromStream[Node.CreateRoom](f)
           msgs.foreach { node ! _ }
-        } catch { case err: Throwable =>
-          log.warn("can't restore from {}: {}", Array[AnyRef](path, err.getMessage):_*)
-        }
+//        } catch { case err: Throwable =>
+//          log.warn("can't restore from {}: {}", Array[AnyRef](path, err.getMessage):_*)
+//        }
       }
     }
   }

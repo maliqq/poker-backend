@@ -49,7 +49,7 @@ class Metrics(id: String) extends Actor with ActorLogging {
     case bet: message.DeclareBet ⇒
       handleBet(bet)
 
-    case message.DeclarePot(pot) ⇒
+    case message.DeclarePot(pot, _) ⇒
       lastPot = pot.total.toDouble
 
     case message.DeclareStreet(street) ⇒

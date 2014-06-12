@@ -1,13 +1,13 @@
 start:
-	sbt "project pokerno-server" "run --rpc --http-api --websocket --restore ./restore.json"
+	./sbt "project pokerno-server" "run --rpc --http-api --websocket --restore ./restore.json"
 start-replayer:
-	sbt "project pokerno-replay" "run --http"
+	./sbt "project pokerno-replay" "run --http"
 compile:
-	sbt "project pokerno-server" compile
+	./sbt "project pokerno-server" compile
 build:
-	sbt "project pokerno-server" assembly
+	./sbt "project pokerno-server" assembly
 build-deps:
-	sbt "project pokerno-server" assembly-package-dependency
+	./sbt "project pokerno-server" assembly-package-dependency
 deploy:
 	scp $(FILE) root@pokerno:/apps/poker-server/bin/server.jar
 sloc:

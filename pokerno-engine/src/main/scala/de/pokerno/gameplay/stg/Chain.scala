@@ -1,11 +1,9 @@
 package de.pokerno.gameplay.stg
 
-import org.slf4j.LoggerFactory
 import de.pokerno.gameplay.Stage
+import de.pokerno.util.Colored._
 
 private[gameplay] class Chain[T <: Context] {
-  private val log = LoggerFactory.getLogger(getClass)
-
   private var _stages = List[Step[T]]()
   def stages = _stages
   def current = _stages.headOption
@@ -26,7 +24,7 @@ private[gameplay] class Chain[T <: Context] {
       _stages = _stages.dropWhile { f ⇒
         //Console printf ("[stage] start %s\n", f.name)
         result = f(ctx)
-        log.info(f"[stage] ${f.name} -> $result")
+        info("[stage] %s -> %s", f.name, result)
         result == Stage.Next
       }
     }

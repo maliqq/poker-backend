@@ -19,7 +19,7 @@ case class PostAntes(ctx: stg.Context) extends Stage with Betting {
         forceBet(seat, Bet.Ante)
       }
   
-      doneBets()
+      complete()
     }
   
 }

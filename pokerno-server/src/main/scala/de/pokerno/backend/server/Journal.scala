@@ -32,7 +32,7 @@ class Journal(storageDir: String, room: String) extends Actor with ActorLogging 
         write("***%s***", street)
 
       case bet: msg.DeclareBet ⇒
-        val player = bet.player
+        val player = bet.position.player
         
         bet.action match {
           case Bet.Ante(amt) => 
@@ -56,30 +56,30 @@ class Journal(storageDir: String, room: String) extends Actor with ActorLogging 
       case msg.DealBoard(cards) ⇒
         write("Dealt board %s", cards)
 
-      case msg.DealDoor(pos, player, cardsOrCardsNum) =>
+      case msg.DealDoor(pos, cardsOrCardsNum) =>
         cardsOrCardsNum match {
           case Right(cardsNum) =>
-            write("Dealt door %d cards to %s", cardsNum, player)
+            write("Dealt door %d cards to %s", cardsNum, pos.player)
           case Left(_) =>
         }
             
-      case msg.DealHole(pos, player, cardsOrCardsNum) =>
+      case msg.DealHole(pos, cardsOrCardsNum) =>
         cardsOrCardsNum match {
           case Left(cards) =>
-            write("Dealt %s to %s", cards, player)
+            write("Dealt %s to %s", cards, pos.player)
             
           case Right(cardsNum) =>
-            write("Dealt %d cards to %s", cardsNum, player)
+            write("Dealt %d cards to %s", cardsNum, pos.player)
         }  
 
-      case msg.DeclarePot(pot) ⇒
+      case msg.DeclarePot(pot, _) ⇒
         write("Pot is %.2f", pot.total)
 
-      case msg.DeclareHand(pos, player, cards, hand) ⇒
-        write("%s shows %s (%s)", player, cards, hand.description)
+      case msg.DeclareHand(pos, cards, hand) ⇒
+        write("%s shows %s (%s)", pos.player, cards, hand.description)
 
-      case msg.DeclareWinner(pos, player, amount) ⇒
-        write("%s collected %.2f from pot", player, amount)
+      case msg.DeclareWinner(pos, amount) ⇒
+        write("%s collected %.2f from pot", pos.player, amount)
 
       case msg.DeclarePlayStop() ⇒
         flush()

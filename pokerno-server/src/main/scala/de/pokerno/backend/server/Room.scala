@@ -45,7 +45,7 @@ case object NoneRunning extends Data
 case class Running(ctx: gameplay.Context, ref: ActorRef) extends Data
 
 class Room(
-  val id: String,
+  val roomId: String,
   variation: model.Variation,
   stake: model.Stake)
     extends Actor
@@ -55,20 +55,20 @@ class Room(
     with Presence
     with Observers
     with gameplay.DealCycle {
-
+  
   val table = new model.Table(variation.tableSize)
-  val events = new gameplay.Events(id)
+  val events = new gameplay.Events(roomId)
 
   import context._
   import context.dispatcher
   import concurrent.duration._
   import Room._
 
-  val watchers  = observe(classOf[Watchers], f"room-$id-watchers")
-  val logger    = observe(classOf[Journal], f"room-$id-journal", "/tmp", id)
-  val metrics   = observe(classOf[Metrics], f"room-$id-metrics", id)
+  val watchers  = observe(classOf[Watchers], f"room-$roomId-watchers")
+  val logger    = observe(classOf[Journal], f"room-$roomId-journal", "/tmp", roomId)
+  val metrics   = observe(classOf[Metrics], f"room-$roomId-metrics", roomId)
 
-  log.info("starting room {}", id)
+  log.info("starting room {}", roomId)
   startWith(State.Waiting, NoneRunning)
 
   /*
@@ -112,6 +112,7 @@ class Room(
 
     // first deal in active state
     case Event(gameplay.Deal.Start, NoneRunning) ⇒
+      log.info("deal start")
       stay() using startDeal()
 
     // current deal cancelled
@@ -121,14 +122,14 @@ class Room(
 
     // current deal stopped
     case Event(gameplay.Deal.Done, Running(_, deal)) ⇒
+      log.info("deal complete")
       val after = nextDealAfter
-      log.info("deal done; starting next deal in {}", after)
       self ! gameplay.Deal.Next(after)
       stay() using (NoneRunning)
 
     // schedule next deal in *after* seconds
     case Event(gameplay.Deal.Next(after), NoneRunning) ⇒
-      log.info("starting next deal in {}", after)
+      log.info("next deal will start in {}", after)
       system.scheduler.scheduleOnce(after, self, gameplay.Deal.Start)
       stay()
 
@@ -193,7 +194,7 @@ class Room(
       // send start message
       val startMsg: GameEvent = running match {
         case NoneRunning ⇒
-          gameplay.Events.start(id, table, variation, stake) // TODO: empty play
+          gameplay.Events.start(roomId, table, variation, stake) // TODO: empty play
         case Running(ctx, deal) ⇒
           gameplay.Events.start(ctx, conn.player)
       }
@@ -221,7 +222,7 @@ class Room(
       stay()
    
     case Event(PlayState, NoneRunning) =>
-      sender ! api.PlayState(id, table, variation, stake)
+      sender ! api.PlayState(roomId, table, variation, stake)
       stay()
       
     case Event(PlayState, Running(ctx, _)) =>
@@ -241,8 +242,8 @@ class Room(
   initialize()
 
   private def startDeal(): Running = {
-    val ctx = new gameplay.Context(id, table, variation, stake, events)
-    val deal = actorOf(Props(classOf[gameplay.Deal], ctx))
+    val ctx = new gameplay.Context(roomId, table, variation, stake, events)
+    val deal = actorOf(Props(classOf[gameplay.Deal], ctx), name = f"room-$roomId-deal-${ctx.play.id}")
     Running(ctx, deal)
   }
 }

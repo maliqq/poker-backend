@@ -5,18 +5,28 @@ import org.scalatest.Matchers._
 
 class GameEventSpec extends FunSpec {
   import msg._
-  import de.pokerno.model.{DealType, Bet, Street, Game, Limit, GameType, Stake}
-  import de.pokerno.poker.{Cards, Hand}
+  import de.pokerno.model._
+  import de.pokerno.poker._
+  import de.pokerno.gameplay
   
   describe("GameEvent") {
-//    it("AskBet") {
-//      val e = AskBet(1, new Player("A"), 1000, (1000.0, 1000.0))
-//      val d = GameEvent.encodeAsString(e)
-//      d should equal("""{"$type":"bet:ask","pos":1,"player":"A","call":1000,"raise":{"min":1000.0,"max":1000.0}}""")
-//    }
+    it("AskBet") {
+      val seat = new Seat(1)
+      seat.player = new Player("A")
+      
+      seat.call = 1000
+      seat.raise = (1000, 1000)
+
+      val e = AskBet(seat)
+      val d = GameEvent.encodeAsString(e)
+      d should equal("""{"$type":"bet:ask","pos":1,"player":"A","call":1000,"raise":[1000,1000]}""")
+    }
     
     it("AskDiscard") {
-      val e = AskDiscard(1, new Player("A"))
+      val seat = new Seat(1)
+      seat.player = new Player("A")
+      
+      val e = AskDiscard(seat)
       val d = GameEvent.encodeAsString(e)
       d should equal("""{"$type":"discard:ask","pos":1,"player":"A"}""")
     }
@@ -28,11 +38,13 @@ class GameEventSpec extends FunSpec {
     }
     
     it("DealCards") {
-      val e1 = DealHole(1, new Player("A"), Left(Cards.fromString("AsAd")))
+      val seat = new Seat(1)
+      seat.player = new Player("A")
+      val e1 = DealHole(seat, Left(Cards.fromString("AsAd")))
       val d1 = GameEvent.encodeAsString(e1)
       d1 should equal("""{"$type":"cards:hole","pos":1,"player":"A","cards":"MTM="}""")
       
-      val e2 = DealDoor(1, new Player("A"), Left(Cards.fromString("AsAd")))
+      val e2 = DealDoor(seat, Left(Cards.fromString("AsAd")))
       val d2 = GameEvent.encodeAsString(e2)
       d2 should equal("""{"$type":"cards:door","pos":1,"player":"A","cards":"MTM="}""")
       
@@ -42,42 +54,61 @@ class GameEventSpec extends FunSpec {
     }
     
     it("DeclareBet") {
-      val e1 = DeclareBet(1, new Player("A"), Bet.fold)
+      val seat = new Seat(1)
+      seat.player = new Player("A")
+      
+      val e1 = DeclareBet(seat, Bet.fold)
       val d1 = GameEvent.encodeAsString(e1)
-      d1 should equal("""{"$type":"bet:add","pos":1,"player":"A","fold":true}""")
+      d1 should equal("""{"$type":"bet:add","pos":1,"player":"A","action":{"fold":true}}""")
       
-      val e2 = DeclareBet(1, new Player("A"), Bet.check)
+      val e2 = DeclareBet(seat, Bet.check)
       val d2 = GameEvent.encodeAsString(e2)
-      d2 should equal("""{"$type":"bet:add","pos":1,"player":"A","check":true}""")
+      d2 should equal("""{"$type":"bet:add","pos":1,"player":"A","action":{"check":true}}""")
       
-//      val e3 = DeclareBet(1, new Player("A"), Bet.allIn)
+//      val e3 = DeclareBet(seat, Bet.allIn)
 //      val d3 = GameEvent.encodeAsString(e3)
 //      d3 should equal("""{"$type":"bet:raise",}""")
       
-      val e4 = DeclareBet(1, new Player("A"), Bet.call(1000))
+      val e4 = DeclareBet(seat, Bet.call(1000))
       val d4 = GameEvent.encodeAsString(e4)
-      d4 should equal("""{"$type":"bet:add","pos":1,"player":"A","call":1000}""")
+      d4 should equal("""{"$type":"bet:add","pos":1,"player":"A","action":{"call":1000}}""")
       
-      val e5 = DeclareBet(1, new Player("A"), Bet.raise(1000))
+      val e5 = DeclareBet(seat, Bet.raise(1000))
       val d5 = GameEvent.encodeAsString(e5)
-      d5 should equal("""{"$type":"bet:add","pos":1,"player":"A","raise":1000}""")
+      d5 should equal("""{"$type":"bet:add","pos":1,"player":"A","action":{"raise":1000}}""")
       
-      val e6 = DeclareBet(1, new Player("A"), Bet.ante(1000))
+      val e6 = DeclareBet(seat, Bet.ante(1000))
       val d6 = GameEvent.encodeAsString(e6)
-      d6 should equal("""{"$type":"bet:add","pos":1,"player":"A","call":1000,"type":"ante"}""")
+      d6 should equal("""{"$type":"bet:add","pos":1,"player":"A","action":{"type":"ante","call":1000}}""")
     }
     
     it("DeclareHand") {
-      val e = DeclareHand(1, new Player("A"), Cards.fromString("KdJs"), Hand.High(Cards.fromString("AdAdKhKdJs")).get)
+      val seat = new Seat(1)
+      seat.player = new Player("A")
+      
+      val e = DeclareHand(seat, Cards.fromString("KdJs"), Hand.High(Cards.fromString("AdAdKhKdJs")).get)
       val d = GameEvent.encodeAsString(e)
-      d should equal("""{"$type":"hand:","pos":1,"player":"A","rank":"two-pair","cards":"MzMuLyU=","value":"MzMuLw==","high":"My4=","kicker":"JQ==","description":"two pairs, As and Ks"}""")
+      d should equal("""{"$type":"hand:","pos":1,"player":"A","cards":"LyU=","hand":{"rank":"two-pair","cards":"MzMuLyU=","value":"MzMuLw==","high":"My4=","kicker":"JQ==","description":"two pairs, As and Ks"}}""")
     }
     
-//    it("DeclarePlayStart") {
-//      val e = DeclarePlayStart()
-//      val d = GameEvent.encodeAsString(e)
-//      d should equal("""{"$type":"play:start"}""")
-//    }
+    def gameplayContext: gameplay.Context = {
+      val table = new Table(1)
+      val game = Game(GameType.Texas)
+      val stake = Stake(100)
+      val deck = new Deck
+      val dealer = new Dealer(deck)
+      dealer.dealBoard(3)
+      val events = new gameplay.Events("test")
+      val play = new Play("1")
+      val ctx = new gameplay.Context("test", table, game, stake, events, dealer = dealer, play = play)
+      ctx
+    }
+    
+    it("DeclarePlayStart") {
+      val e = DeclarePlayStart(gameplayContext)
+      val d = GameEvent.encodeAsString(e)
+      d should equal("""{"$type":"play:start"}""")
+    }
     
     it("DeclarePlayStop") {
       val e = DeclarePlayStop()
@@ -85,21 +116,28 @@ class GameEventSpec extends FunSpec {
       d should equal("""{"$type":"play:stop"}""")
     }
     
-//    it("DeclarePot") {
-//      val e1 = DeclarePot(1000)
-//      val d1 = GameEvent.encodeAsString(e1)
-//      d1 should equal("""{"$type":"pot:","pot":1000,"side":[]}""")
-//      
-//      val e2 = DeclarePot(1000, rake = Some(100))
-//      val d2 = GameEvent.encodeAsString(e2)
-//      d2 should equal("""{"$type":"pot:","pot":1000,"side":[],"rake":100}""")
-//    }
+    it("DeclarePot") {
+      val pot = new Pot
+      pot.main.add(new Player("A"), 1000)
+      pot.complete()
+      
+      val e1 = DeclarePot(pot)
+      val d1 = GameEvent.encodeAsString(e1)
+      d1 should equal("""{"$type":"pot:","pot":{"total":1000,"side":[1000]}}""")
+      
+      val rake = new SidePot()
+      rake.add(new Player("B"), 100)
+      
+      val e2 = DeclarePot(pot, Some(rake))
+      val d2 = GameEvent.encodeAsString(e2)
+      d2 should equal("""{"$type":"pot:","pot":{"total":1000,"side":[1000]},"rake":100}""")
+    }
     
-//    it("DeclareStart") {
-//      val e = DeclareStart()
-//      val d = GameEvent.encode(e)
-//      d should equal("""{}""")
-//    }
+    it("DeclareStart") {
+      val e = DeclareStart(gameplayContext)
+      val d = GameEvent.encodeAsString(e)
+      d should equal("""{}""")
+    }
     
     it("DeclareStreet") {
       val e = DeclareStreet(Street.Preflop)
@@ -108,49 +146,57 @@ class GameEventSpec extends FunSpec {
     }
     
     it("DeclareWinner") {
-      val e = DeclareWinner(1, new Player("A"), 1000)
+      val seat = new Seat(1)
+      seat.player = new Player("A")
+      
+      val e = DeclareWinner(seat, 1000)
       val d = GameEvent.encodeAsString(e)
       d should equal("""{"$type":"winner:","pos":1,"player":"A","amount":1000}""")
     }
     
     it("DiscardCards") {
-      val e = DiscardCards(1, new Player("A"), cardsNum = Some(1))
+      val seat = new Seat(1)
+      seat.player = new Player("A")
+      
+      val e = DiscardCards(seat, cardsNum = Some(1))
       val d = GameEvent.encodeAsString(e)
       d should equal("""{"$type":"cards:discard","pos":1,"player":"A","cardsNum":1}""")
     }
     
     it("GameChange") {
-      val game = Game(GameType.Texas, Limit.None, 9)
+      val game = new Game(GameType.Texas, Limit.None, 9)
       val e = GameChange(game)
       val d = GameEvent.encodeAsString(e)
-      throw new Exception(d)
-      d should equal("""{"$type":"game:","type":"texas","limit":"no-limit"}""")
+      d should equal("""{"$type":"game:","game":"texas","limit":"no-limit"}""")
     }
     
     it("JoinPlayer") {
-      val e = PlayerJoin(1, new Player("A"), 1000.0)
+      val seat = new Seat(1)
+      seat.player = new Player("A")
+      
+      val e = PlayerJoin(seat, 1000.0)
       val d = GameEvent.encodeAsString(e)
       d should equal("""{"$type":"player:join","pos":1,"player":"A","amount":1000.0}""")
     }
     
     it("LeavePlayer") {
-      val e = PlayerLeave(1, new Player("A"))
+      val seat = new Seat(1)
+      seat.player = new Player("A")
+      
+      val e = PlayerLeave(seat)
       val d = GameEvent.encodeAsString(e)
       d should equal("""{"$type":"player:leave","pos":1,"player":"A"}""")
     }
-//    
-//    it("SeatEvent") {
-//      val e = SeatEvent()
-//      val d = GameEvent.encode(e)
-//      d should equal("""{}""")
-//    }
     
     it("ShowCards") {
-      val e1 = ShowCards(1, new Player("A"), Cards.fromString("Ad"), muck = true)
+      val seat = new Seat(1)
+      seat.player = new Player("A")
+      
+      val e1 = ShowCards(seat, Cards.fromString("Ad"), muck = true)
       val d1 = GameEvent.encodeAsString(e1)
       d1 should equal("""{"$type":"cards:show","pos":1,"player":"A","cards":"Mw==","muck":true}""")
       
-      val e2 = ShowCards(1, new Player("A"), Cards.fromString("Ad"), muck = false)
+      val e2 = ShowCards(seat, Cards.fromString("Ad"), muck = false)
       val d2 = GameEvent.encodeAsString(e2)
       d2 should equal("""{"$type":"cards:show","pos":1,"player":"A","cards":"Mw==","muck":false}""")
     }
@@ -162,7 +208,10 @@ class GameEventSpec extends FunSpec {
     }
     
     it("TickTimer") {
-      val e = TickTimer(1, new Player("A"), 10)
+      val seat = new Seat(1)
+      seat.player = new Player("A")
+      
+      val e = TickTimer(seat, 10)
       val d = GameEvent.encodeAsString(e)
       d should equal("""{"$type":"timer:tick","pos":1,"player":"A","timeLeft":10,"timeBank":false}""")
     }

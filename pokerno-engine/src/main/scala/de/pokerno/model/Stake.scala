@@ -1,9 +1,9 @@
 package de.pokerno.model
 
 import math.{ BigDecimal ⇒ Decimal }
-
 import beans._
 import com.fasterxml.jackson.annotation.{JsonIgnore, JsonInclude, JsonProperty, JsonCreator}
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 
 object Stake {
   private def BBs(bigBlind: Decimal, v: Bet.ForcedType): Decimal = Rates(v) * bigBlind
@@ -44,8 +44,27 @@ object Stake {
   }
 }
 
+class StakeBuilder {
+  @JsonProperty var bigBlind: Decimal = null
+  @JsonProperty var smallBlind: Option[Decimal] = None
+  @JsonProperty var ante: Option[Decimal] = None
+  @JsonProperty var bringIn: Option[Decimal] = None
+  
+  def build(): Stake = {
+    assert(bigBlind != null) // FIXME
+    Stake(
+      bigBlind,
+      smallBlind,
+      if (ante.isDefined) Left(ante.get)
+      else Right(false),
+      if (bringIn.isDefined) Left(bringIn.get)
+      else Right(false)
+    )
+  }
+}
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonCreator
+@JsonDeserialize(builder = classOf[StakeBuilder])
 case class Stake(
     @JsonProperty bigBlind: Decimal,
     @JsonProperty smallBlind: Decimal,

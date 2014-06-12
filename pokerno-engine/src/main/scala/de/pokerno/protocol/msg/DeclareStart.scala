@@ -3,6 +3,15 @@ package de.pokerno.protocol.msg
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import de.pokerno.model
+import de.pokerno.gameplay
+
+object DeclareStart {
+  def apply(ctx: gameplay.Context): DeclareStart = {
+    val start = DeclareStart(ctx.id, ctx.table, ctx.variation, ctx.stake)
+    start.play = Some(PlayState(ctx))
+    start
+  }
+}
 
 sealed case class DeclareStart(
     @JsonProperty id: String,

@@ -23,7 +23,7 @@ trait DealCycle { a: Actor ⇒
   import context._
 
   final val minimumReadyPlayersToStart = 2
-  final val firstDealAfter = 5.seconds
+  final val firstDealAfter = 10.seconds
   final val nextDealAfter = 5.seconds
 
   def table: Table

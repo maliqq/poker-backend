@@ -23,10 +23,12 @@ class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
   
   private var _acting: Option[Seat] = None
   @JsonSerialize(converter = classOf[Seat2Acting]) def acting = _acting
-  private def acting_=(seat: Seat) {
+  
+  private def acting(seat: Seat, call: Decimal) {
     _acting.map(_.notActing())
     _seats = table.seatsFrom(seat.pos)
     _acting = Some(seat)
+    seat.call = call
   }
   
   @JsonIgnore var bigBets: Boolean = false
@@ -39,26 +41,21 @@ class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
   private var raiseCount: Int = 0
 
   // current amount to call
-  private var _call: Option[Decimal] = None
-  @JsonProperty def call = _call
-  @JsonIgnore def call_=(amt: Decimal) = _call = Some(amt)
-  def callAmount: Decimal = _call.getOrElse(.0)
+  def callAmount: Decimal = _seats.map(_.callAmount).max
+  // current amount to call among all-ins
+  def allInAmount: Decimal = _seats.map(_.allInAmount).max
   
   def reset() {
     raiseCount = 0
-    _call = None
     _acting = None
     _seats = table.fromButton
     pot.complete()
   }
   
   def forceBet(seat: Seat, betType: Bet.ForcedType): Bet = {
-    acting = seat
-
     val amount = stake amount betType
     
-    call = amount
-    seat.call = amount
+    acting(seat, amount)
 
     val stack = seat.stack.get
     val amt = List(stack, amount) min
@@ -68,19 +65,17 @@ class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
   }
 
   def requireBet(seat: Seat) = {
-    acting = seat
+    val amount = callAmount
     
-    seat.call = callAmount
+    acting(seat, amount)
     
-    val limit = game.limit
-
-    val blind = if (bigBets) stake.bigBlind * 2 else stake.bigBlind
     val total = seat.total
-
-    if (total <= callAmount || raiseCount >= MaxRaiseCount)
+    if (total <= amount || raiseCount >= MaxRaiseCount)
       seat.disableRaise()
     else {
-      val (min, max) = limit raise (total, blind + callAmount, pot.total)
+      val limit = game.limit
+      val blind = if (bigBets) stake.bigBlind * 2 else stake.bigBlind
+      val (min, max) = limit raise (total, blind + amount, pot.total)
       seat.raise = (List(total, min) min, List(total, max) min)
     }
   }
@@ -110,10 +105,8 @@ class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
     if (_posting.isActive) {
       if (_posting.isRaise)
         raiseCount += 1
-
-      if (!_posting.isCall && seat.putAmount > callAmount)
-        call = seat.putAmount
-
+//      if (!_posting.isCall && seat.putAmount > callAmount)
+//        call = seat.putAmount
       pot add (player, diff, seat.isAllIn)
     }
 

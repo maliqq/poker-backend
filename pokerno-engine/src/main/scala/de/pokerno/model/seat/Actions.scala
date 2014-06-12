@@ -20,21 +20,24 @@ trait Actions { s: Seat =>
   }
 
   def call(amt: Decimal): Decimal = {
-    put(amt, State.Bet)
+    puts(amt)
+    betting()
     _action = Some(Bet.Call(amt))
     amt
   }
 
   def force(bet: Bet.Forced): Decimal = {
     val amt = bet.amount
-    put(amt, State.Play)
+    puts(amt)
+    playing()
     _action = Some(bet)
     amt
   }
   
   def raise(amt: Decimal): Decimal = {
     val diff = amt - putAmount
-    put(diff, State.Bet)
+    puts(diff)
+    betting()
     _action = Some(Bet.Raise(amt))
     diff
   }

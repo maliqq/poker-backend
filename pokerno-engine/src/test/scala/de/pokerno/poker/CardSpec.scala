@@ -64,5 +64,10 @@ class CardSpec extends FunSpec {
       val l = List(1, 2, 3, 4, 5)
       Cards.fromSeq(l).map(_.toInt) should equal(l)
     }
+    
+    it("to binary") {
+      val cards = Cards.fromString("2s2h2d2c")
+      (cards: Array[Byte]) should equal(Array(1, 2, 3, 4))
+    }
   }
 }

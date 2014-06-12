@@ -68,7 +68,7 @@ class Table(@JsonIgnore val size: Int) {
   // gameplay logic
   def playStart() = seats foreach { seat =>
     if (seat.canPlay) seat.playing()
-    else if (seat.isAllIn) seat.idle()
+    //else if (seat.isAllIn) seat.idle()
   }
   
   def roundComplete() = seats foreach { seat ⇒
@@ -78,7 +78,8 @@ class Table(@JsonIgnore val size: Int) {
   
   def playStop() = seats.foreach { seat =>
     seat.clearCards()
-    if (seat.isFolded) seat.playing()
+    if (seat.isAllIn) seat.idle()
+    else if (seat.isFolded) seat.playing()
   }
 
 }

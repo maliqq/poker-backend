@@ -53,7 +53,7 @@ class Context(val gameplay: Gameplay, ref: ActorRef) extends Betting with NextTu
   
         case _ ⇒
           // force check/fold
-          if (round.call == 0 || seat.didCall(round.callAmount))
+          if (round.callAmount == 0 || seat.isCalled(round.callAmount))
             Bet.check
           else Bet.fold
       }

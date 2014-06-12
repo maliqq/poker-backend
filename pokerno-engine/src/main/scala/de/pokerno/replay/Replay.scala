@@ -38,7 +38,7 @@ class Replay(
   import ctx.gameplay._
 
   import concurrent.duration._
-  import de.pokerno.gameplay.stages.{PrepareSeats, BringIn, Showdown}
+  import de.pokerno.gameplay.stages.{PlayStart, BringIn, Showdown, PlayStop}
 
   override def preStart {
     log.info("starting replay {}", id)
@@ -71,7 +71,7 @@ class Replay(
 
       speed = (_speed seconds)
       if (!bettingStarted) {
-        PrepareSeats(ctx)()
+        PlayStart(ctx)()
       }
 
       if (streets.head == street) {
@@ -89,7 +89,7 @@ class Replay(
       log.info("[showdown] stop")
 
     case Replay.Stop ⇒
-      events broadcast Events.playStop()
+      PlayStop(ctx)()
       context stop self
 
     case x ⇒ log.warning("unandled: {}", x)

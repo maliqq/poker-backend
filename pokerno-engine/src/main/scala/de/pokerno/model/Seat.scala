@@ -5,6 +5,7 @@ import math.{ BigDecimal ⇒ Decimal }
 import org.slf4j.LoggerFactory
 import com.fasterxml.jackson.annotation.{JsonIgnore, JsonProperty, JsonInclude, JsonAutoDetect, JsonPropertyOrder}
 import de.pokerno.poker.{Cards, MaskedCards}
+import de.pokerno.util.Colored._
 
 import com.fasterxml.jackson.module.scala.JsonScalaEnumeration
 import com.fasterxml.jackson.core.`type`.TypeReference
@@ -80,10 +81,8 @@ class Seat(
   @JsonIgnore protected var _state: State.Value = initialState
   def this(_state: Seat.State.Value) = this(-1, _state)
   
-  // reset before betting
   def clearAction() {
-    _put = None
-    _action = None
+    _put = None; _action = None; _call = None; _raise = None
   }
   
   // POS
@@ -92,10 +91,12 @@ class Seat(
   // STATE
   @JsonScalaEnumeration(classOf[SeatStateRef]) @JsonProperty def state = _state
 
-  def state_=(newState: State.Value) {
+  def state_=(_new: State.Value) {
     val _old = _state
-    stateCallbacks.before(_old, newState)
-    _state = newState
+    if (_old != _new) {
+      stateCallbacks.before(_old, _new)
+      _state = _new
+    }
     //stateCallbacks.on(_old, _state)
     //stateCallbacks.after(_old, _state)
   }
@@ -103,6 +104,7 @@ class Seat(
   private val stateCallbacks = new Callbacks[State.Value]()
   stateCallbacks.bind(Before) {
     case (_old, _new) ⇒
+      warn("seat %s state change: %s -> %s", this, _old, _new)
       _new match {
         case State.Play | State.Idle | State.Ready ⇒
           if (isEmpty)
@@ -111,6 +113,8 @@ class Seat(
         case State.Away ⇒
           if (isEmpty || isOnline)
             throw new IllegalStateException("can't change seat state to away: %s (%s)" format (this, _presence))
+        
+        case _ =>
       }
   }
 
@@ -185,35 +189,34 @@ class Seat(
   def total = stackAmount + putAmount
   def totalAmount = total
 
-  def net(amt: Decimal, state: State.Value) {
-    stackCallbacks.before(amt, stackAmount)
+  def net(amt: Decimal) {
+    val amount = stackAmount + amt
+    stackCallbacks.before(stackAmount, amount)
     // TODO: check < 0
-    _stack = Some(amt + stackAmount)
-    // FIXME
-    _state = if (stackAmount == 0) State.AllIn else state
+    _stack = Some(amount)
   }
 
   private val stackCallbacks = new Callbacks[Decimal]()
-  stackCallbacks.bind(Before) { case _ ⇒
+  stackCallbacks.bind(Before) { case (_old, _new) ⇒
     if (isEmpty)
       throw new IllegalStateException("can't change amount, seat is empty; %s" format (this))
+    if (_new < 0)
+      throw new IllegalStateException("amount < 0; %s" format (this))
   }
 
-  def buyIn(amt: Decimal): Unit =
-    net(amt, State.Ready)
-
-  def award(amt: Decimal): Unit =
-    net(amt, State.Play)
-    
-  def wins(amt: Decimal) = award(amt)
-
-  def put(amount: Decimal) {
-    _put = Some(amount + putAmount)
+  def buyIn(amt: Decimal) = {
+    net(amt)
+    ready()
   }
   
-  def put(amount: Decimal, state: State.Value) {
-    net(-amount, state)
-    put(amount)
+  def wins(amt: Decimal) = {
+    net(amt)
+    playing()
+  }
+
+  def puts(amt: Decimal) {
+    net(-amt)
+    _put = Some(amt + putAmount)
   }
   
   // ACTION
@@ -233,8 +236,14 @@ class Seat(
   // CALL
   @JsonIgnore protected var _call: Option[Decimal] = None
   @JsonIgnore def call = _call
-  def callAmount: Decimal = call.getOrElse(0)
+  def callAmount: Decimal = call.getOrElse(.0)
   def call_=(amt: Decimal) = _call = Some(amt)
+  // ALL IN
+  def allIn: Option[Decimal] = {
+    if (isAllIn) put
+    else None
+  }
+  def allInAmount: Decimal = allIn.getOrElse(.0)
 
   // RAISE/CALL
   def notActing() {
@@ -261,16 +270,19 @@ class Seat(
   }
   
   @JsonProperty def cards = _cards.map { _.masked }
-  def clearCards() = _cards = None
+  def clearCards() = {
+    _cards = None
+    _masks = Array()
+  }
 
   override def toString =
     if (_player.isDefined) {
       val b = new StringBuilder
-      b.append("%s - %s (".format(_player get, _state))
+      b.append("%s (%s) [".format(_player get, _state))
       b.append("%.2f - %.2f".format(stackAmount, putAmount))
       if (_call.isDefined) b.append(" / call: %.2f".format(_call.get))
       if (_raise.isDefined) b.append(" / raise: %.2f..%.2f".format(_raise.get._1, _raise.get._2))
-      b.append(")")
+      b.append("]")
       b.toString
     } else "(empty)"
 

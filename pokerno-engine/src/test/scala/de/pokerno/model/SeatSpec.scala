@@ -20,25 +20,25 @@ class SeatSpec extends FunSpec {
       seat.buyIn(1000)
       seat.state should equal(Seat.State.Ready)
 
-      seat.play
+      seat.playing()
       seat.state should equal(Seat.State.Play)
 
       seat.fold
       seat.state should equal(Seat.State.Fold)
 
-      seat.play
+      seat.playing()
       seat.check
       seat.state should equal(Seat.State.Bet)
 
-      seat.play
+      seat.playing()
       seat.raise(100)
       seat.put should equal(100)
       seat.stack should equal(900)
-      seat.didCall(100.1) should be(false)
-      seat.didCall(100) should be(true)
-      seat.didCall(99.9) should be(true)
+      seat.isCalled(100.1) should be(false)
+      seat.isCalled(100) should be(true)
+      seat.isCalled(99.9) should be(true)
 
-      seat.play
+      seat.playing()
       seat.force(Bet.SmallBlind(25))
       seat.put should equal(25)
       seat.stack should equal(875)
@@ -52,7 +52,7 @@ class SeatSpec extends FunSpec {
       seat.buyIn(10)
       seat.raise(10)
       seat.state should equal(Seat.State.AllIn)
-      seat.didCall(25) should be(true)
+      seat.isCalled(25) should be(true)
     }
 
     it("all in force") {
@@ -62,12 +62,12 @@ class SeatSpec extends FunSpec {
 
       seat.buyIn(10)
 
-      seat.play
+      seat.playing()
       seat.force(Bet.SmallBlind(10))
       seat.state should equal(Seat.State.AllIn)
-      seat.didCall(25) should be(true)
+      seat.isCalled(25) should be(true)
 
-      seat.play
+      seat.playing()
     }
 
     describe("state") {
@@ -219,7 +219,7 @@ class SeatSpec extends FunSpec {
         val seat = new Seat
         seat.player = new Player("1")
         seat.buyIn(1000)
-        seat.play
+        seat.playing()
         seat._canCall(500, 500) should be(true)
         seat._canCall(499, 500) should be(false)
         seat._canCall(500, 499) should be(false)

@@ -30,7 +30,7 @@ object Colored {
     }
 
   def info(format: String, args: Any*): Unit =
-    if (useColor) colored(Console.GREEN, format, args: _*)
+    if (useColor) colored(Console.MAGENTA, format, args: _*)
     else tagged("INFO", format, args: _*)
 
   def warn(format: String, args: Any*): Unit =

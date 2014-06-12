@@ -15,7 +15,7 @@ trait States {
   
   def state: State.Value
   def state_=(v: State.Value)
-  def total: Decimal
+  def stackAmount: Decimal
     
   def isEmpty       = state == State.Empty
   def isTaken       = state == State.Taken
@@ -30,23 +30,33 @@ trait States {
   def isAllIn       = state == State.AllIn
   def isPlaying     = state == State.Play
   
-  def playing()     = state = State.Play
+  private def ensureAllIn(newState: State.Value) = {
+    state = if (stackAmount == 0) State.AllIn else newState
+  }
+  
+  def playing()     = ensureAllIn(State.Play)
+  def betting()     = ensureAllIn(State.Bet)
+  def ready()       = ensureAllIn(State.Ready)
+  
   def idle()        = state = State.Idle
-  def ready()       = state = if (total == 0) State.Idle else State.Ready
   def away()        = state = State.Away
 
   def canPlay =
-    isReady || isPlaying // || isFold
+    isReady || isPlaying //|| isFolded
 
+  // PLAY | POST_BB | ALL_IN
   def isActive =
-    isPlaying || isPostingBB
+    isPlaying || isPostingBB || isAllIn
 
+  // AWAY | IDLE | AUTO
   def notActive =
     isAway || isIdle || isAuto
 
+  // PLAY | BET
   def inPlay =
     isPlaying || isBetting
 
+  // PLAY | BET | ALLIN
   def inPot =
     inPlay || isAllIn
 

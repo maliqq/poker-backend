@@ -133,6 +133,7 @@ class Seat(
       if (_state != State.Empty)
         throw Seat.IsTaken()
   }
+  def hasPlayer(p: Player): Boolean = player.map(_ == p).getOrElse(false)
   
   // PRESENCE
   private var _presence: Option[Presence.Value] = None

@@ -29,7 +29,7 @@ trait DealCycle { a: Actor ⇒
   def table: Table
 
   protected def canStart: Boolean = {
-    table.seats.count(_ isReady) == minimumReadyPlayersToStart
+    table.seats.count(_ canPlay) == minimumReadyPlayersToStart
   }
 
 }
@@ -81,7 +81,10 @@ class Deal(val gameplay: Context) extends Actor
   def receiveBets: Receive = {
     case Betting.Add(player, bet) ⇒
       btx.add(player, bet)
-
+    
+    case Betting.Cancel(player) =>
+      btx.cancel(player)
+      
     case Betting.Stop ⇒
       log.info("[betting] stop")
       btx.complete()

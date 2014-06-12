@@ -91,8 +91,7 @@ class Room(
   waiting {
     case Event(join: cmd.JoinPlayer, NoneRunning) ⇒
       joinPlayer(join)
-      if (canStart) toActive()
-      else stay()
+      runOrStay()
   }
   
   closed {
@@ -150,7 +149,7 @@ class Room(
       table.playerSeat(player).map { seat =>
         seat.buyIn(amount)
       }
-      stay()
+      runOrStay()
       
     case Event(cmd.ChangePlayerState(player, newState), _) =>
       stay()
@@ -204,8 +203,7 @@ class Room(
       watchers ! Watchers.Watch(conn)
 
       // start new deal if needed
-      if (running == NoneRunning && canStart) toActive()
-      else stay()
+      runOrStay()
 
     case Event(Disconnect(conn), _) ⇒
       watchers ! Watchers.Unwatch(conn)
@@ -238,8 +236,21 @@ class Room(
     case State.Waiting -> State.Active ⇒
       self ! gameplay.Deal.Next(firstDealAfter)
   }
-
+  
   initialize()
+  
+  def running: Option[Running] = stateData match {
+    case r: Running => Some(r)
+    case _ => None
+  }
+  
+  def isRunning = stateData != NoneRunning
+  def notRunning = stateData == NoneRunning
+  
+  def runOrStay() = {
+    if (notRunning && canStart) toActive()
+    else stay()
+  }
 
   private def startDeal(): Running = {
     val ctx = new gameplay.Context(roomId, table, variation, stake, events)

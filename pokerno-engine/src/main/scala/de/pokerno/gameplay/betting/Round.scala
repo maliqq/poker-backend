@@ -31,6 +31,13 @@ class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
     seat.call = call
   }
   
+  def reset() {
+    raiseCount = 0
+    _acting = None
+    _seats = table.fromButton
+    pot.complete()
+  }
+  
   @JsonIgnore var bigBets: Boolean = false
   
   @JsonProperty val pot = new Pot
@@ -44,13 +51,6 @@ class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
   def callAmount: Decimal = _seats.map(_.callAmount).max
   // current amount to call among all-ins
   def allInAmount: Decimal = _seats.map(_.allInAmount).max
-  
-  def reset() {
-    raiseCount = 0
-    _acting = None
-    _seats = table.fromButton
-    pot.complete()
-  }
   
   def forceBet(seat: Seat, betType: Bet.ForcedType): Bet = {
     val amount = stake amount betType
@@ -79,9 +79,6 @@ class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
       seat.raise = (List(total, min) min, List(total, max) min)
     }
   }
-  
-  // FIXME
-  def addBet(_bet: Bet): Tuple2[Seat, Bet] = (acting.get, addBet(acting.get, _bet))
   
   def addBet(seat: Seat, _bet: Bet): Bet = {
     val player = seat.player.get

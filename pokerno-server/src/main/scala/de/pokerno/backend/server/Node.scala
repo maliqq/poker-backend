@@ -119,6 +119,9 @@ class Node extends Actor with ActorLogging {
 
             case add: action.AddBet ⇒
               cmd.AddBet(player, add.bet)
+            
+            case buyIn: action.BuyIn =>
+              cmd.AdvanceStack(player, buyIn.amount)
           })
 
         case Failure(_) ⇒

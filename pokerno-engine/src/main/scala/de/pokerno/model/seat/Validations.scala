@@ -80,5 +80,6 @@ trait Validations { seat: Seat =>
         false
     }
 
+  def canLeave = notActive
   
 }

@@ -48,9 +48,9 @@ trait States {
   def isActive =
     isPlaying || isPostingBB || isAllIn
 
-  // AWAY | IDLE | AUTO
+  // FOLD | AWAY | IDLE | AUTO
   def notActive =
-    isAway || isIdle || isAuto
+    isFolded || isAway || isIdle || isAuto 
 
   // PLAY | BET
   def inPlay =

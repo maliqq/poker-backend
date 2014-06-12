@@ -111,12 +111,10 @@ private[replay] case class Betting(
 
         log.info(" | acting #{} {}", seat.pos, seat)
 
-        def isOurTurn = seat.player.isDefined && seat.player.get == player
-
-        if (isOurTurn) {
+        if (seat.hasPlayer(player)) {
           log.info(" |-- player %s bet %s" format(seat.player.get, bet))
 
-          addBet(bet)
+          addBet(seat, bet)
 
           sleep()
 

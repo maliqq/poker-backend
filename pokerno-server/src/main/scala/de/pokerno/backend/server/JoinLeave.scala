@@ -5,7 +5,7 @@ import de.pokerno.model.{Player, Seat, Table}
 import de.pokerno.gameplay
 import de.pokerno.protocol.cmd
 
-trait JoinLeave { _: ActorLogging =>
+trait JoinLeave { room: Room =>
 
   def table: Table
   def events: gameplay.Events
@@ -27,8 +27,12 @@ trait JoinLeave { _: ActorLogging =>
   protected def leavePlayer(player: Player) {
     table.playerPos(player) map { pos =>
       val seat = table.seats(pos)
-      events broadcast gameplay.Events.playerLeave(seat)
-      table.clearSeat(pos)
+      if (seat.canLeave || notRunning) {
+        events broadcast gameplay.Events.playerLeave(seat)
+        table.clearSeat(pos)
+      } else running.map { case Running(ctx, ref) =>
+        ref ! gameplay.Betting.Cancel(player)
+      }
     }
   }
 

@@ -20,8 +20,8 @@ trait Betting {
   }
 
   // add bet
-  def addBet(bet: Bet, timeout: Boolean = false) {
-    val (seat, posted) = round.addBet(bet)
+  def addBet(seat: Seat, bet: Bet, timeout: Boolean = false, forced: Boolean = false) {
+    val posted = round.addBet(seat, bet)
     val _timeout = if (timeout) Some(true) else None
     events broadcast Events.addBet(seat, posted, _timeout)
   }
@@ -44,12 +44,13 @@ object Betting {
 
   // start new round
   case object Start
-  // require bet
-  ////case class Require(amount: Decimal, limit: Game.Limit)
+  
   // force bet
   case class Force(amount: Decimal)
-  
+  // add bet
   case class Add(player: Player, bet: Bet)
+  // eject player from betting round
+  case class Cancel(player: Player)
 
   trait Transition
   case object Next extends Transition

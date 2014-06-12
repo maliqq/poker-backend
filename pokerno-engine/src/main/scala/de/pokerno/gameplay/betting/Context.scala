@@ -28,7 +28,7 @@ class Context(val gameplay: Gameplay, ref: ActorRef) extends Betting with NextTu
             
           if (timer != null) timer.cancel()
           info("[betting] add %s", bet)
-          addBet(bet)
+          addBet(seat, bet)
           // next turn
           ref ! nextTurn()
             
@@ -42,6 +42,20 @@ class Context(val gameplay: Gameplay, ref: ActorRef) extends Betting with NextTu
       case None =>
         error("[betting] add: round.acting == None")
     }
+  
+  //
+  def cancel(player: Player): Unit = round.acting match {
+    case Some(seat) =>
+      if (seat.hasPlayer(player)) {
+        // leaving currently acting player: just fold
+        addBet(seat, Bet.fold, forced = true)
+        ref ! nextTurn()
+      } else {
+        // in headsup - return uncalled bet, fold
+        // in multipot - just leave orphan bet
+      }
+    case None =>
+  }
   
   // timeout bet
   def timeout(): Unit = round.acting match {
@@ -58,7 +72,7 @@ class Context(val gameplay: Gameplay, ref: ActorRef) extends Betting with NextTu
           else Bet.fold
       }
   
-      addBet(bet, timeout = true)
+      addBet(seat, bet, timeout = true)
       ref ! nextTurn()
     
     case None =>

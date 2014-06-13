@@ -11,7 +11,7 @@ case class BringIn(ctx: stg.Context) extends Stage {
   
   def apply() = {
     val seat = round.seats filter (_.isActive) minBy { _seat ⇒
-      dealer.pocket(_seat.player.get).last
+      dealer.pocket(_seat.player).last
     }
     
     setButton(seat.pos)

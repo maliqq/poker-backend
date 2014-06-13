@@ -37,12 +37,12 @@ object Events {
   def buttonChange(pos: Int)          = msg.ButtonChange(pos)
   def gameChange(game: Game)          = msg.GameChange(game)
 
-  def playerJoin(seat: Seat)      = msg.PlayerJoin(seat)
-  def playerLeave(seat: Seat)     = msg.PlayerLeave(seat)
-  def playerOnline(seat: Seat)    = msg.PlayerOnline(seat)
-  def playerOffline(seat: Seat)   = msg.PlayerOffline(seat)
-  def playerSitOut(seat: Seat)    = msg.PlayerSitOut(seat)
-  def playerComeBack(seat: Seat)  = msg.PlayerComeBack(seat)
+  def playerJoin(sitting: seat.Sitting)      = msg.PlayerJoin(sitting)
+  def playerLeave(sitting: seat.Sitting)     = msg.PlayerLeave(sitting)
+  def playerOnline(sitting: seat.Sitting)    = msg.PlayerOnline(sitting)
+  def playerOffline(sitting: seat.Sitting)   = msg.PlayerOffline(sitting)
+  def playerSitOut(sitting: seat.Sitting)    = msg.PlayerSitOut(sitting)
+  def playerComeBack(sitting: seat.Sitting)  = msg.PlayerComeBack(sitting)
   
   def start(id: String, table: Table, variation: Variation, stake: Stake) = msg.DeclareStart(id, table, variation, stake)
   def start(ctx: Context, player: Option[Player]) = {

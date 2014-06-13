@@ -15,7 +15,7 @@ private[poker] trait Low {
       high = Left(List(lowCards max)))
     val rankType = if (lowCards.size == 5) Rank.Low.Complete else Rank.Low.Incomplete
 
-    h ranked rankType
+    h.map(_.ranked(rankType))
   }
 
   def isGapLow: Option[Hand] = {

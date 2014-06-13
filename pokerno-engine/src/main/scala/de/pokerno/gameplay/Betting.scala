@@ -12,24 +12,24 @@ trait Betting {
   import gameplay._
   
   // require bet
-  def requireBet(seat: Seat) {
-    round.requireBet(seat)
+  def requireBet(sitting: seat.Sitting) {
+    round.requireBet(sitting)
     round.acting map { seat =>
       events broadcast Events.requireBet(seat)
     }
   }
 
   // add bet
-  def addBet(seat: Seat, bet: Bet, timeout: Boolean = false, forced: Boolean = false) {
-    val posted = round.addBet(seat, bet)
+  def addBet(sitting: seat.Sitting, bet: Bet, timeout: Boolean = false, forced: Boolean = false) {
+    val posted = round.addBet(sitting, bet)
     val _timeout = if (timeout) Some(true) else None
-    events broadcast Events.addBet(seat, posted, _timeout)
+    events broadcast Events.addBet(sitting, posted, _timeout)
   }
 
   // force bet
-  def forceBet(seat: Seat, betType: Bet.ForcedType) {
-    val posted = round.forceBet(seat, betType)
-    events broadcast Events.addBet(seat, posted)
+  def forceBet(sitting: seat.Sitting, betType: BetType.Forced) {
+    val posted = round.forceBet(sitting, betType)
+    events broadcast Events.addBet(sitting, posted)
   }
 
   // current betting round finished
@@ -61,7 +61,7 @@ object Betting {
   // betting done - wait for next street to occur
   case object Done extends Transition
   // require bet from this potision
-  case class Require(seat: Seat) extends Transition
+  case class Require(sitting: seat.Sitting) extends Transition
 
   // betting timeout - go to next seat
   case object Timeout

@@ -20,64 +20,61 @@ class HighSpec extends FunSpec {
     }
 
     it("high card") {
-      Kinds.foreach {
-        case kind ⇒
-          val tail = (Kinds.toSet - kind).toList.zipWithIndex.filter {
-            case (v, i) ⇒ i % 2 == 0
-          }.take(6).map(_._1)
+      Kinds.foreach { case kind ⇒
+        val tail = (Kinds.toSet - kind).toList.zipWithIndex.filter {
+          case (v, i) ⇒ i % 2 == 0
+        }.take(6).map(_._1)
 
-          val cards = rainbow((kind :: tail))
+        val cards = rainbow((kind :: tail))
 
-          val hand = Hand.High(cards)
-          assert(hand.isDefined)
-          val h = hand.get
-          assert(h.rank.isDefined)
-          h.rank.get should equal(Rank.High.HighCard)
-          h.value.size should equal(1)
-          h.high.size should equal(1)
-          h.high.head should equal(cards.max(AceHigh))
-          h.kicker.size should equal(4)
+        val hand = Hand.High(cards)
+        assert(hand.isDefined)
+        val h = hand.get
+        assert(h.rank.isDefined)
+        h.rank.get should equal(Rank.High.HighCard)
+        h.value.size should equal(1)
+        h.high.size should equal(1)
+        h.high.head should equal(cards.max(AceHigh))
+        h.kicker.size should equal(4)
       }
     }
 
     it("one pair") {
-      Kinds.foreach {
-        case kind ⇒
-          val tail = (Kinds.toSet - kind).toList.zipWithIndex.filter {
-            case (v, i) ⇒ i % 2 == 0
-          }.take(5).map(_._1)
+      Kinds.foreach { case kind ⇒
+        val tail = (Kinds.toSet - kind).toList.zipWithIndex.filter {
+          case (v, i) ⇒ i % 2 == 0
+        }.take(5).map(_._1)
 
-          val kinds = (kind :: kind :: tail)
-          val cards = rainbow(kinds)
+        val kinds = (kind :: kind :: tail)
+        val cards = rainbow(kinds)
 
-          val hand = Hand.High(cards)
-          assert(hand.isDefined)
-          val h = hand.get
-          assert(h.rank.isDefined)
-          h.rank.get should equal(Rank.High.OnePair)
-          h.value.size should equal(2)
-          h.high.size should equal(1)
-          h.high.head.kind should equal(kind)
-          h.kicker.size should equal(3)
+        val hand = Hand.High(cards)
+        assert(hand.isDefined)
+        val h = hand.get
+        assert(h.rank.isDefined)
+        h.rank.get should equal(Rank.High.OnePair)
+        h.value.size should equal(2)
+        h.high.size should equal(1)
+        h.high.head.kind should equal(kind)
+        h.kicker.size should equal(3)
       }
     }
 
     it("two pair") {
-      Kinds.combinations(2) foreach {
-        case comb ⇒
-          val List(a, b, _*) = comb
-          val kinds = List(a, a, b, b, (Kinds.toSet -- comb).head)
-          val cards = rainbow(kinds)
-          val hand = Hand.High(cards)
-          assert(hand.isDefined)
-          val h = hand.get
-          assert(h.rank.isDefined)
-          h.rank.get should equal(Rank.High.TwoPair)
-          h.value.size should equal(4)
-          h.high.size should equal(2)
-          h.high.head should equal(h.high.max(AceHigh))
-          h.high.last should equal(h.high.min(AceHigh))
-          h.kicker.size should equal(1)
+      Kinds.combinations(2) foreach { case comb ⇒
+        val List(a, b, _*) = comb
+        val kinds = List(a, a, b, b, (Kinds.toSet -- comb).head)
+        val cards = rainbow(kinds)
+        val hand = Hand.High(cards)
+        assert(hand.isDefined)
+        val h = hand.get
+        assert(h.rank.isDefined)
+        h.rank.get should equal(Rank.High.TwoPair)
+        h.value.size should equal(4)
+        h.high.size should equal(2)
+        h.high.head should equal(h.high.max(AceHigh))
+        h.high.last should equal(h.high.min(AceHigh))
+        h.kicker.size should equal(1)
       }
     }
 
@@ -103,21 +100,20 @@ class HighSpec extends FunSpec {
           yield Card(kind, Suit.Spade)
         ).toList
         
-      (1 to 6) foreach {
-        case i ⇒
-          val cards: Cards = deck.slice(i, i + 7).zipWithIndex map {
-            case (card, i) ⇒
-              if (i < 3) new Card(card.kind, Suit.Heart)
-              else card
-          }
-          val hand: Option[Hand] = Hand.High(cards)
-          assert(hand.isDefined)
-          val h = hand.get
-          assert(h.rank.isDefined)
-          h.rank.get should equal(Rank.High.Straight)
-          h.value.size should equal(5)
-          h.high.head should equal(cards max (AceHigh))
-          h.kicker.size should equal(0)
+      (1 to 6) foreach { case i ⇒
+        val cards: Cards = deck.slice(i, i + 7).zipWithIndex map {
+          case (card, i) ⇒
+            if (i < 3) new Card(card.kind, Suit.Heart)
+            else card
+        }
+        val hand: Option[Hand] = Hand.High(cards)
+        assert(hand.isDefined)
+        val h = hand.get
+        assert(h.rank.isDefined)
+        h.rank.get should equal(Rank.High.Straight)
+        h.value.size should equal(5)
+        h.high.head should equal(cards max (AceHigh))
+        h.kicker.size should equal(0)
       }
     }
 
@@ -138,15 +134,14 @@ class HighSpec extends FunSpec {
     it("flush") {
       for (suit ← Suits) {
         val deck: Cards = (for { kind ← Kinds } yield Card(kind, suit)).toList
-        (0 to 6) foreach {
-          case i ⇒
-            val cards = deck.slice(i, i + 7)
-            val hc = new CardSet(cards) with HighHand
-            val hand: Option[Hand] = hc.isFlush
-            hand should beFlush
-            if (hc.isStraight.isEmpty) {
-              Hand.High(cards) should beFlush
-            }
+        (0 to 6) foreach { case i ⇒
+          val cards = deck.slice(i, i + 7)
+          val hc = new CardSet(cards) with HighHand
+          val hand: Option[Hand] = hc.isFlush
+          hand should beFlush
+          if (hc.isStraight.isEmpty) {
+            Hand.High(cards) should beFlush
+          }
         }
       }
     }
@@ -193,14 +188,13 @@ class HighSpec extends FunSpec {
             yield Card(kind, suit)
           ).toList
           
-        (1 to 6) foreach {
-          case i ⇒
-            val cards = deck.slice(i, i + 7)
-            val hand: Option[Hand] = Hand.High(cards)
-            assert(hand.isDefined)
-            val h = hand.get
-            assert(h.rank.isDefined)
-            h.rank.get should equal(Rank.High.StraightFlush)
+        (1 to 6) foreach { case i ⇒
+          val cards = deck.slice(i, i + 7)
+          val hand: Option[Hand] = Hand.High(cards)
+          assert(hand.isDefined)
+          val h = hand.get
+          assert(h.rank.isDefined)
+          h.rank.get should equal(Rank.High.StraightFlush)
         }
       }
     }

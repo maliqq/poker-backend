@@ -29,7 +29,7 @@ trait DealCycle { a: Actor ⇒
   def table: Table
 
   protected def canStart: Boolean = {
-    table.seats.count(_ canPlay) == minimumReadyPlayersToStart
+    table.sitting.count(_ canPlay) == minimumReadyPlayersToStart
   }
 
 }

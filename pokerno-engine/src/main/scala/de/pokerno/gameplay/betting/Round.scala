@@ -16,25 +16,25 @@ class Seat2Acting extends com.fasterxml.jackson.databind.util.StdConverter[Optio
 class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
   private val log = LoggerFactory.getLogger(getClass)
   
-  private var _seats = table.fromButton
+  private var _seats = table.sittingFromButton
   def seats = _seats
   
   @JsonProperty def current = acting map(_.pos)
   
-  private var _acting: Option[Seat] = None
+  private var _acting: Option[seat.Sitting] = None
   @JsonSerialize(converter = classOf[Seat2Acting]) def acting = _acting
   
-  private def acting(seat: Seat, call: Decimal) {
+  private def acting(sitting: seat.Sitting, call: Decimal) {
     _acting.map(_.notActing())
-    _seats = table.seatsFrom(seat.pos)
-    _acting = Some(seat)
-    seat.call = call
+    _seats = table.sittingFrom(sitting.pos)
+    _acting = Some(sitting)
+    sitting.call = call
   }
   
   def reset() {
     raiseCount = 0
     _acting = None
-    _seats = table.fromButton
+    _seats = table.sittingFromButton
     pot.complete()
   }
   
@@ -52,55 +52,55 @@ class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
   // current amount to call among all-ins
   def allInAmount: Decimal = _seats.map(_.allInAmount).max
   
-  def forceBet(seat: Seat, betType: Bet.ForcedType): Bet = {
+  def forceBet(sitting: seat.Sitting, betType: BetType.Forced): Bet = {
     val amount = stake amount betType
     
-    acting(seat, amount)
+    acting(sitting, amount)
 
-    val stack = seat.stack.get
+    val stack = sitting.stack.get
     val amt = List(stack, amount) min
-    val bet = betType.force(amt)
+    val bet = betType(amt)
 
-    addBet(seat, bet)
+    addBet(sitting, bet)
   }
 
-  def requireBet(seat: Seat) = {
+  def requireBet(sitting: seat.Sitting) = {
     val amount = callAmount
     
-    acting(seat, amount)
+    acting(sitting, amount)
     
-    val total = seat.total
+    val total = sitting.total
     if (total <= amount || raiseCount >= MaxRaiseCount)
-      seat.disableRaise()
+      sitting.disableRaise()
     else {
       val limit = game.limit
       val blind = if (bigBets) stake.bigBlind * 2 else stake.bigBlind
       val (min, max) = limit raise (total, blind + amount, pot.total)
-      seat.raise = (List(total, min) min, List(total, max) min)
+      sitting.raise = (List(total, min) min, List(total, max) min)
     }
   }
   
-  def addBet(seat: Seat, _bet: Bet): Bet = {
-    val player = seat.player.get
+  def addBet(sitting: seat.Sitting, _bet: Bet): Bet = {
+    val player = sitting.player
 
     val posting = {
-      val _posting = seat.posting(_bet)
+      val _posting = sitting.posting(_bet)
     
-      if (seat.canBet(_posting, stake)) _posting
+      if (sitting.canBet(_posting, stake)) _posting
       else {
-        warn("bet %s is not valid; call=%.2f seat=%s\n", _posting, callAmount, seat)
+        warn("bet %s is not valid; call=%.2f seat=%s\n", _posting, callAmount, sitting)
         Bet.fold
       }
     }
 
-    val diff = seat postBet posting
+    val diff = sitting postBet posting
 
     if (posting.isActive) {
       if (posting.isRaise)
         raiseCount += 1
 //      if (!_posting.isCall && seat.putAmount > callAmount)
 //        call = seat.putAmount
-      pot add (player, diff, seat.isAllIn)
+      pot add (player, diff, sitting.isAllIn)
     }
 
     posting

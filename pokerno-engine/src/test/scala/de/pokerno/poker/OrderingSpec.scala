@@ -30,7 +30,7 @@ class OrderingSpec extends FunSpec {
       val h1 = cards.hand(rank = Some(Rank.High.Flush))
       val h2 = cards.hand(rank = Some(Rank.High.StraightFlush))
 
-      val hands = List[Hand](h1, h2)
+      val hands = List(h1, h2).flatten
 
       hands max (Ranking) should equal(h2)
     }
@@ -41,7 +41,7 @@ class OrderingSpec extends FunSpec {
       val h1 = cards.hand(rank = Some(Rank.High.Flush), high = Left(List('_2d)))
       val h2 = cards.hand(rank = Some(Rank.High.Flush), high = Left(List('Kd)))
 
-      val hands = List[Hand](h1, h2)
+      val hands = List(h1, h2).flatten
 
       hands.max should equal(h2)
     }
@@ -52,7 +52,7 @@ class OrderingSpec extends FunSpec {
       val h1 = cards.hand(rank = Some(Rank.High.Flush), high = Left(List(1)), value = List(1, 2, '_2d))
       val h2 = cards.hand(rank = Some(Rank.High.Flush), high = Left(List(1)), value = List(1, 2, 'Kd))
 
-      val hands = List[Hand](h1, h2)
+      val hands = List(h1, h2).flatten
 
       hands.max should equal(h2)
     }
@@ -63,7 +63,7 @@ class OrderingSpec extends FunSpec {
       val h1 = cards.hand(rank = Some(Rank.High.Flush), high = Left(List(1)), value = List(1, 2, 3), kicker = Left(List('_2d)))
       val h2 = cards.hand(rank = Some(Rank.High.Flush), high = Left(List(1)), value = List(1, 2, 3), kicker = Left(List('Kd)))
 
-      val hands = List[Hand](h1, h2)
+      val hands = List(h1, h2).flatten
 
       hands.max should equal(h2)
     }

@@ -3,7 +3,7 @@ package de.pokerno.model
 import de.pokerno.poker.{ Cards, Card, Deck }
 import com.fasterxml.jackson.annotation.JsonProperty
 
-class Dealer(private var _deck: Deck = new Deck) {
+class Dealer(private val _deck: Deck = new Deck) {
 
   private var _board: Cards = Cards.empty
   

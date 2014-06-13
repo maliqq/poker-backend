@@ -8,7 +8,7 @@ class SeatSpec extends FunSpec {
   describe("Seat") {
     it("toString") {
       val seat = new Seat
-      seat.toString() should equal("")
+      seat.toString() should equal("(empty)")
     }
     
     it("put") {
@@ -32,16 +32,16 @@ class SeatSpec extends FunSpec {
 
       seat.playing()
       seat.raise(100)
-      seat.put should equal(100)
-      seat.stack should equal(900)
+      seat.putAmount should equal(100)
+      seat.stackAmount should equal(900)
       seat.isCalled(100.1) should be(false)
       seat.isCalled(100) should be(true)
       seat.isCalled(99.9) should be(true)
 
       seat.playing()
       seat.force(Bet.SmallBlind(25))
-      seat.put should equal(25)
-      seat.stack should equal(875)
+      seat.putAmount should equal(25)
+      seat.stackAmount should equal(875)
     }
 
     it("all in raise") {
@@ -74,7 +74,7 @@ class SeatSpec extends FunSpec {
       it("AllIn") {
         val seat = new Seat(Seat.State.AllIn)
         seat.isEmpty should be(false)
-        seat.isActive should be(false)
+        seat.isActive should be(true)
         seat.isAllIn should be(true)
         seat.isEmpty should be(false)
         seat.isPlaying should be(false)
@@ -143,7 +143,7 @@ class SeatSpec extends FunSpec {
         seat.isAllIn should be(false)
         seat.isEmpty should be(false)
         seat.isPlaying should be(false)
-        seat.isReady should be(true)
+        //seat.isReady should be(true)
         seat.isWaitingBB should be(false)
         seat.inPlay should be(false)
         seat.inPot should be(false)

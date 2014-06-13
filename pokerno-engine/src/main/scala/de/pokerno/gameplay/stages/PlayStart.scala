@@ -9,7 +9,7 @@ case class PlayStart(ctx: stg.Context) extends Stage {
   
   def apply() = {
     table.playStart()
-    if (table.seats.count(_.canPlay) <= 1) {
+    if (table.sitting.count(_.canPlay) <= 1) {
       throw Stage.Exit
     }
     

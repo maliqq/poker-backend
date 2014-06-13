@@ -43,86 +43,74 @@ class BadugiSpec extends FunSpec {
 
     it("badugi four") {
       // ABCD
-      kindCombinations foreach {
-        case comb ⇒
-          suitPermutations.foreach {
-            case perm ⇒
-              val value: Cards = comb.zip(perm) map { case (kind, suit) ⇒ Card(kind, suit) }
-              value should beBadugi4
-          }
+      kindCombinations foreach { case comb ⇒
+        suitPermutations.foreach { case perm ⇒
+          val value: Cards = comb.zip(perm) map { case (kind, suit) ⇒ Card(kind, suit) }
+          value should beBadugi4
+        }
       }
     }
 
     it("badugi three") {
       // ABCC
-      kinds.combinations(3) foreach {
-        case comb ⇒
-          val value: Cards = (comb.head :: comb).zip(suits) map { case (kind, suit) ⇒ Card(kind, suit) }
-          value should beBadugi3
+      kinds.combinations(3) foreach { case comb ⇒
+        val value: Cards = (comb.head :: comb).zip(suits) map { case (kind, suit) ⇒ Card(kind, suit) }
+        value should beBadugi3
       }
 
       // AxBxCD
-      suits.combinations(3) foreach {
-        case comb ⇒
-          kindCombinations foreach {
-            case kinds ⇒
-              val value: Cards = kinds.zip(comb.head :: comb) map { case (kind, suit) ⇒ Card(kind, suit) }
-              value should beBadugi3
-          }
+      suits.combinations(3) foreach { case comb ⇒
+        kindCombinations foreach { case kinds ⇒
+          val value: Cards = kinds.zip(comb.head :: comb) map { case (kind, suit) ⇒ Card(kind, suit) }
+          value should beBadugi3
+        }
       }
     }
 
     it("badugi two") {
       // AAAB
-      kinds.combinations(2) foreach {
-        case comb ⇒
-          val List(a, b) = comb
-          val value: Cards = List(a, a, a, b).zip(suits) map {
-            case (kind, suit) ⇒ Card(kind, suit)
-          }
-          value should beBadugi2
+      kinds.combinations(2) foreach { case comb ⇒
+        val List(a, b) = comb
+        val value: Cards = List(a, a, a, b).zip(suits) map {
+          case (kind, suit) ⇒ Card(kind, suit)
+        }
+        value should beBadugi2
       }
 
       // AABB
-      kinds.combinations(2) foreach {
-        case comb ⇒
-          val List(a, b) = comb
-          val value: Cards = List(a, a, b, b).zip(suits) map {
-            case (kind, suit) ⇒ Card(kind, suit)
-          }
-          value should beBadugi2
+      kinds.combinations(2) foreach { case comb ⇒
+        val List(a, b) = comb
+        val value: Cards = List(a, a, b, b).zip(suits) map {
+          case (kind, suit) ⇒ Card(kind, suit)
+        }
+        value should beBadugi2
       }
       // AxBxCC
-      kinds.combinations(3) foreach {
-        case comb ⇒
-          val List(a, b, c) = comb
-          val List(s, h, d, _*) = suits
-          val value: Cards = List(a, b, c, c).zip(List(s, s, h, d)) map {
-            case (kind, suit) ⇒ Card(kind, suit)
-          }
-          value should beBadugi2
+      kinds.combinations(3) foreach { case comb ⇒
+        val List(a, b, c) = comb
+        val List(s, h, d, _*) = suits
+        val value: Cards = List(a, b, c, c).zip(List(s, s, h, d)) map {
+          case (kind, suit) ⇒ Card(kind, suit)
+        }
+        value should beBadugi2
       }
     }
 
     it("badugi one") {
       // AxBxCxDx
-      kindCombinations foreach {
-        case comb ⇒
-          suits foreach {
-            case suit ⇒
-              val value: Cards = comb.map(Card(_, suit))
-              value should beBadugi1
-          }
+      kindCombinations foreach { case comb ⇒
+        suits foreach { case suit ⇒
+          val value: Cards = comb.map(Card(_, suit))
+          value should beBadugi1
+        }
       }
 
       // AAAA
-      suitPermutations foreach {
-        case perm ⇒
-          kinds foreach {
-            case kind ⇒
-              val value: Cards = perm.map(Card(kind, _))
-              value should beBadugi1
-          }
+      suitPermutations foreach { case perm ⇒
+        kinds foreach { case kind ⇒
+            val value: Cards = perm.map(Card(kind, _))
+            value should beBadugi1
+        }
       }
     }
   }

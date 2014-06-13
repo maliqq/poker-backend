@@ -25,29 +25,30 @@ class BetSpec extends FunSpec {
     }
 
     it("bet to string") {
-      Bet.check.toString should equal("Check")
-      Bet.fold.toString should equal("Fold")
-      Bet.call(1.0).toString should equal("Call 1.00")
-      Bet.raise(2.0).toString should equal("Raise 2.00")
+      Bet.check.toString should equal("check")
+      Bet.fold.toString should equal("fold")
+      Bet.call(1.0).toString should equal("call 1.00")
+      Bet.raise(2.0).toString should equal("raise 2.00")
     }
 
     it("type checks") {
-      Array(
-        Bet.SmallBlind, Bet.BigBlind, Bet.Ante, Bet.BringIn, Bet.GuestBlind, Bet.Straddle
+      Array[BetType.Forced](
+        BetType.SmallBlind, BetType.BigBlind, BetType.Ante, BetType.BringIn, BetType.GuestBlind, BetType.Straddle
       ) foreach { b ⇒
-          b.isInstanceOf[Bet.Forced] should be(true)
-          val bet = b.asInstanceOf[Bet.Forced]
+          val bet = b(1)
+          bet.isInstanceOf[Bet.Forced] should be(true)
           bet.isForced should be(true)
         }
 
-      Array(
+      Array[Bet](
         Bet.Check, Bet.Fold
       ) foreach { b ⇒
           b.isInstanceOf[Bet.Passive] should be(true)
+          b.isPassive should be(true)
         }
 
-      Array(
-        Bet.Raise, Bet.Call, Bet.AllIn
+      Array[Bet](
+        Bet.Raise(100), Bet.Call(100)
       ) foreach { b ⇒
           b.isInstanceOf[Bet.Active] should be(true)
         }

@@ -75,7 +75,7 @@ class Hand(
   
   def ranked(r: Rank.Value) = {
     rank = Some(r)
-    Some(this)
+    this
   }
 
   def compare(other: Hand): Int = Ranking.compare(this, other)

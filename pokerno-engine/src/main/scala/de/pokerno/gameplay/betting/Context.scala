@@ -24,18 +24,15 @@ class Context(val gameplay: Gameplay, ref: ActorRef) extends Betting with NextTu
   def add(player: Player, bet: Bet): Unit =
     round.acting match {
       case Some(seat) =>
-        seat.player match { case Some(p) if p == player =>
-            
+        if (seat.player == player) {
+          
           if (timer != null) timer.cancel()
           info("[betting] add %s", bet)
           addBet(seat, bet)
           // next turn
           ref ! nextTurn()
             
-        case None =>
-          error("[betting] add: round.acting=%s", round.acting)
-            
-        case _ =>
+        } else {
           warn("[betting] add: not a turn of %s; current acting is %s", player, seat)
         }
         
@@ -46,7 +43,7 @@ class Context(val gameplay: Gameplay, ref: ActorRef) extends Betting with NextTu
   //
   def cancel(player: Player): Unit = round.acting match {
     case Some(seat) =>
-      if (seat.hasPlayer(player)) {
+      if (seat.player == player) {
         // leaving currently acting player: just fold
         addBet(seat, Bet.fold, forced = true)
         ref ! nextTurn()

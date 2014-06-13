@@ -12,7 +12,8 @@ class BetLike(
     @JsonProperty("call")   val call: Option[Decimal] = None,
     @JsonProperty("raise")  val raise: Option[Decimal] = None,
     @JsonProperty("fold")   val fold: Option[Boolean] = None,
-    @JsonProperty("check")  val check: Option[Boolean] = None
+    @JsonProperty("check")  val check: Option[Boolean] = None,
+    @JsonProperty("allin")  val allin: Option[Boolean] = None // TODO
 ) {
   def bet = call.map { amt =>
     Bet.call(amt)
@@ -40,23 +41,22 @@ trait Bet {
     case _ => name
   }
   
-  override def equals(_other: Any): Boolean = {
+  override def equals(o: Any): Boolean = o match {
+    case _other: Bet =>
+      if (isActive && _other.isActive) {
+        val active = asInstanceOf[Bet.Active]
+        val other = _other.asInstanceOf[Bet.Active]
+        active.betType == other.betType && active.amount == other.amount
+      } else betType == _other.betType
     
-    if (isInstanceOf[Bet.Active]) {
-      val active = asInstanceOf[Bet.Active]
-      _other match {
-        case other: Bet.Active =>
-          return super.equals(other) && active.amount == other.amount
-        case _ =>
-      }
-    }
-
-    super.equals(_other)
+    case _ => false
   }
   
-  def isActive: Boolean = false
-  def isPassive: Boolean = false
-  def isForced: Boolean = false
+  def betType: BetType
+  
+  def isActive: Boolean = isInstanceOf[Bet.Active]
+  def isPassive: Boolean = isInstanceOf[Bet.Passive]
+  def isForced: Boolean = isInstanceOf[Bet.Forced]
   def isRaise: Boolean = false
   def isCheck: Boolean = false
   def isCall: Boolean = false
@@ -66,96 +66,65 @@ trait Bet {
 object Bet {
   trait Active extends Bet {
     @JsonIgnore def amount: Decimal
-    override def isActive = true
   }
   
   case class Raise(@JsonIgnore amount: Decimal) extends Active {
     def name = "raise"
+    def betType = BetType.Raise 
     @JsonProperty("raise") def raise = amount
   }
   case class Call(@JsonIgnore amount: Decimal) extends Active {
     def name = "call"
+    def betType = BetType.Call
     @JsonProperty("call") def call = amount
   }
   
-  trait Passive extends Bet {
-    override def isPassive = true
-  }
+  trait Passive extends Bet
+  
   case object Check extends Passive {
     override def isCheck = true
     def name = "check"
+    def betType = BetType.Check
     @JsonProperty("check") final val check = true
   }
+  
   case object Fold extends Passive {
     override def isFold = true
     def name = "fold"
+    def betType = BetType.Fold
     @JsonProperty("fold") final val fold = true
   }
   
   @JsonPropertyOrder(Array("type", "call"))
   abstract class Forced extends Active {
-    override def isForced = true
+    def name = betType.name
     @JsonProperty("call") def call = amount
-    @JsonProperty("type") def betType: ForcedType
+    @JsonProperty("type") def betType: BetType.Forced
   }
   
-  trait ForcedType {
-    @JsonValue def name: String
-
-    def force(amt: Decimal): Bet
-  }
-
-  object Ante extends ForcedType {
-    def name = "ante"
-    def force(amt: Decimal) = Bet.ante(amt)
-  }
-  case class Ante(amount: Decimal) extends Forced {
-    def name = Ante.name
-    def betType = Ante 
-  }
-  object BringIn extends ForcedType {
-    def name = "bring-in"
-    def force(amt: Decimal) = Bet.bringIn(amt)
-  }
-  case class BringIn(amount: Decimal) extends Forced {
-    def name = BringIn.name
-    def betType = BringIn
-  }
-  object SmallBlind extends ForcedType {
-    def name = "small-blind"
-    def force(amt: Decimal) = Bet.sb(amt)
-  }
   case class SmallBlind(amount: Decimal) extends Forced {
-    def name = SmallBlind.name
-    def betType = SmallBlind
-  }
-  object BigBlind extends ForcedType {
-    def name = "big-blind"
-    def force(amt: Decimal) = Bet.bb(amt)
+    def betType = BetType.SmallBlind
   }
   case class BigBlind(amount: Decimal) extends Forced {
-    def name = BigBlind.name
-    def betType = BigBlind
+    def betType = BetType.BigBlind
   }
-  object GuestBlind extends ForcedType {
-    def name = "guest-blind"
-    def force(amt: Decimal) = Bet.gb(amt)
+  case class Ante(amount: Decimal) extends Forced {
+    def betType = BetType.Ante 
   }
+  case class BringIn(amount: Decimal) extends Forced {
+    def betType = BetType.BringIn
+  }
+  
   case class GuestBlind(amount: Decimal) extends Forced {
-    def name = GuestBlind.name
-    def betType = GuestBlind
-  }
-  object Straddle extends ForcedType {
-    def name = "straddle"
-    def force(amt: Decimal) = Bet.straddle(amt)
+    def betType = BetType.GuestBlind
   }
   case class Straddle(amount: Decimal) extends Forced {
-    def name = Straddle.name
-    def betType = Straddle
+    def betType = BetType.Straddle
   }
   
   case object AllIn extends Bet {
     def name = "all-in"
+    def betType = BetType.AllIn
   }
 
   def check()                   = Check

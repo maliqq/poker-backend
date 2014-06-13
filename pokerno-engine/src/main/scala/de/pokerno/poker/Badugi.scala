@@ -1,22 +1,22 @@
 package de.pokerno.poker
 
-private[poker] trait BadugiHand {
-
-  self: CardSet ⇒
+private[poker] trait BadugiHand { self: CardSet ⇒
+  
+  import Rank.Badugi._
 
   def isBadugiOne: Option[Hand] =
     if (groupKind.size == 1) {
-      hand(value = value take (1)) ranked Rank.Badugi.BadugiOne
+      hand(value = value take (1)).map(_.ranked(BadugiOne))
     } else if (groupSuit.size == 1) {
       val card = groupSuit.values.head.min
 
-      hand(value = List(card)) ranked Rank.Badugi.BadugiOne
+      hand(value = List(card)).map(_.ranked(BadugiOne))
     } else
       None
 
   def isBadugiFour: Option[Hand] =
     if (groupKind.size == 4 && groupSuit.size == 4)
-      hand(value = value) ranked Rank.Badugi.BadugiFour
+      hand(value = value).map(_.ranked(BadugiFour))
     else
       None
 
@@ -34,15 +34,12 @@ private[poker] trait BadugiHand {
       val v = _paired.get.head
       val d = value diff v
 
-      var _a = v.head
+      val _a = v.head
       val Seq(_b, _c, _*) = d.filter { card ⇒ _a.kind != card.kind }
       if (_b.suit == _c.suit)
         return None
 
-      if (_a.suit == _b.suit || _a.suit == _c.suit)
-        _a = v(1)
-
-      (_a, _b, _c)
+      (if (_a.suit == _b.suit || _a.suit == _c.suit) v(1) else _a, _b, _c)
 
     } else {
 
@@ -60,7 +57,7 @@ private[poker] trait BadugiHand {
 
     }
 
-    hand(value = List(a, b, c)) ranked Rank.Badugi.BadugiThree
+    hand(value = List(a, b, c)).map(_.ranked(BadugiThree))
   }
 
   def isBadugiTwo: Option[Hand] = {
@@ -99,7 +96,7 @@ private[poker] trait BadugiHand {
 
       (_a, d.filter { card ⇒ _a.kind != card.kind }.min)
     }
-    hand(value = List(a, b)) ranked Rank.Badugi.BadugiTwo
+    hand(value = List(a, b)).map(_.ranked(BadugiTwo))
   }
 
   @throws[Hand.InvalidCards]

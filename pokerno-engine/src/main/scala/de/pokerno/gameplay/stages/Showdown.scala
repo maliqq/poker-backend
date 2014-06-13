@@ -15,7 +15,7 @@ case class Showdown(ctx: stg.Context) extends Stage {
   import ctx.gameplay._
   
   def apply() = {
-    val inPot = table.seats find (_.inPot)
+    val inPot = table.sitting find (_.inPot)
     if (inPot.isDefined) {
       declareWinner(inPot.get, round.pot)
     } else {
@@ -36,11 +36,11 @@ case class Showdown(ctx: stg.Context) extends Stage {
     sorted.takeWhile(_._2 == max._2)
   }
 
-  private def declareWinner(seat: Seat, pot: Pot) = pot.sidePots foreach { side ⇒
+  private def declareWinner(sitting: seat.Sitting, pot: Pot) = pot.sidePots foreach { side ⇒
     val amount = side.total
-    val winner = seat.player.get
-    seat wins amount
-    events broadcast Events.declareWinner(seat, amount)
+    val winner = sitting.player
+    sitting wins amount
+    events broadcast Events.declareWinner(sitting, amount)
   }
 
   private def declareWinners(pot: Pot, hi: Option[Map[Player, Hand]], lo: Option[Map[Player, Hand]]) = {
@@ -106,9 +106,10 @@ case class Showdown(ctx: stg.Context) extends Stage {
   }
 
   private def showHands(ranking: Hand.Ranking): Map[Player, Hand] =
-    table.seats.filter(_.inPot).foldLeft(Map[Player, Hand]()) { case (hands, seat) =>
-      val (pocket, hand) = rank(seat.player get, ranking)
-      val player = seat.player.get
+    table.sitting.filter(_.inPot).foldLeft(Map[Player, Hand]()) { case (hands, seat) =>
+      val player = seat.player
+      val (pocket, hand) = rank(seat.player, ranking)
+      
       //events.publish(message.ShowCards(pos = pos, player = player, cards = pocket))
       events broadcast Events.declareHand(seat, pocket, hand)
       hands + (player -> hand)

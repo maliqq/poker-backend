@@ -7,36 +7,37 @@ private[poker] class CardSet(val value: Cards, val ordering: Ordering[Card] = Ac
   lazy val paired = countGroups(groupKind)
   lazy val suited = countGroups(groupSuit)
 
-  private def countGroups(groups: Map[_ <: Any, Cards]): Map[Int, Seq[Cards]] = {
+  private def countGroups(groups: Map[_ <: Any, Cards]): Map[Int, Seq[Cards]] =
     groups.foldLeft(Map[Int, Seq[Cards]]()) { case (_counter, (k, v)) =>
       val count = v.size
       val group = _counter getOrElse (count, Seq.empty)
       _counter + (count -> (group ++ Seq(v)))
     }
-  }
 
   private def groupByGaps: Seq[Cards] = {
-    var _gaps = Seq[Cards]()
     val cards = value.filter(_.kind == Kind.Value.Ace) ++ value.sorted(AceHigh)
-    val (_, _buffer: Cards) = cards.foldLeft((cards.head, Cards.empty)) {
-      case ((prev: Card, buffer: Cards), card) ⇒
-        lazy val d = card.kind.toInt - prev.kind.toInt
-        if (card == prev || d == 1 || d == -12)
-          (card, buffer ++ Seq(card))
-        else if (d == 0)
-          (card, buffer)
-        else {
-          _gaps ++= Seq(buffer)
-          (card, Seq(card))
-        }
-    }
+    
+    val (_, _buffer: Cards, _gaps: Seq[Cards]) =
+      cards.foldLeft[Tuple3[Card, Cards, Seq[Cards]]]((cards.head, Cards.empty, Seq[Cards]())) {
+        case ((prev: Card, buffer: Cards, gaps: Seq[Cards]), card) ⇒
+          lazy val d = card.kind.toInt - prev.kind.toInt
+          if (card == prev || d == 1 || d == -12)
+            (card, buffer ++ Seq(card), gaps)
+          else if (d == 0)
+            (card, buffer, gaps)
+          else
+            (card, Seq(card), gaps ++ Seq(buffer))
+      }
+    
     _gaps ++ Seq(_buffer)
   }
   
-  def hand(value: Cards = Seq.empty, rank: Option[Rank.Value] = None,
+  def hand(
+      value: Cards = Seq.empty,
+      rank: Option[Rank.Value] = None,
       high: Either[Cards, Boolean] = Right(false),
-      kicker: Either[Cards, Boolean] = Right(false)) =
-    new Hand(this, value, rank, high, kicker)
+      kicker: Either[Cards, Boolean] = Right(false)
+    ) = Some(new Hand(this, value, rank, high, kicker))
 
   override def toString = "gaps=%s paired=%s suited=%s" format (gaps, paired, suited)
 }

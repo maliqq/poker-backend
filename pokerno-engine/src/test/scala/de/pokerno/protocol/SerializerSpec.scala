@@ -14,8 +14,7 @@ class SerializerSpec extends FunSpec {
   
   case class CardsWrapper(
       @JsonSerialize(converter = classOf[Serializers.Cards2Binary])
-      @JsonUnwrapped
-      cards: Cards
+      @JsonUnwrapped cards: Cards
     ) {}
 
   describe("Cards") {

@@ -4,7 +4,7 @@ import de.pokerno.model.{Seat, Bet, Stake}
 import math.{BigDecimal => Decimal}
 import de.pokerno.util.Colored._
 
-trait Validations { seat: Seat =>
+trait Validations { seat: Sitting =>
   
   // CHECK
   def canCheck(toCall: Decimal): Boolean = {

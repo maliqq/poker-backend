@@ -6,14 +6,14 @@ import com.fasterxml.jackson.annotation.{JsonIgnore, JsonInclude, JsonProperty, 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 
 object Stake {
-  private def BBs(bigBlind: Decimal, v: Bet.ForcedType): Decimal = Rates(v) * bigBlind
+  private def BBs(bigBlind: Decimal, v: BetType.Forced): Decimal = Rates(v) * bigBlind
 
   def apply(bigBlind: Decimal,
       smallBlind: Option[Decimal] = None,
       ante: Either[Decimal, Boolean] = Right(false),
       bringIn: Either[Decimal, Boolean] = Right(false)): Stake = {
       
-    def bbs(v: Bet.ForcedType): Decimal = {
+    def bbs(v: BetType.Forced): Decimal = {
       Rates(v) * bigBlind
     }
     
@@ -22,7 +22,7 @@ object Stake {
           if (amount > .0) Some(amount)
           else None
         case Right(withAnte) ⇒
-          if (withAnte) Some(bbs(Bet.Ante))
+          if (withAnte) Some(bbs(BetType.Ante))
           else None
       }
     
@@ -31,13 +31,13 @@ object Stake {
           if (amount > .0) Some(amount)
           else None
         case Right(withBringIn) ⇒
-          if (withBringIn) Some(bbs(Bet.BringIn))
+          if (withBringIn) Some(bbs(BetType.BringIn))
           else None
       }
     
     Stake(
       bigBlind,
-      smallBlind getOrElse bbs(Bet.SmallBlind),
+      smallBlind getOrElse bbs(BetType.SmallBlind),
       _ante,
       _bringIn
     )
@@ -71,12 +71,12 @@ case class Stake(
     @JsonProperty ante: Option[Decimal],
     @JsonProperty bringIn: Option[Decimal]) {
 
-  def amount(t: Bet.ForcedType): Decimal = t match {
-    case Bet.BringIn    ⇒ bringIn.get
-    case Bet.Ante
+  def amount(t: BetType.Forced): Decimal = t match {
+    case BetType.BringIn    ⇒ bringIn.get
+    case BetType.Ante
       if ante.isDefined ⇒ ante.get
-    case Bet.SmallBlind ⇒ smallBlind
-    case Bet.BigBlind   ⇒ bigBlind
+    case BetType.SmallBlind ⇒ smallBlind
+    case BetType.BigBlind   ⇒ bigBlind
     case _              ⇒ throw new Error("no amount for %s" format t)
   }
 

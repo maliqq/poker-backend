@@ -15,8 +15,8 @@ case class Dealing(ctx: stg.Context, _type: DealType.Value, cardsNum: Option[Int
         else _n
       }
 
-      table.seats filter (_.isActive) foreach { seat =>
-        val player = seat.player.get
+      table.sitting filter (_.isActive) foreach { seat =>
+        val player = seat.player
         val cards = dealer dealPocket (n, player)
         
         assert(cards.size == n)

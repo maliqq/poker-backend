@@ -40,8 +40,8 @@ private[replay] case class Dealing(
 
     case DealType.Door | DealType.Hole =>
       
-      table.seats.zipWithIndex filter (_._1 isActive) foreach { case (seat, pos) ⇒
-        val player = seat.player.get
+      table.sitting filter (_.isActive) foreach { seat ⇒
+        val player = seat.player
         if (_perPlayer.contains(player)) {
           val d = _perPlayer(player)
           dealPocket(d.`type`, d.cards, Some(player))
@@ -62,7 +62,7 @@ private[replay] case class Dealing(
       case None ⇒
         round.acting.get
     }
-    val player = seat.player.get
+    val player = seat.player
     
     val pocketSize = gameOptions.pocketSize
     val max = pocketSize - dealer.pocket(player).size

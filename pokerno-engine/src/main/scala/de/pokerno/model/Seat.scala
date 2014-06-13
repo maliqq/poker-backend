@@ -53,30 +53,10 @@ object Seat {
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonAutoDetect(isGetterVisibility = JsonAutoDetect.Visibility.NONE)
 abstract class Seat(
-    pos: Int,
-    initialState: Seat.State.Value = Seat.State.Empty 
-    ) extends seat.Position(pos) {
-
-  import Seat._
-  import seat.Callbacks._
-
+    pos: Int = -1
+  ) {
+  
+  @JsonIgnore protected val _pos: Int = pos
   @JsonIgnore protected val log = LoggerFactory.getLogger(getClass)
-  
-  @JsonIgnore protected var _state: State.Value = initialState
-  def this(_state: Seat.State.Value) = this(-1, _state)
-  
-  // STATE
-  @JsonScalaEnumeration(classOf[SeatStateRef]) @JsonProperty def state = _state
-
-  def state_=(_new: State.Value) {
-    val _old = _state
-    if (_old != _new) {
-      stateCallbacks.before(_old, _new)
-      _state = _new
-    }
-    //stateCallbacks.on(_old, _state)
-    //stateCallbacks.after(_old, _state)
-  }
-  @JsonIgnore protected val stateCallbacks = new Callbacks[State.Value]()
 
 }

@@ -6,13 +6,13 @@ import org.scalatest.Matchers._
 class GameEventSpec extends FunSpec {
   import msg._
   import de.pokerno.model._
+  import de.pokerno.model.seat._
   import de.pokerno.poker._
   import de.pokerno.gameplay
   
   describe("GameEvent") {
     it("AskBet") {
-      val seat = new Seat(1)
-      seat.player = new Player("A")
+      val seat = new Sitting(1, new Player("A"))
       
       seat.call = 1000
       seat.raise = (1000, 1000)
@@ -23,8 +23,7 @@ class GameEventSpec extends FunSpec {
     }
     
     it("AskDiscard") {
-      val seat = new Seat(1)
-      seat.player = new Player("A")
+      val seat = new Sitting(1, new Player("A"))
       
       val e = AskDiscard(seat)
       val d = GameEvent.encodeAsString(e)
@@ -38,8 +37,7 @@ class GameEventSpec extends FunSpec {
     }
     
     it("DealCards") {
-      val seat = new Seat(1)
-      seat.player = new Player("A")
+      val seat = new Sitting(1, new Player("A"))
       val e1 = DealHole(seat, Left(Cards.fromString("AsAd")))
       val d1 = GameEvent.encodeAsString(e1)
       d1 should equal("""{"$type":"cards:hole","pos":1,"player":"A","cards":"MTM="}""")
@@ -54,8 +52,7 @@ class GameEventSpec extends FunSpec {
     }
     
     it("DeclareBet") {
-      val seat = new Seat(1)
-      seat.player = new Player("A")
+      val seat = new Sitting(1, new Player("A"))
       
       val e1 = DeclareBet(seat, Bet.fold)
       val d1 = GameEvent.encodeAsString(e1)
@@ -83,8 +80,7 @@ class GameEventSpec extends FunSpec {
     }
     
     it("DeclareHand") {
-      val seat = new Seat(1)
-      seat.player = new Player("A")
+      val seat = new Sitting(1, new Player("A"))
       
       val e = DeclareHand(seat, Cards.fromString("KdJs"), Hand.High(Cards.fromString("AdAdKhKdJs")).get)
       val d = GameEvent.encodeAsString(e)
@@ -146,8 +142,7 @@ class GameEventSpec extends FunSpec {
     }
     
     it("DeclareWinner") {
-      val seat = new Seat(1)
-      seat.player = new Player("A")
+      val seat = new Sitting(1, new Player("A"))
       
       val e = DeclareWinner(seat, 1000)
       val d = GameEvent.encodeAsString(e)
@@ -155,8 +150,7 @@ class GameEventSpec extends FunSpec {
     }
     
     it("DiscardCards") {
-      val seat = new Seat(1)
-      seat.player = new Player("A")
+      val seat = new Sitting(1, new Player("A"))
       
       val e = DiscardCards(seat, cardsNum = Some(1))
       val d = GameEvent.encodeAsString(e)
@@ -171,8 +165,7 @@ class GameEventSpec extends FunSpec {
     }
     
     it("JoinPlayer") {
-      val seat = new Seat(1)
-      seat.player = new Player("A")
+      val seat = new Sitting(1, new Player("A"))
       
       val e = PlayerJoin(seat, 1000.0)
       val d = GameEvent.encodeAsString(e)
@@ -180,8 +173,7 @@ class GameEventSpec extends FunSpec {
     }
     
     it("LeavePlayer") {
-      val seat = new Seat(1)
-      seat.player = new Player("A")
+      val seat = new Sitting(1, new Player("A"))
       
       val e = PlayerLeave(seat)
       val d = GameEvent.encodeAsString(e)
@@ -189,8 +181,7 @@ class GameEventSpec extends FunSpec {
     }
     
     it("ShowCards") {
-      val seat = new Seat(1)
-      seat.player = new Player("A")
+      val seat = new Sitting(1, new Player("A"))
       
       val e1 = ShowCards(seat, Cards.fromString("Ad"), muck = true)
       val d1 = GameEvent.encodeAsString(e1)
@@ -208,8 +199,7 @@ class GameEventSpec extends FunSpec {
     }
     
     it("TickTimer") {
-      val seat = new Seat(1)
-      seat.player = new Player("A")
+      val seat = new Sitting(1, new Player("A"))
       
       val e = TickTimer(seat, 10)
       val d = GameEvent.encodeAsString(e)

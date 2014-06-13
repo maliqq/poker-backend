@@ -7,12 +7,21 @@ object Codec {
   trait Json {
     import de.pokerno.poker.Cards
 
-    import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
     import com.fasterxml.jackson.module.scala.DefaultScalaModule
+    //import com.fasterxml.jackson.module.scala.
   
-    val mapper = new ObjectMapper with ScalaObjectMapper
+    val mapper = new ObjectMapper
+//    val module = new TupleModule
+//                    with OptionModule
+//                    with MapModule
+//                    with SeqModule
+//                    with EnumerationModule
+//                    with deser.ScalaStdValueInstantiatorsModule
+//                    with introspect.ScalaClassIntrospectorModule
 
     mapper.registerModule(DefaultScalaModule)
+    
+    import com.fasterxml.jackson.annotation.JsonAutoDetect
 
     def encode[T](v: T) =
       mapper.writeValueAsString(v)

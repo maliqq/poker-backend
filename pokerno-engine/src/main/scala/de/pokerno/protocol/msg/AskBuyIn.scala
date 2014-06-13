@@ -1,10 +1,11 @@
 package de.pokerno.protocol.msg
 
-import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.{JsonProperty, JsonUnwrapped}
+
+import de.pokerno.model.seat.Position
 
 sealed case class AskBuyIn(
-    @JsonProperty pos: Int,
-    @JsonProperty player: Player,
+    @JsonUnwrapped position: Position,
     @JsonProperty buy: Tuple2[Decimal, Decimal],
     @JsonProperty available: Decimal) {
 }

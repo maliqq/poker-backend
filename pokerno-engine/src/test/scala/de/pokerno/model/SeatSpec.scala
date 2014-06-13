@@ -3,32 +3,34 @@ package de.pokerno.model
 import org.scalatest._
 import org.scalatest.Matchers._
 
+
 class SeatSpec extends FunSpec {
+  import Seat.State
+  import seat._
 
   describe("Seat") {
     it("toString") {
-      val seat = new Seat
+      val seat = new Empty(-1)
       seat.toString() should equal("(empty)")
     }
     
     it("put") {
-      val seat = new Seat
+      val seat = new Sitting(-1, new Player("1"))
 
-      seat.player = new Player("1")
-      seat.state should equal(Seat.State.Taken)
+      seat.state should equal(State.Taken)
 
       seat.buyIn(1000)
-      seat.state should equal(Seat.State.Ready)
+      seat.state should equal(State.Ready)
 
       seat.playing()
-      seat.state should equal(Seat.State.Play)
+      seat.state should equal(State.Play)
 
       seat.fold
-      seat.state should equal(Seat.State.Fold)
+      seat.state should equal(State.Fold)
 
       seat.playing()
       seat.check
-      seat.state should equal(Seat.State.Bet)
+      seat.state should equal(State.Bet)
 
       seat.playing()
       seat.raise(100)
@@ -45,34 +47,34 @@ class SeatSpec extends FunSpec {
     }
 
     it("all in raise") {
-      val seat = new Seat
-
-      seat.player = new Player("1")
+      val seat = new Sitting(-1, new Player("1"))
 
       seat.buyIn(10)
       seat.raise(10)
-      seat.state should equal(Seat.State.AllIn)
+      seat.state should equal(State.AllIn)
       seat.isCalled(25) should be(true)
     }
 
     it("all in force") {
-      val seat = new Seat
-
-      seat.player = new Player("1")
+      val seat = new Sitting(-1, new Player("1"))
 
       seat.buyIn(10)
 
       seat.playing()
       seat.force(Bet.SmallBlind(10))
-      seat.state should equal(Seat.State.AllIn)
+      seat.state should equal(State.AllIn)
       seat.isCalled(25) should be(true)
 
       seat.playing()
     }
 
     describe("state") {
+      class SeatWithState(var _state: State.Value) extends Seat with States {
+        def stackAmount = 100
+      }
+      
       it("AllIn") {
-        val seat = new Seat(Seat.State.AllIn)
+        val seat = new SeatWithState(State.AllIn)
         seat.isEmpty should be(false)
         seat.isActive should be(true)
         seat.isAllIn should be(true)
@@ -85,7 +87,7 @@ class SeatSpec extends FunSpec {
       }
 
       it("Auto") {
-        val seat = new Seat(Seat.State.Auto)
+        val seat = new SeatWithState(State.Auto)
         seat.isEmpty should be(false)
         seat.isActive should be(false)
         seat.isAllIn should be(false)
@@ -98,7 +100,7 @@ class SeatSpec extends FunSpec {
       }
 
       it("Away") {
-        val seat = new Seat(Seat.State.Away)
+        val seat = new SeatWithState(State.Away)
         seat.isEmpty should be(false)
         seat.isActive should be(false)
         seat.isAllIn should be(false)
@@ -111,7 +113,7 @@ class SeatSpec extends FunSpec {
       }
 
       it("Bet") {
-        val seat = new Seat(Seat.State.Bet)
+        val seat = new SeatWithState(State.Bet)
         seat.isEmpty should be(false)
         seat.isActive should be(false)
         seat.isAllIn should be(false)
@@ -124,7 +126,7 @@ class SeatSpec extends FunSpec {
       }
 
       it("Empty") {
-        val seat = new Seat(Seat.State.Empty)
+        val seat = new SeatWithState(State.Empty)
         seat.isEmpty should be(true)
         seat.isActive should be(false)
         seat.isAllIn should be(false)
@@ -137,7 +139,7 @@ class SeatSpec extends FunSpec {
       }
 
       it("Fold") {
-        val seat = new Seat(Seat.State.Fold)
+        val seat = new SeatWithState(State.Fold)
         seat.isEmpty should be(false)
         seat.isActive should be(false)
         seat.isAllIn should be(false)
@@ -150,7 +152,7 @@ class SeatSpec extends FunSpec {
       }
 
       it("Idle") {
-        val seat = new Seat(Seat.State.Idle)
+        val seat = new SeatWithState(State.Idle)
         seat.isEmpty should be(false)
         seat.isActive should be(false)
         seat.isAllIn should be(false)
@@ -163,7 +165,7 @@ class SeatSpec extends FunSpec {
       }
 
       it("Play") {
-        val seat = new Seat(Seat.State.Play)
+        val seat = new SeatWithState(State.Play)
         seat.isEmpty should be(false)
         seat.isActive should be(true)
         seat.isAllIn should be(false)
@@ -176,7 +178,7 @@ class SeatSpec extends FunSpec {
       }
 
       it("PostBB") {
-        val seat = new Seat(Seat.State.PostBB)
+        val seat = new SeatWithState(State.PostBB)
         seat.isEmpty should be(false)
         seat.isActive should be(true)
         seat.isAllIn should be(false)
@@ -189,7 +191,7 @@ class SeatSpec extends FunSpec {
       }
 
       it("Ready") {
-        val seat = new Seat(Seat.State.Ready)
+        val seat = new SeatWithState(State.Ready)
         seat.isEmpty should be(false)
         seat.isActive should be(false)
         seat.isAllIn should be(false)
@@ -216,8 +218,7 @@ class SeatSpec extends FunSpec {
       }
 
       it("call") {
-        val seat = new Seat
-        seat.player = new Player("1")
+        val seat = new Sitting(-1, new Player("1"))
         seat.buyIn(1000)
         seat.playing()
         seat._canCall(500, 500) should be(true)

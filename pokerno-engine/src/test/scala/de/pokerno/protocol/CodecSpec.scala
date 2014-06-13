@@ -7,6 +7,7 @@ import math.{BigDecimal => Decimal}
 class CodecSpec extends FunSpec {
 
   import de.pokerno.model._
+  import de.pokerno.model.seat._
   import de.pokerno.poker.Deck
   
   object Json extends Codec.Json {
@@ -104,29 +105,34 @@ class CodecSpec extends FunSpec {
       Json.encode(table) should equal("""{"button":0,"seats":[{"state":"empty"}]}""")
     }
     
-    it("Seat") {
-      val seat1 = new Seat()
-      seat1.player = new Player("A")
+    it("Position") {
+      val seat = new Position(1, new Player("A"))
+      Json.encode(seat) should equal("""{"pos":1,"player":"A"}""")
+    }
+    
+    it("Acting") {
+      val seat = new Acting(1, new Player("A"))
+      Json.encode(seat) should equal("""{"pos":1,"player":"A"}""")
+    }
+    
+    it("Sitting") {
+      val seat1 = new Sitting(1, new Player("A"))
       Json.encode(seat1) should equal("""{"state":"taken","player":"A"}""")
       
-      val seat2 = new Seat()
-      seat2.player = new Player("A")
+      val seat2 = new Sitting(1, new Player("A"))
       seat2.offline()
       Json.encode(seat2) should equal("""{"state":"taken","player":"A","offline":true}""")
       
-      val seat3 = new Seat()
-      seat3.player = new Player("A")
+      val seat3 = new Sitting(1, new Player("A"))
       seat3.fold()
       Json.encode(seat3) should equal("""{"state":"fold","player":"A","action":{"fold":true}}""")
       
-      val seat4 = new Seat()
-      seat4.player = new Player("A")
+      val seat4 = new Sitting(1, new Player("A"))
       seat4.buyIn(10000)
       seat4.raise(100)
       Json.encode(seat4) should equal("""{"state":"bet","player":"A","stack":9900.0,"put":100.0,"action":{"raise":100}}""")
       
-      val seat5 = new Seat()
-      seat5.player = new Player("A")
+      val seat5 = new Sitting(1, new Player("A"))
       seat5.buyIn(10000)
       seat5.idle()
       Json.encode(seat5) should equal("""{"state":"idle","player":"A","stack":10000.0}""")
@@ -170,8 +176,7 @@ class CodecSpec extends FunSpec {
       val game = Game(GameType.Texas)
       val stake = Stake(100)
       val round = new gameplay.betting.Round(table, game, stake)
-      val seat = new Seat(1)
-      seat.player = new Player("A")
+      val seat = new Sitting(1, new Player("A"))
       round.requireBet(seat)
       Json.encode(round) should equal("""{"pot":{"side":[],"total":0}}""")
     }

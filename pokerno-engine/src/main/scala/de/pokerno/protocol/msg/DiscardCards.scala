@@ -3,7 +3,7 @@ package de.pokerno.protocol.msg
 import com.fasterxml.jackson.annotation.{JsonProperty, JsonInclude, JsonUnwrapped}
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 
-import de.pokerno.model.Position
+import de.pokerno.model.seat.Position
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 sealed case class DiscardCards(

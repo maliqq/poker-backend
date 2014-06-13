@@ -1,7 +1,9 @@
 package de.pokerno.model.seat
 
-import de.pokerno.model.Seat
+import de.pokerno.model.{Seat, SeatStateRef}
 import math.{BigDecimal => Decimal}
+import com.fasterxml.jackson.annotation.{JsonAutoDetect, JsonIgnore, JsonInclude, JsonProperty, JsonPropertyOrder, JsonGetter}
+import com.fasterxml.jackson.module.scala.JsonScalaEnumeration
 
 trait Transitions {
   class States[T](initial: T) {
@@ -12,10 +14,25 @@ trait Transitions {
 trait States {
 
   import Seat.State
+  import Callbacks._
   
-  def state: State.Value
-  def state_=(v: State.Value)
   def stackAmount: Decimal
+  
+  protected var _state: State.Value
+  @JsonScalaEnumeration(classOf[SeatStateRef]) @JsonProperty def state = _state
+
+  def state_=(_new: State.Value) {
+    val _old = _state
+    if (_old != _new) {
+      stateCallbacks.before(_old, _new)
+      _state = _new
+    }
+    //stateCallbacks.on(_old, _state)
+    //stateCallbacks.after(_old, _state)
+  }
+  
+  @JsonIgnore protected val stateCallbacks = new Callbacks[State.Value]()
+
     
   def isEmpty       = state == State.Empty
   def isTaken       = state == State.Taken

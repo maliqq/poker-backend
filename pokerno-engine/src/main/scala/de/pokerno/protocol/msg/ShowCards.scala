@@ -2,7 +2,7 @@ package de.pokerno.protocol.msg
 
 import com.fasterxml.jackson.annotation.{JsonProperty, JsonUnwrapped}
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
-import de.pokerno.model.Position
+import de.pokerno.model.seat.Position
 
 sealed case class ShowCards(
     @JsonUnwrapped position: Position,

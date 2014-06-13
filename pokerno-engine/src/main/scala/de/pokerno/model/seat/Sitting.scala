@@ -1,18 +1,30 @@
 package de.pokerno.model.seat
 
 import math.{BigDecimal => Decimal}
-import com.fasterxml.jackson.annotation.{JsonAutoDetect, JsonIgnore, JsonInclude, JsonProperty, JsonPropertyOrder}
+import com.fasterxml.jackson.annotation.{JsonAutoDetect, JsonIgnore, JsonIgnoreProperties, JsonInclude, JsonProperty, JsonPropertyOrder, JsonGetter}
+import com.fasterxml.jackson.module.scala.JsonScalaEnumeration
 import de.pokerno.poker.{Cards, MaskedCards, cards2binary}
-import de.pokerno.model.{Player, Bet, Seat}
+import de.pokerno.model.{Player, Bet, Seat, SeatStateRef}
 import de.pokerno.util.Colored._
 
 @JsonPropertyOrder(Array("state","player","stack","put","action"))
-class Sitting(pos: Int, private var _player: Player) extends Seat(pos) with States with Actions with Validations{
+@JsonIgnoreProperties(Array("pos", "raise", "call"))
+class Sitting(
+    _pos: Int,
+    _player: Player,
+    @JsonIgnore protected var _state: Seat.State.Value = Seat.State.Taken
+    ) extends Acting(_pos, _player) with States with Actions with Validations{
   import Seat._
   import Callbacks._
   
-  // STATE
+  def asActing: Acting = {
+    val acting = new Acting(pos, player)
+    call.map { acting.call = _ } 
+    raise.map { acting.raise = _ }
+    acting
+  }
   
+  // STATE
   stateCallbacks.bind(Before) {
     case (_old, _new) ⇒
       warn("seat %s state change: %s -> %s", this, _old, _new)
@@ -26,9 +38,6 @@ class Sitting(pos: Int, private var _player: Player) extends Seat(pos) with Stat
         case _ =>
       }
   }
-  
-  // PLAYER
-  @JsonProperty def player = _player
   
   // PRESENCE
   private var _presence: Option[Presence.Value] = None
@@ -74,14 +83,22 @@ class Sitting(pos: Int, private var _player: Player) extends Seat(pos) with Stat
   
   // STACK
   private var _stack: Option[Decimal] = None
-  @JsonProperty def stack = _stack
+  @JsonGetter def stack = _stack
   def stackAmount: Decimal = _stack.getOrElse(.0)
 
   // PUT
   @JsonIgnore protected var _put: Option[Decimal] = None
-  @JsonProperty def put = _put
+  @JsonGetter def put = _put
   def putAmount: Decimal = _put.getOrElse(.0)
 
+  // ALL IN
+  def allIn: Option[Decimal] = {
+    if (isAllIn) put
+    else None
+  }
+  def allInAmount: Decimal = allIn.getOrElse(.0)
+
+  // TOTAL
   def total = stackAmount + putAmount
   def totalAmount = total
 
@@ -117,38 +134,10 @@ class Sitting(pos: Int, private var _player: Player) extends Seat(pos) with Stat
   
   // ACTION
   @JsonIgnore protected var _action: Option[Bet] = None
-  @JsonProperty def action = _action
+  @JsonGetter def action = _action
   
   def clearAction() {
     _put = None; _action = None; _call = None; _raise = None
-  }
-  
-  // RAISE
-  @JsonIgnore protected var _raise: Option[Tuple2[Decimal, Decimal]] = None
-  @JsonIgnore def raise = _raise
-  def disableRaise() {
-    _raise = None
-  }
-  def raise_=(range: Tuple2[Decimal, Decimal]) = {
-    _raise = Some(range)
-  }
-
-  // CALL
-  @JsonIgnore protected var _call: Option[Decimal] = None
-  @JsonIgnore def call = _call
-  def callAmount: Decimal = call.getOrElse(.0)
-  def call_=(amt: Decimal) = _call = Some(amt)
-  // ALL IN
-  def allIn: Option[Decimal] = {
-    if (isAllIn) put
-    else None
-  }
-  def allInAmount: Decimal = allIn.getOrElse(.0)
-
-  // RAISE/CALL
-  def notActing() {
-    _raise = None
-    _call = None
   }
   
   // CARDS
@@ -169,7 +158,7 @@ class Sitting(pos: Int, private var _player: Player) extends Seat(pos) with Stat
     _cards.map { _./:(indexes) }
   }
   
-  @JsonProperty def cards = _cards.map { _.masked }
+  @JsonGetter def cards = _cards.map { _.masked }
   def clearCards() = {
     _cards = None
     _masks = Array()
@@ -177,7 +166,7 @@ class Sitting(pos: Int, private var _player: Player) extends Seat(pos) with Stat
 
   override def toString = {
     val b = new StringBuilder
-    b.append("%s (%s) [".format(_player, _state))
+    b.append("%s (%s) [".format(player, _state))
     b.append("%.2f - %.2f".format(stackAmount, putAmount))
     if (_call.isDefined) b.append(" / call: %.2f".format(_call.get))
     if (_raise.isDefined) b.append(" / raise: %.2f..%.2f".format(_raise.get._1, _raise.get._2))

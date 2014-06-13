@@ -1,15 +1,11 @@
 package de.pokerno.protocol.msg
 
 import com.fasterxml.jackson.annotation.{JsonProperty, JsonUnwrapped}
-import de.pokerno.model.{Seat, Position}
-import de.pokerno.model.seat.Sitting
+import de.pokerno.model.Seat
+import de.pokerno.model.seat.{Sitting, Position}
 
 abstract class PlayerStateEvent extends GameEvent {
   val position: Position
-}
-
-object PlayerJoin {
-  def apply(sitting: Sitting): PlayerJoin = PlayerJoin(sitting, sitting.stackAmount)
 }
 
 sealed case class PlayerJoin(

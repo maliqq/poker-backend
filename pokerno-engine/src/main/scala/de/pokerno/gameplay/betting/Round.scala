@@ -8,8 +8,8 @@ import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnore, JsonInclude}
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import math.{ BigDecimal ⇒ Decimal }
 
-class Seat2Acting extends com.fasterxml.jackson.databind.util.StdConverter[Option[Seat], Option[ActingSeat]] {
-  override def convert(seat: Option[Seat]): Option[ActingSeat] = seat.map(ActingSeat.seat2acting(_))
+class Sitting2Acting extends com.fasterxml.jackson.databind.util.StdConverter[Option[seat.Sitting], Option[seat.Acting]] {
+  override def convert(sitting: Option[seat.Sitting]): Option[seat.Acting] = sitting.map(_.asActing)
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -22,7 +22,7 @@ class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
   @JsonProperty def current = acting map(_.pos)
   
   private var _acting: Option[seat.Sitting] = None
-  @JsonSerialize(converter = classOf[Seat2Acting]) def acting = _acting
+  @JsonSerialize(converter = classOf[Sitting2Acting]) def acting = _acting
   
   private def acting(sitting: seat.Sitting, call: Decimal) {
     _acting.map(_.notActing())

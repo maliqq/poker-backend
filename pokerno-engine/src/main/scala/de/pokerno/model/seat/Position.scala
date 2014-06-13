@@ -1,5 +1,16 @@
 package de.pokerno.model.seat
 
-abstract class Position(private val _pos: Int = -1) {
-  def pos = _pos
+import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnore, JsonGetter, JsonAutoDetect}
+import de.pokerno.model.{Player, Seat}
+
+class Position(
+    pos: Int,
+    private val _player: Player
+  ) extends Seat(pos) {
+  
+  // POS
+  @JsonGetter def pos = _pos
+  
+  // PLAYER
+  @JsonGetter def player: Player = _player
 }

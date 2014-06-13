@@ -22,10 +22,11 @@ abstract class DealCards(
     }
 }
 
-import de.pokerno.model.{Seat, Position}
+import de.pokerno.model.Seat
+import de.pokerno.model.seat.{Sitting, Position}
 
 object DealHole {
-  def apply(seat: Seat, cards: Either[Cards, Int]): DealHole = new DealHole(seat, cards)
+  def apply(pos: Position, cards: Either[Cards, Int]): DealHole = new DealHole(pos, cards)
   def unapply(v: DealHole): Option[(Position, Either[Cards, Int])] = Some((
       v.position,
       if (v.cardsNum.isDefined) Right(v.cardsNum.get)
@@ -39,7 +40,7 @@ sealed class DealHole(
   ) extends DealCards(_cards)
 
 object DealDoor {
-  def apply(seat: Seat, cards: Either[Cards, Int]): DealDoor = new DealDoor(seat, cards)
+  def apply(pos: Position, cards: Either[Cards, Int]): DealDoor = new DealDoor(pos, cards)
   def unapply(v: DealDoor): Option[(Position, Either[Cards, Int])] = Some((
       v.position,
       if (v.cardsNum.isDefined) Right(v.cardsNum.get)

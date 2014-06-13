@@ -13,7 +13,7 @@ class Table(@JsonIgnore val size: Int) {
   import Table._
   
   private val _seats: collection.mutable.MutableList[Seat] =
-    collection.mutable.MutableList.tabulate(size) { i => new EmptySeat(i) }
+    collection.mutable.MutableList.tabulate(size) { i => seat.Empty(i) }
 
   // BUTTON
   private val _button = new Ring(seats)
@@ -51,17 +51,17 @@ class Table(@JsonIgnore val size: Int) {
   def takeSeat(pos: Int, player: Player, amount: Option[Decimal] = None) = {
     if (hasPlayer(player))
       throw AlreadyJoined()
-    val newSeat = new seat.Sitting(pos, player)
-    amount map (newSeat buyIn (_))
+    val sitting = new seat.Sitting(pos, player)
+    amount map (sitting buyIn (_))
     addPlayer(pos, player)
-    _seats(pos) = newSeat
-    newSeat
+    _seats(pos) = sitting
+    sitting
   }
 
   def clearSeat(pos: Int): Unit = seats(pos) match {
     case sitting: seat.Sitting =>
       removePlayer(sitting.player)
-      _seats(pos) = new EmptySeat(pos)
+      _seats(pos) = seat.Empty(pos)
     case _ =>
   }
 

@@ -12,15 +12,3 @@ object Mode extends Enumeration {
   val Tournament  = mode("tournament")
 
 }
-
-object BuyIn {
-
-  case class Policy(min: Int, max: Int) {
-    
-    def apply(stake: Stake): Tuple2[Decimal, Decimal] = {
-      (stake.bigBlind * min, stake.bigBlind * max)
-    }
-    
-  }
-  
-}

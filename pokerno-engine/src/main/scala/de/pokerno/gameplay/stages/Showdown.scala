@@ -15,50 +15,32 @@ case class Showdown(ctx: stg.Context) extends Stage {
   import ctx.gameplay._
   
   def apply() = {
-    val stillInPot = table.seats filter (_.inPot)
-    
-    if (stillInPot.size == 1) {
-      declareExclusiveWinner(stillInPot.head, round.pot)
-    } else if (stillInPot.size > 1) {
-      var hiHands: Option[Map[Player, Hand]] = None
-      var loHands: Option[Map[Player, Hand]] = None
-
-      gameOptions.hiRanking match {
-        case Some(ranking) ⇒ hiHands = Some(showHands(ranking))
-        case None          ⇒
-      }
-      gameOptions.loRanking match {
-        case Some(ranking) ⇒ loHands = Some(showHands(ranking))
-        case None          ⇒
-      }
+    val inPot = table.seats find (_.inPot)
+    if (inPot.isDefined) {
+      declareWinner(inPot.get, round.pot)
+    } else {
+      val hiHands = gameOptions.hiRanking.map(showHands(_))
+      val loHands = gameOptions.loRanking.map(showHands(_))
       declareWinners(round.pot, hiHands, loHands)
     }
   }
   
-  // FIXME: equal hands
   private def best(pot: SidePot, hands: Map[Player, Hand]): List[Tuple2[Player, Hand]] = {
-    var winner: Option[Player] = None
-    var best: Option[Hand] = None
-
-    val sorted = hands.filter {
-      case (player, hand) ⇒
-        pot.members.contains(player)
-    }.toList sortBy {
-      case (player, hand) ⇒
-        hand
+    val sorted = hands.filter { case (player, hand) ⇒
+      pot.members.contains(player)
+    }.toList sortBy { case (player, hand) ⇒
+      hand
     } reverse
 
     val max = sorted.head
     sorted.takeWhile(_._2 == max._2)
   }
 
-  private def declareExclusiveWinner(seat: Seat, pot: Pot) = {
-    pot.sidePots foreach { side ⇒
-      val amount = side.total
-      val winner = seat.player.get
-      seat wins amount
-      events broadcast Events.declareWinner(seat, amount)
-    }
+  private def declareWinner(seat: Seat, pot: Pot) = pot.sidePots foreach { side ⇒
+    val amount = side.total
+    val winner = seat.player.get
+    seat wins amount
+    events broadcast Events.declareWinner(seat, amount)
   }
 
   private def declareWinners(pot: Pot, hi: Option[Map[Player, Hand]], lo: Option[Map[Player, Hand]]) = {
@@ -67,38 +49,30 @@ case class Showdown(ctx: stg.Context) extends Stage {
     pot.sidePots foreach { side ⇒
       val total = side.total
 
-      var winnersLow: List[Player] = List.empty
-      var winnersHigh: List[Player] = List.empty
-      var bestLow: Option[Hand] = None
+      val (winnersLow: List[Player], bestLow: Option[Hand]) = lo.map { _lo =>
+        val _best = best(side, _lo)
+        (_best.map(_._1), _best.headOption.map(_._2))
+      } getOrElse((List.empty, None))
 
-      if (lo.isDefined) {
-        val _best = best(side, lo.get)
-        winnersLow = _best.map(_._1)
-        bestLow = Some(_best.head._2)
-      }
-
-      if (hi.isDefined)
-        winnersHigh = best(side, hi.get).map(_._1)
+      val winnersHigh: List[Player] = hi.map { _hi =>
+        best(side, _hi).map(_._1)
+      } getOrElse(List.empty)
 
       def splitWinners(winners: List[Player], amount: Decimal): Map[Player, Decimal] = {
         if (winners.isEmpty)
           return Map.empty // prevent DivisionByZero
 
         val share = amount / winners.length
-        winners.foldLeft[Map[Player, Decimal]](Map.empty) {
-          case (result, winner) ⇒
-            result + (winner -> share)
+        winners.foldLeft[Map[Player, Decimal]](Map.empty) { case (result, winner) ⇒
+          result + (winner -> share)
         }
       }
-
-      var winners: Map[Player, Decimal] = Map.empty
-
+      
       // TODO остаток от деления
-      if (split && bestLow.isDefined) {
-        winners ++= splitWinners(winnersLow, total / 2.0)
-        winners ++= splitWinners(winnersHigh, total / 2.0)
+      val winners: Map[Player, Decimal] = if (split && bestLow.isDefined) {
+        splitWinners(winnersLow, total / 2.0) ++ splitWinners(winnersHigh, total / 2.0)
       } else {
-        winners ++= splitWinners(
+        splitWinners(
           if (hi.isDefined) winnersHigh
           else winnersLow,
           total)
@@ -120,28 +94,24 @@ case class Showdown(ctx: stg.Context) extends Stage {
     if (board.size == 0)
       return (pocket, ranking(pocket).get)
 
-    val hands = if (pocket.size > 2)
-      for {
+    val hands: List[Option[Hand]] = if (pocket.size > 2) {
+      val _hands = for {
         pair ← pocket combinations 2;
         board ← dealer.board combinations 3
-      } yield ranking(pair ++ board).get
+      } yield ranking(pair ++ board)
+      _hands.toList
+    } else List(ranking(pocket ++ board))
 
-    else List(ranking(pocket ++ board).get)
-
-    (pocket, hands.toList.max(Ranking))
+    (pocket, hands.flatten.max(Ranking))
   }
 
-  private def showHands(ranking: Hand.Ranking): Map[Player, Hand] = {
-    var hands: Map[Player, Hand] = Map.empty
-
-    table.seats filter (_.inPot) foreach { seat =>
+  private def showHands(ranking: Hand.Ranking): Map[Player, Hand] =
+    table.seats.filter(_.inPot).foldLeft(Map[Player, Hand]()) { case (hands, seat) =>
       val (pocket, hand) = rank(seat.player get, ranking)
       val player = seat.player.get
-      hands += (player -> hand)
       //events.publish(message.ShowCards(pos = pos, player = player, cards = pocket))
       events broadcast Events.declareHand(seat, pocket, hand)
+      hands + (player -> hand)
     }
-    hands
-  }
 
 }

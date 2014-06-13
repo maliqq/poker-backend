@@ -1,13 +1,8 @@
 package de.pokerno.poker
 
-import collection.mutable.ListBuffer
-
 object Card {
   case class Invalid(value: Any)      extends Exception("invalid card: %s (%s)".format(value, value.getClass.getName))
   case class ParseError(s: String)    extends Exception("can't parse card: %s" format s)
-
-  private var _all: ListBuffer[Card] = new ListBuffer
-  private var _masks: ListBuffer[Int] = new ListBuffer
 
   final val CardsNum = All.size
   final val Masks: Seq[Int] = for {

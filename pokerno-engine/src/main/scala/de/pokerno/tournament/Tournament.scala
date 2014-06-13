@@ -14,11 +14,11 @@ object Tournament {
   }
 
   case class BuyIn(
-      val price: Decimal, // buy in price
-      val stack: Int, // stack for entry and re-entry (rebuy)
-      val fee: Option[Decimal] = None, // buy in fee
-      val addonStack: Option[Int] = None, // stack for add-on
-      val bounty: Option[Decimal] = None // price for knock out
+      price: Decimal, // buy in price
+      stack: Int, // stack for entry and re-entry (rebuy)
+      fee: Option[Decimal] = None, // buy in fee
+      addonStack: Option[Int] = None, // stack for add-on
+      bounty: Option[Decimal] = None // price for knock out
       ) {
   }
 
@@ -27,11 +27,11 @@ object Tournament {
   }
 
   case class RebuysPolicy(
-    val rebuys: Boolean = false,
-    val addons: Boolean = false,
-    val rebuyPeriod: Duration,
-    val addonBreakPeriod: Duration,
-    val maxRebuys: Int)
+    rebuys: Boolean = false,
+    addons: Boolean = false,
+    rebuyPeriod: Duration,
+    addonBreakPeriod: Duration,
+    maxRebuys: Int)
 
   class Level(
       val smallBlind: Int,
@@ -47,8 +47,8 @@ object Tournament {
 }
 
 class Tournament(val game: Game, val buyIn: Tournament.BuyIn, val format: Tournament.Format.Value) extends Actor with ActorLogging {
-  var entries: Map[Player, Tournament.Entry] = Map()
-  val tables: List[Table] = List()
+  val entries: collection.mutable.Map[Player, Tournament.Entry] = collection.mutable.Map.empty
+  val tables: List[Table] = List.empty
 
   override def preStart() {
 

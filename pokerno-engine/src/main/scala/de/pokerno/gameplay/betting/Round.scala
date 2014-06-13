@@ -83,31 +83,27 @@ class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
   def addBet(seat: Seat, _bet: Bet): Bet = {
     val player = seat.player.get
 
-    var _posting = _bet match {
-      case Bet.AllIn =>
-        Bet.raise(seat.total)
-      case Bet.Call(amt) if amt == null || amt == 0 =>
-        Bet.Call(List(callAmount, seat.total).min - seat.putAmount)
-      case _ =>
-        _bet
-    }
+    val posting = {
+      val _posting = seat.posting(_bet)
     
-    if (!seat.canBet(_posting, stake)) {
-      warn("bet %s is not valid; call=%.2f seat=%s\n", _posting, callAmount, seat)
-      _posting = Bet.fold
+      if (seat.canBet(_posting, stake)) _posting
+      else {
+        warn("bet %s is not valid; call=%.2f seat=%s\n", _posting, callAmount, seat)
+        Bet.fold
+      }
     }
 
-    val diff = seat postBet _posting
+    val diff = seat postBet posting
 
-    if (_posting.isActive) {
-      if (_posting.isRaise)
+    if (posting.isActive) {
+      if (posting.isRaise)
         raiseCount += 1
 //      if (!_posting.isCall && seat.putAmount > callAmount)
 //        call = seat.putAmount
       pot add (player, diff, seat.isAllIn)
     }
 
-    _posting
+    posting
   }
 
 }

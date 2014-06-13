@@ -31,10 +31,9 @@ case object Ranking extends Ordering[Hand] {
 
   def compareCards(a: Cards, b: Cards): Int = if (a.size == b.size) {
     var result = 0
-    a.zipWithIndex.takeWhile {
-      case (card, i) ⇒
-        result = card compare b(i)
-        result == 0
+    a.zipWithIndex.takeWhile { case (card, i) ⇒
+      result = card compare b(i)
+      result == 0
     }
     result
   } else {

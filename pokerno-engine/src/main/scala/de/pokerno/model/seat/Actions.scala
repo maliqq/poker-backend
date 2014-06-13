@@ -42,6 +42,15 @@ trait Actions { s: Seat =>
     diff
   }
   
+  def posting(bet: Bet): Bet = bet match {
+    case Bet.AllIn =>
+      Bet.raise(total)
+    case Bet.Call(amt) if amt == null || amt == 0 =>
+      Bet.Call(List(callAmount, total).min - putAmount)
+    case _ =>
+      bet
+  }
+  
   def postBet(bet: Bet): Decimal =
     bet match {
       case Bet.Fold                         ⇒ fold

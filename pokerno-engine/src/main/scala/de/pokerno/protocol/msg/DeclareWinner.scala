@@ -7,5 +7,5 @@ import de.pokerno.model.Position
 sealed case class DeclareWinner(
     @JsonUnwrapped position: Position,
 
-    @JsonProperty var amount: Decimal
+    @JsonProperty amount: Decimal
   ) extends GameEvent {}

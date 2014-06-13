@@ -10,5 +10,5 @@ class AddBetConverter extends com.fasterxml.jackson.databind.util.StdConverter[B
 
 @JsonDeserialize(converter = classOf[AddBetConverter])
 sealed case class AddBet(
-  var bet: Bet
+  bet: Bet
 ) extends PlayerEvent {}

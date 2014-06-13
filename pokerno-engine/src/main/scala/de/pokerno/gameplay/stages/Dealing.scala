@@ -9,8 +9,11 @@ case class Dealing(ctx: stg.Context, _type: DealType.Value, cardsNum: Option[Int
   
   def apply() = _type match {
     case DealType.Hole | DealType.Door ⇒
-      var n: Int = cardsNum getOrElse (0)
-      if (n <= 0 || n > gameOptions.pocketSize) n = game.options.pocketSize
+      val n: Int = {
+        val _n = cardsNum getOrElse (0)
+        if (_n <= 0 || _n > gameOptions.pocketSize) game.options.pocketSize
+        else _n
+      }
 
       table.seats filter (_.isActive) foreach { seat =>
         val player = seat.player.get

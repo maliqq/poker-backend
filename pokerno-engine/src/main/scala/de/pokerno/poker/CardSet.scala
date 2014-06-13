@@ -8,14 +8,11 @@ private[poker] class CardSet(val value: Cards, val ordering: Ordering[Card] = Ac
   lazy val suited = countGroups(groupSuit)
 
   private def countGroups(groups: Map[_ <: Any, Cards]): Map[Int, Seq[Cards]] = {
-    var _counter: Map[Int, Seq[Cards]] = Map.empty
-    groups foreach {
-      case (k, v) ⇒
-        val count = v.size
-        val group = _counter getOrElse (count, Seq.empty)
-        _counter += (count -> (group ++ Seq(v)))
+    groups.foldLeft(Map[Int, Seq[Cards]]()) { case (_counter, (k, v)) =>
+      val count = v.size
+      val group = _counter getOrElse (count, Seq.empty)
+      _counter + (count -> (group ++ Seq(v)))
     }
-    _counter
   }
 
   private def groupByGaps: Seq[Cards] = {

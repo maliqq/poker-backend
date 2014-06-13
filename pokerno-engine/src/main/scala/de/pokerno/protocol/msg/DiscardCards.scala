@@ -11,5 +11,5 @@ sealed case class DiscardCards(
 
     @JsonSerialize(converter = classOf[Cards2Binary]) var cards: Cards = null,
 
-    @JsonProperty var cardsNum: Option[Int] = None
+    @JsonProperty cardsNum: Option[Int] = None
   ) extends GameEvent {}

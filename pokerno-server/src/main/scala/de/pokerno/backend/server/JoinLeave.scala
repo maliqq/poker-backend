@@ -25,11 +25,10 @@ trait JoinLeave { room: Room =>
   } 
 
   protected def leavePlayer(player: Player) {
-    table.playerPos(player) map { pos =>
-      val seat = table.seats(pos)
+    table.playerSeat(player) map { seat =>
       if (seat.canLeave || notRunning) {
         events broadcast gameplay.Events.playerLeave(seat)
-        table.clearSeat(pos)
+        table.clearSeat(seat.pos)
       } else running.map { case Running(ctx, ref) =>
         ref ! gameplay.Betting.Cancel(player)
       }

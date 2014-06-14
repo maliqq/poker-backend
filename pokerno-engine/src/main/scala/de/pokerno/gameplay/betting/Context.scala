@@ -1,21 +1,17 @@
 package de.pokerno.gameplay.betting
 
-import org.slf4j.LoggerFactory
 import de.pokerno.model.{Player, Bet, Seat}
+import de.pokerno.gameplay.round.{Context => RoundContext}
 import de.pokerno.gameplay.{Betting, Context => Gameplay}
 import de.pokerno.util.Colored._ 
 import akka.actor.{ActorRef, Cancellable}
 import concurrent.duration._
 
-class Context(val gameplay: Gameplay, ref: ActorRef) extends Betting {
+class Context(_gameplay: Gameplay, ref: ActorRef) extends RoundContext(_gameplay) with Betting {
   
   import gameplay._
   
   override def round = bettingRound
-
-  private val log = LoggerFactory.getLogger(getClass)
-  
-  var timer: Option[Cancellable] = None
   
   // turn on big bets
   def bigBets() {
@@ -38,7 +34,7 @@ class Context(val gameplay: Gameplay, ref: ActorRef) extends Betting {
     }
   
   //
-  def cancel(player: Player): Unit = round.acting match {
+  def cancel(player: Player) = round.acting match {
     case Some(seat) =>
       if (seat.player == player) {
         // leaving currently acting player: just fold
@@ -52,7 +48,7 @@ class Context(val gameplay: Gameplay, ref: ActorRef) extends Betting {
   }
   
   // timeout bet
-  def timeout(): Unit = round.acting match {
+  def timeout() = round.acting match {
     case Some(seat) =>
       val bet: Bet = seat.state match {
         case Seat.State.Away ⇒

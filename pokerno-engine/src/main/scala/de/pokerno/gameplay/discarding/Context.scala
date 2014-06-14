@@ -1,40 +1,40 @@
 package de.pokerno.gameplay.discarding
 
 import akka.actor.{ActorRef, Cancellable}
-import org.slf4j.LoggerFactory
+
 import de.pokerno.gameplay.{Discarding, Context => Gameplay}
+import de.pokerno.gameplay.round.{Context => RoundContext}
 import de.pokerno.poker.Cards
 import de.pokerno.model.Player
 
-class Context(val gameplay: Gameplay, ref: ActorRef) extends Discarding {
+class Context(_gameplay: Gameplay, ref: ActorRef) extends RoundContext(_gameplay) with Discarding {
   
   import gameplay._
   
   override def round = discardingRound
   
-  private val log = LoggerFactory.getLogger(getClass)
-  
-  var timer: Option[Cancellable] = None
-  
   def nextTurn(): Discarding.Transition = NextTurn.decide(round.seats.filter(_.inPot))
   
-  def add(player: Player, cards: Cards) = round.discarding match {
-    case Some(sitting) =>
+  def discard(player: Player, cards: Cards) = round.acting match {
+    case Some(sitting) if sitting.player == player =>
+      timer.map(_.cancel())
       discardCards(sitting, cards)
+      ref ! nextTurn()
       
     case None =>
   }
   
-  def cancel() = round.discarding match {
-    case Some(sitting) =>
-      standPat(sitting)
-      
-    case none =>
+  def cancel(player: Player) = round.acting match {
+    case Some(sitting) if sitting.player == player =>
+      // TODO player left
+    case None =>
   }
   
-  def timeout() = round.discarding match {
+  def timeout() = round.acting match {
     case Some(sitting) =>
       standPat(sitting)
+      ref ! nextTurn()
+      
     case None =>
   }
   

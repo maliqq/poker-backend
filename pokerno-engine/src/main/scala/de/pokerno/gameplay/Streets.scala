@@ -84,7 +84,9 @@ object Streets {
       }
 
       if (options.discarding) {
-        builder.process("discarding") { ctx ⇒  }
+        builder.process("discarding") { ctx ⇒
+          ctx.ref ! Discarding.Start
+        }
       }
 
       new StreetStages(street, builder.build())

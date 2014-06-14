@@ -2,7 +2,7 @@ package de.pokerno.replay
 
 import org.slf4j.LoggerFactory
 import de.pokerno.gameplay
-import de.pokerno.gameplay.{Betting => BettingTransition}
+import de.pokerno.gameplay.Round
 import gameplay.betting.NextTurn
 import de.pokerno.gameplay.stg
 import de.pokerno.protocol.cmd
@@ -104,7 +104,7 @@ private[replay] case class Betting(
     // активные ставки игроков
     if (!activeBets.isEmpty) {
       nextTurn() match {
-        case BettingTransition.Require(seat) =>
+        case Round.Require(seat) =>
           requireBet(seat)
         
         case _ =>
@@ -122,7 +122,7 @@ private[replay] case class Betting(
 
           sleep()
 
-          nextTurn() match { case BettingTransition.Require(seat) ⇒
+          nextTurn() match { case Round.Require(seat) ⇒
             // continue if we have someone to act
             requireBet(seat)
             true

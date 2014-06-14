@@ -2,7 +2,7 @@ package de.pokerno.gameplay.betting
 
 import akka.actor.{ Actor, Cancellable }
 import concurrent.duration._
-import de.pokerno.gameplay.Betting
+import de.pokerno.gameplay.{Betting, Round => GameplayRound}
 
 trait Timer { a: Actor ⇒
 
@@ -18,7 +18,7 @@ trait Timer { a: Actor ⇒
       if (ticks >= maxTicks) {
         timer.cancel()
         ticks = 0
-        self ! Betting.Timeout
+        self ! GameplayRound.Timeout
       }
     }
   }

@@ -1,41 +1,22 @@
 package de.pokerno.gameplay.betting
 
-import org.slf4j.LoggerFactory
 import de.pokerno.model._
-import de.pokerno.gameplay.{Context => Gameplay}
+import de.pokerno.gameplay.{Context => Gameplay, Round => GameplayRound}
 import de.pokerno.util.Colored._
 import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnore, JsonInclude, JsonGetter}
-import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import math.{ BigDecimal ⇒ Decimal }
 
-class Sitting2Acting extends com.fasterxml.jackson.databind.util.StdConverter[Option[seat.Sitting], Option[seat.Acting]] {
-  override def convert(sitting: Option[seat.Sitting]): Option[seat.Acting] = sitting.map(_.asActing)
-}
-
 @JsonInclude(JsonInclude.Include.NON_NULL)
-class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
-  private val log = LoggerFactory.getLogger(getClass)
-  
-  private var _seats = table.sittingFromButton
-  def seats = _seats
-  
-  private var _acting: Option[seat.Sitting] = None
-  @JsonSerialize(converter = classOf[Sitting2Acting]) def acting = _acting
-  
-  @JsonGetter def current = acting map(_.pos)
-  
-  private def acting(sitting: seat.Sitting, call: Decimal) {
-    _acting.map(_.notActing())
-    _seats = table.sittingFrom(sitting.pos)
-    _acting = Some(sitting)
-    sitting.call = call
+class Round(_table: Table, game: Game, stake: Stake) extends GameplayRound(_table) {
+  protected override def acting_=(sitting: seat.Sitting) {
+    acting.map(_.notBetting())
+    super.acting = sitting
   }
   
-  def reset() {
+  override def reset() {
+    super.reset()
     raiseCount = 0
     _cachedCallAmount = 0
-    _acting = None
-    _seats = table.sittingFromButton
     pot.complete()
   }
   
@@ -56,7 +37,8 @@ class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
     
     _cachedCallAmount = amount
     
-    acting(sitting, amount)
+    sitting.call = amount
+    acting = sitting
 
     val stack = sitting.stackAmount
     val amt = List(stack, amount) min
@@ -69,7 +51,8 @@ class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
     // current amount to call
     val amount = _cachedCallAmount//_seats.filter(_.inPot).map(_.putAmount).max
     
-    acting(sitting, amount)
+    sitting.call = amount
+    acting = sitting
     
     val total = sitting.total
     if (total <= amount || raiseCount >= MaxRaiseCount)

@@ -30,14 +30,8 @@ trait Discarding {
 
 object Discarding {
   
+  case object Start
   
   case class Discard(player: Player, cards: Cards)
-  
-  trait Transition
-  case class Require(sitting: seat.Sitting) extends Transition
-  case object Stop extends Transition
-  case object Done extends Transition
-  
-  case object Timeout
   
 }

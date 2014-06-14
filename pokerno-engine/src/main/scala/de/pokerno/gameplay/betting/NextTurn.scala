@@ -2,16 +2,16 @@ package de.pokerno.gameplay.betting
 
 import concurrent.duration._
 import math.{BigDecimal => Decimal}
-import de.pokerno.gameplay.{Betting, stg, Context => Gameplay}
+import de.pokerno.gameplay.{Betting, stg, Context => Gameplay, Round => GameplayRound}
 import de.pokerno.util.Colored._
 
 object NextTurn {
   import de.pokerno.model.seat.Sitting
   
-  def decide(all: Seq[Sitting], call: Decimal): Betting.Transition = {
+  def decide(all: Seq[Sitting], call: Decimal): GameplayRound.Transition = {
     if (all.size < 2) {
       // no one to act, winner is last active player 
-      return Betting.Stop
+      return GameplayRound.Stop
     }
 
     val (_called, notCalled) = all.partition(_.isCalled(call))
@@ -24,7 +24,7 @@ object NextTurn {
           if (called.forall(_.isAllIn))
             Betting.Showdown
           else
-            Betting.Require(playing)
+            GameplayRound.Require(playing)
         )
     }
     
@@ -33,7 +33,7 @@ object NextTurn {
           if (called.exists(_.isAllIn))
             Betting.Showdown
           else
-            Betting.Done
+            GameplayRound.Done
         )
     }
     
@@ -47,6 +47,6 @@ object NextTurn {
     }
     
     // FIXME: everyone all-in
-    Betting.Require(playing)
+    GameplayRound.Require(playing)
   }
 }

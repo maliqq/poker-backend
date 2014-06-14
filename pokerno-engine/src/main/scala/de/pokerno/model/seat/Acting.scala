@@ -27,7 +27,7 @@ class Acting(_pos: Int, _player: Player) extends Position(_pos, _player) {
   def call_=(amt: Decimal) = _call = Some(amt)
 
   // RAISE/CALL
-  def notActing() {
+  def notBetting() {
     _raise = None
     _call = None
   }

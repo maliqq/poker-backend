@@ -60,18 +60,9 @@ object Betting {
   // eject player from betting round
   case class Cancel(player: Player)
 
-  trait Transition
-  // require bet from this position
-  case class Require(sitting: seat.Sitting) extends Transition
-  // stop current deal
-  case object Stop extends Transition
   // go to showdown
-  case object Showdown extends Transition
-  // betting done - wait for next street to occur
-  case object Done extends Transition
+  case object Showdown extends Round.Transition
 
-  // betting timeout - go to next seat
-  case object Timeout
   // turn on big bet mode
   case object BigBets
 

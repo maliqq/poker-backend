@@ -40,13 +40,16 @@ class Deal(val gameplay: Context) extends Actor
   
   import context._
   
-  val ctx = new stg.Context(gameplay, self)
-  val btx = new betting.Context(gameplay, self)
+  val gameplayContext = new stg.Context(gameplay, self)
   
-  lazy private val onStreets = Streets(ctx)
+  var roundContext: round.Context = null
+  val bettingContext = new betting.Context(gameplay, self)
+  val discardingContext = new discarding.Context(gameplay, self)
+  
+  lazy private val onStreets = Streets(gameplayContext)
   
   override def preStart() {
-    beforeStreets.apply(ctx) match {
+    beforeStreets.apply(gameplayContext) match {
       case Stage.Next ⇒
         self ! Streets.Next
       case Stage.Exit ⇒
@@ -63,10 +66,14 @@ class Deal(val gameplay: Context) extends Actor
   def receiveStreets: Receive = {
     case Betting.Start ⇒
       log.info("[betting] start")
-      // FIXME
-      //gameplay.round.reset()
-      context.become(receiveBets)
-      self ! btx.nextTurn()
+      roundContext = bettingContext
+      context.become(receiveRound orElse receiveBets)
+      self ! roundContext.nextTurn()
+    
+    case Discarding.Start =>
+      log.info("[discarding] start")
+      context.become(receiveRound orElse receiveDiscards)
+      self ! roundContext.nextTurn()
 
     case Streets.Next ⇒
       log.info("[streets] next")
@@ -74,49 +81,56 @@ class Deal(val gameplay: Context) extends Actor
 
     case Streets.Done ⇒
       log.info("[streets] done")
-      afterStreets.apply(ctx)
+      afterStreets.apply(gameplayContext)
       done()
+  }
+  
+  def receiveRound: Receive = {
+    case Round.Require(seat) ⇒
+      roundContext.require(seat)
+      roundContext.timer = Some(
+          system.scheduler.scheduleOnce(30 seconds, self, Round.Timeout)
+          )
+
+    case Round.Timeout ⇒
+      log.info("[round] timeout")
+      roundContext.timeout()
+      
+    case Round.Stop ⇒
+      log.info("[round] stop")
+      roundContext.complete()
+      context.become(receiveStreets)
+      self ! Streets.Done
+
+    case Round.Done ⇒
+      log.info("[betting] done")
+      roundContext.complete()
+      context.become(receiveStreets)
+      onStreets.apply()
   }
   
   def receiveBets: Receive = {
     case Betting.Add(player, bet) ⇒
-      btx.add(player, bet)
+      bettingContext.add(player, bet)
     
     case Betting.Cancel(player) =>
-      btx.cancel(player)
-      
-    case Betting.Stop ⇒
-      log.info("[betting] stop")
-      btx.complete()
-      context.become(receiveStreets)
-      self ! Streets.Done
+      bettingContext.cancel(player)
 
     case Betting.Showdown ⇒
       log.warning("[betting] showdown")
-      btx.complete()
+      bettingContext.complete()
       context.become(receiveStreets)
       //self ! Streets.Next
       system.scheduler.scheduleOnce(1.second, self, Streets.Next)
 
-    case Betting.Done ⇒
-      log.info("[betting] done")
-      btx.complete()
-      context.become(receiveStreets)
-      onStreets.apply()
-
-    case Betting.Require(seat) ⇒
-      btx.requireBet(seat)
-      btx.timer = Some(
-          system.scheduler.scheduleOnce(30 seconds, self, Betting.Timeout)
-          )
-
-    case Betting.Timeout ⇒
-      log.info("[betting] timeout")
-      btx.timeout()
-
     case Betting.BigBets ⇒
       log.info("[betting] big bets")
-      btx.bigBets()
+      bettingContext.bigBets()
+  }
+  
+  def receiveDiscards: Receive = {
+    case Discarding.Discard(player, cards) =>
+      discardingContext.discard(player, cards)
   }
 
   private def cancel() {

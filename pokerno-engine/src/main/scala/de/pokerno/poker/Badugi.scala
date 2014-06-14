@@ -3,7 +3,7 @@ package de.pokerno.poker
 private[poker] trait BadugiHand { self: CardSet ⇒
   
   import Rank.Badugi._
-
+  
   def isBadugiOne: Option[Hand] =
     if (groupKind.size == 1) {
       hand(value = value take (1)).map(_.ranked(BadugiOne))
@@ -11,50 +11,48 @@ private[poker] trait BadugiHand { self: CardSet ⇒
       val card = groupSuit.values.head.min
 
       hand(value = List(card)).map(_.ranked(BadugiOne))
-    } else
-      None
+    } else None
 
   def isBadugiFour: Option[Hand] =
     if (groupKind.size == 4 && groupSuit.size == 4)
       hand(value = value).map(_.ranked(BadugiFour))
-    else
-      None
+    else None
 
   def isBadugiThree: Option[Hand] = {
     val _paired = paired get 2
     val _suited = suited get 2
 
     if (_paired.isEmpty && _suited.isEmpty ||
-      _suited.isDefined && _suited.get.size != 1 ||
-      _paired.isDefined && _paired.get.size != 1)
+      _suited.map { _.size != 1 }.getOrElse(false) ||
+      _paired.map { _.size != 1 }.getOrElse(false))
       return None
-
-    val (a: Card, b: Card, c: Card) = if (_paired.isDefined) {
-
-      val v = _paired.get.head
+    
+    val pairedThree = (v: Cards) => {
+      val a = v.head
       val d = value diff v
-
-      val _a = v.head
-      val Seq(_b, _c, _*) = d.filter { card ⇒ _a.kind != card.kind }
-      if (_b.suit == _c.suit)
+      val Seq(b, c, _*) = d.filter { a.kind != _.kind }
+      
+      if (b.suit == c.suit)
         return None
 
-      (if (_a.suit == _b.suit || _a.suit == _c.suit) v(1) else _a, _b, _c)
-
-    } else {
-
-      val v = _suited.get.head
+      (if (a.suit == b.suit || a.suit == c.suit) v(1) else a, b, c)
+    }: Card3
+    
+    val suitedThree = (v: Cards) => {
       val d = value diff v
+      val a = v.min
+      val Seq(b, c, _*) = d.filter { a.suit != _.suit }
 
-      val _a = v.min
-
-      val Seq(_b, _c, _*) = d.filter { card ⇒ _a.suit != card.suit }
-
-      if (_b.kind == _c.kind)
+      if (b.kind == c.kind)
         return None
 
-      (_a, _b, _c)
+      (a, b, c)
+    }: Card3
 
+    val (a: Card, b: Card, c: Card) = _paired.map { case (v::_) =>
+      pairedThree(v)
+    } getOrElse {
+      suitedThree(_suited.get.head)
     }
 
     hand(value = List(a, b, c)).map(_.ranked(BadugiThree))
@@ -62,40 +60,51 @@ private[poker] trait BadugiHand { self: CardSet ⇒
 
   def isBadugiTwo: Option[Hand] = {
     val sets = paired get 3
-
-    val (a: Card, b: Card) = if (sets.isDefined) {
-      val v = sets.get.head
+    
+    def threeKind(v: Cards): Card2 = {
       val d = value diff v
-      val _a = d.head
-
-      (_a, v.filter { card ⇒ _a.suit != card.suit }.head)
-
-    } else if (suited contains 3) {
-
-      val _suited = suited(3)
-
+      val a = d.head
+      val b = v.find { a.suit != _.suit }.get
+      
+      (a, b)
+    }
+    
+    def threeFlush(_suited: Seq[Cards]): Card2 = {
       val v = _suited.head
       val d = value diff v
-      val _a = d.head
+      val a = d.head
+      val b = v.filter { a.kind != _.kind }.min
 
-      (_a, v.filter { card ⇒ _a.kind != card.kind }.min)
-
-    } else if (groupSuit.size > 0) {
-
-      val v = groupSuit.values.head
-      val d = value diff v
-      val _a = v.min
-
-      (_a, d.filter { card ⇒ _a.suit != card.suit && _a.kind != card.kind }.min)
-
-    } else {
-
-      val v = groupKind(0)
-      val d = value diff v
-      val _a = v.head
-
-      (_a, d.filter { card ⇒ _a.kind != card.kind }.min)
+      (a, b)
     }
+    
+    def twoKind(v: Cards): Card2 = {
+      val d = value diff v
+      val a = v.head
+      val b = d.filter { a.kind != _.kind }.min
+      
+      (a, b)
+    }
+    
+    def twoFlush(v: Cards): Card2 = {
+      val d = value diff v
+      val a = v.min
+      val b = d.filter { card ⇒ a.suit != card.suit && a.kind != card.kind }.min
+
+      (a, b)
+    }
+
+    val (a: Card, b: Card) = sets.map { case (v :: _) =>
+      threeKind(v)
+    } getOrElse {
+      suited.get(3).map {
+        threeFlush(_)
+      } getOrElse {
+        if (groupSuit.size > 0)   twoFlush(groupSuit.values.head)
+        else                      twoKind(groupKind(0))
+      }
+    }
+    
     hand(value = List(a, b)).map(_.ranked(BadugiTwo))
   }
 

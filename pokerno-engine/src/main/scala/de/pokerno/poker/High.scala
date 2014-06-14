@@ -14,9 +14,9 @@ private[poker] trait HighHand { self: CardSet ⇒
   def isFourKind: Option[Hand] = paired get 4 map { quads =>
     val cards = quads.head
     hand(
-        value = cards,
-        high = Left(cards),
-        kicker = Right(true)
+        value   = cards,
+        high    = Left(cards),
+        kicker  = Right(true)
       ).map(_.ranked(FourKind))
   } getOrElse(None)
 
@@ -34,33 +34,33 @@ private[poker] trait HighHand { self: CardSet ⇒
       }
     }
     hand(
-        value = major ++ minor,
-        high = Left(List(major head, minor head))
+        value   = major ++ minor,
+        high    = Left(List(major head, minor head))
       ).map(_.ranked(FullHouse))
   } getOrElse(None)
 
   def isFlush: Option[Hand] = suited find { _._1 >= 5 } map { group =>
     val cards = group._2.head.sorted.reverse
     hand(
-        value = cards.take(5),
-        high = Left(cards.take(1))
+        value   = cards.take(5),
+        high    = Left(cards.take(1))
       ).map(_.ranked(Flush))
   } getOrElse(None)
 
   def isStraight: Option[Hand] = gaps find { _.size >= 5 } map { group => // FIXME sorted for Ace low
     val cards = group.reverse
     hand(
-        value = cards take 5,
-        high = Left(cards take 1)
+        value   = cards take 5,
+        high    = Left(cards take 1)
       ).map(_.ranked(Straight))
   } getOrElse(None)
 
   def isThreeKind: Option[Hand] = paired get 3 map { sets =>
     if (sets.size == 1)
       hand(
-          value = sets head,
-          high = Right(true),
-          kicker = Right(true)
+          value   = sets head,
+          high    = Right(true),
+          kicker  = Right(true)
         ).map(_.ranked(ThreeKind))
     else None
   } getOrElse(None)
@@ -69,18 +69,18 @@ private[poker] trait HighHand { self: CardSet ⇒
     if (pairs.size >= 2) {
       val Seq(major, minor, _*) = pairs.sorted(CardOrdering.ByMax).reverse
       hand(
-          value = major ++ minor,
-          high = Left(List(major head, minor head)),
-          kicker = Right(true)).map(_.ranked(TwoPair))
+          value   = major ++ minor,
+          high    = Left(List(major head, minor head)),
+          kicker  = Right(true)).map(_.ranked(TwoPair))
     } else None
   } getOrElse(None)
 
   def isOnePair: Option[Hand] = paired get 2 map { pairs =>
     if (pairs.size == 1)
       hand(
-          value = pairs head,
-          high = Right(true),
-          kicker = Right(true)
+          value   = pairs head,
+          high    = Right(true),
+          kicker  = Right(true)
         ).map(_.ranked(OnePair))
     else None
   } getOrElse(None)
@@ -88,9 +88,9 @@ private[poker] trait HighHand { self: CardSet ⇒
   def isHighCard: Option[Hand] = {
     val highest = value.max(ordering)
     hand(
-        value = List(highest),
-        high = Right(true),
-        kicker = Right(true)
+        value     = List(highest),
+        high      = Right(true),
+        kicker    = Right(true)
       ).map(_.ranked(HighCard))
   }
 

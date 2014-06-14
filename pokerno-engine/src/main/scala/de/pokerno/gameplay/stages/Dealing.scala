@@ -20,6 +20,7 @@ case class Dealing(ctx: stg.Context, _type: DealType.Value, cardsNum: Option[Int
         val cards = dealer dealPocket (n, player)
         
         assert(cards.size == n)
+        assert(cards.forall { _.toByte != 0 })
 
         if (_type == DealType.Hole) {
           seat.hole(cards)
@@ -36,7 +37,9 @@ case class Dealing(ctx: stg.Context, _type: DealType.Value, cardsNum: Option[Int
       val cards = dealer dealBoard (cardsNum.get)
     
       assert(cards.size == cardsNum.get)
+      assert(cards.forall { _.toByte != 0 })
     
+      play.board ++= cards.toBuffer
       events broadcast Events.dealBoard(cards)
 
     case _ ⇒

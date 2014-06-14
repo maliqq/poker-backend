@@ -23,12 +23,14 @@ trait Betting {
   def addBet(sitting: seat.Sitting, bet: Bet, timeout: Boolean = false, forced: Boolean = false) {
     val posted = round.addBet(sitting, bet)
     val _timeout = if (timeout) Some(true) else None
+    play.action(sitting.player, posted)
     events broadcast Events.addBet(sitting, posted, _timeout)
   }
 
   // force bet
   def forceBet(sitting: seat.Sitting, betType: BetType.Forced) {
     val posted = round.forceBet(sitting, betType)
+    play.action(sitting.player, posted)
     events broadcast Events.addBet(sitting, posted)
   }
 

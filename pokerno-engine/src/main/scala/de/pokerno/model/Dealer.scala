@@ -6,9 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 class Dealer(private val _deck: Deck = new Deck) {
 
   private var _board: Cards = Cards.empty
-  
   def board = _board
-  @JsonProperty("board") def boardAsBytes: Array[Byte] = _board
 
   private var _pockets: collection.mutable.Map[Player, Cards] = collection.mutable.Map.empty
   

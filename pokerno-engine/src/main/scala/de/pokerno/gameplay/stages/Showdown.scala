@@ -17,11 +17,11 @@ case class Showdown(ctx: stg.Context) extends Stage {
   def apply() = {
     val inPot = table.sitting filter (_.inPot)
     if (inPot.size == 1) {
-      declareWinner(inPot.head, round.pot)
+      winner(inPot.head, round.pot)
     } else {
       val hiHands = gameOptions.hiRanking.map(showHands(_))
       val loHands = gameOptions.loRanking.map(showHands(_))
-      declareWinners(round.pot, hiHands, loHands)
+      winners(round.pot, hiHands, loHands)
     }
   }
   
@@ -36,14 +36,14 @@ case class Showdown(ctx: stg.Context) extends Stage {
     sorted.takeWhile(_._2 == max._2)
   }
 
-  private def declareWinner(sitting: seat.Sitting, pot: Pot) = pot.sidePots foreach { side ⇒
+  private def winner(sitting: seat.Sitting, pot: Pot) = pot.sidePots foreach { side ⇒
     val amount = side.total
     val winner = sitting.player
     sitting wins amount
     events broadcast Events.declareWinner(sitting, amount)
   }
 
-  private def declareWinners(pot: Pot, hi: Option[Map[Player, Hand]], lo: Option[Map[Player, Hand]]) = {
+  private def winners(pot: Pot, hi: Option[Map[Player, Hand]], lo: Option[Map[Player, Hand]]) = {
     val split: Boolean = hi.isDefined && lo.isDefined
 
     pot.sidePots foreach { side ⇒
@@ -79,9 +79,8 @@ case class Showdown(ctx: stg.Context) extends Stage {
       }
 
       winners foreach { case (winner, amount) ⇒
-        table.playerSeat(winner) map { seat =>
-          seat wins amount
-          events broadcast Events.declareWinner(seat, amount)
+        table.playerSeat(winner) map { sitting =>
+          declareWinner(sitting, amount)
         }
       }
     }
@@ -104,6 +103,13 @@ case class Showdown(ctx: stg.Context) extends Stage {
 
     (pocket, hands.flatten.max(Ranking))
   }
+  
+  private def declareWinner(sitting: seat.Sitting, amount: Decimal) {
+    val winner = sitting.player
+    sitting wins amount
+    play.winner(winner, amount)
+    events broadcast Events.declareWinner(sitting, amount)
+  }
 
   private def showHands(ranking: Hand.Ranking): Map[Player, Hand] =
     table.sitting.filter(_.inPot).foldLeft(Map[Player, Hand]()) { case (hands, seat) =>
@@ -111,6 +117,7 @@ case class Showdown(ctx: stg.Context) extends Stage {
       val (pocket, hand) = rank(seat.player, ranking)
       
       //events.publish(message.ShowCards(pos = pos, player = player, cards = pocket))
+      play.show(player, pocket)
       events broadcast Events.declareHand(seat, pocket, hand)
       hands + (player -> hand)
     }

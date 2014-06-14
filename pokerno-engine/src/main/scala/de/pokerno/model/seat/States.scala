@@ -70,11 +70,15 @@ trait States {
     isFolded || isAway || isIdle || isAuto 
 
   // PLAY | BET
-  def inPlay =
+  def canContribute =
     isPlaying || isBetting
 
+  def inPlay = canContribute
+    
   // PLAY | BET | ALLIN
-  def inPot =
-    inPlay || isAllIn
+  def canClaim =
+    isPlaying || isBetting || isAllIn
+  
+  def inPot = canClaim
 
 }

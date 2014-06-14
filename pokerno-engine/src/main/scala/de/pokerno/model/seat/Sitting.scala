@@ -12,7 +12,8 @@ import de.pokerno.util.Colored._
 class Sitting(
     _pos: Int,
     _player: Player,
-    @JsonIgnore protected var _state: Seat.State.Value = Seat.State.Taken
+    @JsonIgnore protected var _state: Seat.State.Value = Seat.State.Taken,
+    private var _stack: Option[Decimal] = None
     ) extends Acting(_pos, _player) with States with Actions with Validations{
   import Seat._
   import Callbacks._
@@ -82,7 +83,6 @@ class Sitting(
   //@JsonProperty("online") def onlineStatus: java.lang.Boolean = if (isOnline) true else null
   
   // STACK
-  private var _stack: Option[Decimal] = None
   @JsonGetter def stack = _stack
   def stackAmount: Decimal = _stack.getOrElse(.0)
 
@@ -90,13 +90,6 @@ class Sitting(
   @JsonIgnore protected var _put: Option[Decimal] = None
   @JsonGetter def put = _put
   def putAmount: Decimal = _put.getOrElse(.0)
-
-  // ALL IN
-  def allIn: Option[Decimal] = {
-    if (isAllIn) put
-    else None
-  }
-  def allInAmount: Decimal = allIn.getOrElse(.0)
 
   // TOTAL
   def total = stackAmount + putAmount

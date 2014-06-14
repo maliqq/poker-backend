@@ -33,6 +33,7 @@ class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
   
   def reset() {
     raiseCount = 0
+    _cachedCallAmount = 0
     _acting = None
     _seats = table.sittingFromButton
     pot.complete()
@@ -46,14 +47,14 @@ class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
   // limit number of raises per one street
   private final val MaxRaiseCount = 8
   private var raiseCount: Int = 0
-
-  // current amount to call
-  def callAmount: Decimal = _seats.map(_.callAmount).max
-  // current amount to call among all-ins
-  def allInAmount: Decimal = _seats.map(_.allInAmount).max
+  
+  private var _cachedCallAmount: Decimal = 0
+  def callAmount = _cachedCallAmount
   
   def forceBet(sitting: seat.Sitting, betType: BetType.Forced): Bet = {
     val amount = stake amount betType
+    
+    _cachedCallAmount = amount
     
     acting(sitting, amount)
 
@@ -65,7 +66,8 @@ class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
   }
 
   def requireBet(sitting: seat.Sitting) = {
-    val amount = callAmount
+    // current amount to call
+    val amount = _cachedCallAmount//_seats.filter(_.inPot).map(_.putAmount).max
     
     acting(sitting, amount)
     
@@ -88,7 +90,7 @@ class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
     
       if (sitting.canBet(_posting, stake)) _posting
       else {
-        warn("bet %s is not valid; call=%.2f seat=%s\n", _posting, callAmount, sitting)
+        warn("bet %s is not valid; seat=%s\n", _posting, sitting)
         Bet.fold
       }
     }
@@ -98,8 +100,8 @@ class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
     if (posting.isActive) {
       if (posting.isRaise)
         raiseCount += 1
-//      if (!_posting.isCall && seat.putAmount > callAmount)
-//        call = seat.putAmount
+      if (!posting.isCall && sitting.putAmount > _cachedCallAmount)
+        _cachedCallAmount = sitting.putAmount
       pot add (player, diff, sitting.isAllIn)
     }
 

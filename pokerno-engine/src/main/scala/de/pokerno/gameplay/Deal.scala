@@ -92,11 +92,11 @@ class Deal(val gameplay: Context) extends Actor
       self ! Streets.Done
 
     case Betting.Showdown ⇒
-      // TODO XXX FIXME WTF?
       log.warning("[betting] showdown")
       btx.complete()
       context.become(receiveStreets)
-      self ! Streets.Next
+      //self ! Streets.Next
+      system.scheduler.scheduleOnce(1.second, self, Streets.Next)
 
     case Betting.Done ⇒
       log.info("[betting] done")

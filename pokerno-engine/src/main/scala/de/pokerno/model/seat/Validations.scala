@@ -7,32 +7,27 @@ import de.pokerno.util.Colored._
 trait Validations { seat: Sitting =>
   
   // CHECK
-  def canCheck(toCall: Decimal): Boolean = {
-    putAmount == toCall
-  }
+  def canCheck(toCall: Decimal) = putAmount == toCall
   
   // FOLD
-  def canFold: Boolean = {
-    inPlay
-  }
+  def canFold = inPlay
   
   // FORCED BET
-  def canForce(amt: Decimal, toCall: Decimal): Boolean = {
+  def canForce(amt: Decimal, toCall: Decimal) =
     // TODO
     inPlay && _canCall(amt, toCall)
-  }
   
   // RAISE
   def canRaise(amt: Decimal): Boolean = {
     inPlay && _raise.map(_canRaise(amt, _)).getOrElse(false)
   }
 
-  private def _canRaise(amt: Decimal, toRaise: Tuple2[Decimal, Decimal]): Boolean = {
+  private def _canRaise(amt: Decimal, toRaise: Tuple2[Decimal, Decimal]) = {
     amt <= total && amt >= toRaise._1 && amt <= toRaise._2
   }
   
   // CALL
-  def canCall(amt: Decimal): Boolean = {
+  def canCall(amt: Decimal) = {
     inPlay &&
       _call.map(_canCall(amt, _)).getOrElse(false)
   }
@@ -44,17 +39,11 @@ trait Validations { seat: Sitting =>
     amt <= stackAmount && amt + putAmount == toCall
   }
   
-  def isCalled(amt: Decimal): Boolean = {
-    isAllIn || _isCalled(amt)
-  }
-  
-  private def _isCalled(amt: Decimal): Boolean = {
-    amt <= putAmount
-  }
-  
-  def canBet: Boolean = {
+  def isCalled(amt: Decimal) =
+    (isAllIn && putAmount <= amt) || putAmount >= amt
+    
+  def canBet =
     inPlay || isPostingBB
-  }
   
   def canBet(bet: Bet, stake: Stake): Boolean =
     bet match {

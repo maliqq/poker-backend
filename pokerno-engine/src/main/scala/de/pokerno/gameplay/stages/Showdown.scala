@@ -15,9 +15,9 @@ case class Showdown(ctx: stg.Context) extends Stage {
   import ctx.gameplay._
   
   def apply() = {
-    val inPot = table.sitting find (_.inPot)
-    if (inPot.isDefined) {
-      declareWinner(inPot.get, round.pot)
+    val inPot = table.sitting filter (_.inPot)
+    if (inPot.size == 1) {
+      declareWinner(inPot.head, round.pot)
     } else {
       val hiHands = gameOptions.hiRanking.map(showHands(_))
       val loHands = gameOptions.loRanking.map(showHands(_))

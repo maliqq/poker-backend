@@ -6,16 +6,22 @@ private[poker] trait BadugiHand { self: CardSet ⇒
   
   def isBadugiOne: Option[Hand] =
     if (groupKind.size == 1) {
-      hand(value = value take (1)).map(_.ranked(BadugiOne))
+      hand(
+          value = value take (1)
+        ).map(_.ranked(BadugiOne))
     } else if (groupSuit.size == 1) {
       val card = groupSuit.values.head.min
 
-      hand(value = List(card)).map(_.ranked(BadugiOne))
+      hand(
+          value = List(card)
+        ).map(_.ranked(BadugiOne))
     } else None
 
   def isBadugiFour: Option[Hand] =
     if (groupKind.size == 4 && groupSuit.size == 4)
-      hand(value = value).map(_.ranked(BadugiFour))
+      hand(
+          value = value
+        ).map(_.ranked(BadugiFour))
     else None
 
   def isBadugiThree: Option[Hand] = {
@@ -49,13 +55,16 @@ private[poker] trait BadugiHand { self: CardSet ⇒
       (a, b, c)
     }: Card3
 
-    val (a: Card, b: Card, c: Card) = _paired.map { case (v::_) =>
-      pairedThree(v)
-    } getOrElse {
-      suitedThree(_suited.get.head)
+    val (a: Card, b: Card, c: Card) = {
+      if (!_paired.isEmpty)
+        pairedThree(_paired.get.head)
+      else
+        suitedThree(_suited.get.head)
     }
 
-    hand(value = List(a, b, c)).map(_.ranked(BadugiThree))
+    hand(
+        value = List(a, b, c)
+      ).map(_.ranked(BadugiThree))
   }
 
   def isBadugiTwo: Option[Hand] = {
@@ -94,18 +103,20 @@ private[poker] trait BadugiHand { self: CardSet ⇒
       (a, b)
     }
 
-    val (a: Card, b: Card) = sets.map { case (v :: _) =>
-      threeKind(v)
-    } getOrElse {
-      suited.get(3).map {
-        threeFlush(_)
-      } getOrElse {
+    val (a: Card, b: Card) = {
+      if (!sets.isEmpty)
+        threeKind(sets.get.head)
+      else if (suited.contains(3))
+        threeFlush(suited(3))
+      else {
         if (groupSuit.size > 0)   twoFlush(groupSuit.values.head)
         else                      twoKind(groupKind(0))
       }
     }
     
-    hand(value = List(a, b)).map(_.ranked(BadugiTwo))
+    hand(
+        value = List(a, b)
+      ).map(_.ranked(BadugiTwo))
   }
 
   @throws[Hand.InvalidCards]
@@ -114,4 +125,5 @@ private[poker] trait BadugiHand { self: CardSet ⇒
 
     isBadugiOne orElse isBadugiFour orElse isBadugiThree orElse isBadugiTwo
   }
+  
 }

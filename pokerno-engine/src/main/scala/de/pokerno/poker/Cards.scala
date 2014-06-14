@@ -6,11 +6,12 @@ object Cards {
   
   def fromBinary(b: Array[Byte]): Cards = Array(b).map(Card(_))
   def fromSeq(l: Seq[_]): Cards = l.map(Card(_))
+  
+  final val parseRegex = """(?i)([akqjt2-9]{1})([shdc]{1})""".r
 
   def fromString(s: String): Cards = {
-    val regex = """(?i)([akqjt2-9]{1})([shdc]{1})""".r
     val matching = for {
-      regex(kind, suit) ← regex findAllIn s
+      parseRegex(kind, suit) ← parseRegex findAllIn s
     } yield Card(kind.charAt(0), suit.charAt(0))
     matching.toSeq
   }

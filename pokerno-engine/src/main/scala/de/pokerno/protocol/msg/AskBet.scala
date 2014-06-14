@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.{JsonProperty, JsonUnwrapped}
 import de.pokerno.model.seat.{Acting, Position}
 
 object AskBet {
-  def apply(seat: Acting): AskBet = AskBet(seat.asPosition, seat.call.get, seat.raise)
+  def apply(seat: Acting): AskBet = AskBet(seat.asPosition, seat.call.get, seat.raise) // FIXME None.get
 }
 
 sealed case class AskBet(

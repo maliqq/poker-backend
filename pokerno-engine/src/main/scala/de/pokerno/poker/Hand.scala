@@ -80,21 +80,10 @@ class Hand(
 
   def compare(other: Hand): Int = Ranking.compare(this, other)
 
-  private def equalKinds(a: Cards, b: Cards): Boolean = {
-    if (a.size != b.size) return false
-
-    a.zipWithIndex foreach {
-      case (card, i) ⇒
-        val otherCard = b(i)
-        if (card.kind != otherCard.kind) return false
-    }
-
-    return true
-  }
-
   override def equals(o: Any): Boolean = o match {
     case other: Hand ⇒
-      rank.get == other.rank.get &&
+      import Comparing._
+      equalRanks(rank, other.rank) &&
         equalKinds(high, other.high) &&
         equalKinds(value, other.value) &&
         equalKinds(kicker, other.kicker)
@@ -106,6 +95,7 @@ class Hand(
   @JsonProperty def description: String = rank match {
     case Some(_rank) =>
       _rank match {
+        // FIXME move to case classes
         case Rank.High.HighCard ⇒
           "high card %s" format high.head.kind
 

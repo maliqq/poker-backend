@@ -70,9 +70,10 @@ case class Stake(
     @JsonProperty bringIn: Option[Decimal]) {
 
   def amount(t: BetType.Forced): Decimal = t match {
-    case BetType.BringIn    ⇒ bringIn.get
+    case BetType.BringIn
+      if bringIn.isDefined  ⇒ bringIn.get
     case BetType.Ante
-      if ante.isDefined ⇒ ante.get
+      if ante.isDefined     ⇒ ante.get
     case BetType.SmallBlind ⇒ smallBlind
     case BetType.BigBlind   ⇒ bigBlind
     case _              ⇒ throw new Error("no amount for %s" format t)

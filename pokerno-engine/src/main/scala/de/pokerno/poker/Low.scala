@@ -1,8 +1,6 @@
 package de.pokerno.poker
 
-private[poker] trait Low {
-
-  self: CardSet ⇒
+private[poker] trait Low { _: CardSet ⇒
 
   private[poker] def isLow: Option[Hand] = {
     val uniq: Cards = groupKind.values.map(_(0)).toList
@@ -23,4 +21,5 @@ private[poker] trait Low {
     if (hand.get.rank == Rank.High.HighCard) isLow
     else hand
   }
+  
 }

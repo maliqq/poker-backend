@@ -51,7 +51,7 @@ trait Validations { seat: Sitting =>
         canFold || notActive
   
       case Bet.Check ⇒
-        _call.isEmpty || canCheck(_call.get)
+        _call.map(canCheck(_)).getOrElse(true)
   
       // FIXME check on null
       case Bet.Call(amt) if _call.isDefined && isActive ⇒

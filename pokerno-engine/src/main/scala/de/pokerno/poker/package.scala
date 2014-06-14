@@ -4,6 +4,10 @@ package object poker {
 
   // TODO
   //type Card = Byte
+  
+  type Card2 = Tuple2[Card, Card]
+  type Card3 = Tuple3[Card, Card, Card]
+  type Card4 = Tuple4[Card, Card, Card, Card]
 
   final val Kinds: List[Kind.Value.Kind] =
     Kind.Value.values.toList.asInstanceOf[List[Kind.Value.Kind]]

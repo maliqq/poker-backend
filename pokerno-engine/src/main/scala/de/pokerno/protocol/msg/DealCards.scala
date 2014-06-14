@@ -29,8 +29,7 @@ object DealHole {
   def apply(pos: Position, cards: Either[Cards, Int]): DealHole = new DealHole(pos, cards)
   def unapply(v: DealHole): Option[(Position, Either[Cards, Int])] = Some((
       v.position,
-      if (v.cardsNum.isDefined) Right(v.cardsNum.get)
-      else Left(v.cards)
+      v.cardsNum.map(Right(_)) getOrElse Left(v.cards)
     ))
 }
 
@@ -43,8 +42,7 @@ object DealDoor {
   def apply(pos: Position, cards: Either[Cards, Int]): DealDoor = new DealDoor(pos, cards)
   def unapply(v: DealDoor): Option[(Position, Either[Cards, Int])] = Some((
       v.position,
-      if (v.cardsNum.isDefined) Right(v.cardsNum.get)
-      else Left(v.cards)
+      v.cardsNum.map(Right(_)) getOrElse Left(v.cards)
     ))
 }
 

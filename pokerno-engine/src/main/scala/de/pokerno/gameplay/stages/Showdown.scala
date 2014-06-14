@@ -92,7 +92,7 @@ case class Showdown(ctx: stg.Context) extends Stage {
     val board = dealer.board
 
     if (board.size == 0)
-      return (pocket, ranking(pocket).get)
+      return (pocket, ranking(pocket).get) // FIXME None.get
 
     val hands: List[Option[Hand]] = if (pocket.size > 2) {
       val _hands = for {

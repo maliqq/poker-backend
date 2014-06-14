@@ -55,10 +55,8 @@ class StakeBuilder {
     Stake(
       bigBlind,
       smallBlind,
-      if (ante.isDefined) Left(ante.get)
-      else Right(false),
-      if (bringIn.isDefined) Left(bringIn.get)
-      else Right(false)
+      ante.map(Left(_)) getOrElse(Right(false)),
+      bringIn.map(Left(_)) getOrElse(Right(false))
     )
   }
 }

@@ -161,8 +161,10 @@ class Sitting(
     val b = new StringBuilder
     b.append("%s (%s) [".format(player, _state))
     b.append("%.2f - %.2f".format(stackAmount, putAmount))
-    if (_call.isDefined) b.append(" / call: %.2f".format(_call.get))
-    if (_raise.isDefined) b.append(" / raise: %.2f..%.2f".format(_raise.get._1, _raise.get._2))
+    _call.map { v =>
+      b.append(" / call: %.2f".format(v)) }
+    _raise.map { v =>
+      b.append(" / raise: %.2f..%.2f".format(v._1, v._2)) }
     b.append("]")
     b.toString
   }

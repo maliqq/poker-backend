@@ -58,7 +58,7 @@ class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
     
     acting(sitting, amount)
 
-    val stack = sitting.stack.get
+    val stack = sitting.stackAmount
     val amt = List(stack, amount) min
     val bet = betType(amt)
 

@@ -103,52 +103,56 @@ class Hand(
 
   override def toString = "rank=%s high=%s value=%s kicker=%s" format (rank, high, value, kicker)
 
-  @JsonProperty def description: String = rank.get match {
-    case Rank.High.HighCard ⇒
-      "high card %s" format high.head.kind
+  @JsonProperty def description: String = rank match {
+    case Some(_rank) =>
+      _rank match {
+        case Rank.High.HighCard ⇒
+          "high card %s" format high.head.kind
 
-    case Rank.High.OnePair ⇒
-      "pair of %ss" format high.head.kind
+        case Rank.High.OnePair ⇒
+          "pair of %ss" format high.head.kind
 
-    case Rank.High.TwoPair ⇒
-      "two pairs, %ss and %ss" format (high.head.kind, high(1).kind)
+        case Rank.High.TwoPair ⇒
+          "two pairs, %ss and %ss" format (high.head.kind, high(1).kind)
 
-    case Rank.High.ThreeKind ⇒
-      "three of a kind, %ss" format high.head.kind
+        case Rank.High.ThreeKind ⇒
+          "three of a kind, %ss" format high.head.kind
 
-    case Rank.High.Straight ⇒
-      val (from, to) = if (high.head.kind == Kind.Value.Five)
-        (value.min(AceLow).kind, value.max(AceLow).kind)
-      else
-        (value.min.kind, value.max.kind)
+        case Rank.High.Straight ⇒
+          val (from, to) = if (high.head.kind == Kind.Value.Five)
+            (value.min(AceLow).kind, value.max(AceLow).kind)
+          else
+            (value.min.kind, value.max.kind)
 
-      "straight, %s to %s".format(from, to)
+          "straight, %s to %s".format(from, to)
 
-    case Rank.High.Flush ⇒
-      "flush, %s high" format high.head.kind
+        case Rank.High.Flush ⇒
+          "flush, %s high" format high.head.kind
 
-    case Rank.High.FullHouse ⇒
-      "full house, %ss full of %ss" format (high.head.kind, high(1).kind)
+        case Rank.High.FullHouse ⇒
+          "full house, %ss full of %ss" format (high.head.kind, high(1).kind)
 
-    case Rank.High.FourKind ⇒
-      "four of a kind, %ss" format high.head.kind
+        case Rank.High.FourKind ⇒
+          "four of a kind, %ss" format high.head.kind
 
-    case Rank.High.StraightFlush ⇒
-      "straight flush, %s to %s" format (value.min.kind, value.max.kind)
+        case Rank.High.StraightFlush ⇒
+          "straight flush, %s to %s" format (value.min.kind, value.max.kind)
 
-    case Rank.Badugi.BadugiOne ⇒
-      "1-card badugi: %s" format (value head)
+        case Rank.Badugi.BadugiOne ⇒
+          "1-card badugi: %s" format (value head)
 
-    case Rank.Badugi.BadugiTwo ⇒
-      "2-card badugi: %s + %s" format (value.head, value(1))
+        case Rank.Badugi.BadugiTwo ⇒
+          "2-card badugi: %s + %s" format (value.head, value(1))
 
-    case Rank.Badugi.BadugiThree ⇒
-      "3-card badugi: %s + %s + %s" format (value.head, value(1), value(2))
+        case Rank.Badugi.BadugiThree ⇒
+          "3-card badugi: %s + %s + %s" format (value.head, value(1), value(2))
 
-    case Rank.Badugi.BadugiFour ⇒
-      "4-card badugi: %s + %s + %s + %s" format (value.head, value(1), value(2), value(3))
+        case Rank.Badugi.BadugiFour ⇒
+          "4-card badugi: %s + %s + %s + %s" format (value.head, value(1), value(2), value(3))
 
-    case _ ⇒
-      "(unknown: %s)" format this
+        case _ ⇒
+          "(unknown: %s)" format this
+      }
+    case _ => "(none)"
   }
 }

@@ -73,7 +73,7 @@ object Game {
   @JsonCreator
   def apply(@JsonProperty("type") `type`: String, @JsonProperty("limit") limit: String, @JsonProperty("tableSize") tableSize: Option[Int]): Game = {
     Console printf("type=%s limit=%s size=%d", `type`, limit, tableSize)
-    new Game(`type`: GameType, limit: Limit, tableSize.get)
+    new Game(`type`: GameType, limit: Limit, tableSize.get) // FIXME None.get
   }
   
   def apply(`type`: GameType, limit: Option[Limit] = None, tableSize: Option[Int] = None): Game = {

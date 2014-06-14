@@ -7,13 +7,15 @@ import de.pokerno.util.Colored._
 import akka.actor.{ActorRef, Cancellable}
 import concurrent.duration._
 
-class Context(val gameplay: Gameplay, ref: ActorRef) extends Betting with NextTurn {
+class Context(val gameplay: Gameplay, ref: ActorRef) extends Betting {
   
   import gameplay._
+  
+  override def round = bettingRound
 
   private val log = LoggerFactory.getLogger(getClass)
   
-  var timer: Cancellable = null
+  var timer: Option[Cancellable] = None
   
   // turn on big bets
   def bigBets() {
@@ -23,21 +25,16 @@ class Context(val gameplay: Gameplay, ref: ActorRef) extends Betting with NextTu
   // add bet
   def add(player: Player, bet: Bet): Unit =
     round.acting match {
-      case Some(seat) =>
-        if (seat.player == player) {
-          
-          if (timer != null) timer.cancel()
-          info("[betting] add %s", bet)
-          addBet(seat, bet)
-          // next turn
-          ref ! nextTurn()
-            
-        } else {
-          warn("[betting] add: not a turn of %s; current acting is %s", player, seat)
-        }
+      case Some(sitting) if sitting.player == player =>
         
-      case None =>
-        error("[betting] add: round.acting == None")
+        timer.map(_.cancel())
+        info("[betting] add %s", bet)
+        addBet(sitting, bet)
+        // next turn
+        ref ! nextTurn()
+        
+      case _ =>
+        warn("[betting] add: not a turn of %s; current acting is %s", player, round.acting)
     }
   
   //

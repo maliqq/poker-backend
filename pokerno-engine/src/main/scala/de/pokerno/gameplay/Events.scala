@@ -68,6 +68,12 @@ object Events {
     case DealType.Door => msg.DealDoor(sitting.asPosition, Right(n))
   }
   
+  def discardCards(sitting: seat.Sitting, cards: Cards) =
+    msg.DiscardCards(sitting.asPosition, Left(cards))
+  
+  def discardCardsNum(sitting: seat.Sitting, cardsNum: Int) =
+    msg.DiscardCards(sitting.asPosition, Right(cardsNum))
+  
   def addBet(sitting: seat.Sitting, bet: Bet, timeout: Option[Boolean] = None)
                                 = msg.DeclareBet(sitting.asPosition, bet, timeout)
   def requireBet(sitting: seat.Sitting)

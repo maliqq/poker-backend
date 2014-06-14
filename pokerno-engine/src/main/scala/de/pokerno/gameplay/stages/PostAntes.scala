@@ -10,7 +10,10 @@ import de.pokerno.gameplay.{Betting, Stage, stg}
 case class PostAntes(ctx: stg.Context) extends Stage with Betting {
   
   val gameplay = ctx.gameplay
+  
   import ctx.gameplay._
+  
+  override def round = bettingRound
   
   def apply() =
 

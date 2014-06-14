@@ -106,7 +106,9 @@ class Deal(val gameplay: Context) extends Actor
 
     case Betting.Require(seat) ⇒
       btx.requireBet(seat)
-      btx.timer = system.scheduler.scheduleOnce(30 seconds, self, Betting.Timeout)
+      btx.timer = Some(
+          system.scheduler.scheduleOnce(30 seconds, self, Betting.Timeout)
+          )
 
     case Betting.Timeout ⇒
       log.info("[betting] timeout")

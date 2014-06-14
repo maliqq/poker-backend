@@ -5,6 +5,8 @@ import de.pokerno.gameplay.Events
 
 private[gameplay] trait Button { g: ContextLike ⇒
   
+  def round = bettingRound
+  
   def setButton(pos: Int) {
     table.button = pos
     round.reset()

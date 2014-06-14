@@ -3,6 +3,7 @@ package de.pokerno.replay
 import org.slf4j.LoggerFactory
 import de.pokerno.gameplay
 import de.pokerno.gameplay.{Betting => BettingTransition}
+import gameplay.betting.NextTurn
 import de.pokerno.gameplay.stg
 import de.pokerno.protocol.cmd
 import de.pokerno.model.{Bet, BetType, Seat, Player, seat}
@@ -11,16 +12,19 @@ import concurrent.duration.Duration
 private[replay] case class Betting(
     ctx: Context,
     actions: Seq[cmd.Command]
-) extends gameplay.Betting with gameplay.betting.NextTurn {
+) extends gameplay.Betting {
+  
+  private val log = LoggerFactory.getLogger(getClass)
   
   import ctx._
   import ctx.gameplay._
   
-  private val log = LoggerFactory.getLogger(getClass)
   val gameplay = ctx.gameplay
-
+  
+  override def round = bettingRound
+  
   private val betActions = actions.filter(_.isInstanceOf[cmd.AddBet]).asInstanceOf[List[cmd.AddBet]]
-
+  
   def apply() = {
     def active = round.seats.filter(_.isActive)
 

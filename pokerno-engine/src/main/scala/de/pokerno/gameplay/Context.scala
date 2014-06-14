@@ -19,7 +19,8 @@ trait ContextLike extends context.Button {
   //
   val dealer: Dealer
   //
-  val round: betting.Round
+  val bettingRound: betting.Round
+  val discardingRound: discarding.Round
 }
 
 // TODO
@@ -42,7 +43,8 @@ class Context(
       new Events(id)
       )
   
-  lazy val round: betting.Round = new betting.Round(table, game, stake)
+  lazy val bettingRound: betting.Round = new betting.Round(table, game, stake)
+  lazy val discardingRound: discarding.Round = new discarding.Round(table, game, dealer)
   lazy val gameRotation = new Rotation(variation.asInstanceOf[Mix].games)
   
   def gameOptions = game.options

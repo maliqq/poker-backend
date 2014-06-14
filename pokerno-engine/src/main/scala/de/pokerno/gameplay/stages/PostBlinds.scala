@@ -12,6 +12,8 @@ case class PostBlinds(ctx: stg.Context) extends Stage with Betting {
   val gameplay = ctx.gameplay
   import ctx.gameplay._
   
+  override def round = bettingRound
+  
   def apply() = if (gameOptions.hasBlinds) {
     moveButton() // FIXME
     

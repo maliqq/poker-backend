@@ -4,7 +4,7 @@ import org.slf4j.LoggerFactory
 import de.pokerno.model._
 import de.pokerno.gameplay.{Context => Gameplay}
 import de.pokerno.util.Colored._
-import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnore, JsonInclude}
+import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnore, JsonInclude, JsonGetter}
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import math.{ BigDecimal ⇒ Decimal }
 
@@ -19,10 +19,10 @@ class Round(@JsonIgnore table: Table, game: Game, stake: Stake) {
   private var _seats = table.sittingFromButton
   def seats = _seats
   
-  @JsonProperty def current = acting map(_.pos)
-  
   private var _acting: Option[seat.Sitting] = None
   @JsonSerialize(converter = classOf[Sitting2Acting]) def acting = _acting
+  
+  @JsonGetter def current = acting map(_.pos)
   
   private def acting(sitting: seat.Sitting, call: Decimal) {
     _acting.map(_.notActing())

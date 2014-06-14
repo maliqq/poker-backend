@@ -50,13 +50,3 @@ object NextTurn {
     Betting.Require(playing)
   }
 }
-
-trait NextTurn {
-
-  val gameplay: Gameplay
-
-  import gameplay._
-  
-  def nextTurn(): Betting.Transition = NextTurn.decide(round.seats.filter(_.inPot), round.callAmount)
-
-}

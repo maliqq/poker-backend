@@ -11,6 +11,12 @@ trait Betting {
   
   import gameplay._
   
+  def round: betting.Round
+  
+  def nextTurn() = {
+    NextTurn.decide(round.seats.filter(_.inPot), round.callAmount)
+  }
+  
   // require bet
   def requireBet(sitting: seat.Sitting) {
     round.requireBet(sitting)
@@ -55,15 +61,14 @@ object Betting {
   case class Cancel(player: Player)
 
   trait Transition
-  case object Next extends Transition
+  // require bet from this position
+  case class Require(sitting: seat.Sitting) extends Transition
   // stop current deal
   case object Stop extends Transition
   // go to showdown
   case object Showdown extends Transition
   // betting done - wait for next street to occur
   case object Done extends Transition
-  // require bet from this potision
-  case class Require(sitting: seat.Sitting) extends Transition
 
   // betting timeout - go to next seat
   case object Timeout

@@ -27,10 +27,8 @@ private[gameplay] class Chain[T <: Context] {
         info("[stage] %s -> %s", f.name, result)
         result == Stage.Next
       } match {
-        case (stage::Nil) =>
-          _stages = List(stage) // last stage left  
         case (stage::stagesLeft) =>
-          _stages = stagesLeft
+          _stages = stagesLeft // List(...) or Nil
         case List() =>
           _stages = List.empty // no stages left
       }

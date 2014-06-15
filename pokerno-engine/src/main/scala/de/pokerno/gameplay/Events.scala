@@ -74,10 +74,11 @@ object Events {
   def discardCardsNum(sitting: seat.Sitting, cardsNum: Int) =
     msg.DiscardCards(sitting.asPosition, Right(cardsNum))
   
+  def requireBet(sitting: seat.Sitting) = msg.AskBet(sitting.asActing)
+  def requireDiscard(sitting: seat.Sitting) = msg.AskDiscard(sitting.asPosition)
+  
   def addBet(sitting: seat.Sitting, bet: Bet, timeout: Option[Boolean] = None)
                                 = msg.DeclareBet(sitting.asPosition, bet, timeout)
-  def requireBet(sitting: seat.Sitting)
-                                = msg.AskBet(sitting.asActing)
   def declareWinner(sitting: seat.Sitting, amount: Decimal)
                                 = msg.DeclareWinner(sitting.asPosition, amount)
   def declareHand(sitting: seat.Sitting, cards: Cards, hand: Hand)

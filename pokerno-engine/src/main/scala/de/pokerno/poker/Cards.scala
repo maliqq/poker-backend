@@ -4,7 +4,7 @@ object Cards {
 
   def empty: Cards = Seq.empty
   
-  def fromBinary(b: Array[Byte]): Cards = Array(b).map(Card(_))
+  def fromBinary(b: Array[Byte]): Cards = b.map(Card(_))
   def fromSeq(l: Seq[_]): Cards = l.map(Card(_))
   
   final val parseRegex = """(?i)([akqjt2-9]{1})([shdc]{1})""".r

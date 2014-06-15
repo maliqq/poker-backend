@@ -12,7 +12,8 @@ trait Discarding {
   def round = discardingRound
   
   def require(sitting: seat.Sitting) {
-    
+    round.requireDiscard(sitting)
+    events broadcast Events.requireDiscard(sitting)
   }
   
   def discardCards(sitting: seat.Sitting, cards: Cards) {
@@ -24,6 +25,10 @@ trait Discarding {
   
   def standPat(sitting: seat.Sitting) {
     events broadcast Events.discardCardsNum(sitting, 0)
+  }
+  
+  def complete() {
+    table.discardingComplete()
   }
   
 }

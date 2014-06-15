@@ -14,7 +14,6 @@ class Context(_gameplay: Gameplay, ref: ActorRef) extends RoundContext(_gameplay
   override def round = discardingRound
   
   def nextTurn(): GameplayRound.Transition = NextTurn.decide(round.seats.filter(_.inPot))
-  def complete() = {}
   
   def discard(player: Player, cards: Cards) = round.acting match {
     case Some(sitting) if sitting.player == player =>
@@ -23,6 +22,7 @@ class Context(_gameplay: Gameplay, ref: ActorRef) extends RoundContext(_gameplay
       ref ! nextTurn()
       
     case None =>
+      log.info("not our turn: {}", round.acting)
   }
   
   def cancel(player: Player) = round.acting match {

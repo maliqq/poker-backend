@@ -13,4 +13,8 @@ object Serializers {
     override def convert(c: Cards): Array[Byte] = c
   }
   
+  class Binary2Cards extends com.fasterxml.jackson.databind.util.StdConverter[Array[Byte], Cards] {
+    override def convert(b: Array[Byte]) = Cards.fromBinary(b)
+  }
+  
 }

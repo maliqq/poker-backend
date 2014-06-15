@@ -7,6 +7,9 @@ object NextTurn {
   
   def decide(all: Seq[seat.Sitting]): GameplayRound.Transition = {
     // TODO
+    all.find(_.isPlaying).map { playing =>
+      return GameplayRound.Require(playing)
+    }
     GameplayRound.Done
   }
   

@@ -84,8 +84,12 @@ class Table(@JsonIgnore val size: Int) {
     //else if (seat.isAllIn) seat.idle()
   }
   
-  def roundComplete() = sitting foreach { seat ⇒
+  def bettingComplete() = sitting foreach { seat ⇒
     seat.clearAction()
+    if (seat.inPot) seat.playing()
+  }
+  
+  def discardingComplete() = sitting foreach { seat =>
     if (seat.inPot) seat.playing()
   }
   

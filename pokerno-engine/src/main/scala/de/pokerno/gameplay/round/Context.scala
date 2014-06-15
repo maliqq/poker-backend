@@ -6,7 +6,7 @@ import de.pokerno.gameplay.{Round, Context => Gameplay}
 import de.pokerno.model.{Player, seat}
 
 abstract class Context(val gameplay: Gameplay) {
-  private val log = LoggerFactory.getLogger(getClass)
+  protected val log = LoggerFactory.getLogger(getClass)
   
   import gameplay._
   

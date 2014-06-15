@@ -5,6 +5,9 @@ import org.scalatest.Matchers._
 import de.pokerno.protocol.{action => message}
 
 class PlayerEventSpec extends FunSpec {
+  
+  import de.pokerno.poker.Cards
+  
   describe("PlayerEvent") {
     it("AddBet") {
       val bet = PlayerEvent.decode("""{"bet":{"check":true}}""")
@@ -34,7 +37,12 @@ class PlayerEventSpec extends FunSpec {
     }
     
     it("DiscardCards") {
-      
+      val discard = PlayerEvent.decode("""{"discard":"MTMy"}""")
+      discard match {
+        case message.DiscardCards(cards) =>
+          cards should equal(Cards.fromString("AsAdAh"))
+        case _ =>
+      }
     }
     
     it("DoubleRebuy") {

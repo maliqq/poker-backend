@@ -105,7 +105,7 @@ private[replay] case class Betting(
     if (!activeBets.isEmpty) {
       nextTurn() match {
         case Round.Require(seat) =>
-          requireBet(seat)
+          require(seat)
         
         case _ =>
       }
@@ -124,7 +124,7 @@ private[replay] case class Betting(
 
           nextTurn() match { case Round.Require(seat) ⇒
             // continue if we have someone to act
-            requireBet(seat)
+            require(seat)
             true
           case _ ⇒
             false

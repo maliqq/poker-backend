@@ -31,7 +31,7 @@ object Colored {
   }
 
   def info(format: String, args: Any*) {
-    if (useColor) magenta(format, args: _*)
+    if (useColor) green(format, args: _*)
     else tagged("INFO", format, args: _*)
   }
 

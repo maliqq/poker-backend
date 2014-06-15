@@ -34,7 +34,6 @@ class Round(_table: Table, game: Game, stake: Stake) extends GameplayRound(_tabl
   
   def forceBet(sitting: seat.Sitting, betType: BetType.Forced): Bet = {
     val amount = stake amount betType
-    
     _cachedCallAmount = amount
     
     sitting.call = amount

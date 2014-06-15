@@ -16,7 +16,7 @@ abstract class Context(val gameplay: Gameplay) {
   
   def nextTurn(): Round.Transition
   def require(sitting: seat.Sitting): Unit
-  def complete(): Unit = {}
+  def complete(): Unit
   def cancel(player: Player): Unit
   def timeout(): Unit
 }

@@ -18,7 +18,7 @@ trait Betting {
   }
   
   // require bet
-  def requireBet(sitting: seat.Sitting) {
+  def require(sitting: seat.Sitting) {
     round.requireBet(sitting)
     round.acting map { seat =>
       events broadcast Events.requireBet(seat)

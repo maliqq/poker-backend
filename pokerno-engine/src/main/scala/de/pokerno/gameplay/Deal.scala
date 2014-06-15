@@ -64,6 +64,7 @@ class Deal(val gameplay: Context) extends Actor
   def receive = receiveStreets
 
   def receiveStreets: Receive = {
+    // rounds control
     case Betting.Start ⇒
       log.info("[betting] start")
       roundContext = bettingContext
@@ -75,10 +76,15 @@ class Deal(val gameplay: Context) extends Actor
       context.become(receiveRound orElse receiveDiscards)
       self ! roundContext.nextTurn()
 
+    // streets flow control
     case Streets.Next ⇒
       log.info("[streets] next")
-      onStreets.apply()
+      onStreets.next()
 
+    case Streets.Continue =>
+      log.info("[streets] continue")
+      onStreets.continue()
+      
     case Streets.Done ⇒
       log.info("[streets] done")
       afterStreets.apply(gameplayContext)
@@ -106,7 +112,7 @@ class Deal(val gameplay: Context) extends Actor
       log.info("[betting] done")
       roundContext.complete()
       context.become(receiveStreets)
-      onStreets.apply()
+      onStreets.continue()
   }
   
   def receiveBets: Receive = {

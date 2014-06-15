@@ -11,7 +11,7 @@ trait Discarding {
   
   def round = discardingRound
   
-  def requireDiscard() {
+  def require(sitting: seat.Sitting) {
     
   }
   

@@ -2,7 +2,7 @@ package de.pokerno.gameplay.discarding
 
 import akka.actor.{ActorRef, Cancellable}
 
-import de.pokerno.gameplay.{Discarding, Context => Gameplay}
+import de.pokerno.gameplay.{Discarding, Context => Gameplay, Round => GameplayRound}
 import de.pokerno.gameplay.round.{Context => RoundContext}
 import de.pokerno.poker.Cards
 import de.pokerno.model.Player
@@ -13,7 +13,8 @@ class Context(_gameplay: Gameplay, ref: ActorRef) extends RoundContext(_gameplay
   
   override def round = discardingRound
   
-  def nextTurn(): Discarding.Transition = NextTurn.decide(round.seats.filter(_.inPot))
+  def nextTurn(): GameplayRound.Transition = NextTurn.decide(round.seats.filter(_.inPot))
+  def complete() = {}
   
   def discard(player: Player, cards: Cards) = round.acting match {
     case Some(sitting) if sitting.player == player =>

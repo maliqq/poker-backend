@@ -1,12 +1,13 @@
 package de.pokerno.gameplay.discarding
 
 import de.pokerno.model.seat
-import de.pokerno.gameplay.Discarding
+import de.pokerno.gameplay.{Round => GameplayRound}
 
 object NextTurn {
   
-  def decide(all: Seq[seat.Sitting]): Discarding.Transition = {
-    Discarding.Done
+  def decide(all: Seq[seat.Sitting]): GameplayRound.Transition = {
+    // TODO
+    GameplayRound.Done
   }
   
 }

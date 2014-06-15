@@ -41,7 +41,10 @@ trait Validations { seat: Sitting =>
   
   def isCalled(amt: Decimal) =
     (isAllIn && putAmount <= amt) || putAmount >= amt
-    
+  
+  def isAllInTo(amt: Decimal) =
+    isAllIn && putAmount <= amt
+  
   def canBet =
     inPlay || isPostingBB
   

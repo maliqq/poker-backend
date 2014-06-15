@@ -1,6 +1,7 @@
 package de.pokerno.gameplay
 
 import de.pokerno.model._
+import de.pokerno.util.Colored._
 import akka.actor.{ Actor, Props, ActorLogging, ActorRef }
 
 class StreetStages[T <: stg.Context](val street: Street.Value, val stages: stg.Chain[T]) {
@@ -8,19 +9,22 @@ class StreetStages[T <: stg.Context](val street: Street.Value, val stages: stg.C
   override def toString = f"street:${street}"
 }
 
-case class Streets(ctx: stg.Context, stages: Seq[StreetStages[stg.Context]]) extends Stage {
+case class Streets(ctx: stg.Context, stages: Seq[StreetStages[stg.Context]]) {
   
   import ctx.gameplay._
   
   private val iterator = stages.iterator
-
-  def apply() = if (iterator.hasNext) {
-    val stage = iterator.next()
-
-    play.street = stage.street
-    events broadcast Events.streetStart(stage.street)
-
-    stage(ctx) match {
+  private var _stage: StreetStages[stg.Context] = null
+  private def stage = _stage
+  private def stage_=(stage: StreetStages[stg.Context]) {
+    _stage = stage
+    info("=== %s ===", _stage.street)
+    play.street = _stage.street
+    events broadcast Events.streetStart(_stage.street)
+  }
+  
+  def continue() = {
+    _stage(ctx) match {
       case Stage.Next | Stage.Skip ⇒
         ctx.ref ! Streets.Next
 
@@ -30,12 +34,19 @@ case class Streets(ctx: stg.Context, stages: Seq[StreetStages[stg.Context]]) ext
       case x ⇒
         throw new MatchError("unhandled stage transition: %s".format(x))
     }
+  }
 
-  } else ctx.ref ! Streets.Done
+  def next() = {
+    if (iterator.hasNext) {
+      stage = iterator.next()
+      continue()
+    } else ctx.ref ! Streets.Done
+  }
 }
 
 object Streets {
   case object Next
+  case object Continue
   case object Done
   
   def apply(ctx: stg.Context): Streets = {
@@ -84,7 +95,7 @@ object Streets {
       }
 
       if (options.discarding) {
-        builder.process("discarding") { ctx ⇒
+        builder.process("discarding", Stage.Wait) { ctx ⇒
           ctx.ref ! Discarding.Start
         }
       }

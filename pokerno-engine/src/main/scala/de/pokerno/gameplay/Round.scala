@@ -41,9 +41,9 @@ abstract class Round(table: Table) {
   // ACTING
   private var _acting: Option[seat.Sitting] = None
   @JsonSerialize(converter = classOf[Sitting2Acting])  def acting = _acting
-  protected def acting_=(acting: seat.Sitting) {
-    _acting = Some(acting)
-    _seats = table.sittingFromButton
+  protected def acting_=(sitting: seat.Sitting) {
+    _acting = Some(sitting)
+    _seats = table.sittingFrom(sitting.pos)
   }
   
   @JsonGetter def current = _acting map(_.pos)

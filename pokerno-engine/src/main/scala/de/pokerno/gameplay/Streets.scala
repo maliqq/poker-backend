@@ -15,6 +15,7 @@ case class Streets(ctx: stg.Context, stages: Seq[StreetStages[stg.Context]]) {
   
   private val iterator = stages.iterator
   private var _stage: StreetStages[stg.Context] = null
+  
   private def stage = _stage
   private def stage_=(stage: StreetStages[stg.Context]) {
     _stage = stage
@@ -27,12 +28,9 @@ case class Streets(ctx: stg.Context, stages: Seq[StreetStages[stg.Context]]) {
     _stage(ctx) match {
       case Stage.Next | Stage.Skip ⇒
         ctx.ref ! Streets.Next
-
+  
       case Stage.Wait ⇒
-        // wait until betting completes
-
-      case x ⇒
-        throw new MatchError("unhandled stage transition: %s".format(x))
+        // wait until round completes
     }
   }
 
@@ -42,6 +40,7 @@ case class Streets(ctx: stg.Context, stages: Seq[StreetStages[stg.Context]]) {
       continue()
     } else ctx.ref ! Streets.Done
   }
+  
 }
 
 object Streets {

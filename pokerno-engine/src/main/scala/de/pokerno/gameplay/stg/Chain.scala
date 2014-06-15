@@ -6,7 +6,7 @@ import de.pokerno.util.Colored._
 private[gameplay] class Chain[T <: Context] {
   private var _stages = List[Step[T]]()
   def stages = _stages
-  def current = _stages.headOption
+  //def current = _stages.headOption
   
   def this(step: Step[T]) = {
     this()
@@ -21,11 +21,18 @@ private[gameplay] class Chain[T <: Context] {
   def apply(ctx: T) = {
     var result: Stage.Control = Stage.Next
     if (!stages.isEmpty) {
-      _stages = _stages.dropWhile { f ⇒
+      _stages.dropWhile { f ⇒
         //Console printf ("[stage] start %s\n", f.name)
         result = f(ctx)
         info("[stage] %s -> %s", f.name, result)
         result == Stage.Next
+      } match {
+        case (stage::Nil) =>
+          _stages = List(stage) // last stage left  
+        case (stage::stagesLeft) =>
+          _stages = stagesLeft
+        case List() =>
+          _stages = List.empty // no stages left
       }
     }
     result

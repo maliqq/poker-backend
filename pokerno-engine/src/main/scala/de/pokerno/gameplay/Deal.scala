@@ -73,6 +73,7 @@ class Deal(val gameplay: Context) extends Actor
     
     case Discarding.Start =>
       log.info("[discarding] start")
+      roundContext = discardingContext
       context.become(receiveRound orElse receiveDiscards)
       self ! roundContext.nextTurn()
 

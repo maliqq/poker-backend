@@ -19,21 +19,34 @@ object NextTurn {
     
     yellow("\t| call=%s\n\t| called: %s\n\t| notCalled: %s\n\t| notChecked: %s\n", call, called, notCalled, notChecked)
 
-    notChecked.find(_.isPlaying) map { playing =>
-      return (
-          if (called.forall(_.isAllIn))
-            Betting.Showdown
-          else
-            GameplayRound.Require(playing)
-        )
+    if (called.nonEmpty) {
+      notChecked.find(_.isPlaying) map { playing =>
+        return (
+            if (called.forall(_.isAllIn)) {
+              warn("everyone goes all-in to %s (check)", playing.player)
+              Betting.Showdown
+            } else {
+              warn("%s not checked yet", playing.player)
+              GameplayRound.Require(playing)
+            }
+          )
+      }
     }
     
     if (notCalled.isEmpty) {
+      notChecked.headOption map { playing =>
+        warn("everyone checked to %s", playing.player)
+        return GameplayRound.Require(playing)
+      }
+      
       return (
-          if (called.exists(_.isAllIn))
+          if (called.exists(_.isAllIn)) {
+            warn("everyone called all-in")
             Betting.Showdown
-          else
+          } else {
+            warn("everyone called")
             GameplayRound.Done
+          }
         )
     }
     
@@ -41,9 +54,10 @@ object NextTurn {
     
     if (notCalled.size == 1) {
       // one playing, others all-in
-      if (called.forall { s =>
-          s.isAllIn && playing.putAmount >= s.putAmount
-      }) return Betting.Showdown
+      if (called.nonEmpty && called.forall(_.isAllInTo(playing.putAmount))) {
+        warn("everyone goes all-in to %s", playing.player)
+        return Betting.Showdown
+      }
     }
     
     // FIXME: everyone all-in

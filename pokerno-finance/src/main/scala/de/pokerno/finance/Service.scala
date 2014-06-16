@@ -72,7 +72,7 @@ class Service extends thrift.Balance.FutureIface {
   }
   
   def withdraw(player: Player, amount: Double): Future[Unit] = Future {
-    if (amount < 0) throw new thrift.Error("%s asked %.2f < 0" format(player, amount))
+    if (amount < 0) throw new thrift.Error("player %s: asked %.2f < 0" format(player, amount))
     
     _balances.synchronized {
       var balance: Decimal = _balances.getOrElse(player, 0)
@@ -85,7 +85,7 @@ class Service extends thrift.Balance.FutureIface {
       }
       
       if (amount > balance) {
-        throw new thrift.Error("%s not enough money; asked: %.2f have: %.2f" format(player, amount, balance))
+        throw new thrift.Error("player %s: not enough money; asked: %.2f have: %.2f" format(player, amount, balance))
       }
       
       _balances.put(player, balance - amount)
@@ -93,6 +93,16 @@ class Service extends thrift.Balance.FutureIface {
       _inPlay.put(player, inplay + amount)
     }
     
+  }
+  
+  def advance(player: Player, amount: Double): Future[Unit] = Future {
+    _inPlay.synchronized {
+      val inplay: Decimal = _inPlay.getOrElse(player, 0)
+      val newAmount = inplay + amount
+      if (newAmount > 0) {
+        _inPlay.put(player, newAmount)
+      } else throw new thrift.Error("player %s: can't spend %.2f of %.2f" format(player, amount, inplay))
+    }
   }
   
   val refillAmount: Decimal = 10000

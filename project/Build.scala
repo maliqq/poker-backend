@@ -5,7 +5,7 @@ import Process._
 import sbtassembly.Plugin._ 
 import AssemblyKeys._
 import com.typesafe.sbt.SbtGit._
-import com.twitter.scrooge.ScroogeSBT
+//import com.twitter.scrooge.ScroogeSBT
 
 object GitVersionStrategy extends Plugin {
 
@@ -80,7 +80,7 @@ object PokernoBuild extends Build {
   lazy val protocol = Project(
     id = "pokerno-protocol",
     base = file("pokerno-protocol"),
-    settings = Project.defaultSettings ++ ScroogeSBT.newSettings ++ Seq(
+    settings = Project.defaultSettings ++ /*ScroogeSBT.newSettings ++*/ Seq(
       name := "pokerno-protocol",
       version := "0.0.1",
       libraryDependencies ++= Seq(
@@ -92,10 +92,11 @@ object PokernoBuild extends Build {
         "com.twitter" %% "finagle-thrift" % finagleVersion
       )
     ) ++ assemblySettings 
-  ).settings(
-    ScroogeSBT.scroogeBuildOptions in Compile := Seq("--finagle", "-s"),
-    ScroogeSBT.scroogeThriftOutputFolder in Compile <<= (sourceDirectory) { _ / "main/scala" }
   )
+  // .settings(
+  //   ScroogeSBT.scroogeBuildOptions in Compile := Seq("--finagle", "-s"),
+  //   ScroogeSBT.scroogeThriftOutputFolder in Compile <<= (sourceDirectory) { _ / "main/scala" }
+  // )
   
   lazy val engine = Project(
     id = "pokerno-engine",
@@ -137,7 +138,8 @@ object PokernoBuild extends Build {
     id = "pokerno-finance",
     base = file("pokerno-finance"),
     settings = Project.defaultSettings ++ Seq(
-      name := "pokerno-finance"
+      name := "pokerno-finance",
+      libraryDependencies ++= testDeps
     )
   ) dependsOn(protocol)
 

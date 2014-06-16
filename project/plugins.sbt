@@ -6,4 +6,4 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-proguard" % "0.2.2")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.6.2")
 
-addSbtPlugin("com.twitter" %% "scrooge-sbt-plugin" % "3.11.1")
+//addSbtPlugin("com.twitter" %% "scrooge-sbt-plugin" % "3.11.1")

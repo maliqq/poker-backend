@@ -1,3 +1,4 @@
 /bin
 /src/main/scala/de/pokerno/protocol/thrift
+/src/main/scala/de/pokerno/finance/thrift
 /src/main/ruby/gen-rb

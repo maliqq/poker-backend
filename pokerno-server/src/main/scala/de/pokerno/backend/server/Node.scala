@@ -15,7 +15,7 @@ object Node {
 
   val log = LoggerFactory.getLogger(getClass)
   implicit val system = ActorSystem("node")
-
+  
   def start(config: Config): ActorRef = {
     log.info("starting with config: {}", config)
 
@@ -68,6 +68,7 @@ class Node extends Actor with ActorLogging {
   import context._
   import concurrent.duration._
   import util.{ Success, Failure }
+  import CommandConversions._
 
   override def preStart {
   }
@@ -99,33 +100,12 @@ class Node extends Actor with ActorLogging {
 
     // catch player messages
     case Gateway.Message(conn, msg) if conn.player.isDefined && conn.room.isDefined ⇒
-      val player = conn.player.get
+      implicit val player = conn.player.get
       val id = conn.room.get
 
       actorSelection(id).resolveOne(1 second).onComplete {
         case Success(room) ⇒
-          room ! (msg match {
-            case join: action.JoinTable ⇒
-              cmd.JoinPlayer(join.pos, player, join.amount)
-
-            case leave: action.LeaveTable ⇒
-              cmd.KickPlayer(player)
-            
-            case sitOut: action.SitOut =>
-              cmd.SitOut(player)
-            
-            case comeBack: action.ComeBack =>
-              cmd.ComeBack(player)
-
-            case add: action.AddBet ⇒
-              cmd.AddBet(player, add.bet)
-            
-            case discard: action.DiscardCards =>
-              cmd.DiscardCards(player, discard.cards)
-              
-            case buyIn: action.BuyIn =>
-              cmd.AdvanceStack(player, buyIn.amount)
-          })
+          room ! (msg: Command)
 
         case Failure(_) ⇒
           log.warning("Room not found: {}", id)

@@ -59,4 +59,9 @@ class Deck(private var _cards: Cards = Deck.shuffle()) {
     _dealt = _dealt diff old
     cards
   }
+  
+  def replace(old: Cards): Map[Card, Card] = {
+    val cards = discard(old)
+    old.zipWithIndex.map { case (card, i) => (card, cards(i)) }.toMap
+  }
 }

@@ -20,7 +20,7 @@ private[poker] trait BadugiHand { self: CardSet ⇒
   def isBadugiFour: Option[Hand] =
     if (groupKind.size == 4 && groupSuit.size == 4)
       hand(
-          value = value
+          value = value.sorted(AceLow)
         ).map(_.ranked(BadugiFour))
     else None
 
@@ -63,7 +63,7 @@ private[poker] trait BadugiHand { self: CardSet ⇒
     }
 
     hand(
-        value = List(a, b, c)
+        value = List(a, b, c).sorted(AceLow)
       ).map(_.ranked(BadugiThree))
   }
 
@@ -115,7 +115,7 @@ private[poker] trait BadugiHand { self: CardSet ⇒
     }
     
     hand(
-        value = List(a, b)
+        value = List(a, b).sorted(AceLow)
       ).map(_.ranked(BadugiTwo))
   }
 

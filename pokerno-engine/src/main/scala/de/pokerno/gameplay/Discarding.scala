@@ -19,8 +19,8 @@ trait Discarding {
   def discardCards(sitting: seat.Sitting, cards: Cards) {
     val newCards = round.discard(sitting, cards)
     // TODO play.action(...)
-    events.publish(Events.discardCards(sitting, cards)) { _.only(sitting.player) }
-    events broadcast Events.discardCardsNum(sitting, cards.size)
+    events.publish(Events.discardCards(sitting, newCards)) { _.only(sitting.player) }
+    events.publish(Events.discardCardsNum(sitting, newCards.size)) { _.except(sitting.player) }
   }
   
   def standPat(sitting: seat.Sitting) {

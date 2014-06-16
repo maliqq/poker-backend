@@ -15,19 +15,23 @@ class DealerSpec extends FunSpec {
 
     it("deal pocket") {
       val dealer = new Dealer
-      val player = new Player("1")
+      val player = new Player("A")
       val cards = dealer.dealPocket(2, player)
       cards.size should equal(2)
       dealer.pocket(player) should equal(cards)
-
-      val discardedCards = dealer.discard(cards, player)
-      dealer.pocket(player) should equal(discardedCards)
     }
-
-    it("type checks") {
-      Array(DealType.Door, DealType.Board, DealType.Hole) foreach { d ⇒
-        d.isInstanceOf[DealType.Value] should be(true)
-      }
+    
+    it("discard") {
+      val dealer = new Dealer
+      val player = new Player("A")
+      val cards = dealer.dealPocket(2, player)
+      
+      val discarded = dealer.discard(List(cards.head), player)
+      discarded.size should equal(2)
+      val newCards = dealer.pocket(player)
+      newCards should equal(discarded)
+      newCards.head shouldNot equal(cards.head) // first card changed
+      newCards.last should equal(cards.last) // last did't change
     }
   }
 }

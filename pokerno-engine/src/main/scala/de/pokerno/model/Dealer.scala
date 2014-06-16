@@ -35,11 +35,16 @@ class Dealer(private val _deck: Deck = new Deck) {
     dealtBoard(cards)
   }
 
-  def discard(old: Cards, p: Player): Cards = {
-    val replace = pocket(p).toSet & old.toSet
-    val cards = _deck discard replace.toList
-    _pockets(p) = cards
-    cards
+  def discard(cards: Cards, p: Player): Cards = {
+    val pocketCards = pocket(p)
+    val replace = _deck replace pocketCards.filter(cards.contains(_))
+    val newCards = pocketCards.map { card =>
+      if (replace.contains(card)) replace(card)
+      else card
+    }
+    Console printf("%sreplace: %s (%s) [%s->%s]%s\n", Console.RED, cards, replace, pocketCards, newCards, Console.RESET)
+    _pockets(p) = newCards
+    newCards
   }
 
 }

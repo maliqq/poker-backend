@@ -64,6 +64,11 @@ class CodecSpec extends FunSpec {
   describe("Json.encode") {
     it("Cards") {
       val cards = de.pokerno.poker.Cards.fromString("7dTd")
+      Json.encode(cards: Array[Byte]) should equal(""""AQ="""")
+    }
+    
+    it("2s") {
+      val cards = de.pokerno.poker.Cards.fromString("2s")
       Json.encode(cards: Array[Byte]) should equal(""""FyM="""")
     }
     

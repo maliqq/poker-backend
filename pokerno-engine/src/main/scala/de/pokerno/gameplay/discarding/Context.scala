@@ -20,15 +20,15 @@ class Context(_gameplay: Gameplay, ref: ActorRef) extends RoundContext(_gameplay
       timer.map(_.cancel())
       discardCards(sitting, cards)
       ref ! nextTurn()
-      
-    case None =>
+    
+    case _ =>
       log.info("not our turn: {}", round.acting)
   }
   
   def cancel(player: Player) = round.acting match {
     case Some(sitting) if sitting.player == player =>
       // TODO player left
-    case None =>
+    case _ =>
   }
   
   def timeout() = round.acting match {
@@ -36,7 +36,7 @@ class Context(_gameplay: Gameplay, ref: ActorRef) extends RoundContext(_gameplay
       standPat(sitting)
       ref ! nextTurn()
       
-    case None =>
+    case _ =>
   }
   
 }

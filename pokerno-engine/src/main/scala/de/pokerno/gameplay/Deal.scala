@@ -94,10 +94,10 @@ class Deal(val gameplay: Context) extends Actor
   def receiveRound: Receive = {
     case Round.Require(seat) ⇒
       roundContext.require(seat)
-      roundContext.timer = Some(
-          system.scheduler.scheduleOnce(30 seconds, self, Round.Timeout)
-          )
-
+      seat.actingTimer.start(new AkkaTimers(system.scheduler, system.dispatcher)) {
+        self ! Round.Timeout
+      }
+    
     case Round.Timeout ⇒
       log.info("[round] timeout")
       roundContext.timeout()

@@ -187,12 +187,12 @@ class Room(
       //events.start(table, variation, stake, )
       stay()
 
-    case Event(Connect(conn), running) ⇒
+    case Event(Connect(conn), current) ⇒
       // notify seat state change
       conn.player map (playerOnline(_))
 
       // send start message
-      val startMsg: GameEvent = running match {
+      val startMsg: GameEvent = current match {
         case NoneRunning ⇒
           gameplay.Events.start(roomId, table, variation, stake) // TODO: empty play
         case Running(ctx, deal) ⇒
@@ -236,7 +236,7 @@ class Room(
             seat.idle()
             events broadcast gameplay.Events.playerSitOut(seat)
             
-          case _ =>             seat.sitOut.toggle()
+          case _ =>             seat.toggleSitOut()
         }
       }
       

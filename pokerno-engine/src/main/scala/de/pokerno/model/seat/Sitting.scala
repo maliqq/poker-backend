@@ -13,7 +13,7 @@ class Sitting(
     _player: Player,
     @JsonIgnore protected var _state: Seat.State.Value = Seat.State.Taken,
     private var _stack: Option[Decimal] = None
-    ) extends Auto(_pos, _player) with States with Actions with Validations{
+    ) extends Auto(_pos, _player) with States with Actions with Timers with Validations{
   import Seat._
   import Callbacks._
   

@@ -26,6 +26,10 @@ object Round {
   
   // action timeout - go to next seat
   case object Timeout
+  
+  // action timer pause/resume
+  case object Pause
+  case object Resume
 
 }
 

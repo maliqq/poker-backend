@@ -23,7 +23,7 @@ class Context(_gameplay: Gameplay, ref: ActorRef) extends RoundContext(_gameplay
     round.acting match {
       case Some(sitting) if sitting.player == player =>
         
-        timer.map(_.cancel())
+        sitting.actingTimer.cancel()
         info("[betting] add %s", bet)
         addBet(sitting, bet)
         // next turn

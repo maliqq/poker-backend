@@ -1,5 +1,6 @@
 package de.pokerno.model
 
+import com.fasterxml.jackson.annotation.{JsonValue, JsonInclude}
 import akka.actor.{Cancellable, Scheduler}
 import concurrent.duration._
 import de.pokerno.util.Colored._
@@ -38,8 +39,8 @@ abstract class Timer(timers: Timers) {
 }
 
 class Countdown(val name: String, capacity: Int) {
-  var _clock = capacity
-  def clock = _clock
+  private var _clock = capacity
+  @JsonValue def clock: Option[Int] = if (timer.isDefined) Some(_clock) else None
   
   var timer: Option[Timer] = None
   

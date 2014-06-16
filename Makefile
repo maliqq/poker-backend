@@ -11,4 +11,4 @@ build-deps:
 deploy:
 	scp $(FILE) root@pokerno:/apps/poker-server/bin/server.jar
 sloc:
-	find . -path ./pokerno-protocol/src/main/scala/de/pokerno/protocol/thrift -prune -o -name "*.scala" -print | xargs cloc | grep Scala | awk '{print $$5}'
+	find . -path ./pokerno-protocol -prune -o -name "*.scala" -print | xargs cloc | grep Scala | awk '{print $$5}'

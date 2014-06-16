@@ -1,7 +1,6 @@
 package de.pokerno.model.seat
 
 import de.pokerno.model.{Seat, SeatStateRef}
-import math.{BigDecimal => Decimal}
 import com.fasterxml.jackson.annotation.{JsonAutoDetect, JsonIgnore, JsonInclude, JsonProperty, JsonPropertyOrder, JsonGetter}
 import com.fasterxml.jackson.module.scala.JsonScalaEnumeration
 
@@ -36,9 +35,11 @@ trait States {
     
   def isEmpty       = state == State.Empty
   def isTaken       = state == State.Taken
+  def isReserved    = state == State.Taken // or Reserved
   def isReady       = state == State.Ready
   def isAway        = state == State.Away
   def isIdle        = state == State.Idle
+  def isSitOut      = state == State.Idle // or SitOut
   def isAuto        = state == State.Auto
   def isPostingBB   = state == State.PostBB
   def isWaitingBB   = state == State.WaitBB
@@ -56,6 +57,7 @@ trait States {
   def ready()       = ensureAllIn(State.Ready)
   
   def idle()        = state = State.Idle
+  //def sitOut()      = state = State.Idle
   def away()        = state = State.Away
 
   def canPlay =

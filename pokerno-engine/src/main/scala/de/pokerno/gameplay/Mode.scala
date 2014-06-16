@@ -1,7 +1,6 @@
 package de.pokerno.gameplay
 
 import de.pokerno.model.Stake
-import math.{BigDecimal => Decimal}
 
 object Mode extends Enumeration {
 

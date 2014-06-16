@@ -1,9 +1,8 @@
 package de.pokerno
 
-import math.{BigDecimal => Decimal}
-
 package object model {
   type Player = String
+  type Decimal = math.BigDecimal
   
   final val Rates: Map[BetType.Forced, Decimal] = Map(
     BetType.Ante -> 0.1,

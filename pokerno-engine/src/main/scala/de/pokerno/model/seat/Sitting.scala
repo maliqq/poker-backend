@@ -1,6 +1,5 @@
 package de.pokerno.model.seat
 
-import math.{BigDecimal => Decimal}
 import com.fasterxml.jackson.annotation.{JsonAutoDetect, JsonIgnore, JsonIgnoreProperties, JsonInclude, JsonProperty, JsonPropertyOrder, JsonGetter}
 import com.fasterxml.jackson.module.scala.JsonScalaEnumeration
 import de.pokerno.poker.{Cards, MaskedCards, cards2binary}
@@ -14,7 +13,7 @@ class Sitting(
     _player: Player,
     @JsonIgnore protected var _state: Seat.State.Value = Seat.State.Taken,
     private var _stack: Option[Decimal] = None
-    ) extends Acting(_pos, _player) with States with Actions with Validations{
+    ) extends Auto(_pos, _player) with States with Actions with Validations{
   import Seat._
   import Callbacks._
   
@@ -156,7 +155,9 @@ class Sitting(
     _cards = None
     _masks = Array()
   }
-
+  
+  // AUTOPLAY
+  
   override def toString = {
     val b = new StringBuilder
     b.append("%s (%s) [".format(player, _state))

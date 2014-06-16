@@ -132,9 +132,14 @@ class Room(
       system.scheduler.scheduleOnce(after, self, gameplay.Deal.Start)
       stay()
 
-    // add bet when deal is active
+    // add bet
     case Event(addBet: cmd.AddBet, Running(_, deal)) ⇒
       deal ! gameplay.Betting.Add(addBet.player, addBet.bet) // pass to deal
+      stay()
+
+    // discard cards
+    case Event(discard: cmd.DiscardCards, Running(_, deal)) ⇒
+      deal ! gameplay.Discarding.Discard(discard.player, discard.cards) // pass to deal
       stay()
 
     case Event(join: cmd.JoinPlayer, _) ⇒
@@ -151,10 +156,6 @@ class Room(
       }
       runOrStay()
       
-    case Event(cmd.ChangePlayerState(player, newState), _) =>
-      stay()
-//    case Event(sitout: cmd.SitOut, _) =>
-//      stay()
 //    case Event(comeback: cmd.ComeBack, _) =>
 //      stay()
       
@@ -219,6 +220,28 @@ class Room(
       leavePlayer(kick.player)
       stay()
    
+    case Event(cmd.ComeBack(player), _) =>
+      table.playerSeat(player).map { seat =>
+        // we're ready
+        seat.ready()
+        events broadcast gameplay.Events.playerComeBack(seat)
+      }
+      runOrStay()
+      
+    case Event(cmd.SitOut(player), current) =>
+      table.playerSeat(player).map { seat =>
+        current match {
+          case NoneRunning =>
+            // do sit out immediately
+            seat.idle()
+            events broadcast gameplay.Events.playerSitOut(seat)
+            
+          case _ =>             seat.sitOut.toggle()
+        }
+      }
+      
+      stay()
+      
     case Event(PlayState, NoneRunning) =>
       sender ! api.PlayState(roomId, table, variation, stake)
       stay()

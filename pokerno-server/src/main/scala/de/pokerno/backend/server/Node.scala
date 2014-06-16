@@ -112,14 +112,17 @@ class Node extends Actor with ActorLogging {
               cmd.KickPlayer(player)
             
             case sitOut: action.SitOut =>
-              cmd.ChangePlayerState(player, SeatState.Idle)
+              cmd.SitOut(player)
             
             case comeBack: action.ComeBack =>
-              cmd.ChangePlayerState(player, SeatState.Ready)
+              cmd.ComeBack(player)
 
             case add: action.AddBet ⇒
               cmd.AddBet(player, add.bet)
             
+            case discard: action.DiscardCards =>
+              cmd.DiscardCards(player, discard.cards)
+              
             case buyIn: action.BuyIn =>
               cmd.AdvanceStack(player, buyIn.amount)
           })

@@ -12,6 +12,8 @@ object PlayerEvent extends Codec.Json {
 @JsonSubTypes(Array(
   new JsonSubTypes.Type(name = "join",      value = classOf[message.JoinTable]),
   new JsonSubTypes.Type(name = "leave",     value = classOf[message.LeaveTable]),
+  new JsonSubTypes.Type(name = "sitout",    value = classOf[message.SitOut]),
+  new JsonSubTypes.Type(name = "comeback",  value = classOf[message.ComeBack]),
   new JsonSubTypes.Type(name = "bet",       value = classOf[message.AddBet]),
   new JsonSubTypes.Type(name = "buyin",     value = classOf[message.BuyIn]),
   new JsonSubTypes.Type(name = "discard",   value = classOf[message.DiscardCards]),

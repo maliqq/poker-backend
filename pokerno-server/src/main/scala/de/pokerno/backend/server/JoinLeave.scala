@@ -22,8 +22,8 @@ trait JoinLeave { room: Room =>
       case err: Table.AlreadyJoined ⇒
         log.warning("Can't join player {} at {}: already joined", join.player, join.pos)
     }
-  } 
-
+  }
+  
   protected def leavePlayer(player: Player) {
     table.playerSeat(player) map { seat =>
       if (seat.canLeave || notRunning) {

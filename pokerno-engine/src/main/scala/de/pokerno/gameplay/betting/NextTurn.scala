@@ -1,7 +1,6 @@
 package de.pokerno.gameplay.betting
 
 import concurrent.duration._
-import math.{BigDecimal => Decimal}
 import de.pokerno.gameplay.{Betting, stg, Context => Gameplay, Round => GameplayRound}
 import de.pokerno.util.Colored._
 

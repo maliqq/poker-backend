@@ -1,7 +1,6 @@
 package de.pokerno.model
 
 import de.pokerno.poker.{Card, Cards}
-import math.{ BigDecimal ⇒ Decimal }
 import collection.mutable.ListBuffer
 import de.pokerno.protocol.Serializers.Cards2Binary
 import com.fasterxml.jackson.annotation.{JsonGetter, JsonProperty, JsonInclude}

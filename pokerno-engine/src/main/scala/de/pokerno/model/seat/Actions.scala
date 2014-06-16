@@ -1,7 +1,6 @@
 package de.pokerno.model.seat
 
 import de.pokerno.model.{Seat, Bet}
-import math.{BigDecimal => Decimal}
 
 trait Actions { s: Sitting =>
   import Seat.State

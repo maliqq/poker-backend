@@ -1,7 +1,6 @@
 package de.pokerno.gameplay
 
 import akka.actor.{ Actor, ActorRef, Cancellable }
-import math.{ BigDecimal ⇒ Decimal }
 import de.pokerno.model._
 import concurrent.duration._
 import de.pokerno.gameplay.betting.NextTurn

@@ -1,6 +1,5 @@
 package de.pokerno.model
 
-import math.{ BigDecimal ⇒ Decimal }
 import com.fasterxml.jackson.annotation.JsonValue
 
 trait BetType

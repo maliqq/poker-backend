@@ -4,7 +4,6 @@ import akka.actor.{ Actor, ActorRef, ActorLogging }
 
 import de.pokerno.model._
 import concurrent.duration._
-import math.{ BigDecimal ⇒ Decimal }
 
 object Tournament {
   case class Entry(var stack: Decimal) {

@@ -1,7 +1,5 @@
 package de.pokerno.model
 
-import math.{ BigDecimal ⇒ Decimal }
-
 import org.slf4j.LoggerFactory
 import com.fasterxml.jackson.annotation.{JsonIgnore, JsonProperty, JsonInclude, JsonAutoDetect, JsonPropertyOrder}
 import de.pokerno.util.Colored._
@@ -20,6 +18,7 @@ object Seat {
     val Empty = state("empty")
     // reserved seat
     val Taken = state("taken")
+    val Reserved = Taken // alias
     // waiting next deal
     val Ready = state("ready")
     // waiting big blind
@@ -37,9 +36,11 @@ object Seat {
     // autoplay
     val Auto = state("auto")
     // sit-out
-    val Idle = state("idle")
+    val SitOut = state("sit-out")
+    val Idle = SitOut // alias
     // disconnected
-    val Away = state("away")
+    val Off = state("off")
+    val Away = Off
   }
 
   object Presence extends Enumeration {

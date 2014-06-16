@@ -3,7 +3,6 @@ package de.pokerno.gameplay
 import org.slf4j.LoggerFactory
 import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnore, JsonInclude, JsonGetter}
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
-import math.{ BigDecimal ⇒ Decimal }
 
 import de.pokerno.poker.Cards
 import de.pokerno.model.{Table, Game, Player, Dealer, seat}

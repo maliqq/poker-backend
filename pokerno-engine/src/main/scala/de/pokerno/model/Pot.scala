@@ -1,6 +1,5 @@
 package de.pokerno.model
 
-import math.{ BigDecimal ⇒ Decimal }
 import java.util.Locale
 import util.control.Breaks._
 import com.fasterxml.jackson.annotation.{ JsonValue, JsonIgnore, JsonProperty, JsonPropertyOrder }

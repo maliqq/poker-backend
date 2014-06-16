@@ -1,6 +1,5 @@
 package de.pokerno.model.seat
 
-import math.{BigDecimal => Decimal}
 import com.fasterxml.jackson.annotation.{JsonAutoDetect, JsonIgnore, JsonInclude, JsonProperty, JsonGetter}
 
 import de.pokerno.model.{Seat, Player}

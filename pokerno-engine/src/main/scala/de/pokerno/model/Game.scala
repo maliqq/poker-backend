@@ -1,7 +1,6 @@
 package de.pokerno.model
 
 import de.pokerno.poker.Hand
-import math.{ BigDecimal ⇒ Decimal }
 
 import com.fasterxml.jackson.annotation.{JsonIgnore, JsonValue, JsonProperty, JsonCreator}
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize

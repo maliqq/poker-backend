@@ -4,7 +4,6 @@ import de.pokerno.model._
 import de.pokerno.gameplay.{Context => Gameplay, Round => GameplayRound}
 import de.pokerno.util.Colored._
 import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnore, JsonInclude, JsonGetter}
-import math.{ BigDecimal ⇒ Decimal }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 class Round(_table: Table, game: Game, stake: Stake) extends GameplayRound(_table) {

@@ -5,7 +5,6 @@ import de.pokerno.model._
 import de.pokerno.poker.Card
 import concurrent._
 import concurrent.duration._
-import math.{ BigDecimal ⇒ Decimal }
 import de.pokerno.gameplay.betting.NextTurn
 
 object Deal {

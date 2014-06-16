@@ -1,5 +1,5 @@
 package de.pokerno
 
-package object gameplay {
+package object tournament {
   type Decimal = math.BigDecimal
 }

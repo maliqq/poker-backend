@@ -1,6 +1,5 @@
 package de.pokerno.model
 
-import math.{ BigDecimal ⇒ Decimal }
 import beans._
 import com.fasterxml.jackson.annotation.{JsonIgnore, JsonInclude, JsonProperty, JsonCreator}
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
@@ -10,6 +9,7 @@ object Stake {
 
   def apply(bigBlind: Decimal,
       smallBlind: Option[Decimal] = None,
+      buyIn: Tuple2[Int, Int] = BuyIn.Default,
       ante: Either[Decimal, Boolean] = Right(false),
       bringIn: Either[Decimal, Boolean] = Right(false)): Stake = {
       
@@ -38,6 +38,7 @@ object Stake {
     Stake(
       bigBlind,
       smallBlind getOrElse bbs(BetType.SmallBlind),
+      BuyIn.Default,
       _ante,
       _bringIn
     )
@@ -49,12 +50,14 @@ class StakeBuilder {
   @JsonProperty var smallBlind: Option[Decimal] = None
   @JsonProperty var ante: Option[Decimal] = None
   @JsonProperty var bringIn: Option[Decimal] = None
+  @JsonProperty var buyIn: Option[Tuple2[Int, Int]] = None
   
   def build(): Stake = {
     assert(bigBlind != null) // FIXME
     Stake(
       bigBlind,
       smallBlind,
+      buyIn getOrElse(BuyIn.Default),
       ante.map(Left(_)) getOrElse(Right(false)),
       bringIn.map(Left(_)) getOrElse(Right(false))
     )
@@ -66,9 +69,12 @@ class StakeBuilder {
 case class Stake(
     @JsonProperty bigBlind: Decimal,
     @JsonProperty smallBlind: Decimal,
+    @JsonProperty buyIn: Tuple2[Int, Int],
     @JsonProperty ante: Option[Decimal],
     @JsonProperty bringIn: Option[Decimal]) {
 
+  def buyInAmount: Tuple2[Decimal, Decimal] = (bigBlind * buyIn._1, bigBlind * buyIn._2)
+  
   def amount(t: BetType.Forced): Decimal = t match {
     case BetType.BringIn
       if bringIn.isDefined  ⇒ bringIn.get

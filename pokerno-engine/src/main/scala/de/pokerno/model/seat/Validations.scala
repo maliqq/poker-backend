@@ -1,7 +1,6 @@
 package de.pokerno.model.seat
 
 import de.pokerno.model.{Seat, Bet, Stake}
-import math.{BigDecimal => Decimal}
 import de.pokerno.util.Colored._
 
 trait Validations { seat: Sitting =>

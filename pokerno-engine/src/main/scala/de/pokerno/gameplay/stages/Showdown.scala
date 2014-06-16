@@ -1,6 +1,5 @@
 package de.pokerno.gameplay.stages
 
-import math.{ BigDecimal ⇒ Decimal }
 import de.pokerno.model._
 import de.pokerno.poker._
 import de.pokerno.gameplay.{Events, Stage, stg}

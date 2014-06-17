@@ -83,6 +83,7 @@ object PokernoBuild extends Build {
     settings = Project.defaultSettings ++ /*ScroogeSBT.newSettings ++*/ Seq(
       name := "pokerno-protocol",
       version := "0.0.1",
+      unmanagedSourceDirectories in Compile += baseDirectory.value / "target/generated-sources/thrift/scrooge",
       libraryDependencies ++= Seq(
         "com.fasterxml.jackson.core" % "jackson-databind" % "2.3.3",
         "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.3.3",

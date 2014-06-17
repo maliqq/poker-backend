@@ -42,7 +42,10 @@ trait Betting {
   // current betting round finished
   def complete() {
     round.reset()
-    table.bettingComplete()
+    table.sitting.foreach { seat =>
+      seat.clearAction()
+      if (seat.inPot) seat.playing()
+    }
     events broadcast Events.declarePot(round.pot)
   }
 }

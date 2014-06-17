@@ -64,8 +64,10 @@ class Round(_table: Table, game: Game, stake: Stake) extends GameplayRound(_tabl
   }
   
   def addBet(sitting: seat.Sitting, _bet: Bet): Bet = {
+    sitting.actingTimer.cancel()
+    
     val player = sitting.player
-
+    
     val posting = {
       val _posting = sitting.posting(_bet)
     

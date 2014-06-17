@@ -23,8 +23,7 @@ class Context(_gameplay: Gameplay, ref: ActorRef) extends RoundContext(_gameplay
     round.acting match {
       case Some(sitting) if sitting.player == player =>
         
-        sitting.actingTimer.cancel()
-        info("[betting] add %s", bet)
+        info("[betting] %s add %s", player, bet)
         addBet(sitting, bet)
         // next turn
         ref ! nextTurn()
@@ -35,10 +34,12 @@ class Context(_gameplay: Gameplay, ref: ActorRef) extends RoundContext(_gameplay
   
   //
   def cancel(player: Player) = round.acting match {
-    case Some(seat) =>
-      if (seat.player == player) {
+    case Some(sitting) =>
+      info("[betting] %s cancel", player)
+      if (sitting.player == player) {
         // leaving currently acting player: just fold
-        addBet(seat, Bet.fold, forced = true)
+        addBet(sitting, Bet.fold, forced = true)
+        sitting.leave()
         ref ! nextTurn()
       } else {
         // in headsup - return uncalled bet, fold

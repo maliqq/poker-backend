@@ -47,14 +47,15 @@ case class Running(ctx: gameplay.Context, ref: ActorRef) extends Data
 class Room(
   val roomId: String,
   variation: model.Variation,
-  stake: model.Stake)
+  val stake: model.Stake,
+  val balance: de.pokerno.finance.Service)
     extends Actor
     with ActorLogging
     with FSM[Room.State.Value, Data]
     with JoinLeave
     with Presence
     with Observers
-    with Balance
+    //with Balance
     with gameplay.DealCycle {
   
   val table = new model.Table(variation.tableSize)
@@ -277,7 +278,7 @@ class Room(
   }
 
   private def startDeal(): Running = {
-    val ctx = new gameplay.Context(roomId, table, variation, stake, events)
+    val ctx = new gameplay.Context(roomId, table, variation, stake, balance, events)
     val deal = actorOf(Props(classOf[gameplay.Deal], ctx), name = f"room-$roomId-deal-${ctx.play.id}")
     Running(ctx, deal)
   }

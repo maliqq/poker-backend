@@ -2,6 +2,7 @@ package de.pokerno.replay
 
 import de.pokerno.poker.{ Deck, Card, Cards }
 import de.pokerno.model._
+import de.pokerno.finance.thrift.Balance.{FutureIface => Balance}
 import de.pokerno.protocol
 import de.pokerno.protocol.cmd
 import de.pokerno.gameplay.{Events, Context => Gameplay, stg}
@@ -23,7 +24,7 @@ object Replay {
 
 class Replay(
     id: String,
-    table: Table, variation: Variation, stake: Stake,
+    table: Table, variation: Variation, stake: Stake, balance: Balance,
     deck: Option[Cards])
   extends Actor with ActorLogging {
 
@@ -31,7 +32,7 @@ class Replay(
       new Dealer(new Deck(cards)) 
     } getOrElse new Dealer
   
-  val gameplay = new Gameplay(id, table, variation, stake, new Events(id), dealer)
+  val gameplay = new Gameplay(id, table, variation, stake, balance, new Events(id), dealer)
 
   val ctx = new Context(gameplay, self)
   import ctx._

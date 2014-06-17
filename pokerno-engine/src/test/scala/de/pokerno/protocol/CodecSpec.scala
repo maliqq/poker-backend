@@ -195,7 +195,7 @@ class CodecSpec extends FunSpec {
       dealer.dealBoard(3)
       val events = new gameplay.Events("test")
       val play = new Play("1")
-      val ctx = new gameplay.Context("test", table, game, stake, events, dealer = dealer, play = play)
+      val ctx = new gameplay.Context("test", table, game, stake, null, events, dealer = dealer, play = play)
       Json.encode(msg.PlayState(ctx)) should equal("""{}""")
     }
   }

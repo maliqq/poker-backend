@@ -29,10 +29,13 @@ object GameEvent extends Codec.Json {
   
   new JsonSubTypes.Type(name = "bet:ask",           value = classOf[message.AskBet]),
   new JsonSubTypes.Type(name = "discard:ask",       value = classOf[message.AskDiscard]),
+  new JsonSubTypes.Type(name = "buyin:ask",         value = classOf[message.AskBuyIn]),
   new JsonSubTypes.Type(name = "pot:",              value = classOf[message.DeclarePot]),
   new JsonSubTypes.Type(name = "hand:",             value = classOf[message.DeclareHand]),
   new JsonSubTypes.Type(name = "winner:",           value = classOf[message.DeclareWinner]),
   new JsonSubTypes.Type(name = "timer:tick",        value = classOf[message.TickTimer]),
+  
+  new JsonSubTypes.Type(name = "error:",            value = classOf[message.Error]),
 
   //new JsonSubTypes.Type(name = "seat:", value = classOf[DeclareSeat]),
 

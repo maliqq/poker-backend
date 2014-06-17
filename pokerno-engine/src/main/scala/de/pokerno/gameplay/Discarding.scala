@@ -28,7 +28,9 @@ trait Discarding {
   }
   
   def complete() {
-    table.discardingComplete()
+    table.sitting foreach { seat =>
+      if (seat.inPot) seat.playing()
+    }
   }
   
 }

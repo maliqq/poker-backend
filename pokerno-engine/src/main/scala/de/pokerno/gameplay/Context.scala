@@ -1,6 +1,7 @@
 package de.pokerno.gameplay
 
 import de.pokerno.model._
+import de.pokerno.finance.thrift.Balance.{FutureIface => Balance}
 
 trait ContextLike extends context.Button {
   //
@@ -24,6 +25,8 @@ trait ContextLike extends context.Button {
   val bettingRound: betting.Round
   val discardingRound: discarding.Round
   
+  val balance: Balance
+  
   def isTournament = mode == Mode.Tournament
   def isCash = mode == Mode.Cash
   
@@ -39,17 +42,19 @@ class Context(
     val table: Table,
     val variation: Variation,
     val stake: Stake,
+    val balance: Balance,
     val events: Events,
     val dealer: Dealer = new Dealer,
     val play: Play = new Play,
     val mode: Mode.Value = Mode.Cash
   ) extends ContextLike {
   
-  def this(id: String, table: Table, variation: Variation, stake: Stake) = this(
+  def this(id: String, table: Table, variation: Variation, stake: Stake, balance: Balance) = this(
       id,
       table,
       variation,
       stake,
+      balance,
       new Events(id)
       )
   

@@ -77,25 +77,4 @@ class Table(@JsonIgnore val size: Int) {
   private def addPlayer(at: Int, player: Player): Unit =  _seating(player) = at
   private def removePlayer(player: Player): Unit =        _seating.remove(player)
   
-  // gameplay logic
-  def playStart() = sitting foreach { seat =>
-    if (seat.canPlay) seat.playing()
-    //else if (seat.isAllIn) seat.idle()
-  }
-  
-  def bettingComplete() = sitting foreach { seat ⇒
-    seat.clearAction()
-    if (seat.inPot) seat.playing()
-  }
-  
-  def discardingComplete() = sitting foreach { seat =>
-    if (seat.inPot) seat.playing()
-  }
-  
-  def playStop() = sitting foreach { seat =>
-    seat.clearCards()
-    if (seat.isAllIn) seat.idle()
-    else if (seat.isFolded) seat.playing()
-  }
-
 }

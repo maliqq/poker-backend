@@ -8,7 +8,16 @@ case class PlayStart(ctx: stg.Context) extends Stage {
   import ctx.gameplay._
   
   def apply() = {
-    table.playStart()
+    table.sitting.foreach { seat =>
+      if (seat.isAllIn) {
+        seat.taken()
+        balance.available(seat.player).onSuccess { amount =>
+          events broadcast Events.requireBuyIn(seat, stake, amount)
+        }
+      }
+      if (seat.canPlay) seat.playing()
+    }
+    
     if (table.sitting.count(_.canPlay) <= 1) {
       throw Stage.Exit
     }

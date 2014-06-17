@@ -57,6 +57,8 @@ object Events {
     }
     start
   }
+  
+  def error(err: Throwable) = msg.Error(err.getMessage)
 
   def dealPocket(sitting: seat.Sitting, _type: DealType.Value, cards: Cards) = _type match {
     case DealType.Hole => msg.DealHole(sitting.asPosition, Left(cards))
@@ -75,6 +77,9 @@ object Events {
   
   def requireBet(sitting: seat.Sitting) = msg.AskBet(sitting.asActing)
   def requireDiscard(sitting: seat.Sitting) = msg.AskDiscard(sitting.asPosition)
+  def requireBuyIn(sitting: seat.Sitting, stake: Stake, available: Decimal) = {
+    msg.AskBuyIn(sitting.asPosition, stake.buyInAmount, available)
+  }
   
   def addBet(sitting: seat.Sitting, bet: Bet, timeout: Option[Boolean] = None)
                                 = msg.DeclareBet(sitting.asPosition, bet, timeout)

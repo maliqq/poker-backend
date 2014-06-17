@@ -56,12 +56,13 @@ trait States {
   def betting()     = ensureAllIn(State.Bet)
   def ready()       = ensureAllIn(State.Ready)
   
+  def taken()       = state = State.Taken
   def idle()        = state = State.Idle
   //def sitOut()      = state = State.Idle
   def away()        = state = State.Away
 
   def canPlay =
-    isReady || isPlaying //|| isFolded
+    isReady || isPlaying || isFolded
 
   // PLAY | POST_BB | ALL_IN
   def isActive =

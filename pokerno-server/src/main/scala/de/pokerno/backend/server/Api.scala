@@ -39,7 +39,13 @@ object Api {
         complete("ok")
       } ~
       delete {
-        complete("OK")
+        complete("ok")
+      }
+    } ~ pathPrefix("players" / Segment) { playerId =>
+      pathEnd {
+        get {
+          complete("ok")
+        }
       }
     }
     

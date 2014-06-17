@@ -107,7 +107,7 @@ class Service extends thrift.Balance.FutureIface {
   
   private def refill(player: Player, amount: Decimal = refillAmount): Decimal = {
     def refilled() = {
-      Console printf("refilled with %.2f", amount)
+      //Console printf("player %s: refilled with %.2f\n", player, amount)
       _refills(player) = new java.util.Date()
       amount
     }
@@ -121,7 +121,7 @@ class Service extends thrift.Balance.FutureIface {
         if (date.toInstant().isBefore(deadline)) refilled()
         else {
           val diff = ChronoUnit.MINUTES.between(date.toInstant(), now)
-          throw new thrift.Error("can't refill balance; last refill was %d minutes ago" format(diff))
+          throw new thrift.Error("player %s: can't refill balance; last refill was %d minutes ago" format(player, diff))
         }
       case _ => refilled()
     }

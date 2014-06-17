@@ -1,2 +1,3 @@
 -Dfile.encoding=UTF-8
+-Djava.library.path=/usr/local/lib/
 -XX:MaxPermGen=1024M -Xms512M -Xmx1536M -Xss1M -XX:+CMSClassUnloadingEnabled

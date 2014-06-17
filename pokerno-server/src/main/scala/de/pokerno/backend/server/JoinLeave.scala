@@ -19,7 +19,6 @@ trait JoinLeave { room: Room =>
     def reserve(): Option[seat.Sitting] = {
       try {
         val seat = table.takeSeat(join.pos, join.player)
-        events broadcast gameplay.Events.playerJoin(seat)
         return Some(seat)
       } catch {
         case err: Seat.IsTaken ⇒
@@ -40,6 +39,7 @@ trait JoinLeave { room: Room =>
           f.onSuccess { _ =>
             // TODO: reserve seat first 
             sitting.buyIn(amount)
+            events broadcast gameplay.Events.playerJoin(sitting)
           }
           
           f.onFailure { case err: de.pokerno.finance.thrift.Error =>

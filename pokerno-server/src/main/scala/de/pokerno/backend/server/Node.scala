@@ -71,6 +71,9 @@ class Node extends Actor with ActorLogging {
   import CommandConversions._
 
   val balance = new de.pokerno.finance.Service()
+  val broadcasts = Seq[Broadcast](
+      //new Broadcast.Zeromq("tcp://127.0.0.1:5555")
+    )
   
   override def preStart {
   }
@@ -117,7 +120,7 @@ class Node extends Actor with ActorLogging {
       actorSelection(id).resolveOne(1 second).onComplete {
         case Failure(_) ⇒
           log.info("spawning new room with id={}", id)
-          val room = context.actorOf(Props(classOf[Room], id, variation, stake, balance), name = id)
+          val room = context.actorOf(Props(classOf[Room], id, variation, stake, balance, broadcasts), name = id)
           room
         case _ ⇒
           log.warning("Room exists: {}", id)

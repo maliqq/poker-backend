@@ -7,6 +7,8 @@ object Broadcast {
   case class Redis(host: String, port: Int) extends Broadcast {
     val client = new redis.clients.jedis.Jedis(host, port)
     
+    def this(addr: java.net.InetSocketAddress) = this(addr.getHostName, addr.getPort)
+    
     def broadcast(topic: String, msg: Message) =
       client.publish(topic, Codec.encodeAsString(msg))
   }
@@ -31,20 +33,35 @@ object Broadcast {
     } 
   }
   
-  case class Zeromq(host: String, port: Int) extends Broadcast {
+  case class Zeromq(bind: String) extends Broadcast {
     import org.zeromq.ZMQ
     
-    val context = ZMQ.context(0) 
+    def this(host: String, port: Int) = this(f"tcp://$host:$port")
+    def this(addr: java.net.InetSocketAddress) = this(addr.getHostName, addr.getPort)
+    
+    val context = ZMQ.context(1) // 1 thread 
     val socket = context.socket(ZMQ.PUB)
-    socket.bind(f"tcp://$host:$port")
+    socket.bind(bind)
     
     def broadcast(topic: String, msg: Broadcast.Message) = {
-      socket.send(topic)
-      socket.sendMore(Codec.encodeAsString(msg))
+      socket.sendMore(topic)
+      socket.send(Codec.encodeAsString(msg))
     }
   }
 }
 
 abstract class Broadcast {
   def broadcast(topic: String, msg: Broadcast.Message): Unit
+}
+
+import akka.actor.Actor
+import de.pokerno.gameplay.Notification
+
+class Broadcasting(id: String, endpoints: Seq[Broadcast]) extends Actor {
+  
+  def receive = {
+    case Notification(msg, from, to) =>
+      endpoints.foreach { _.broadcast(id, msg) }
+  }
+  
 }

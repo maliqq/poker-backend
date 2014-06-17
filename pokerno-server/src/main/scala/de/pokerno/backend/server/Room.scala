@@ -48,7 +48,8 @@ class Room(
   val roomId: String,
   variation: model.Variation,
   val stake: model.Stake,
-  val balance: de.pokerno.finance.Service)
+  val balance: de.pokerno.finance.Service,
+  broadcasts: Seq[Broadcast])
     extends Actor
     with ActorLogging
     with FSM[Room.State.Value, Data]
@@ -69,7 +70,8 @@ class Room(
   val watchers  = observe(classOf[Watchers], f"room-$roomId-watchers")
   val logger    = observe(classOf[Journal], f"room-$roomId-journal", "/tmp", roomId)
   val metrics   = observe(classOf[Metrics], f"room-$roomId-metrics", roomId)
-
+  val broadcasting = observe(classOf[Broadcasting], f"room-$roomId-broadcasts", roomId, broadcasts)
+  
   log.info("starting room {}", roomId)
   startWith(State.Waiting, NoneRunning)
 

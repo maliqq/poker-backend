@@ -31,6 +31,9 @@ object Codec {
 
     def encodeAsString[T](msg: T) =
       mapper.writeValueAsString(msg)
+    
+    def encodePretty[T](msg: T) =
+      mapper.writerWithDefaultPrettyPrinter().writeValueAsString(msg)
       
     def decode[T <: Message](data: Array[Byte])(implicit manifest: Manifest[T]): T =
       mapper.readValue(data, manifest.runtimeClass).asInstanceOf[T]

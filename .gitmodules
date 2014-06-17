@@ -1,0 +1,3 @@
+[submodule "pokerno-protocol/src/main/thrift"]
+	path = pokerno-protocol/src/main/thrift
+	url = git@github.com:pokernode/poker-thrift.git

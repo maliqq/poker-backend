@@ -2,14 +2,14 @@ package de.pokerno.backend.server.hub
 
 trait Exchange {
 
-  var consumers: java.util.ArrayList[Consumer] = null
+  val consumers = collection.mutable.ListBuffer[Consumer]()
 
   def register(consumer: Consumer) {
-    consumers.add(consumer)
+    consumers += consumer
   }
 
   def unregister(consumer: Consumer) {
-    consumers.remove(consumer)
+    consumers -= consumer
   }
 
 }

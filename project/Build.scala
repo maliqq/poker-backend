@@ -58,7 +58,7 @@ object PokernoBuild extends Build {
     //testOptions in Test += Tests.Argument("-oF"),
     javacOptions ++= Seq("-source", "1.7", "-target", "1.7"),
     //scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-language:implicitConversions", "-language:postfixOps"),
-    resolvers += "spray repo" at "http://repo.spray.io"
+    resolvers += "spray repo" at "http://repo.spray.io"//,
     //resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
   )
   
@@ -143,6 +143,20 @@ object PokernoBuild extends Build {
       libraryDependencies ++= testDeps
     )
   ) dependsOn(protocol)
+
+  lazy val database = Project(
+    id = "pokerno-database",
+    base = file("pokerno-database"),
+    settings = Project.defaultSettings ++ Seq(
+      name := "pokerno-database",
+      libraryDependencies ++= testDeps ++ Seq(
+        //"com.typesafe.slick" %% "slick" % "2.0.2",
+        //"org.slf4j" % "slf4j-nop" % "1.6.4",
+        "postgresql" % "postgresql" % "9.1-901.jdbc4",
+        "org.squeryl" %% "squeryl" % "0.9.5-6"
+      )
+    )
+  ) dependsOn(engine)
 
   lazy val server = Project(
     id = "pokerno-server",

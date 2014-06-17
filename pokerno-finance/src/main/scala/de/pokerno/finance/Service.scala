@@ -1,22 +1,16 @@
 package de.pokerno.finance
 
 import math.{BigDecimal => Decimal}
+import org.apache.thrift.protocol.{TBinaryProtocol, TProtocolFactory}
+import com.twitter.finagle.builder.ServerBuilder
 import com.twitter.finagle.thrift.ThriftServerFramedCodec
+import com.twitter.finagle.{Service => FinagleService}
 import com.twitter.util.Future
-import org.apache.thrift.protocol.TBinaryProtocol
 import concurrent.duration._
 
 object Service {
   
-  import org.apache.thrift.protocol.{TBinaryProtocol, TProtocolFactory}
-  
   import java.net.InetSocketAddress
-  
-  import com.twitter.util.Future
-  import com.twitter.finagle.builder.ServerBuilder
-  import com.twitter.finagle.thrift.ThriftServerFramedCodec
-
-  import com.twitter.finagle.{Service => FinagleService}
   
   def start(addr: InetSocketAddress) {
     val protocol = new TBinaryProtocol.Factory()

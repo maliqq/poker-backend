@@ -54,6 +54,7 @@ class Room(
     with JoinLeave
     with Presence
     with Observers
+    with Balance
     with gameplay.DealCycle {
   
   val table = new model.Table(variation.tableSize)

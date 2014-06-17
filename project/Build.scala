@@ -77,6 +77,13 @@ object PokernoBuild extends Build {
     "com.typesafe.akka" %% "akka-testkit" % akkaVersion
   )
 
+  lazy val databaseDeps = Seq(
+    //"com.typesafe.slick" %% "slick" % "2.0.2",
+    //"org.slf4j" % "slf4j-nop" % "1.6.4",
+    "postgresql" % "postgresql" % "9.1-901.jdbc4",
+    "org.squeryl" %% "squeryl" % "0.9.5-6"
+  )
+
   lazy val protocol = Project(
     id = "pokerno-protocol",
     base = file("pokerno-protocol"),
@@ -140,7 +147,7 @@ object PokernoBuild extends Build {
     base = file("pokerno-finance"),
     settings = Project.defaultSettings ++ Seq(
       name := "pokerno-finance",
-      libraryDependencies ++= testDeps
+      libraryDependencies ++= testDeps ++ databaseDeps
     )
   ) dependsOn(protocol)
 
@@ -149,12 +156,7 @@ object PokernoBuild extends Build {
     base = file("pokerno-database"),
     settings = Project.defaultSettings ++ Seq(
       name := "pokerno-database",
-      libraryDependencies ++= testDeps ++ Seq(
-        //"com.typesafe.slick" %% "slick" % "2.0.2",
-        //"org.slf4j" % "slf4j-nop" % "1.6.4",
-        "postgresql" % "postgresql" % "9.1-901.jdbc4",
-        "org.squeryl" %% "squeryl" % "0.9.5-6"
-      )
+      libraryDependencies ++= testDeps ++ databaseDeps
     )
   ) dependsOn(engine)
 

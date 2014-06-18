@@ -33,6 +33,8 @@ object Room {
   case object Close extends ChangeState
   case object Pause extends ChangeState
   case object Resume extends ChangeState
+  
+  case class ChangedState(id: String, newState: State.Value)
 
   case class Observe(observer: ActorRef, name: String)
   
@@ -49,6 +51,7 @@ class Room(
   variation: model.Variation,
   val stake: model.Stake,
   val balance: de.pokerno.finance.Service,
+  val sync: ActorRef,
   broadcasts: Seq[Broadcast])
     extends Actor
     with ActorLogging
@@ -67,10 +70,11 @@ class Room(
   import concurrent.duration._
   import Room._
 
-  val watchers  = observe(classOf[Watchers], f"room-$roomId-watchers")
-  val logger    = observe(classOf[Journal], f"room-$roomId-journal", "/tmp", roomId)
-  val metrics   = observe(classOf[Metrics], f"room-$roomId-metrics", roomId)
-  val broadcasting = observe(classOf[Broadcasting], f"room-$roomId-broadcasts", roomId, broadcasts)
+  val watchers      = observe(classOf[Watchers], f"room-$roomId-watchers")
+  val journal       = observe(classOf[Journal], f"room-$roomId-journal", "/tmp", roomId)
+  val metrics       = observe(classOf[Metrics], f"room-$roomId-metrics", roomId)
+  val broadcasting  = observe(classOf[Broadcasting], f"room-$roomId-broadcasts", roomId, broadcasts)
+  notify(sync, f"room-$roomId-sync")
   
   log.info("starting room {}", roomId)
   startWith(State.Waiting, NoneRunning)
@@ -262,6 +266,9 @@ class Room(
   onTransition {
     case State.Waiting -> State.Active ⇒
       self ! gameplay.Deal.Next(firstDealAfter)
+      parent ! Room.ChangedState(roomId, State.Active)
+    case State.Active -> State.Waiting =>
+      parent ! Room.ChangedState(roomId, State.Waiting)
   }
   
   initialize()

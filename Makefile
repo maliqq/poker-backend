@@ -1,5 +1,5 @@
 start:
-	./sbt "project pokerno-server" "run --rpc --http-api --websocket --restore ./restore.json"
+	./sbt "project pokerno-server" "run --rpc --http-api --websocket --restore ./restore.json --db-props ./etc/database.properties"
 start-replayer:
 	./sbt "project pokerno-replay" "run --http"
 compile:

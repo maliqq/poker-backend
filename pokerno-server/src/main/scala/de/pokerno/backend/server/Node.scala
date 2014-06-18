@@ -18,9 +18,16 @@ object Node {
   
   def start(config: Config): ActorRef = {
     log.info("starting with config: {}", config)
-
+    
+    val session = config.dbProps.map { file =>
+      val f = new java.io.FileInputStream(file)
+      val props = new java.util.Properties
+      props.load(f)
+      de.pokerno.db.Connection.connect(props)
+    }
+    
     log.info("starting node at {}", config.host)
-    val node = system.actorOf(Props(classOf[Node]), name = "node-main")
+    val node = system.actorOf(Props(classOf[Node], session), name = "node-main")
 
     config.rpc.map { rpcConfig ⇒
       log.info("starting rpc with config: {}", rpcConfig)
@@ -64,16 +71,18 @@ object Node {
   
 }
 
-class Node extends Actor with ActorLogging {
+class Node(session: Option[org.squeryl.Session]) extends Actor with ActorLogging {
   import context._
   import concurrent.duration._
   import util.{ Success, Failure }
   import CommandConversions._
 
   val balance = new de.pokerno.finance.Service()
+  val sync = actorOf(Props(classOf[DatabaseSync], session), name = "database-sync")
+  
   val broadcasts = Seq[Broadcast](
       //new Broadcast.Zeromq("tcp://127.0.0.1:5555")
-    )
+  )
   
   override def preStart {
   }
@@ -120,7 +129,7 @@ class Node extends Actor with ActorLogging {
       actorSelection(id).resolveOne(1 second).onComplete {
         case Failure(_) ⇒
           log.info("spawning new room with id={}", id)
-          val room = context.actorOf(Props(classOf[Room], id, variation, stake, balance, broadcasts), name = id)
+          val room = context.actorOf(Props(classOf[Room], id, variation, stake, balance, sync, broadcasts), name = id)
           room
         case _ ⇒
           log.warning("Room exists: {}", id)
@@ -133,6 +142,9 @@ class Node extends Actor with ActorLogging {
         case Failure(_) ⇒
           log.warning("Room not found: {}", id)
       }
+    
+    case msg: Room.ChangedState =>
+      sync ! msg
     
     case Node.SendCommand(id, cmd) =>
       actorSelection(id).resolveOne(1 second).onComplete {

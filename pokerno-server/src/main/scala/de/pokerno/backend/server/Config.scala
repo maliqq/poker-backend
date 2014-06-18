@@ -39,7 +39,8 @@ case class Config(
     var host: String = "localhost",
     var http: Option[gw.http.Config] = None,
     var api: Option[Config.Http.Api] = None,
-    var rpc: Option[Config.Rpc] = None) {
+    var rpc: Option[Config.Rpc] = None,
+    var dbProps: Option[String] = None) {
 
   def apiConfig =
     api.getOrElse(Config.Http.Api())

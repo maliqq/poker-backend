@@ -6,52 +6,119 @@ import org.squeryl.adapters.PostgreSqlAdapter
 import org.squeryl.dsl._
 import org.squeryl.PrimitiveTypeMode._
 
-case class Room(
-    var id: String,
-    var state: String,
-    var name: String,
-    @Column("game_id") var gameId: Int,
-    @Column("stake_id") var stakeId: Int,
-    @Column("players_count") var playersCount: Int,
-    @Column("waiting_count") var waitingCount: Int) extends KeyedEntity[String] {
-  def this() = this("", "", "", 0, 0, 0, 0)
-}
-
-case class Stake(
-    var id: Int,
-    @Column("big_blind") var bigBlind: Double,
-    @Column("small_blind") var smallBlind: Double,
-    var ante: Option[Double],
-    @Column("buy_in_min") var buyInMin: Double,
-    @Column("buy_in_max") var buyInMax: Double) extends KeyedEntity[Int] {
-  def this() = this(0, 0, 0, None, 0, 0)
-}
-
-case class Game(
-    var id: Int,
-    var variation: String,
-    var limit: String,
-    @Column("speed") var speed: Option[Int],
-    @Column("table_max") var tableSize: Int) {
-  def this() = this(0, "", "", None, 0)
-}
-
 object Database extends Schema {
-  val rooms = table[Room]("poker_tables")
-  val games = table[Game]("poker_games")
-  val stakes = table[Stake]("poker_table_stakes")
+  case class Room(
+      @Column(name = "node_id") var nodeId: java.util.UUID,
+      var state: String,
+      var name: String,
+      @Column(name = "game_id", optionType = classOf[Int]) var gameId: Option[Int],
+      @Column(name = "mix_id", optionType = classOf[Int]) var mixId: Option[Int],
+      @Column("stake_id") var stakeId: Int,
+      @Column("players_count") var playersCount: Int,
+      @Column("waiting_count") var waitingCount: Int) extends KeyedEntity[java.util.UUID] {
+    var id: java.util.UUID = null
+    def this() = this(null, "", "", None, None, 0, 0, 0)
+  }
   
-  lazy val roomsWithGamesAndStakes = join(rooms, games.leftOuter, stakes.leftOuter)((room, game, stake) =>
-    select((room, game, stake))
-    on(room.gameId === game.map(_.id), room.stakeId === stake.map(_.id))
+  case class Stake(
+      @Column("big_blind") var bigBlind: Double,
+      @Column("small_blind") var smallBlind: Double,
+      @Column(optionType = classOf[Double])  var ante: Option[Double],
+      @Column("buy_in_min") var buyInMin: Int,
+      @Column("buy_in_max") var buyInMax: Int) extends KeyedEntity[Long] {
+    var id: Long = 0
+    def this() = this(0, 0, None, 0, 0)
+  }
+  
+  case class Game(
+      var variation: String,
+      var limit: Option[String],
+      @Column(optionType = classOf[Int]) var speed: Option[Int],
+      @Column("table_size") var tableSize: Int) extends KeyedEntity[Long] {
+    var id: Long = 0
+    def this() = this("", None, None, 0)
+  }
+  
+  case class Seat(
+      @Column("room_id") var roomId: java.util.UUID,
+      var pos: Int,
+      @Column("player_id") var playerId: java.util.UUID,
+      var stack: Double,
+      var state: String
+  ) extends KeyedEntity[Long] {
+    var id: Long = 0
+    def this() = this(null, 0, null, 0, "")
+  }
+  
+  case class Mix(
+      var variation: String,
+      @Column(optionType = classOf[Int]) var speed: Option[Int],
+      @Column("table_size") var tableSize: Int) extends KeyedEntity[Long] {
+    var id: Long = 0
+    def this() = this("", None, 0)
+  }
+
+  val rooms     = table[Room]("poker_rooms")
+  val games     = table[Game]("poker_variations")
+  val mixes     = table[Mix]("poker_variations")
+  val stakes    = table[Stake]("poker_stakes")
+  val seats     = table[Seat]("poker_seats")
+  
+  lazy val roomsWithGamesAndStakes = join(rooms, games.leftOuter, mixes.leftOuter, stakes)((room, game, mix, stake) =>
+    select((room, game, mix, stake))
+    on(room.gameId === game.map(_.id), room.mixId === mix.map(_.id), room.stakeId === stake.id)
   )
+  
+  def getRooms(nodeId: java.util.UUID) = roomsWithGamesAndStakes.where(_._1.nodeId === nodeId)
+  
+  def getRoom(id: java.util.UUID) = roomsWithGamesAndStakes.where(_._1.id === id).head
+  
+  def createSeat(seat: Seat) = seats.insert(seat)
+  
+  def deleteSeat(roomId: java.util.UUID, pos: Int, player: java.util.UUID) = seats.deleteWhere(seat =>
+      (seat.roomId === roomId and seat.pos === pos and seat.playerId === player)
+    )
+  
+  def updateRoomState(id: java.util.UUID, state: String) =
+    update(rooms)(room =>
+      where(room.id === id)
+      set(room.state := state)
+    )
+  
+  def updateSeatState(roomId: java.util.UUID, pos: Int, player: java.util.UUID, state: String) =
+    update(seats)(seat =>
+      where(seat.roomId === roomId and seat.pos === pos and seat.playerId === player)
+      set(seat.state := state)
+    )
+  
 }
 
 object Connection {
-  def connect() = {
-    Class.forName("org.postgresql.Driver")
-    val jdbcConnection = java.sql.DriverManager.getConnection("jdbc:postgresql://localhost/poker_development", "malik", "")
-    jdbcConnection.setAutoCommit(false)
-    Session.create(jdbcConnection, new PostgreSqlAdapter)
+  def connect(): Session = {
+    val props = System.getProperties()
+    connect(props)
+  }
+  
+  def connect(props: java.util.Properties): Session = {
+    val driver            = props.getProperty("database.driver")
+    val url               = props.getProperty("database.url")
+    val user              = props.getProperty("database.username")
+    val password          = props.getProperty("database.password")
+    
+    connect(driver, url, user, password)
+  }
+  
+  def connect(driver: String, url: String, user: String, password: String): Session = {
+    val sessionCreator = () => {
+      Class.forName(driver)
+      val jdbcConnection = java.sql.DriverManager.getConnection(url, user, password)
+      //jdbcConnection.setAutoCommit(false)
+      Session.create(jdbcConnection, new PostgreSqlAdapter {
+        import org.squeryl.internals.FieldMetaData
+        override def createSequenceName(fmd: FieldMetaData) = fmd.parentMetaData.viewOrTable.name + "_" + fmd.columnName + "_seq"
+      })
+    }
+    //SessionFactory.concreteFactory = Some(sessionCreator)
+    sessionCreator()
   }
 }

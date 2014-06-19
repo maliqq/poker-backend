@@ -1,12 +1,17 @@
-package de.pokerno.backend.server
+package de.pokerno.backend.server.node
 
 import akka.actor.ActorRef
-
-import com.twitter.finagle.thrift.ThriftServerFramedCodec
 import com.twitter.util.Future
-import org.apache.thrift.protocol.TBinaryProtocol
-
 import de.pokerno.protocol.{thrift, cmd}
+import java.nio.ByteBuffer
+import de.pokerno.backend.server.{Node, Room}
+import de.pokerno.backend.Thrift
+
+object Service {
+  def apply(node: ActorRef, addr: java.net.InetSocketAddress) = {
+    Thrift.serve[thrift.rpc.Node.FinagledService, thrift.rpc.Node.FutureIface](new Service(node), "NodeService", addr)
+  }
+}
 
 class Service(node: ActorRef) extends thrift.rpc.Node.FutureIface {
   import java.nio.ByteBuffer
@@ -66,10 +71,4 @@ class Service(node: ActorRef) extends thrift.rpc.Node.FutureIface {
   def doubleRebuy(id: String, player: String, amount: Double): Future[Unit] = Future{}
   
   def addon(id: String, player: String, amount: Double): Future[Unit] = Future{}
-}
-
-object Service {
-  def apply(node: ActorRef, addr: java.net.InetSocketAddress) = {
-    Thrift.serve[thrift.rpc.Node.FinagledService, thrift.rpc.Node.FutureIface](new Service(node), "NodeService", addr)
-  }
 }

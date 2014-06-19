@@ -5,13 +5,12 @@ import de.pokerno.model
 import de.pokerno.gameplay
 import de.pokerno.backend.Gateway
 import de.pokerno.backend.gateway.http
-
 import de.pokerno.protocol.GameEvent
 import de.pokerno.protocol.{ cmd, api, msg => message}
-
 import de.pokerno.protocol.thrift
 import util.{ Success, Failure }
 import scala.concurrent.{ Promise, Future }
+import de.pokerno.backend.server.room._
 
 object Room {
 

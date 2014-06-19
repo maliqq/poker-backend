@@ -1,9 +1,7 @@
 package de.pokerno.backend.server
 
 import akka.actor.{ Actor, ActorLogging }
-
-import de.pokerno.model.{Bet, DealType}
-import de.pokerno.poker.Cards
+import de.pokerno.model.Bet
 import de.pokerno.gameplay.Notification
 import de.pokerno.protocol.msg
 

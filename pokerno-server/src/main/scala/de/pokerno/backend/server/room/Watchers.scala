@@ -1,9 +1,9 @@
-package de.pokerno.backend.server
+package de.pokerno.backend.server.room
 
-import de.pokerno.gameplay.{ Notification, Route }
+import de.pokerno.gameplay.{Notification, Route}
 import de.pokerno.backend.gateway.http
 import akka.actor.{ Actor, ActorLogging }
-import de.pokerno.protocol.{GameEvent, PlayerEvent}
+import de.pokerno.protocol.GameEvent
 
 object Watchers {
   case class Watch(watcher: http.Connection)
@@ -12,6 +12,8 @@ object Watchers {
   case class Broadcast(msg: GameEvent)
   case class Send(to: String, msg: GameEvent)
 }
+
+// TODO use Netty ChannelGroups
 
 class Watchers extends Actor with ActorLogging {
   import Watchers._

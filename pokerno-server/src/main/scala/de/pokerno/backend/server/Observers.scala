@@ -4,9 +4,7 @@ import akka.actor.{ Actor, ActorRef, Props }
 
 import de.pokerno.gameplay
 
-trait Observers {
-
-  a: Actor ⇒
+trait Observers { a: Actor ⇒
 
   def events: gameplay.Events
   def roomId: String

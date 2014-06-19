@@ -1,14 +1,11 @@
-package de.pokerno.backend.server
+package de.pokerno.backend
 
 import org.apache.thrift.protocol.TBinaryProtocol
 import org.apache.thrift.protocol.TProtocolFactory
-import de.pokerno.protocol.thrift
-
-import java.net.InetSocketAddress
-
-import com.twitter.util.Future
 import com.twitter.finagle.builder.ServerBuilder
 import com.twitter.finagle.thrift.ThriftServerFramedCodec
+import com.twitter.finagle.{Service => FinagleService}
+import org.apache.thrift.protocol.TProtocolFactory
 
 object Thrift {
   

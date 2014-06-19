@@ -1,9 +1,8 @@
 package de.pokerno.backend.server
 
-import akka.actor.{ Actor, ActorRef, ActorSystem, Cancellable }
+import akka.actor.Actor
 import de.pokerno.model
 import de.pokerno.gameplay
-import de.pokerno.protocol.cmd
 import concurrent.duration._
 
 trait Presence { a: Actor ⇒

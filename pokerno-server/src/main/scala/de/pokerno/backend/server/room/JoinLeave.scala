@@ -1,10 +1,9 @@
-package de.pokerno.backend.server
+package de.pokerno.backend.server.room
 
-import akka.actor.ActorLogging
 import de.pokerno.model.{Player, Stake, Seat, seat, Table}
 import de.pokerno.gameplay
 import de.pokerno.protocol.cmd
-import concurrent.Await
+import de.pokerno.backend.server.{Room, Running}
 
 trait JoinLeave { room: Room =>
 

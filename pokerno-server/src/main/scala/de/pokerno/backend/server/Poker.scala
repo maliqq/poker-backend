@@ -4,9 +4,9 @@ import com.twitter.util.Future
 import com.twitter.finagle.builder.ServerBuilder
 import com.twitter.finagle.thrift.ThriftServerFramedCodec
 import org.apache.thrift.protocol.TBinaryProtocol
-
 import java.nio.ByteBuffer
 import de.pokerno.protocol.thrift
+import de.pokerno.backend.Thrift
 
 class Poker extends thrift.rpc.Poker.FutureIface {
   import de.pokerno.poker._

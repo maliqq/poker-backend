@@ -1,15 +1,14 @@
 package de.pokerno.backend.server
 
 import org.slf4j.{ Logger, LoggerFactory }
-
 import de.pokerno.model.{Variation, Stake}
 import de.pokerno.model.Seat.{State => SeatState}
 import de.pokerno.backend.{ gateway ⇒ gw }
 import de.pokerno.backend.Gateway
 import de.pokerno.backend.gateway.http
 import de.pokerno.protocol._
-
 import akka.actor.{ Actor, ActorLogging, ActorRef, Props, ActorSystem }
+import de.pokerno.backend.server.node.Service
 
 object Node {
 

@@ -1,11 +1,11 @@
 package de.pokerno.gameplay
 
-abstract class Stage {
+private[gameplay] abstract class Stage {
   val ctx: stg.Context
   def apply(): Unit
 }
 
-object Stage {
+private[gameplay] object Stage {
   trait Control
 
   case object Next extends Control {

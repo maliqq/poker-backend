@@ -5,7 +5,7 @@ import de.pokerno.model._
 import concurrent.duration._
 import de.pokerno.gameplay.betting.NextTurn
 
-trait Betting {
+private[gameplay] trait Betting {
   val gameplay: Context
   
   import gameplay._

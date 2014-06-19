@@ -4,7 +4,7 @@ import concurrent.duration._
 import de.pokerno.gameplay.{Betting, stg, Context => Gameplay, Round => GameplayRound}
 import de.pokerno.util.Colored._
 
-object NextTurn {
+private[gameplay] object NextTurn {
   import de.pokerno.model.seat.Sitting
   
   def decide(all: Seq[Sitting], call: Decimal): GameplayRound.Transition = {

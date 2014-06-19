@@ -4,7 +4,7 @@ import de.pokerno.model._
 import akka.actor.ActorRef
 import de.pokerno.protocol.GameEvent
 
-object Stages {
+private[gameplay] object Stages {
   
   trait Default {
     import Stages._

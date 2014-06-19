@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory
 import de.pokerno.gameplay.{Round, Context => Gameplay}
 import de.pokerno.model.{Player, seat}
 
-abstract class Context(val gameplay: Gameplay) {
+private[gameplay] abstract class Context(val gameplay: Gameplay) {
   protected val log = LoggerFactory.getLogger(getClass)
   
   import gameplay._

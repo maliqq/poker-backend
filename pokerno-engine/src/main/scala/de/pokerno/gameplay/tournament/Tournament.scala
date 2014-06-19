@@ -1,4 +1,4 @@
-package de.pokerno.tournament
+package de.pokerno.gameplay.tournament
 
 import akka.actor.{ Actor, ActorRef, ActorLogging }
 

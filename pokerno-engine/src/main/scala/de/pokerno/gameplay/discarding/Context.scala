@@ -7,7 +7,7 @@ import de.pokerno.gameplay.round.{Context => RoundContext}
 import de.pokerno.poker.Cards
 import de.pokerno.model.Player
 
-class Context(_gameplay: Gameplay, ref: ActorRef) extends RoundContext(_gameplay) with Discarding {
+private[gameplay] class Context(_gameplay: Gameplay, ref: ActorRef) extends RoundContext(_gameplay) with Discarding {
   
   import gameplay._
   

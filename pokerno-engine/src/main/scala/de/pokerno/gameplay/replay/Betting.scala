@@ -1,4 +1,4 @@
-package de.pokerno.replay
+package de.pokerno.gameplay.replay
 
 import org.slf4j.LoggerFactory
 import de.pokerno.gameplay

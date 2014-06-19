@@ -2,7 +2,7 @@ package de.pokerno.gameplay.stg
 
 import de.pokerno.gameplay.Stage
 
-class Builder[Ctx <: Context] {
+private[gameplay] class Builder[Ctx <: Context] {
   
   val chain = new Chain[Ctx]()
 

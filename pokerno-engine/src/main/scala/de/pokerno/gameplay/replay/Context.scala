@@ -1,4 +1,4 @@
-package de.pokerno.replay
+package de.pokerno.gameplay.replay
 
 import de.pokerno.model.Street
 import de.pokerno.gameplay.stg

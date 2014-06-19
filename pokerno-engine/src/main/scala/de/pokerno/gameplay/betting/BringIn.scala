@@ -1,5 +1,5 @@
 package de.pokerno.gameplay.betting
 
-trait BringIn {
+private[gameplay] trait BringIn {
 
 }

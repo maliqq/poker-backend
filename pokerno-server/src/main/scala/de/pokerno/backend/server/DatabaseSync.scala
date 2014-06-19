@@ -5,6 +5,7 @@ import akka.actor.{Actor, ActorLogging}
 import de.pokerno.protocol.msg
 import de.pokerno.gameplay.{Notification, Route}
 
+// TODO database pooling
 class DatabaseSync(session: Option[org.squeryl.Session]) extends Actor with ActorLogging {
   import de.pokerno.db.thrift.{State => ThriftState}
   

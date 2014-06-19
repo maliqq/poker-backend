@@ -7,7 +7,7 @@ import de.pokerno.util.Colored._
 import akka.actor.{ActorRef, Cancellable}
 import concurrent.duration._
 
-class Context(_gameplay: Gameplay, ref: ActorRef) extends RoundContext(_gameplay) with Betting {
+private[gameplay] class Context(_gameplay: Gameplay, ref: ActorRef) extends RoundContext(_gameplay) with Betting {
   
   import gameplay._
   

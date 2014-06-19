@@ -3,7 +3,7 @@ package de.pokerno.gameplay.stages
 import de.pokerno.gameplay.{Events, Stage, stg}
 import de.pokerno.util.Colored._
 
-case class PlayStart(ctx: stg.Context) extends Stage {
+private[gameplay] case class PlayStart(ctx: stg.Context) extends Stage {
   
   import ctx.gameplay._
   

@@ -3,7 +3,7 @@ package de.pokerno.gameplay.stages
 import de.pokerno.model._
 import de.pokerno.gameplay.{Events, Stage, stg}
 
-case class Dealing(ctx: stg.Context, _type: DealType.Value, cardsNum: Option[Int] = None) extends Stage {
+private[gameplay] case class Dealing(ctx: stg.Context, _type: DealType.Value, cardsNum: Option[Int] = None) extends Stage {
   
   import ctx.gameplay._
   

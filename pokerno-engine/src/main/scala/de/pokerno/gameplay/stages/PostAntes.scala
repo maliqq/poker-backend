@@ -7,7 +7,7 @@ import de.pokerno.gameplay.{Betting, Stage, stg}
  * Стадия принудительных ставок-анте
  */
 
-case class PostAntes(ctx: stg.Context) extends Stage with Betting {
+private[gameplay] case class PostAntes(ctx: stg.Context) extends Stage with Betting {
   
   val gameplay = ctx.gameplay
   

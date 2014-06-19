@@ -3,7 +3,7 @@ package de.pokerno.gameplay
 import de.pokerno.poker.Cards
 import de.pokerno.model.{Player, seat}
 
-trait Discarding {
+private[gameplay] trait Discarding {
 
   val gameplay: Context
   

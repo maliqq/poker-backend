@@ -1,4 +1,4 @@
-package de.pokerno.replay
+package de.pokerno.gameplay.replay
 
 import de.pokerno.gameplay.{ Events, Stage, stg }
 import de.pokerno.model.{Player, DealType}

@@ -9,7 +9,7 @@ import scala.math.{BigDecimal => Decimal}
  * Стадия вскрытия карт
  */
 
-case class Showdown(ctx: stg.Context) extends Stage {
+private[gameplay] case class Showdown(ctx: stg.Context) extends Stage {
   
   import ctx.gameplay._
   

@@ -7,11 +7,11 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import de.pokerno.poker.Cards
 import de.pokerno.model.{Table, Game, Player, Dealer, seat}
 
-class Sitting2Acting extends com.fasterxml.jackson.databind.util.StdConverter[Option[seat.Sitting], Option[seat.Acting]] {
+private[gameplay] class Sitting2Acting extends com.fasterxml.jackson.databind.util.StdConverter[Option[seat.Sitting], Option[seat.Acting]] {
   override def convert(sitting: Option[seat.Sitting]): Option[seat.Acting] = sitting.map(_.asActing)
 }
 
-object Round {
+private[gameplay] object Round {
 
   trait Transition
   
@@ -33,7 +33,7 @@ object Round {
 
 }
 
-abstract class Round(table: Table) {
+private[gameplay] abstract class Round(table: Table) {
   
   private val log = LoggerFactory.getLogger(getClass)
   

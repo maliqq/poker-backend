@@ -2,7 +2,7 @@ package de.pokerno.gameplay.stages
 
 import de.pokerno.gameplay.{Events, Stage, stg}
 
-case class RotateGame(ctx: stg.Context) extends Stage {
+private[gameplay] case class RotateGame(ctx: stg.Context) extends Stage {
   
   import ctx.gameplay._
   

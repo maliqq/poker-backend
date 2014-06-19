@@ -11,6 +11,7 @@ import de.pokerno.gameplay.Notification
 object Metrics {
 }
 
+// TODO reporters
 class Metrics(id: String) extends Actor with ActorLogging {
   final val metrics = new MetricRegistry
   //val reporter = ConsoleReporter.forRegistry(metrics).build()

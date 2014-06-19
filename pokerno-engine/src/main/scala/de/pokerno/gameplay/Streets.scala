@@ -4,12 +4,12 @@ import de.pokerno.model._
 import de.pokerno.util.Colored._
 import akka.actor.{ Actor, Props, ActorLogging, ActorRef }
 
-class StreetStages[T <: stg.Context](val street: Street.Value, val stages: stg.Chain[T]) {
+private[gameplay] class StreetStages[T <: stg.Context](val street: Street.Value, val stages: stg.Chain[T]) {
   def apply(ctx: T) = stages(ctx)
   override def toString = f"street:${street}"
 }
 
-case class Streets(ctx: stg.Context, stages: Seq[StreetStages[stg.Context]]) {
+private[gameplay] case class Streets(ctx: stg.Context, stages: Seq[StreetStages[stg.Context]]) {
   
   import ctx.gameplay._
   
@@ -43,7 +43,7 @@ case class Streets(ctx: stg.Context, stages: Seq[StreetStages[stg.Context]]) {
   
 }
 
-object Streets {
+private[gameplay] object Streets {
   case object Next
   case object Continue
   case object Done

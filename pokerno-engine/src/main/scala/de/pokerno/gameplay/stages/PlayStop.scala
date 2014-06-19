@@ -2,7 +2,7 @@ package de.pokerno.gameplay.stages
 
 import de.pokerno.gameplay.{Events, Stage, stg}
 
-case class PlayStop(ctx: stg.Context) extends Stage {
+private[gameplay] case class PlayStop(ctx: stg.Context) extends Stage {
   
   import ctx.gameplay._
   

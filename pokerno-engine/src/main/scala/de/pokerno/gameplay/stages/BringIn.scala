@@ -5,7 +5,7 @@ import de.pokerno.gameplay.{Stage, stg}
 /*
  * Стадия принудительных ставок - бринг-ин
  */
-case class BringIn(ctx: stg.Context) extends Stage {
+private[gameplay] case class BringIn(ctx: stg.Context) extends Stage {
   
   import ctx.gameplay._
   

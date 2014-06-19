@@ -56,6 +56,7 @@ object Http {
           } else log.warning("skip {} from {}", data, conn)
         }
 
+      // TODO: moved to watchers?
       case Notification(msg, _, to) ⇒
         val data = GameEvent.encode(msg)
         log.info("broadcasting {}", msg)

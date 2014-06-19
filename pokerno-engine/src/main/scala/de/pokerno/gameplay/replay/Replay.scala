@@ -1,4 +1,4 @@
-package de.pokerno.replay
+package de.pokerno.gameplay.replay
 
 import de.pokerno.poker.{ Deck, Card, Cards }
 import de.pokerno.model._

@@ -4,7 +4,7 @@ import de.pokerno.poker.Cards
 import de.pokerno.model.{Table, Game, Player, Dealer, seat}
 import de.pokerno.gameplay
 
-class Round(table: Table, game: Game, dealer: Dealer) extends gameplay.Round(table) {
+private[gameplay] class Round(table: Table, game: Game, dealer: Dealer) extends gameplay.Round(table) {
   
   def requireDiscard(sitting: seat.Sitting) {
     acting = sitting

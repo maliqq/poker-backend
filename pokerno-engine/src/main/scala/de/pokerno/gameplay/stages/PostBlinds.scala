@@ -7,7 +7,7 @@ import de.pokerno.util.Colored._
 /*
  * Стадия принудительных ставок-блайндов
  */
-case class PostBlinds(ctx: stg.Context) extends Stage with Betting {
+private[gameplay] case class PostBlinds(ctx: stg.Context) extends Stage with Betting {
   
   val gameplay = ctx.gameplay
   import ctx.gameplay._

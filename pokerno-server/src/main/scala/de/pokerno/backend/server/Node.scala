@@ -77,7 +77,10 @@ class Node(session: Option[org.squeryl.Session]) extends Actor with ActorLogging
   import CommandConversions._
 
   val balance = new de.pokerno.finance.Service()
-  val sync = actorOf(Props(classOf[DatabaseSync], session), name = "database-sync")
+  val sync = actorOf(Props(classOf[DatabaseSync], session),
+      name = "database-sync")
+  val metrics = actorOf(Props(classOf[Metrics]),
+      name = "node-metrics")
   
   val broadcasts = Seq[Broadcast](
       //new Broadcast.Zeromq("tcp://127.0.0.1:5555")
@@ -88,7 +91,9 @@ class Node(session: Option[org.squeryl.Session]) extends Actor with ActorLogging
 
   def receive = {
     // new connection
-    case Gateway.Connect(conn) if conn.room.isDefined ⇒
+    case msg @ Gateway.Connect(conn) if conn.room.isDefined ⇒
+      metrics ! msg
+      
       val id = conn.room.get
 
       actorSelection(id).resolveOne(1 second).onComplete {
@@ -100,7 +105,9 @@ class Node(session: Option[org.squeryl.Session]) extends Actor with ActorLogging
           conn.close()
       }
 
-    case Gateway.Disconnect(conn) if conn.room.isDefined ⇒
+    case msg @ Gateway.Disconnect(conn) if conn.room.isDefined ⇒
+      metrics ! msg
+      
       val id = conn.room.get
 
       actorSelection(id).resolveOne(1 second).onComplete {
@@ -112,13 +119,15 @@ class Node(session: Option[org.squeryl.Session]) extends Actor with ActorLogging
       }
 
     // catch player messages
-    case Gateway.Message(conn, msg) if conn.player.isDefined && conn.room.isDefined ⇒
+    case msg @ Gateway.Message(conn, event) if conn.player.isDefined && conn.room.isDefined ⇒
+      metrics ! msg
+      
       implicit val player = conn.player.get
       val id = conn.room.get
 
       actorSelection(id).resolveOne(1 second).onComplete {
         case Success(room) ⇒
-          room ! (msg: Command)
+          room ! (event: Command)
 
         case Failure(_) ⇒
           log.warning("Room not found: {}", id)
@@ -141,9 +150,6 @@ class Node(session: Option[org.squeryl.Session]) extends Actor with ActorLogging
         case Failure(_) ⇒
           log.warning("Room not found: {}", id)
       }
-    
-    case msg: Room.ChangedState =>
-      sync ! msg
     
     case Node.SendCommand(id, cmd) =>
       actorSelection(id).resolveOne(1 second).onComplete {

@@ -69,10 +69,14 @@ class Room(
   import concurrent.duration._
   import Room._
 
-  val watchers      = observe(classOf[Watchers], f"room-$roomId-watchers")
-  val journal       = observe(classOf[Journal], f"room-$roomId-journal", "/tmp", roomId)
-  val metrics       = observe(classOf[Metrics], f"room-$roomId-metrics", roomId)
-  val broadcasting  = observe(classOf[Broadcasting], f"room-$roomId-broadcasts", roomId, broadcasts)
+  val watchers      = observe(classOf[Watchers],
+                    f"room-$roomId-watchers")
+  val journal       = observe(classOf[Journal],
+                    f"room-$roomId-journal", "/tmp", roomId)
+  val metrics       = observe(classOf[Metrics],
+                    f"room-$roomId-metrics", roomId)
+  val broadcasting  = observe(classOf[Broadcasting],
+                    f"room-$roomId-broadcasts", roomId, broadcasts)
   notify(sync, f"room-$roomId-sync")
   
   log.info("starting room {}", roomId)
@@ -265,9 +269,9 @@ class Room(
   onTransition {
     case State.Waiting -> State.Active ⇒
       self ! gameplay.Deal.Next(firstDealAfter)
-      parent ! Room.ChangedState(roomId, State.Active)
+      sync ! Room.ChangedState(roomId, State.Active)
     case State.Active -> State.Waiting =>
-      parent ! Room.ChangedState(roomId, State.Waiting)
+      sync ! Room.ChangedState(roomId, State.Waiting)
   }
   
   initialize()

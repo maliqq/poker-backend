@@ -1,7 +1,6 @@
 package de.pokerno.backend.server
 
 import akka.actor.{ Actor, ActorLogging }
-import com.codahale.metrics._
 import java.util.concurrent.TimeUnit
 
 import de.pokerno.protocol.{msg => message}
@@ -13,6 +12,8 @@ object Metrics {
 
 // TODO reporters
 class Metrics(id: String) extends Actor with ActorLogging {
+  import com.codahale.metrics._
+
   final val metrics = new MetricRegistry
   //val reporter = ConsoleReporter.forRegistry(metrics).build()
 

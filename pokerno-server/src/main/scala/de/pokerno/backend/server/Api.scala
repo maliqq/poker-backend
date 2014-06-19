@@ -19,7 +19,15 @@ object Api {
     
     implicit def executionContext = actorRefFactory.dispatcher
 
-    val route = pathPrefix("rooms" / Segment) { roomId =>
+    val route = pathPrefix("node") {
+      path("metrics") {
+        complete("ok")
+      } ~ pathEnd {
+        get {
+          complete("ok")
+        }
+      }
+    } ~ pathPrefix("rooms" / Segment) { roomId =>
       pathEnd {
         get { ctx =>
           askRoom(roomId, Room.PlayState, ctx)

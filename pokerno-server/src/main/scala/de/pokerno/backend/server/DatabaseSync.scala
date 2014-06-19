@@ -15,7 +15,17 @@ class DatabaseSync(session: Option[org.squeryl.Session]) extends Actor with Acto
   
   val service = new de.pokerno.db.Service()
   
-  def receive = {
+  override def preStart {
+    if (session.isDefined) context.become(handle)
+  }
+  
+  def receive = handleNothing
+  
+  def handleNothing: Receive = {
+    case _ =>
+  }
+  
+  def handle: Receive = {
     
     case Notification(payload, Route.One(roomId), _) =>
       payload match {
@@ -30,5 +40,6 @@ class DatabaseSync(session: Option[org.squeryl.Session]) extends Actor with Acto
     
     case Room.ChangedState(id, newState) =>
       service.changeRoomState(id, ThriftState.valueOf(newState.toString().toLowerCase).get)
+
   }
 }

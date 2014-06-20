@@ -54,8 +54,13 @@ trait Bet {
   def betType: BetType
   
   def isActive: Boolean = isInstanceOf[Bet.Active]
-  def isPassive: Boolean = isInstanceOf[Bet.Passive]
+  def toActive: Bet.Active = asInstanceOf[Bet.Active]
+  
   def isForced: Boolean = isInstanceOf[Bet.Forced]
+  def toForced: Bet.Forced = asInstanceOf[Bet.Forced]
+  
+  def isPassive: Boolean = isInstanceOf[Bet.Passive]
+  
   def isRaise: Boolean = false
   def isCheck: Boolean = false
   def isCall: Boolean = false

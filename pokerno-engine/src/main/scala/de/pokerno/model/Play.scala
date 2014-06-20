@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.module.scala.JsonScalaEnumeration
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-case class Play(val id: String = java.util.UUID.randomUUID().toString()) {
+case class Play(val id: java.util.UUID = java.util.UUID.randomUUID()) {
   // timestamps
   val started: java.util.Date = new java.util.Date()
   
@@ -20,20 +20,44 @@ case class Play(val id: String = java.util.UUID.randomUUID().toString()) {
   def street_=(v: Street.Value): Unit = _street = Some(v)
   @JsonScalaEnumeration(classOf[StreetRef]) @JsonProperty def street: Street.Value = _street orNull // FIXME
 
-  val actions = collection.mutable.Map[Street.Value, ListBuffer[Action]]().withDefaultValue(ListBuffer.empty)
+  private val _actions = collection.mutable.Map[Street.Value, ListBuffer[Action]]()
+  def actions = _actions
   def action(player: Player, bet: Bet) {
-    actions(street) += Action(player, bet)
+    if (!_actions.contains(street))
+      _actions.put(street, ListBuffer.empty) // .withDefault didn't work
+    _actions(street) += Action(player, bet)
   }
   
   @JsonSerialize(converter=classOf[Cards2Binary]) var board: Cards = ListBuffer[Card]()
   
-  val winners = collection.mutable.Map[Player, Decimal]().withDefaultValue(0)
-  def winner(player: Player, amount: Decimal) {
-    winners(player) += amount
+  private var _button: Int = 0
+  
+  def button = _button
+  def button_=(pos: Int) = _button = pos
+  
+  private val _seating = new java.util.HashMap[Player, Int]()
+  def seating = _seating
+  
+  private val _stacks = new java.util.HashMap[Player, java.lang.Double]()
+  def stacks = _stacks
+  
+  def sit(sitting: seat.Sitting) {
+    _seating.put(sitting.player, sitting.pos)
+    _stacks.put(sitting.player, sitting.stackAmount.toDouble)
   }
   
-  val knownCards = collection.mutable.Map[Player, Cards]()
+  val net = new java.util.HashMap[Player, java.lang.Double]()
+  def winner(player: Player, amount: Decimal) {
+    val old = net.getOrDefault(player, 0)
+    net.put(player, old + amount.toDouble)
+  }
+  def loser(player: Player, amount: Decimal) {
+    val old = net.getOrDefault(player, 0)
+    net.put(player, old - amount.toDouble)
+  }
+  
+  val knownCards = new java.util.HashMap[Player, java.nio.ByteBuffer]()
   def show(player: Player, cards: Cards) {
-    knownCards(player) = cards
+    knownCards.put(player, java.nio.ByteBuffer.wrap(cards: Array[Byte]))
   }
 }

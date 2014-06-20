@@ -79,9 +79,9 @@ class Node(session: Option[org.squeryl.Session]) extends Actor with ActorLogging
   val balance = new de.pokerno.finance.Service()
   val sync = actorOf(Props(classOf[DatabaseSync], session),
       name = "database-sync")
-  val metrics = actorOf(Props(classOf[Metrics]),
+  val metrics = actorOf(Props(classOf[node.Metrics]),
       name = "node-metrics")
-  
+  val storage = actorOf(Props(classOf[de.pokerno.backend.Storage]))
   val broadcasts = Seq[Broadcast](
       //new Broadcast.Zeromq("tcp://127.0.0.1:5555")
   )
@@ -137,7 +137,11 @@ class Node(session: Option[org.squeryl.Session]) extends Actor with ActorLogging
       actorSelection(id).resolveOne(1 second).onComplete {
         case Failure(_) ⇒
           log.info("spawning new room with id={}", id)
-          val room = context.actorOf(Props(classOf[Room], id, variation, stake, balance, sync, broadcasts), name = id)
+          val room = context.actorOf(Props(classOf[Room],
+              java.util.UUID.fromString(id), // FIXME
+              variation,
+              stake,
+              balance, sync, storage, broadcasts), name = id)
           room
         case _ ⇒
           log.warning("Room exists: {}", id)

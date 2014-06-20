@@ -57,6 +57,8 @@ private[gameplay] object Streets {
   }
 
   case class StreetOptions(
+    ante: Boolean = false,
+    blinds: Boolean = false,
     dealing: Option[Tuple2[DealType.Value, Option[Int]]] = None,
     bringIn: Boolean = false,
     bigBets: Boolean = false,
@@ -66,11 +68,20 @@ private[gameplay] object Streets {
 
   private def buildStages(street: Street.Value) = {
     def build(): StreetStages[stg.Context] = {
-      import stages.Dealing
+      import stages.{Dealing, PostAntes, PostBlinds}
 
       val builder = new stg.Builder[stg.Context]()
 
       val options = streetOptions(street)
+      
+      if (options.ante) {
+        builder.stage[PostAntes]("post-antes")
+      }
+      
+      if (options.blinds) {
+        builder.stage[PostBlinds]("post-blinds")
+      }
+      
       options.dealing.map { case (dealType, cardsNum) ⇒
         builder.process("dealing") { ctx ⇒
           Dealing(ctx, dealType, cardsNum).apply()
@@ -108,6 +119,8 @@ private[gameplay] object Streets {
   import Street._
   final val streetOptions = Map[Street.Value, StreetOptions](
     Preflop -> StreetOptions(
+      ante = true,
+      blinds = true,
       dealing = Some((DealType.Hole, None)),
       betting = true),
 
@@ -125,6 +138,7 @@ private[gameplay] object Streets {
       betting = true),
 
     Second -> StreetOptions(
+      ante = true,
       dealing = Some((DealType.Hole, Some(2)))
     ),
 
@@ -151,6 +165,8 @@ private[gameplay] object Streets {
         betting = true),
 
     Predraw -> StreetOptions(
+      ante = true,
+      blinds = true,
       dealing = Some((DealType.Hole, Some(5))),
       betting = true,
       discarding = true),

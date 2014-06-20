@@ -178,6 +178,9 @@ object PokernoBuild extends Build {
             ExclusionRule(organization = "javax.jms")
           ),
         "org.slf4j" % "slf4j-simple" % "1.7.5",
+        "com.datastax.cassandra" % "cassandra-driver-core" % "2.0.2",
+        //"org.apache.cassandra" % "cassandra-thrift" % "2.0.8",
+        //"com.netflix.astyanax" % "astyanax" % "1.56.48",
         "com.github.scopt" %% "scopt" % scoptVersion
       )
     ) ++ assemblySettings ++ Seq(

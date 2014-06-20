@@ -16,7 +16,7 @@ private[gameplay] case class Showdown(ctx: stg.Context) extends Stage {
   def apply() = {
     val inPot = table.sitting filter (_.inPot)
     if (inPot.size == 1) {
-      winner(inPot.head, round.pot)
+      winner(round.pot, inPot.head)
     } else {
       val hiHands = gameOptions.hiRanking.map(showHands(_))
       val loHands = gameOptions.loRanking.map(showHands(_))
@@ -25,21 +25,29 @@ private[gameplay] case class Showdown(ctx: stg.Context) extends Stage {
   }
   
   private def best(pot: SidePot, hands: Map[Player, Hand]): List[Tuple2[Player, Hand]] = {
-    val sorted = hands.filter { case (player, hand) ⇒
+    val handsForThisPot = hands.toList.filter { case (player, hand) ⇒
       pot.members.contains(player)
-    }.toList sortBy { case (player, hand) ⇒
-      hand
-    } reverse
+    }
+    val sortedHands = handsForThisPot.sortBy { _._2 }.reverse
 
-    val max = sorted.head
-    sorted.takeWhile(_._2 == max._2)
+    val bestHand = sortedHands.head
+    sortedHands.takeWhile(_._2 == bestHand._2)
   }
 
-  private def winner(sitting: seat.Sitting, pot: Pot) = pot.sidePots foreach { side ⇒
-    val amount = side.total
+  private def winner(pot: Pot, sitting: seat.Sitting) = pot.sidePots foreach { side ⇒
     val winner = sitting.player
+    val amount = side.total
+    distribute(side, Map(winner -> amount))
     sitting wins amount
     events broadcast Events.declareWinner(sitting, amount)
+  }
+  
+  private def distribute(sidePot: SidePot, winners: Map[Player, Decimal]) {
+    sidePot.members.foreach { case (member, amount) =>
+      if (winners.contains(member)) {
+        play.winner(member, winners(member))
+      } else play.loser(member, amount)
+    }
   }
 
   private def winners(pot: Pot, hi: Option[Map[Player, Hand]], lo: Option[Map[Player, Hand]]) = {
@@ -77,9 +85,12 @@ private[gameplay] case class Showdown(ctx: stg.Context) extends Stage {
           total)
       }
 
+      distribute(side, winners)
+
       winners foreach { case (winner, amount) ⇒
         table.playerSeat(winner) map { sitting =>
-          declareWinner(sitting, amount)
+          sitting wins amount
+          events broadcast Events.declareWinner(sitting, amount)
         }
       }
     }
@@ -101,13 +112,6 @@ private[gameplay] case class Showdown(ctx: stg.Context) extends Stage {
     } else List(ranking(pocket ++ board))
 
     (pocket, hands.flatten.max(Ranking))
-  }
-  
-  private def declareWinner(sitting: seat.Sitting, amount: Decimal) {
-    val winner = sitting.player
-    sitting wins amount
-    play.winner(winner, amount)
-    events broadcast Events.declareWinner(sitting, amount)
   }
 
   private def showHands(ranking: Hand.Ranking): Map[Player, Hand] =

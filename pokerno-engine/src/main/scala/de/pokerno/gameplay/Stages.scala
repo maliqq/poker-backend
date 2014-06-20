@@ -13,8 +13,6 @@ private[gameplay] object Stages {
     lazy val beforeStreets = new stg.Builder[stg.Context] {
       stage[PlayStart]    ("play-start")
       stage[RotateGame]   ("rotate-game")
-      stage[PostAntes]    ("post-antes")
-      stage[PostBlinds]   ("post-blinds")
     }.build()
 
     lazy val afterStreets = new stg.Builder[stg.Context] {

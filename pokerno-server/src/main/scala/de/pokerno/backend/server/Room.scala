@@ -46,11 +46,12 @@ case object NoneRunning extends Data
 case class Running(ctx: gameplay.Context, ref: ActorRef) extends Data
 
 class Room(
-  val roomId: String,
+  val id: java.util.UUID,
   variation: model.Variation,
   val stake: model.Stake,
   val balance: de.pokerno.finance.Service,
   val sync: ActorRef,
+  val storage: ActorRef,
   broadcasts: Seq[Broadcast])
     extends Actor
     with ActorLogging
@@ -60,6 +61,8 @@ class Room(
     with Observers
     //with Balance
     with gameplay.DealCycle {
+  
+  def roomId = id.toString()
   
   val table = new model.Table(variation.tableSize)
   val events = new gameplay.Events(roomId)
@@ -78,6 +81,7 @@ class Room(
   val broadcasting  = observe(classOf[Broadcasting],
                     f"room-$roomId-broadcasts", roomId, broadcasts)
   notify(sync, f"room-$roomId-sync")
+  notify(storage, f"room-$roomId-storage")
   
   log.info("starting room {}", roomId)
   startWith(State.Waiting, NoneRunning)
@@ -131,8 +135,9 @@ class Room(
       toWaiting() using (NoneRunning)
 
     // current deal stopped
-    case Event(gameplay.Deal.Done, Running(_, deal)) ⇒
+    case Event(gameplay.Deal.Done, Running(ctx, deal)) ⇒
       log.info("deal complete")
+      storage ! (id, ctx.play)
       val after = nextDealAfter
       self ! gameplay.Deal.Next(after)
       stay() using (NoneRunning)

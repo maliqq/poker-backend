@@ -26,12 +26,26 @@ object Node {
       val f = new java.io.FileInputStream(file)
       val props = new java.util.Properties
       props.load(f)
-      val session = pokerdb.PokerDB.Connection.connect(props)
-      session.bindToCurrentThread
+      
+      val sessionWrapper =  system.actorOf(Props(new Actor {
+        val session = pokerdb.PokerDB.Connection.connect(props)
+        // FIXME
+        org.squeryl.SessionFactory.externalTransactionManagementAdapter = Some(() => {
+          Some(session)
+        })
+        
+        override def preStart {
+        } 
+        
+        def receive = {
+          case _ =>
+        }
+        
+      }))
       new pokerdb.Service()
       ///pokerdb.Connection.connect(props)
     }
-    
+      
     log.info("starting node at {}", config.host)
     val node = system.actorOf(Props(classOf[Node], id, pokerDbService), name = "node-main")
 

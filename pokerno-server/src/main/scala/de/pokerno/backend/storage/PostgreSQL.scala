@@ -1,10 +1,8 @@
 package de.pokerno.backend.storage
 
 import math.{BigDecimal => Decimal}
-
 import de.pokerno.backend.{Storage => AbstractStorage, PlayHistoryBatch}
 import de.pokerno.{model, poker}
-
 import org.squeryl._
 import org.squeryl.annotations.Column
 import org.squeryl.adapters.PostgreSqlAdapter
@@ -17,8 +15,8 @@ object PostgreSQL {
   class Play(
       var id: java.util.UUID,
       @Column("room_id") var roomId: java.util.UUID,
-      var started: java.util.Date,
-      var ended: java.util.Date,
+      var started: java.sql.Timestamp,
+      var ended: java.sql.Timestamp,
       @Column("game_type") var game: String,
       @Column("game_limit") var limit: String,
       @Column("big_blind") var bigBlind: Double,
@@ -47,6 +45,7 @@ object PostgreSQL {
   class Action(
       @Column("play_id") var playId: java.util.UUID,
       @Column("player_id") var playerId: java.util.UUID,
+      var at: java.sql.Timestamp,
       var street: String,
       var bet: String,
       var check: Boolean,
@@ -56,7 +55,7 @@ object PostgreSQL {
       var cards: Array[Byte],
       var muck: java.lang.Boolean
   ) {
-    def this() = this(null, null, "", "", false, false, None, None, null, null)
+    def this() = this(null, null, null, "", "", false, false, None, None, null, null)
   }
   
   object PlayHistoryDB extends Schema {
@@ -64,6 +63,8 @@ object PostgreSQL {
     val positions = table[Position]("poker_play_positions")
     val actions = table[Action]("poker_play_actions")
   }
+  
+  implicit def date2timestamp(d: java.util.Date): java.sql.Timestamp = java.sql.Timestamp.from(d.toInstant)
   
   class Batch(_id: java.util.UUID) extends PlayHistoryBatch {
     var _play: Play = null
@@ -119,6 +120,7 @@ object PostgreSQL {
       _actions += new Action(
           _id,
           java.util.UUID.fromString(player),
+          at,
           street,
           bet.name,
           bet.isCheck,
@@ -130,11 +132,9 @@ object PostgreSQL {
     }
     
     def write() {
-      Console printf("%sWRITE START%s\n", Console.RED, Console.RESET)
       PlayHistoryDB.plays.insert(_play)
       PlayHistoryDB.positions.insert(_positions)
       PlayHistoryDB.actions.insert(_actions)
-      Console printf("%sWRITE END%s\n", Console.RED, Console.RESET)
     }
   }
   

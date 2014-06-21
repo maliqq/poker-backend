@@ -29,7 +29,7 @@ object Node {
       
       system.actorOf(Props(new Actor {
         val session = pokerdb.PokerDB.Connection.connect(props)
-        session.setLogger(println(_))
+        //session.setLogger(println(_))
         // FIXME
         org.squeryl.SessionFactory.externalTransactionManagementAdapter = Some(() => {
           Some(session)
@@ -98,7 +98,20 @@ class Node(nodeId: java.util.UUID, pokerdb: Option[de.pokerno.data.pokerdb.thrif
       name = "node-persist")
   val metrics = actorOf(Props(classOf[node.Metrics], nodeId.toString(), pokerdb),
       name = "node-metrics")
-  val history = actorOf(Props(classOf[PlayHistoryWriter]))
+      
+  //
+  val history = actorOf(Props(new Actor {
+    import de.pokerno.model
+    
+    val storage = new de.pokerno.backend.storage.PostgreSQL.Storage
+    
+    def receive = {
+      case (id: java.util.UUID, game: model.Game, stake: model.Stake, play: model.Play) =>
+        //log.info("writing {} {}", id, play)
+        storage.write(id, game, stake, play)
+    }
+  }), name = "play-history-writer")
+  
   val broadcasts = Seq[Broadcast](
       //new Broadcast.Zeromq("tcp://127.0.0.1:5555")
   )

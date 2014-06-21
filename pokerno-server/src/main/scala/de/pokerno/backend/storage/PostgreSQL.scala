@@ -19,8 +19,8 @@ object PostgreSQL {
       @Column("room_id") var roomId: java.util.UUID,
       var started: java.util.Date,
       var ended: java.util.Date,
-      var game: String,
-      var limit: String,
+      @Column("game_type") var game: String,
+      @Column("game_limit") var limit: String,
       @Column("big_blind") var bigBlind: Double,
       @Column("small_blind") var smallBlind: Double,
       @Column(name = "ante", optionType=classOf[Double]) var ante: Option[Double],
@@ -130,13 +130,19 @@ object PostgreSQL {
     }
     
     def write() {
+      Console printf("%sWRITE START%s\n", Console.RED, Console.RESET)
       PlayHistoryDB.plays.insert(_play)
       PlayHistoryDB.positions.insert(_positions)
       PlayHistoryDB.actions.insert(_actions)
+      Console printf("%sWRITE END%s\n", Console.RED, Console.RESET)
     }
   }
   
   class Storage extends AbstractStorage {
-    def batch(id: java.util.UUID)(f: PlayHistoryBatch => Unit) = f(new Batch(id))
+    def batch(id: java.util.UUID)(f: PlayHistoryBatch => Unit) = {
+      val b = new Batch(id)
+      f(b)
+      b.write()
+    }
   }
 }

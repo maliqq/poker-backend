@@ -53,7 +53,7 @@ abstract class Storage {
       play.seating.map { case (player, pos) =>
         val amount = play.stacks(player)
         val net = play.net(player)
-        val cards = play.knownCards(player)
+        val cards: poker.Cards = play.knownCards.getOrElse(player, null)
         batch.writePosition(pos, player, amount, net, cards)
       }
 

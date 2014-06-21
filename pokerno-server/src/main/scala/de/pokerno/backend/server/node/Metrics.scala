@@ -57,6 +57,7 @@ class Metrics(val nodeId: String, val pokerdb: Option[thrift.PokerDB.FutureIface
     system.scheduler.schedule(1.minute, 1.minute) {
       report()
     }
+    //report()
   }
   
   def receive = {

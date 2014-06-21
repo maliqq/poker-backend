@@ -27,21 +27,17 @@ object Node {
       val props = new java.util.Properties
       props.load(f)
       
-      val sessionWrapper =  system.actorOf(Props(new Actor {
+      system.actorOf(Props(new Actor {
         val session = pokerdb.PokerDB.Connection.connect(props)
+        session.setLogger(println(_))
         // FIXME
         org.squeryl.SessionFactory.externalTransactionManagementAdapter = Some(() => {
           Some(session)
-        })
+        }) 
         
-        override def preStart {
-        } 
-        
-        def receive = {
-          case _ =>
-        }
-        
+        def receive = { case _ => }
       }))
+      
       new pokerdb.Service()
       ///pokerdb.Connection.connect(props)
     }

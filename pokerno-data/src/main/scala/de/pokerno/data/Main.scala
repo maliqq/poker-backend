@@ -1,6 +1,6 @@
 package de.pokerno.data
 
-import de.pokerno.data.snapshot.PostgreSql
+import de.pokerno.data.pokerdb.PokerDB
 
 object Main {
 
@@ -8,7 +8,7 @@ object Main {
     val props = new java.util.Properties
     props.load(new java.io.FileInputStream("./etc/database.properties"))
     
-    val session = PostgreSql.Connection.connect(
+    val session = PokerDB.Connection.connect(
         "org.postgresql.Driver",
         props.getProperty("database.url"),
         props.getProperty("database.username"),
@@ -18,13 +18,13 @@ object Main {
     session.setLogger(println(_))
     session.bindToCurrentThread
     
-    val seat = new PostgreSql.Seat(java.util.UUID.randomUUID(), 1, java.util.UUID.randomUUID(), 10000, "none")
+    val seat = new PokerDB.Seat(java.util.UUID.randomUUID(), 1, java.util.UUID.randomUUID(), 10000, "none")
     
-    println(PostgreSql.createSeat(seat).id)
+    println(PokerDB.createSeat(seat).id)
     
-    println(PostgreSql.createSeat(seat).id)
+    println(PokerDB.createSeat(seat).id)
     
-    val (room, game, mix, stake) = PostgreSql.roomsWithGamesAndStakes.head
+    val (room, game, mix, stake) = PokerDB.roomsWithGamesAndStakes.head
     println(room)
     
     session.close

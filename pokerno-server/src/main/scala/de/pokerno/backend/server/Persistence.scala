@@ -4,19 +4,15 @@ import akka.actor.{Actor, ActorLogging}
 
 import de.pokerno.protocol.msg
 import de.pokerno.gameplay.{Notification, Route}
+import de.pokerno.data.pokerdb
 
 // TODO database pooling
-class Persistence(session: Option[org.squeryl.Session]) extends Actor with ActorLogging {
-  import de.pokerno.db.thrift.{State => ThriftState}
+class Persistence(service: Option[pokerdb.thrift.PokerDB.FutureIface]) extends Actor with ActorLogging {
+  import pokerdb.thrift.{State => ThriftState}
+  import context._
   
-  org.squeryl.SessionFactory.externalTransactionManagementAdapter = Some(() => {
-    session
-  })
-  
-  val service = new de.pokerno.data.Service()
-  
-  override def preStart {
-    if (session.isDefined) context.become(handle)
+  override def preStart = {
+    service.foreach { _ => context.become(handleAndStore) }
   }
   
   def receive = handleNothing
@@ -25,21 +21,21 @@ class Persistence(session: Option[org.squeryl.Session]) extends Actor with Actor
     case _ =>
   }
   
-  def handle: Receive = {
+  def handleAndStore: Receive = {
     
     case Notification(payload, Route.One(roomId), _) =>
       payload match {
         case msg.PlayerJoin(pos, amount) =>
-          service.registerSeat(roomId, pos.pos, pos.player, amount.toDouble)
+          service.get.registerSeat(roomId, pos.pos, pos.player, amount.toDouble)
           
         case msg.PlayerLeave(pos) => // TODO tell how much money left
-          service.unregisterSeat(roomId, pos.pos, pos.player, 0) // FIXME amount?
+          service.get.unregisterSeat(roomId, pos.pos, pos.player, 0) // FIXME amount?
         
         case _ => // ignore
       }
     
     case Room.ChangedState(id, newState) =>
-      service.changeRoomState(id, ThriftState.valueOf(newState.toString().toLowerCase).get)
+      service.get.changeRoomState(id, ThriftState.valueOf(newState.toString().toLowerCase).get)
 
   }
 }

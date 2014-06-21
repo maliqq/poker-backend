@@ -158,7 +158,7 @@ object PokernoBuild extends Build {
         "postgresql" % "postgresql" % "9.1-901.jdbc4",
         "org.squeryl" %% "squeryl" % "0.9.5-6",
         "org.mongodb" %% "casbah" % "2.7.2",
-        "com.datastax.cassandra" % "cassandra-driver-core" % "2.0.2",
+        "com.datastax.cassandra" % "cassandra-driver-core" % "2.0.2"
         //"org.apache.cassandra" % "cassandra-thrift" % "2.0.8",
         //"com.netflix.astyanax" % "astyanax" % "1.56.48",
       )

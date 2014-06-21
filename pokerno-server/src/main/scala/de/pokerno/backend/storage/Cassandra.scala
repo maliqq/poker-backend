@@ -21,21 +21,16 @@ object Cassandra {
     }
   }
 
-  class Batch(session: Session) extends PlayHistoryBatch {
+  class Batch(_id: java.util.UUID, session: Session) extends PlayHistoryBatch {
     val insertPlay    = session.prepare("INSERT INTO plays (room_id, deal_id, button, started, ended, seating, stacks, net, known_cards) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)")
     val insertAction  = session.prepare("INSERT INTO actions (deal_id, time, player_id, street, bet_marker, fold, check, call, raise, cards, muck) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 
     private val _batch = new BatchStatement
-    private var _id: java.util.UUID = null
 
     val _seating = new java.util.HashMap[String, java.lang.Integer]()
     val _stacks = new java.util.HashMap[String, java.lang.Double]()
     val _net = new java.util.HashMap[String, java.lang.Double]()
     val _cards = new java.util.HashMap[String, java.nio.ByteBuffer]()
-
-    def id_=(id: java.util.UUID) {
-      _id = id
-    }
 
     def writeEntry(
       roomId: java.util.UUID,
@@ -105,7 +100,9 @@ object Cassandra {
   class Client(node: String, keyspace: String) extends StorageClient {
     private def session = Connection.connect(node, keyspace)
     import collection.JavaConverters._
-    def batch = new Batch(session)
+    def batch(id: java.util.UUID)(f: PlayHistoryBatch => Unit) = {
+      f(new Batch(id, session))
+    }
   }
   
   object Schemas {

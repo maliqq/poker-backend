@@ -36,6 +36,7 @@ object Config {
 }
 
 case class Config(
+    var id: java.util.UUID = java.util.UUID.randomUUID(),
     var host: String = "localhost",
     var http: Option[gw.http.Config] = None,
     var api: Option[Config.Http.Api] = None,

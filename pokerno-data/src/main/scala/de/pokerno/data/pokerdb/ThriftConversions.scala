@@ -1,6 +1,4 @@
-package de.pokerno.data
-
-import de.pokerno.data.snapshot.PostgreSql
+package de.pokerno.data.pokerdb
 
 object ThriftConversions {
   
@@ -13,9 +11,9 @@ object ThriftConversions {
   implicit def string2mix(s: String): protocol.MixType = protocol.MixType.valueOf(s).get
   implicit def string2limit(s: String): protocol.GameLimit = protocol.GameLimit.valueOf(s).get
   
-  implicit def stake2thrift(s: PostgreSql.Stake): protocol.Stake = protocol.Stake(s.bigBlind, Option(s.smallBlind), s.ante, s.bringIn, s.buyInMin, s.buyInMax)
+  implicit def stake2thrift(s: PokerDB.Stake): protocol.Stake = protocol.Stake(s.bigBlind, Option(s.smallBlind), s.ante, s.bringIn, s.buyInMin, s.buyInMax)
   
-  implicit def game2thrift(s: PostgreSql.Game): protocol.Game = protocol.Game(s.variation, s.limit.get, s.tableSize, s.speed)
-  implicit def mix2thrift(s: PostgreSql.Mix): protocol.Mix = protocol.Mix(s.variation, s.tableSize, s.speed)
+  implicit def game2thrift(s: PokerDB.Game): protocol.Game = protocol.Game(s.variation, s.limit.get, s.tableSize, s.speed)
+  implicit def mix2thrift(s: PokerDB.Mix): protocol.Mix = protocol.Mix(s.variation, s.tableSize, s.speed)
   
 }

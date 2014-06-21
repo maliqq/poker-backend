@@ -14,12 +14,7 @@ object MongoDB {
     }
   }
   
-  class Batch(_collection: MongoCollection) extends PlayHistoryBatch {
-    var _id: java.util.UUID = null
-    def id_=(id: java.util.UUID) {
-      _id = id
-    }
-
+  class Batch(_id: java.util.UUID, _collection: MongoCollection) extends PlayHistoryBatch {
     var _playObj: MongoDBObject = null
     def writeEntry(
       roomId:   java.util.UUID,
@@ -100,6 +95,6 @@ object MongoDB {
     val db      = client(dbName)
     val deals   = db("deals")
     
-    def batch = new Batch(deals)
+    def batch(id: java.util.UUID)(f: PlayHistoryBatch => Unit) = f(new Batch(id, deals))
   }
 }

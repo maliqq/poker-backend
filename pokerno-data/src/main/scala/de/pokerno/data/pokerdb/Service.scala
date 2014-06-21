@@ -1,10 +1,29 @@
-package de.pokerno.data
+package de.pokerno.data.pokerdb
 
 import com.twitter.util.Future
 import org.slf4j.LoggerFactory
-import de.pokerno.data.snapshot.PostgreSql
 
-class Service extends de.pokerno.db.thrift.Database.FutureIface {
+object Service {
+  import org.apache.thrift.protocol.TBinaryProtocol
+  import org.apache.thrift.protocol.TProtocolFactory
+  import com.twitter.finagle.builder.ServerBuilder
+  import com.twitter.finagle.thrift.ThriftServerFramedCodec
+  import com.twitter.finagle.{Service => FinagleService}
+  import org.apache.thrift.protocol.TProtocolFactory
+
+  def start(addr: java.net.InetSocketAddress) {
+    val protocol = new TBinaryProtocol.Factory()
+    val processor = new Service()
+    val service = new thrift.PokerDB.FinagledService(processor, protocol)
+    val server = ServerBuilder().
+      codec(ThriftServerFramedCodec()).
+      bindTo(addr).
+      name("pokerdb").
+      build(service)
+  }
+}
+
+class Service extends thrift.PokerDB.FutureIface {
   import ThriftConversions._
   import de.pokerno.protocol.{thrift => protocol}
 
@@ -12,8 +31,8 @@ class Service extends de.pokerno.db.thrift.Database.FutureIface {
   
   val log = LoggerFactory.getLogger(getClass)
 
-  def restoreRooms(nodeId: String): Future[Seq[thrift.Room]] = Future {
-    val rooms = PostgreSql.getRooms(nodeId)
+  def getRooms(nodeId: String): Future[Seq[thrift.Room]] = Future {
+    val rooms = PokerDB.getRooms(nodeId)
     rooms.map { case (room, game, mix, stake) =>
       thrift.Room(
         room.id.toString(),
@@ -26,8 +45,12 @@ class Service extends de.pokerno.db.thrift.Database.FutureIface {
     }.toSeq
   }
   
+  def reportNodeMetrics(nodeId: String, metrics: thrift.metrics.Node): Future[Unit] = Future {
+    PokerDB.updateNodeMetrics(nodeId, metrics)
+  }
+  
   def getRoom(id: String): Future[thrift.Room] = Future {
-    val (room, game, mix, stake) = PostgreSql.getRoom(id)
+    val (room, game, mix, stake) = PokerDB.getRoom(id)
     thrift.Room(
         room.id.toString(),
         room.state,
@@ -47,22 +70,26 @@ class Service extends de.pokerno.db.thrift.Database.FutureIface {
     
     log.info("room %s changed state to %s" format(id, newState))
     
-    PostgreSql.updateRoomState(id, newState)
+    PokerDB.updateRoomState(id, newState)
+  }
+  
+  def reportRoomMetrics(roomId: String, metrics: thrift.metrics.Room): Future[Unit] = Future {
+    PokerDB.updateRoomMetrics(roomId, metrics)
   }
   
   def registerSeat(roomId: String, pos: Int, player: String, amount: Double): Future[Unit] = Future {
-    val seat = new PostgreSql.Seat(roomId, pos, player, amount, "taken")
+    val seat = new PokerDB.Seat(roomId, pos, player, amount, "taken")
     
     log.info("registering seat: {}", seat)
-    PostgreSql.createSeat(seat)
+    PokerDB.createSeat(seat)
   }
   
   def changeSeatState(roomId: String, pos: Int, player: String, state: protocol.SeatState): Future[Unit] = Future {
-    PostgreSql.updateSeatState(roomId, pos, player, state.name.toLowerCase)
+    PokerDB.updateSeatState(roomId, pos, player, state.name.toLowerCase)
   }
   
   def unregisterSeat(roomId: String, pos: Int, player: String, amount: Double): Future[Unit] = Future {
-    PostgreSql.deleteSeat(roomId, pos, player)
+    PokerDB.deleteSeat(roomId, pos, player)
   }
   
 }

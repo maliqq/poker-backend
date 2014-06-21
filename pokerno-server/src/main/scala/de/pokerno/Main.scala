@@ -31,6 +31,10 @@ object Main {
     opt[String]('h', "host") text "Node hostname" action { (value, c) ⇒
       c.copy(config = c.config.copy(host = value))
     }
+    
+    opt[String]("id") text "Node id" action { (value, c) ⇒
+      c.copy(config = c.config.copy(id = java.util.UUID.fromString(value)))
+    }
 
     // --http-port 8080
     opt[Int]("http-port") text "HTTP port" action { (value, c) ⇒

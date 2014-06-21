@@ -1,14 +1,16 @@
 package de.pokerno.backend.server
 
 import org.slf4j.{ Logger, LoggerFactory }
+import akka.actor.{ Actor, ActorLogging, ActorRef, Props, ActorSystem }
+
 import de.pokerno.model.{Variation, Stake}
 import de.pokerno.model.Seat.{State => SeatState}
 import de.pokerno.backend.{ gateway ⇒ gw }
 import de.pokerno.backend.Gateway
 import de.pokerno.backend.gateway.http
 import de.pokerno.protocol._
-import akka.actor.{ Actor, ActorLogging, ActorRef, Props, ActorSystem }
 import de.pokerno.backend.server.node.Service
+import de.pokerno.data.pokerdb
 
 object Node {
 
@@ -18,15 +20,20 @@ object Node {
   def start(config: Config): ActorRef = {
     log.info("starting with config: {}", config)
     
-    val session = config.dbProps.map { file =>
+    val id = config.id
+    
+    val pokerDbService = config.dbProps.map { file =>
       val f = new java.io.FileInputStream(file)
       val props = new java.util.Properties
       props.load(f)
-      //de.pokerno.db.Connection.connect(props)
+      val session = pokerdb.PokerDB.Connection.connect(props)
+      session.bindToCurrentThread
+      new pokerdb.Service()
+      ///pokerdb.Connection.connect(props)
     }
     
     log.info("starting node at {}", config.host)
-    val node = system.actorOf(Props(classOf[Node], session), name = "node-main")
+    val node = system.actorOf(Props(classOf[Node], id, pokerDbService), name = "node-main")
 
     config.rpc.map { rpcConfig ⇒
       log.info("starting rpc with config: {}", rpcConfig)
@@ -70,16 +77,16 @@ object Node {
   
 }
 
-class Node(session: Option[org.squeryl.Session]) extends Actor with ActorLogging {
+class Node(nodeId: java.util.UUID, pokerdb: Option[de.pokerno.data.pokerdb.thrift.PokerDB.FutureIface]) extends Actor with ActorLogging {
   import context._
   import concurrent.duration._
   import util.{ Success, Failure }
   import CommandConversions._
 
   val balance = new de.pokerno.finance.Service()
-  val persist = actorOf(Props(classOf[Persistence], session),
+  val persist = actorOf(Props(classOf[Persistence], pokerdb),
       name = "node-persist")
-  val metrics = actorOf(Props(classOf[node.Metrics]),
+  val metrics = actorOf(Props(classOf[node.Metrics], nodeId.toString(), pokerdb),
       name = "node-metrics")
   val history = actorOf(Props(classOf[PlayHistoryWriter]))
   val broadcasts = Seq[Broadcast](
@@ -141,7 +148,7 @@ class Node(session: Option[org.squeryl.Session]) extends Actor with ActorLogging
               java.util.UUID.fromString(id), // FIXME
               variation,
               stake,
-              balance, persist, history, broadcasts), name = id)
+              balance, persist, history, pokerdb, broadcasts), name = id)
           room
         case _ ⇒
           log.warning("Room exists: {}", id)

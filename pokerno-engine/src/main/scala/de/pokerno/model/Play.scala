@@ -48,7 +48,7 @@ case class Play(val id: java.util.UUID = java.util.UUID.randomUUID()) {
     _stacks.put(sitting.player, sitting.stackAmount)
   }
   
-  val net = collection.mutable.Map[Player, Decimal]()
+  val net = collection.mutable.Map[Player, Decimal]().withDefaultValue(0)
   def winner(player: Player, amount: Decimal) {
     net(player) += amount
   }

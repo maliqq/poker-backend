@@ -1,4 +1,4 @@
-package de.pokerno.data.snapshot
+package de.pokerno.data.pokerdb
 
 import org.squeryl._
 import org.squeryl.annotations.Column
@@ -7,7 +7,18 @@ import org.squeryl.dsl._
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.internals.FieldMetaData
 
-object PostgreSql extends Schema {
+object PokerDB extends Schema {
+  case class Node(
+      @Column("total_connections_count") var totalConnectionsCount: Long,
+      @Column("player_connections_count") var playerConnectionsCount: Long,
+      @Column("offline_players_count") var offlinePlayersCount: Long,
+      @Column("connects_rate") var connectsRate: Double,
+      @Column("disconnects_rate") var disconnectsRate: Double,
+      @Column("messages_received_rate") var messagesReceivedRate: Double
+  ) extends KeyedEntity[java.util.UUID] {
+    var id: java.util.UUID = null
+  }
+  
   case class Room(
       @Column(name = "node_id") var nodeId: java.util.UUID,
       var state: String,
@@ -15,10 +26,15 @@ object PostgreSql extends Schema {
       @Column(name = "game_id", optionType = classOf[Int]) var gameId: Option[Int],
       @Column(name = "mix_id", optionType = classOf[Int]) var mixId: Option[Int],
       @Column("stake_id") var stakeId: Int,
-      @Column("players_count") var playersCount: Int,
-      @Column("waiting_count") var waitingCount: Int) extends KeyedEntity[java.util.UUID] {
+      @Column("players_count") var playersCount: Long,
+      @Column("waiting_count") var waitingCount: Long,
+      @Column("watching_count") var watchingCount: Long,
+      @Column("plays_rate") var playsRate: Double,
+      @Column("players_per_flop") var playersPerFlop: Double,
+      @Column("average_pot") var average_pot: Double
+      ) extends KeyedEntity[java.util.UUID] {
     var id: java.util.UUID = null
-    def this() = this(null, "", "", None, None, 0, 0, 0)
+    def this() = this(null, "", "", None, None, 0, 0, 0, 0, 0, 0, 0)
   }
   
   case class Stake(
@@ -59,6 +75,7 @@ object PostgreSql extends Schema {
     def this() = this("", None, 0)
   }
 
+  val nodes     = table[Node]("nodes")
   val rooms     = table[Room]("poker_rooms")
   val games     = table[Game]("poker_variations")
   val mixes     = table[Mix]("poker_variations")
@@ -70,6 +87,20 @@ object PostgreSql extends Schema {
     on(room.gameId === game.map(_.id), room.mixId === mix.map(_.id), room.stakeId === stake.id)
   )
   
+  def updateNodeMetrics(nodeId: java.util.UUID, metrics: thrift.metrics.Node) {
+    update(nodes)(node =>
+      where(node.id === nodeId)
+      set(
+          node.totalConnectionsCount  := metrics.totalConnections,
+          node.playerConnectionsCount := metrics.playerConnections,
+          node.offlinePlayersCount    := metrics.offlinePlayers,
+          node.connectsRate           := metrics.connects.rate15.get,
+          node.disconnectsRate        := metrics.disconnects.rate15.get,
+          node.messagesReceivedRate   := metrics.messagesReceived.rate15.get
+        )
+    )
+  }
+  
   def getRooms(nodeId: java.util.UUID) = roomsWithGamesAndStakes.where(_._1.nodeId === nodeId)
   
   def getRoom(id: java.util.UUID) = roomsWithGamesAndStakes.where(_._1.id === id).head
@@ -80,6 +111,20 @@ object PostgreSql extends Schema {
       (seat.roomId === roomId and seat.pos === pos and seat.playerId === player)
     )
   
+  def updateRoomMetrics(roomId: java.util.UUID, metrics: thrift.metrics.Room) {
+    update(rooms)(room =>
+      where(room.id === roomId)
+      set(
+          room.playersCount     := metrics.players,
+          room.waitingCount     := metrics.waiting,
+          room.watchingCount    := metrics.watching,
+          room.playsRate        := metrics.plays.rate15.get,
+          room.average_pot      := metrics.pots.mean,
+          room.playersPerFlop   := metrics.playersPerFlop.mean
+        )
+    )
+  }
+    
   def updateRoomState(id: java.util.UUID, state: String) =
     update(rooms)(room =>
       where(room.id === id)

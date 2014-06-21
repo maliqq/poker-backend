@@ -52,6 +52,7 @@ class Room(
   val balance: de.pokerno.finance.Service,
   val persist: ActorRef,
   val history: ActorRef,
+  pokerdb: Option[de.pokerno.data.pokerdb.thrift.PokerDB.FutureIface],
   broadcasts: Seq[Broadcast])
     extends Actor
     with ActorLogging
@@ -77,7 +78,7 @@ class Room(
   val journal       = observe(classOf[Journal],
                     f"room-$roomId-journal", "/tmp", roomId)
   val metrics       = observe(classOf[Metrics],
-                    f"room-$roomId-metrics", roomId)
+                    f"room-$roomId-metrics", roomId, pokerdb)
   val broadcasting  = observe(classOf[Broadcasting],
                     f"room-$roomId-broadcasts", roomId, broadcasts)
   notify(persist, f"room-$roomId-persist")

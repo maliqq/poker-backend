@@ -4,8 +4,8 @@ import math.{BigDecimal => Decimal}
 import de.pokerno.{model, poker}
 
 abstract class PlayHistoryBatch {
-  def id_=(id: java.util.UUID)
   def writeEntry(
+    roomId: java.util.UUID,
     started: java.util.Date,
     ended: java.util.Date,
     game: model.GameType,
@@ -38,12 +38,12 @@ abstract class StorageClient {
   def batch(id: java.util.UUID)(batch: PlayHistoryBatch => Unit)
 }
 
-class Storage {
-  val client: StorageClient
-
-  def write(id: java.util.UUID, game: model.Game, stake: model.Stake, play: model.Play) {
+class Storage(client: StorageClient) {
+  
+  def write(roomId: java.util.UUID, game: model.Game, stake: model.Stake, play: model.Play) {
     client.batch(play.id) { batch =>
       batch.writeEntry(
+        roomId,
         play.started, play.ended,
         game.`type`, game.limit,
         stake,

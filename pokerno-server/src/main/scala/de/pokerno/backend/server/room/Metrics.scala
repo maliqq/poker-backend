@@ -1,7 +1,10 @@
 package de.pokerno.backend.server
 
 import akka.actor.{ Actor, ActorLogging }
+import com.codahale.metrics._
+import concurrent.duration._
 import java.util.concurrent.TimeUnit
+import de.pokerno.data.pokerdb.thrift
 
 import de.pokerno.protocol.{msg => message}
 import de.pokerno.model.{Bet, Street}
@@ -10,9 +13,26 @@ import de.pokerno.gameplay.Notification
 object Metrics {
 }
 
+trait Reporting { m: Metrics =>
+  def report() {
+    val m = thrift.metrics.Room(
+        players.getCount(),
+        waiting.getCount(),
+        watching.getCount(),
+        thrift.metrics.Histogram(mean = pots.getSnapshot().getMean()),
+        thrift.metrics.Meter(mean = plays.getMeanRate(), rate15 = Some(plays.getFifteenMinuteRate())),
+        thrift.metrics.Meter(mean = playersPerFlop.getMeanRate(), rate15 = Some(playersPerFlop.getFifteenMinuteRate()))
+    )
+    pokerdb match {
+      case Some(service) => service.reportRoomMetrics(roomId, m)
+      case _ => println(m)
+    }
+  }
+}
+
 // TODO reporters
-class Metrics(id: String) extends Actor with ActorLogging {
-  import com.codahale.metrics._
+class Metrics(val roomId: String, val pokerdb: Option[thrift.PokerDB.FutureIface]) extends Actor with ActorLogging with Reporting {
+  import context._
 
   final val metrics = new MetricRegistry
   //val reporter = ConsoleReporter.forRegistry(metrics).build()
@@ -20,11 +40,11 @@ class Metrics(id: String) extends Actor with ActorLogging {
   val players         = metrics.counter("players")
 
   val waiting         = metrics.counter("waiting")
-  val watchers        = metrics.counter("watchers")
+  val watching        = metrics.counter("watchers")
 
-  val folds           = metrics.counter("folds")
-  val plays           = metrics.meter("plays")
+  private val _folds  = metrics.counter("folds")
   val pots            = metrics.histogram("pots")
+  val plays           = metrics.meter("plays")
   val playersPerFlop  = metrics.meter("players-per-flop")
 
   override def preStart() {
@@ -64,7 +84,7 @@ class Metrics(id: String) extends Actor with ActorLogging {
         case Street.Flop ⇒
 
           val playersCount = playersPreflop
-          val foldsCount = folds.getCount()
+          val foldsCount = _folds.getCount()
           if (playersCount > 0) {
             val rate = (playersCount - foldsCount).toDouble / playersCount
             playersPerFlop.mark((rate * 100).floor.intValue)
@@ -78,7 +98,7 @@ class Metrics(id: String) extends Actor with ActorLogging {
 
     case _: message.DeclarePlayStop ⇒
       // reset folds
-      folds.dec(folds.getCount())
+      _folds.dec(_folds.getCount())
 
       // mark pot
       pots.update((lastPot * 100).intValue())
@@ -92,17 +112,9 @@ class Metrics(id: String) extends Actor with ActorLogging {
 
   private def handleBet(bet: message.DeclareBet) = bet.action match {
     case Bet.Fold ⇒
-      folds.inc()
+      _folds.inc()
 
     case _ ⇒
   }
 
-  private def report() {
-    Console printf ("[metrics] room %s stats: players: %d plays/hour: %f avg pot=%.2f players per flop=%.2f%%\n", id, 
-      players.getCount(),
-      plays.getFifteenMinuteRate() * 3600,
-      pots.getSnapshot().getMedian() / 100.0,
-      playersPerFlop.getMeanRate())
-  }
-  
 }

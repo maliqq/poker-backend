@@ -11,6 +11,8 @@ import com.fasterxml.jackson.module.scala.JsonScalaEnumeration
 case class Play(val id: java.util.UUID = java.util.UUID.randomUUID()) {
   // timestamps
   val started: java.util.Date = new java.util.Date()
+  val pot = new Pot
+  val rake = new SidePot
   
   private var _ended: java.util.Date = null
   @JsonGetter def ended = _ended
@@ -35,29 +37,27 @@ case class Play(val id: java.util.UUID = java.util.UUID.randomUUID()) {
   def button = _button
   def button_=(pos: Int) = _button = pos
   
-  private val _seating = new java.util.HashMap[Player, Int]()
+  private val _seating = collection.mutable.Map[Player, Int]().withDefaultValue(0)
   def seating = _seating
   
-  private val _stacks = new java.util.HashMap[Player, java.lang.Double]()
+  private val _stacks = collection.mutable.Map[Player, Decimal]().withDefaultValue(0)
   def stacks = _stacks
   
   def sit(sitting: seat.Sitting) {
     _seating.put(sitting.player, sitting.pos)
-    _stacks.put(sitting.player, sitting.stackAmount.toDouble)
+    _stacks.put(sitting.player, sitting.stackAmount)
   }
   
-  val net = new java.util.HashMap[Player, java.lang.Double]()
+  val net = collection.mutable.Map[Player, Decimal]()
   def winner(player: Player, amount: Decimal) {
-    val old = net.getOrDefault(player, 0)
-    net.put(player, old + amount.toDouble)
+    net(player) += amount
   }
   def loser(player: Player, amount: Decimal) {
-    val old = net.getOrDefault(player, 0)
-    net.put(player, old - amount.toDouble)
+    net(player) -= amount
   }
   
-  val knownCards = new java.util.HashMap[Player, java.nio.ByteBuffer]()
+  val knownCards = collection.mutable.Map[Player, Cards]()
   def show(player: Player, cards: Cards) {
-    knownCards.put(player, java.nio.ByteBuffer.wrap(cards: Array[Byte]))
+    knownCards(player) = cards
   }
 }

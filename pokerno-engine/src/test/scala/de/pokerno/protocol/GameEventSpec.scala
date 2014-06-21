@@ -95,7 +95,7 @@ class GameEventSpec extends FunSpec {
       val dealer = new Dealer(deck)
       dealer.dealBoard(3)
       val events = new gameplay.Events("test")
-      val play = new Play("1")
+      val play = new Play(java.util.UUID.randomUUID())
       val ctx = new gameplay.Context("test", table, game, stake, null, events, dealer = dealer, play = play)
       ctx
     }
@@ -158,7 +158,7 @@ class GameEventSpec extends FunSpec {
     }
     
     it("GameChange") {
-      val game = new Game(GameType.Texas, Limit.None, 9)
+      val game = new Game(GameType.Texas, GameLimit.None, 9)
       val e = GameChange(game)
       val d = GameEvent.encodeAsString(e)
       d should equal("""{"$type":"game:","game":"texas","limit":"no-limit"}""")

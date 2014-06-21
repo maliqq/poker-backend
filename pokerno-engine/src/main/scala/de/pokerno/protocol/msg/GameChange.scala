@@ -1,7 +1,7 @@
 package de.pokerno.protocol.msg
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import de.pokerno.model.{Game, GameType, Limit}
+import de.pokerno.model.{Game, GameType, GameLimit}
 
 object GameChange {
   def apply(g: Game): GameChange = GameChange(g.`type`, g.limit)
@@ -9,5 +9,5 @@ object GameChange {
 
 sealed case class GameChange(
   @JsonProperty game: GameType,
-  @JsonProperty limit: Limit
+  @JsonProperty limit: GameLimit
 ) extends GameEvent {}

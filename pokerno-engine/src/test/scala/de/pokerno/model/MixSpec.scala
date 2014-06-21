@@ -13,7 +13,7 @@ class MixSpec extends FunSpec {
       val horse = Mix(MixType.Horse)
       horse.games.size should equal(5)
       horse.games.foreach { g ⇒
-        g.limit should equal(Limit.Fixed)
+        g.limit should equal(GameLimit.Fixed)
       }
 
       val eight = Mix(MixType.Eight)

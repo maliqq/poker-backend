@@ -8,4 +8,6 @@ target
 *.iml
 
 bin
-/deal*.txt
+/*.txt
+/*.json
+

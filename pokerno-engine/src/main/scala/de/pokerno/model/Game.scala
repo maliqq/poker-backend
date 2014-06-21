@@ -34,7 +34,7 @@ object Game {
       hiRanking: Option[Hand.Ranking] = None,
       loRanking: Option[Hand.Ranking] = None,
 
-      defaultLimit: Limit = Limit.None) {
+      defaultLimit: GameLimit = GameLimit.None) {
 
     // на случай когда колода задается вручную
     def minDeckSize = {
@@ -72,13 +72,13 @@ object Game {
   @JsonCreator
   def apply(@JsonProperty("type") `type`: String, @JsonProperty("limit") limit: String, @JsonProperty("tableSize") tableSize: Option[Int]): Game = {
     Console printf("type=%s limit=%s size=%d", `type`, limit, tableSize)
-    new Game(`type`: GameType, limit: Limit, tableSize.get) // FIXME None.get
+    new Game(`type`: GameType, limit: GameLimit, tableSize.get) // FIXME None.get
   }
   
-  def apply(`type`: GameType, limit: Option[Limit] = None, tableSize: Option[Int] = None): Game = {
+  def apply(`type`: GameType, limit: Option[GameLimit] = None, tableSize: Option[Int] = None): Game = {
     val options = Games(`type`)
     
-    val _limit: Limit = limit match {
+    val _limit: GameLimit = limit match {
       case None    ⇒ options.defaultLimit
       case Some(l) ⇒ l
     }
@@ -95,7 +95,7 @@ object Game {
     new Game(`type`, _limit, _tableSize)
   }
   
-  def apply(`type`: GameType, limit: Limit): Game =
+  def apply(`type`: GameType, limit: GameLimit): Game =
     Game(`type`, Some(limit), None)
     
   def apply(`type`: GameType, tableSize: Int): Game =
@@ -108,13 +108,13 @@ class GameBuilder {
   @JsonProperty var limit: String = null
   @JsonProperty var tableSize: Integer = null
   
-  def build(): Game = Game(`type`: GameType, Option(limit: Limit), Option[Int](tableSize))
+  def build(): Game = Game(`type`: GameType, Option(limit: GameLimit), Option[Int](tableSize))
 }
 
 @JsonDeserialize(builder = classOf[GameBuilder])
 class Game(
     @JsonProperty val `type`: GameType,
-    @JsonProperty val limit: Limit,
+    @JsonProperty val limit: GameLimit,
     @JsonProperty val tableSize: Int
   ) extends Variation {
   

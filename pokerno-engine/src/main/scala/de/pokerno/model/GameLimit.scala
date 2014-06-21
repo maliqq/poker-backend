@@ -2,7 +2,7 @@ package de.pokerno.model
 
 import com.fasterxml.jackson.annotation.JsonValue
 
-trait Limit {
+trait GameLimit {
   @JsonValue def name: String
   
   override def toString = name
@@ -10,23 +10,23 @@ trait Limit {
   def raise(total: Decimal, bb: Decimal, potSize: Decimal): Tuple2[Decimal, Decimal]
 }
 
-object Limit {
-  case object None extends Limit {
+object GameLimit {
+  case object None extends GameLimit {
     def name = "no-limit"
     def raise(total: Decimal, bb: Decimal, potSize: Decimal) = (bb, total)
   }
 
-  case object Fixed extends Limit {
+  case object Fixed extends GameLimit {
     def name = "fixed-limit"
     def raise(total: Decimal, bb: Decimal, potSize: Decimal) = (bb, bb)
   }
 
-  case object Pot extends Limit {
+  case object Pot extends GameLimit {
     def name = "pot-limit"
     def raise(total: Decimal, bb: Decimal, potSize: Decimal) = (bb, potSize)
   }
   
-  implicit def string2limit(v: String): Limit = v match {
+  implicit def string2limit(v: String): GameLimit = v match {
     case "no-limit" | "nolimit" | "no" ⇒
       None
     case "fixed-limit" | "fixedlimit" | "fixed" ⇒

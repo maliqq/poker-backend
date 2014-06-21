@@ -31,14 +31,14 @@ class GameSpec extends FunSpec {
     it("toString") {
       Games.foreach {
         case (limited, options) ⇒
-          val g1 = Game(limited, Some(Limit.Fixed), Some(6))
-          g1.toString should equal(f"$limited ${Limit.Fixed} 6-max")
+          val g1 = Game(limited, Some(GameLimit.Fixed), Some(6))
+          g1.toString should equal(f"$limited ${GameLimit.Fixed} 6-max")
 
-          val g2 = Game(limited, Some(Limit.Pot), Some(6))
-          g2.toString should equal(f"$limited ${Limit.Pot} 6-max")
+          val g2 = Game(limited, Some(GameLimit.Pot), Some(6))
+          g2.toString should equal(f"$limited ${GameLimit.Pot} 6-max")
 
-          val g3 = Game(limited, Some(Limit.None), Some(6))
-          g3.toString should equal(f"$limited ${Limit.None} 6-max")
+          val g3 = Game(limited, Some(GameLimit.None), Some(6))
+          g3.toString should equal(f"$limited ${GameLimit.None} 6-max")
       }
     }
   }
@@ -48,23 +48,23 @@ class GameSpec extends FunSpec {
       val bb = 20
       val stack = 1000
       val pot = 350; {
-        val (min, max) = Limit.None.raise(stack, bb, pot)
+        val (min, max) = GameLimit.None.raise(stack, bb, pot)
         min should equal(bb)
         max should equal(stack)
       }; {
-        val (min, max) = Limit.None.raise(stack, bb, pot)
+        val (min, max) = GameLimit.None.raise(stack, bb, pot)
         min should equal(bb)
         max should equal(stack)
       }; {
-        val (min, max) = Limit.Pot.raise(stack, bb, pot)
+        val (min, max) = GameLimit.Pot.raise(stack, bb, pot)
         min should equal(bb)
         max should equal(pot)
       }; {
-        val (min, max) = Limit.Pot.raise(stack, bb, pot)
+        val (min, max) = GameLimit.Pot.raise(stack, bb, pot)
         min should equal(bb)
         max should equal(pot)
       }; {
-        val (min, max) = Limit.Fixed.raise(stack, bb, pot)
+        val (min, max) = GameLimit.Fixed.raise(stack, bb, pot)
         min should equal(bb)
         max should equal(bb)
       }
@@ -73,8 +73,8 @@ class GameSpec extends FunSpec {
 
   describe("type checks") {
     it("Game.Limit") {
-      Array(Limit.None, Limit.Fixed, Limit.Pot) foreach { l ⇒
-        l.isInstanceOf[Limit] should be(true)
+      Array(GameLimit.None, GameLimit.Fixed, GameLimit.Pot) foreach { l ⇒
+        l.isInstanceOf[GameLimit] should be(true)
       }
     }
     it("GameType") {
@@ -121,7 +121,7 @@ class GameSpec extends FunSpec {
         o.hasBringIn should be(false)
         o.hasVela should be(false)
         o.maxTableSize should equal(6)
-        o.defaultLimit should equal(Limit.Fixed)
+        o.defaultLimit should equal(GameLimit.Fixed)
       }
 
       Array(Triple27, Badugi) foreach { g ⇒
@@ -134,7 +134,7 @@ class GameSpec extends FunSpec {
         o.hasBringIn should be(false)
         o.hasVela should be(false)
         o.maxTableSize should equal(6)
-        o.defaultLimit should equal(Limit.Fixed)
+        o.defaultLimit should equal(GameLimit.Fixed)
       }
 
       Array(Stud, Stud8, Razz, London) foreach { g ⇒
@@ -148,7 +148,7 @@ class GameSpec extends FunSpec {
         o.hasVela should be(true)
         o.pocketSize should equal(7)
         o.maxTableSize should equal(8)
-        o.defaultLimit should equal(Limit.Fixed)
+        o.defaultLimit should equal(GameLimit.Fixed)
       }
     }
   }
@@ -181,13 +181,13 @@ class GameSpec extends FunSpec {
     def potSize = 999
 
     describe("NoLimit") {
-      Limit.None.raise(stack, bb, potSize) should equal((bb, stack))
+      GameLimit.None.raise(stack, bb, potSize) should equal((bb, stack))
     }
     describe("FixedLimit") {
-      Limit.Fixed.raise(stack, bb, potSize) should equal((bb, bb))
+      GameLimit.Fixed.raise(stack, bb, potSize) should equal((bb, bb))
     }
     describe("PotLimit") {
-      Limit.Pot.raise(stack, bb, potSize) should equal((bb, potSize))
+      GameLimit.Pot.raise(stack, bb, potSize) should equal((bb, potSize))
     }
   }
 }

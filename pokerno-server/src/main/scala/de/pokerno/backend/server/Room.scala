@@ -50,8 +50,8 @@ class Room(
   variation: model.Variation,
   val stake: model.Stake,
   val balance: de.pokerno.finance.Service,
-  val sync: ActorRef,
-  val storage: ActorRef,
+  val persist: ActorRef,
+  val history: ActorRef,
   broadcasts: Seq[Broadcast])
     extends Actor
     with ActorLogging
@@ -80,8 +80,8 @@ class Room(
                     f"room-$roomId-metrics", roomId)
   val broadcasting  = observe(classOf[Broadcasting],
                     f"room-$roomId-broadcasts", roomId, broadcasts)
-  notify(sync, f"room-$roomId-sync")
-  notify(storage, f"room-$roomId-storage")
+  notify(persist, f"room-$roomId-persist")
+  notify(history, f"room-$roomId-history")
   
   log.info("starting room {}", roomId)
   startWith(State.Waiting, NoneRunning)
@@ -137,7 +137,7 @@ class Room(
     // current deal stopped
     case Event(gameplay.Deal.Done, Running(ctx, deal)) ⇒
       log.info("deal complete")
-      storage ! (id, ctx.play)
+      history ! (id, ctx.game, ctx.stake, ctx.play)
       val after = nextDealAfter
       self ! gameplay.Deal.Next(after)
       stay() using (NoneRunning)
@@ -274,9 +274,9 @@ class Room(
   onTransition {
     case State.Waiting -> State.Active ⇒
       self ! gameplay.Deal.Next(firstDealAfter)
-      sync ! Room.ChangedState(roomId, State.Active)
+      persist ! Room.ChangedState(roomId, State.Active)
     case State.Active -> State.Waiting =>
-      sync ! Room.ChangedState(roomId, State.Waiting)
+      persist ! Room.ChangedState(roomId, State.Waiting)
   }
   
   initialize()

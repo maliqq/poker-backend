@@ -20,7 +20,7 @@ package object model {
       maxTableSize = 10,
       hiRanking = Some(Hand.High),
       pocketSize = 2,
-      defaultLimit = Limit.None),
+      defaultLimit = GameLimit.None),
 
     GameType.Omaha -> Game.Options(
       group = Game.Holdem,
@@ -29,7 +29,7 @@ package object model {
       maxTableSize = 10,
       pocketSize = 4,
       hiRanking = Some(Hand.High),
-      defaultLimit = Limit.Pot),
+      defaultLimit = GameLimit.Pot),
 
     GameType.Omaha8 -> Game.Options(
       group = Game.Holdem,
@@ -39,7 +39,7 @@ package object model {
       pocketSize = 4,
       hiRanking = Some(Hand.High),
       loRanking = Some(Hand.AceFive8),
-      defaultLimit = Limit.Pot),
+      defaultLimit = GameLimit.Pot),
 
     GameType.Stud -> Game.Options(
       group = Game.SevenCard,
@@ -49,7 +49,7 @@ package object model {
       maxTableSize = 8,
       pocketSize = 7,
       hiRanking = Some(Hand.High),
-      defaultLimit = Limit.Fixed),
+      defaultLimit = GameLimit.Fixed),
 
     GameType.Stud8 -> Game.Options(
       group = Game.SevenCard,
@@ -60,7 +60,7 @@ package object model {
       pocketSize = 7,
       hiRanking = Some(Hand.High),
       loRanking = Some(Hand.AceFive8),
-      defaultLimit = Limit.Fixed),
+      defaultLimit = GameLimit.Fixed),
 
     GameType.Razz -> Game.Options(
       group = Game.SevenCard,
@@ -70,7 +70,7 @@ package object model {
       maxTableSize = 8,
       pocketSize = 7,
       hiRanking = Some(Hand.AceFive),
-      defaultLimit = Limit.Fixed),
+      defaultLimit = GameLimit.Fixed),
 
     GameType.London -> Game.Options(
       group = Game.SevenCard,
@@ -80,7 +80,7 @@ package object model {
       maxTableSize = 8,
       pocketSize = 7,
       hiRanking = Some(Hand.AceSix),
-      defaultLimit = Limit.Fixed),
+      defaultLimit = GameLimit.Fixed),
 
     GameType.FiveCard -> Game.Options(
       group = Game.SingleDraw,
@@ -91,7 +91,7 @@ package object model {
       pocketSize = 5,
       streetsNum = 1,
       hiRanking = Some(Hand.High),
-      defaultLimit = Limit.Fixed),
+      defaultLimit = GameLimit.Fixed),
 
     GameType.Single27 -> Game.Options(
       group = Game.SingleDraw,
@@ -102,7 +102,7 @@ package object model {
       pocketSize = 5,
       streetsNum = 1,
       hiRanking = Some(Hand.DeuceSeven),
-      defaultLimit = Limit.Fixed),
+      defaultLimit = GameLimit.Fixed),
 
     GameType.Triple27 -> Game.Options(
       group = Game.TripleDraw,
@@ -113,7 +113,7 @@ package object model {
       pocketSize = 5,
       streetsNum = 3,
       hiRanking = Some(Hand.DeuceSeven),
-      defaultLimit = Limit.Fixed),
+      defaultLimit = GameLimit.Fixed),
 
     GameType.Badugi -> Game.Options(
       group = Game.TripleDraw,
@@ -124,17 +124,17 @@ package object model {
       pocketSize = 4,
       streetsNum = 3,
       hiRanking = Some(Hand.Badugi),
-      defaultLimit = Limit.Fixed))
+      defaultLimit = GameLimit.Fixed))
 
-  final val Mixes: Map[MixType, List[Tuple2[GameType, Limit]]] = Map(
-    MixType.Horse -> List(GameType.Texas, GameType.Omaha8, GameType.Razz, GameType.Stud, GameType.Stud8).map((_, Limit.Fixed)),
+  final val Mixes: Map[MixType, List[Tuple2[GameType, GameLimit]]] = Map(
+    MixType.Horse -> List(GameType.Texas, GameType.Omaha8, GameType.Razz, GameType.Stud, GameType.Stud8).map((_, GameLimit.Fixed)),
     MixType.Eight -> List(
-      (GameType.Triple27, Limit.Fixed),
-      (GameType.Texas, Limit.Fixed),
-      (GameType.Omaha8, Limit.Fixed),
-      (GameType.Razz, Limit.Fixed),
-      (GameType.Stud, Limit.Fixed),
-      (GameType.Stud8, Limit.Fixed),
-      (GameType.Texas, Limit.None),
-      (GameType.Omaha, Limit.Pot)))
+      (GameType.Triple27, GameLimit.Fixed),
+      (GameType.Texas, GameLimit.Fixed),
+      (GameType.Omaha8, GameLimit.Fixed),
+      (GameType.Razz, GameLimit.Fixed),
+      (GameType.Stud, GameLimit.Fixed),
+      (GameType.Stud8, GameLimit.Fixed),
+      (GameType.Texas, GameLimit.None),
+      (GameType.Omaha, GameLimit.Pot)))
 }

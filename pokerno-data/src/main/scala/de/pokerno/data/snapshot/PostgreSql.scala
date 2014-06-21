@@ -1,12 +1,13 @@
-package de.pokerno.db
+package de.pokerno.data.snapshot
 
 import org.squeryl._
-import org.squeryl.annotations.{Row, Column}
+import org.squeryl.annotations.Column
 import org.squeryl.adapters.PostgreSqlAdapter
 import org.squeryl.dsl._
 import org.squeryl.PrimitiveTypeMode._
+import org.squeryl.internals.FieldMetaData
 
-object Database extends Schema {
+object PostgreSql extends Schema {
   case class Room(
       @Column(name = "node_id") var nodeId: java.util.UUID,
       var state: String,
@@ -91,34 +92,34 @@ object Database extends Schema {
       set(seat.state := state)
     )
   
-}
-
-object Connection {
-  def connect(): Session = {
-    val props = System.getProperties()
-    connect(props)
-  }
-  
-  def connect(props: java.util.Properties): Session = {
-    val driver            = props.getProperty("database.driver")
-    val url               = props.getProperty("database.url")
-    val user              = props.getProperty("database.username")
-    val password          = props.getProperty("database.password")
-    
-    connect(driver, url, user, password)
-  }
-  
-  def connect(driver: String, url: String, user: String, password: String): Session = {
-    val sessionCreator = () => {
-      Class.forName(driver)
-      val jdbcConnection = java.sql.DriverManager.getConnection(url, user, password)
-      //jdbcConnection.setAutoCommit(false)
-      Session.create(jdbcConnection, new PostgreSqlAdapter {
-        import org.squeryl.internals.FieldMetaData
-        override def createSequenceName(fmd: FieldMetaData) = fmd.parentMetaData.viewOrTable.name + "_" + fmd.columnName + "_seq"
-      })
+  object Connection {
+    def connect(): Session = {
+      val props = System.getProperties()
+      connect(props)
     }
-    //SessionFactory.concreteFactory = Some(sessionCreator)
-    sessionCreator()
+    
+    def connect(props: java.util.Properties): Session = {
+      val driver            = props.getProperty("database.driver")
+      val url               = props.getProperty("database.url")
+      val user              = props.getProperty("database.username")
+      val password          = props.getProperty("database.password")
+      
+      connect(driver, url, user, password)
+    }
+    
+    def connect(driver: String, url: String, user: String, password: String): Session = {
+      val sessionCreator = () => {
+        Class.forName(driver)
+        val jdbcConnection = java.sql.DriverManager.getConnection(url, user, password)
+        //jdbcConnection.setAutoCommit(false)
+        Session.create(jdbcConnection, new PostgreSqlAdapter {
+          import org.squeryl.internals.FieldMetaData
+          override def createSequenceName(fmd: FieldMetaData) = fmd.parentMetaData.viewOrTable.name + "_" + fmd.columnName + "_seq"
+        })
+      }
+      //SessionFactory.concreteFactory = Some(sessionCreator)
+      sessionCreator()
+    }
   }
+
 }

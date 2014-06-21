@@ -17,7 +17,7 @@ class CodecSpec extends FunSpec {
     it("Game") {
       val game = Json.decodeFromString[Game]("""{"game":{"type":"texas","limit":"fixed-limit","tableSize":2}}""")
       game.`type` should equal(GameType.Texas)
-      game.limit should equal(Limit.Fixed)
+      game.limit should equal(GameLimit.Fixed)
       game.tableSize should equal(2)
     }
     
@@ -90,7 +90,7 @@ class CodecSpec extends FunSpec {
     
     it("Game") {
       
-      val game1 = Game(GameType.Texas, Limit.None)
+      val game1 = Game(GameType.Texas, GameLimit.None)
       Json.encode(game1) should equal("""{"game":{"type":"texas","limit":"no-limit","tableSize":10}}""")
       
       val game2 = Mix(MixType.Horse)
@@ -98,7 +98,7 @@ class CodecSpec extends FunSpec {
     }
     
     it("Variation") {
-      val game: Variation = Game(GameType.Texas, Limit.None)
+      val game: Variation = Game(GameType.Texas, GameLimit.None)
       Json.encode(game) should equal("""{"game":{"type":"texas","limit":"no-limit","tableSize":10}}""")
       
       val mix: Variation = Mix(MixType.Horse)
@@ -194,7 +194,7 @@ class CodecSpec extends FunSpec {
       val dealer = new Dealer(deck)
       dealer.dealBoard(3)
       val events = new gameplay.Events("test")
-      val play = new Play("1")
+      val play = new Play(java.util.UUID.randomUUID())
       val ctx = new gameplay.Context("test", table, game, stake, null, events, dealer = dealer, play = play)
       Json.encode(msg.PlayState(ctx)) should equal("""{}""")
     }

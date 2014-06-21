@@ -77,13 +77,6 @@ object PokernoBuild extends Build {
     "com.typesafe.akka" %% "akka-testkit" % akkaVersion
   )
 
-  lazy val databaseDeps = Seq(
-    //"com.typesafe.slick" %% "slick" % "2.0.2",
-    //"org.slf4j" % "slf4j-nop" % "1.6.4",
-    "postgresql" % "postgresql" % "9.1-901.jdbc4",
-    "org.squeryl" %% "squeryl" % "0.9.5-6"
-  )
-
   lazy val protocol = Project(
     id = "pokerno-protocol",
     base = file("pokerno-protocol"),
@@ -147,16 +140,28 @@ object PokernoBuild extends Build {
     base = file("pokerno-finance"),
     settings = Project.defaultSettings ++ Seq(
       name := "pokerno-finance",
-      libraryDependencies ++= testDeps ++ databaseDeps
+      libraryDependencies ++= testDeps ++ Seq(
+        "postgresql" % "postgresql" % "9.1-901.jdbc4",
+        "org.squeryl" %% "squeryl" % "0.9.5-6"
+      )
     )
   ) dependsOn(protocol)
 
-  lazy val database = Project(
-    id = "pokerno-database",
-    base = file("pokerno-database"),
+  lazy val data = Project(
+    id = "pokerno-data",
+    base = file("pokerno-data"),
     settings = Project.defaultSettings ++ Seq(
-      name := "pokerno-database",
-      libraryDependencies ++= testDeps ++ databaseDeps
+      name := "pokerno-data",
+      libraryDependencies ++= testDeps ++ Seq(
+        //"com.typesafe.slick" %% "slick" % "2.0.2",
+        //"org.slf4j" % "slf4j-nop" % "1.6.4",
+        "postgresql" % "postgresql" % "9.1-901.jdbc4",
+        "org.squeryl" %% "squeryl" % "0.9.5-6",
+        "org.mongodb" %% "casbah" % "2.7.2",
+        "com.datastax.cassandra" % "cassandra-driver-core" % "2.0.2",
+        //"org.apache.cassandra" % "cassandra-thrift" % "2.0.8",
+        //"com.netflix.astyanax" % "astyanax" % "1.56.48",
+      )
     )
   ) dependsOn(engine)
 
@@ -178,15 +183,12 @@ object PokernoBuild extends Build {
             ExclusionRule(organization = "javax.jms")
           ),
         "org.slf4j" % "slf4j-simple" % "1.7.5",
-        "com.datastax.cassandra" % "cassandra-driver-core" % "2.0.2",
-        //"org.apache.cassandra" % "cassandra-thrift" % "2.0.8",
-        //"com.netflix.astyanax" % "astyanax" % "1.56.48",
         "com.github.scopt" %% "scopt" % scoptVersion
       )
     ) ++ assemblySettings ++ Seq(
       assemblyOption in assembly ~= { _.copy(includeScala = false, includeDependency = false) }
     )
-  ) dependsOn(engine, finance, database, protocol, httpGateway, stompGateway)
+  ) dependsOn(engine, finance, data, protocol, httpGateway, stompGateway)
 
   lazy val ai = Project(
     id = "pokerno-ai",

@@ -1,7 +1,8 @@
-package de.pokerno.db
+package de.pokerno.data
 
 import com.twitter.util.Future
 import org.slf4j.LoggerFactory
+import de.pokerno.data.snapshot.PostgreSql
 
 class Service extends de.pokerno.db.thrift.Database.FutureIface {
   import ThriftConversions._
@@ -12,7 +13,7 @@ class Service extends de.pokerno.db.thrift.Database.FutureIface {
   val log = LoggerFactory.getLogger(getClass)
 
   def restoreRooms(nodeId: String): Future[Seq[thrift.Room]] = Future {
-    val rooms = Database.getRooms(nodeId)
+    val rooms = PostgreSql.getRooms(nodeId)
     rooms.map { case (room, game, mix, stake) =>
       thrift.Room(
         room.id.toString(),
@@ -26,7 +27,7 @@ class Service extends de.pokerno.db.thrift.Database.FutureIface {
   }
   
   def getRoom(id: String): Future[thrift.Room] = Future {
-    val (room, game, mix, stake) = Database.getRoom(id)
+    val (room, game, mix, stake) = PostgreSql.getRoom(id)
     thrift.Room(
         room.id.toString(),
         room.state,
@@ -46,22 +47,22 @@ class Service extends de.pokerno.db.thrift.Database.FutureIface {
     
     log.info("room %s changed state to %s" format(id, newState))
     
-    Database.updateRoomState(id, newState)
+    PostgreSql.updateRoomState(id, newState)
   }
   
   def registerSeat(roomId: String, pos: Int, player: String, amount: Double): Future[Unit] = Future {
-    val seat = new Database.Seat(roomId, pos, player, amount, "taken")
+    val seat = new PostgreSql.Seat(roomId, pos, player, amount, "taken")
     
     log.info("registering seat: {}", seat)
-    Database.createSeat(seat)
+    PostgreSql.createSeat(seat)
   }
   
   def changeSeatState(roomId: String, pos: Int, player: String, state: protocol.SeatState): Future[Unit] = Future {
-    Database.updateSeatState(roomId, pos, player, state.name.toLowerCase)
+    PostgreSql.updateSeatState(roomId, pos, player, state.name.toLowerCase)
   }
   
   def unregisterSeat(roomId: String, pos: Int, player: String, amount: Double): Future[Unit] = Future {
-    Database.deleteSeat(roomId, pos, player)
+    PostgreSql.deleteSeat(roomId, pos, player)
   }
   
 }

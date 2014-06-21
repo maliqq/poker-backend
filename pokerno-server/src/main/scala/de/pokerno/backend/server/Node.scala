@@ -22,7 +22,7 @@ object Node {
       val f = new java.io.FileInputStream(file)
       val props = new java.util.Properties
       props.load(f)
-      de.pokerno.db.Connection.connect(props)
+      //de.pokerno.db.Connection.connect(props)
     }
     
     log.info("starting node at {}", config.host)
@@ -77,11 +77,11 @@ class Node(session: Option[org.squeryl.Session]) extends Actor with ActorLogging
   import CommandConversions._
 
   val balance = new de.pokerno.finance.Service()
-  val sync = actorOf(Props(classOf[DatabaseSync], session),
-      name = "database-sync")
+  val persist = actorOf(Props(classOf[Persistence], session),
+      name = "node-persist")
   val metrics = actorOf(Props(classOf[node.Metrics]),
       name = "node-metrics")
-  val storage = actorOf(Props(classOf[de.pokerno.backend.Storage]))
+  val history = actorOf(Props(classOf[PlayHistoryWriter]))
   val broadcasts = Seq[Broadcast](
       //new Broadcast.Zeromq("tcp://127.0.0.1:5555")
   )
@@ -141,7 +141,7 @@ class Node(session: Option[org.squeryl.Session]) extends Actor with ActorLogging
               java.util.UUID.fromString(id), // FIXME
               variation,
               stake,
-              balance, sync, storage, broadcasts), name = id)
+              balance, persist, history, broadcasts), name = id)
           room
         case _ ⇒
           log.warning("Room exists: {}", id)

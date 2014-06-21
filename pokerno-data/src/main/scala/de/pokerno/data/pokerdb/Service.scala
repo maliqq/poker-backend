@@ -89,7 +89,7 @@ class Service extends thrift.PokerDB.FutureIface {
   }
   
   def unregisterSeat(roomId: String, pos: Int, player: String, amount: Double): Future[Unit] = Future {
-    PokerDB.deleteSeat(roomId, pos, player)
+    PokerDB.deleteSeat(roomId, player)
   }
   
 }

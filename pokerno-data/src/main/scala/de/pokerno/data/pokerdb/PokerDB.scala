@@ -105,11 +105,24 @@ object PokerDB extends Schema {
   
   def getRoom(id: java.util.UUID) = roomsWithGamesAndStakes.where(_._1.id === id).head
   
-  def createSeat(seat: Seat) = seats.insert(seat)
+  def createSeat(s: Seat) = inTransaction {
+//    val c =
+//      from(seats)((seat) =>
+//        where(seat.roomId === s.roomId and seat.playerId === s.playerId)
+//        compute(count(seat.id))
+//      )
+//    if ((c:Long) == 0)
+    deleteSeat(s.roomId, s.playerId)
+    seats.insert(s)
+  }
   
-  def deleteSeat(roomId: java.util.UUID, pos: Int, player: java.util.UUID) = seats.deleteWhere(seat =>
-      (seat.roomId === roomId and seat.pos === pos and seat.playerId === player)
+  def deleteSeat(roomId: java.util.UUID, player: java.util.UUID) = seats.deleteWhere(seat =>
+      (seat.roomId === roomId and seat.playerId === player)
     )
+    
+//  def deleteSeat(roomId: java.util.UUID, pos: Int, player: java.util.UUID) = seats.deleteWhere(seat =>
+//      (seat.roomId === roomId and seat.pos === pos and seat.playerId === player)
+//    )
   
   def updateRoomMetrics(roomId: java.util.UUID, metrics: thrift.metrics.Room) {
     update(rooms)(room =>

@@ -19,7 +19,7 @@ trait Reporting { m: Metrics =>
         players.getCount(),
         waiting.getCount(),
         watching.getCount(),
-        thrift.metrics.Histogram(mean = pots.getSnapshot().getMean()),
+        thrift.metrics.Histogram(mean = pots.getSnapshot().getMean() / 100.0), // 100 - for floats
         thrift.metrics.Meter(mean = plays.getMeanRate(), rate15 = Some(plays.getFifteenMinuteRate())),
         thrift.metrics.Meter(mean = playersPerFlop.getMeanRate(), rate15 = Some(playersPerFlop.getFifteenMinuteRate()))
     )

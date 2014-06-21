@@ -12,6 +12,7 @@ abstract class PlayHistoryBatch {
     limit: model.GameLimit,
     stake: model.Stake,
     button: Int,            // staring position at the table
+    board: poker.Cards,
     pot: Decimal,           // total size of the pot
     rake: BigDecimal        // rake
   )
@@ -34,20 +35,19 @@ abstract class PlayHistoryBatch {
   def write()
 }
 
-abstract class StorageClient {
-  def batch(id: java.util.UUID)(batch: PlayHistoryBatch => Unit)
-}
-
-class Storage(client: StorageClient) {
+abstract class Storage {
+  
+  protected def batch(id: java.util.UUID)(batch: PlayHistoryBatch => Unit)
   
   def write(roomId: java.util.UUID, game: model.Game, stake: model.Stake, play: model.Play) {
-    client.batch(play.id) { batch =>
+    batch(play.id) { batch =>
       batch.writeEntry(
         roomId,
         play.started, play.ended,
         game.`type`, game.limit,
         stake,
         play.button,
+        play.board,
         play.pot.total, play.rake.total)
       
       play.seating.map { case (player, pos) =>

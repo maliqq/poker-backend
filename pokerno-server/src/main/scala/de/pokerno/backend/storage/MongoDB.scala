@@ -3,7 +3,7 @@ package de.pokerno.backend.storage
 import com.mongodb.casbah.Imports._
 
 import math.{BigDecimal => Decimal}
-import de.pokerno.backend.{StorageClient, PlayHistoryBatch}
+import de.pokerno.backend.{Storage => AbstractStorage, PlayHistoryBatch}
 import de.pokerno.{model, poker}
 
 object MongoDB {
@@ -24,6 +24,7 @@ object MongoDB {
       limit:    model.GameLimit,
       stake:    model.Stake,
       button:   Int,            // staring position at the table
+      board:    poker.Cards,
       pot:      Decimal,           // total size of the pot
       rake:     Decimal        // rake
     ) {
@@ -40,6 +41,7 @@ object MongoDB {
               "bring_in" -> stake.bringIn
             ),
           "button" -> button,
+          "board" -> (board: Array[Byte]),
           "pot" -> pot
         )
     }
@@ -72,7 +74,8 @@ object MongoDB {
         _actions(street) = ListBuffer.empty
       }
       val betObj = MongoDBObject(
-          "_type" -> bet.name,
+          "street" -> street,
+          "bet" -> bet.name,
           "check" -> bet.isCheck,
           "fold" -> bet.isFold
       )
@@ -90,9 +93,8 @@ object MongoDB {
     }
   }
   
-  class Client(host: String, port: Int, dbName: String) extends StorageClient {
-    val client  = Connection.connect(host, port)
-    val db      = client(dbName)
+  class Storage(client: MongoClient) extends AbstractStorage {
+    val db      = client("plays")
     val deals   = db("deals")
     
     def batch(id: java.util.UUID)(f: PlayHistoryBatch => Unit) = f(new Batch(id, deals))

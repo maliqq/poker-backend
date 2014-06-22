@@ -8,7 +8,7 @@ import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.internals.FieldMetaData
 
 object PokerDB extends Schema {
-  case class Node(
+  sealed case class Node(
       @Column("total_connections_count") var totalConnectionsCount: Long,
       @Column("player_connections_count") var playerConnectionsCount: Long,
       @Column("offline_players_count") var offlinePlayersCount: Long,
@@ -19,7 +19,7 @@ object PokerDB extends Schema {
     var id: java.util.UUID = null
   }
   
-  case class Room(
+  sealed case class Room(
       @Column(name = "node_id") var nodeId: java.util.UUID,
       var state: String,
       var name: String,
@@ -37,7 +37,7 @@ object PokerDB extends Schema {
     def this() = this(null, "", "", None, None, 0, 0, 0, 0, 0, 0, 0)
   }
   
-  case class Stake(
+  sealed case class Stake(
       @Column("big_blind") var bigBlind: Double,
       @Column("small_blind") var smallBlind: Double,
       @Column(optionType = classOf[Double])  var ante: Option[Double],
@@ -47,7 +47,7 @@ object PokerDB extends Schema {
     def this() = this(0, 0, None, 0, 0)
   }
   
-  case class Game(
+  sealed case class Game(
       var variation: String,
       var limit: Option[String],
       @Column(optionType = classOf[Int]) var speed: Option[Int],
@@ -56,7 +56,7 @@ object PokerDB extends Schema {
     def this() = this("", None, None, 0)
   }
   
-  case class Seat(
+  sealed case class Seat(
       @Column("room_id") var roomId: java.util.UUID,
       var pos: Int,
       @Column("player_id") var playerId: java.util.UUID,
@@ -67,7 +67,7 @@ object PokerDB extends Schema {
     def this() = this(null, 0, null, 0, "")
   }
   
-  case class Mix(
+  sealed case class Mix(
       var variation: String,
       @Column(optionType = classOf[Int]) var speed: Option[Int],
       @Column("table_size") var tableSize: Int) extends KeyedEntity[Long] {

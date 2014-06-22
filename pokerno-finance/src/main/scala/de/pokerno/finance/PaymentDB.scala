@@ -16,13 +16,13 @@ object PaymentDB extends Schema {
     final val Purchase  = "purchase"
   }
   
-  class Currency(var id: Long)
-  class Account(var id: Long)
+  sealed class Currency(var id: Long)
+  sealed class Account(var id: Long)
   
   // PAYMENTS
   abstract class Payment(var _type: String) {
     var amount: Double
-    var status: String
+    var state: String
     var created: java.sql.Timestamp
     var updated: java.sql.Timestamp = null
     def approve() {}
@@ -31,46 +31,46 @@ object PaymentDB extends Schema {
   
   // TRANSFERS
   object Transfer {
-    def create(from: Balance, to: Balance, amount: Double, status: String) = {
-      new Transfer(amount, from.id, to.id, status, java.sql.Timestamp.from(java.time.Instant.now()))
+    def create(from: Balance, to: Balance, amount: Double, state: String) = {
+      new Transfer(amount, from.id, to.id, state, java.sql.Timestamp.from(java.time.Instant.now()))
     }
   }
-  class Transfer(var amount: Double, var payerId: Long, var payeeId: Long, var status: String, var created: java.sql.Timestamp) extends Payment(Tags.Transfer) {
+  sealed class Transfer(var amount: Double, var payerId: Long, var payeeId: Long, var state: String, var created: java.sql.Timestamp) extends Payment(Tags.Transfer) {
   }
   
   // DEPOSITS
   object Deposit {
-    def create(balance: Balance, amount: Double, status: String) = {
-      new Deposit(amount, balance.id, status, java.sql.Timestamp.from(java.time.Instant.now()))
+    def create(balance: Balance, amount: Double, state: String) = {
+      new Deposit(amount, balance.id, state, java.sql.Timestamp.from(java.time.Instant.now()))
     }
   }
-  class Deposit(var amount: Double, var payeeId: Long, var status: String, var created: java.sql.Timestamp) extends Payment(Tags.Deposit) {
+  sealed class Deposit(var amount: Double, var payeeId: Long, var state: String, var created: java.sql.Timestamp) extends Payment(Tags.Deposit) {
   }
   
   // WITHDRAWS
   object Withdraw {
-    def create(balance: Balance, amount: Double, status: String) = {
-      new Withdraw(amount, balance.id, status, java.sql.Timestamp.from(java.time.Instant.now()))
+    def create(balance: Balance, amount: Double, state: String) = {
+      new Withdraw(amount, balance.id, state, java.sql.Timestamp.from(java.time.Instant.now()))
     }
   }
-  class Withdraw(var amount: Double, var payerId: Long, var status: String, var created: java.sql.Timestamp) extends Payment(Tags.Withdraw) {
+  sealed class Withdraw(var amount: Double, var payerId: Long, var state: String, var created: java.sql.Timestamp) extends Payment(Tags.Withdraw) {
   }
   
   // PURCHASES
   object Purchase {
-    def create(balance: Balance, order: Order, status: String) = {
-      new Purchase(order.amount, balance.id, order.id, status, java.sql.Timestamp.from(java.time.Instant.now()))
+    def create(balance: Balance, order: Order, state: String) = {
+      new Purchase(order.amount, balance.id, order.id, state, java.sql.Timestamp.from(java.time.Instant.now()))
     }
   }
-  class Purchase(var amount: Double, var payerId: Long, var orderId: Long, var status: String, var created: java.sql.Timestamp) extends Payment(Tags.Purchase) {
+  sealed class Purchase(var amount: Double, var payerId: Long, var orderId: Long, var state: String, var created: java.sql.Timestamp) extends Payment(Tags.Purchase) {
   }
   
-  class Order(var id: Long, var amount: Double, var status: String, var itemId: String, var itemType: String, var itemMetaData: String) {
+  sealed class Order(var id: Long, var amount: Double, var state: String, var itemId: String, var itemType: String, var itemMetaData: String) {
     def pay() {
     }
   }
   
-  class Balance(
+  sealed class Balance(
       var id: Long,
       var currencyId: Long,
       var amount: Double
@@ -89,7 +89,7 @@ object PaymentDB extends Schema {
   
   def withdraw(balance: Balance, amount: Double) = inTransaction {
     balance.charge(-amount) // block amount for withdraw
-    val payment = Withdraw.create(balance, amount = amount, status = "pending")
+    val payment = Withdraw.create(balance, amount = amount, state = "pending")
   }
   
   def cancelWithdraw(payment: Withdraw) = inTransaction {
@@ -99,14 +99,14 @@ object PaymentDB extends Schema {
   }
   
   def deposit(balance: Balance, amount: Double) = inTransaction {
-    //val payment = Deposit.create(balance, amount = amount, status = "approved")
+    //val payment = Deposit.create(balance, amount = amount, state = "approved")
     balance.charge(amount)
   }
   
   def transfer(from: Balance, to: Balance, amount: Double) = inTransaction {
     from.charge(-amount)
     to.charge(amount)
-    //val payment = Transfer.create(from, to, amount = amount, status = "pending")
+    //val payment = Transfer.create(from, to, amount = amount, state = "pending")
   }
   
   def purchase(balance: Balance, order: Order) = inTransaction {

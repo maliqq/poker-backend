@@ -1,7 +1,7 @@
 package de.pokerno.backend.storage
 
 import math.{BigDecimal => Decimal}
-import de.pokerno.backend.{Storage => AbstractStorage, PlayHistoryBatch}
+import de.pokerno.backend.{BatchedStorage, PlayHistoryBatch}
 import de.pokerno.{model, poker}
 import org.squeryl._
 import org.squeryl.annotations.Column
@@ -37,9 +37,10 @@ object PostgreSQL {
       var pos: Int,
       var amount: Double,
       var net: Double,
+      var netBB: Double,
       var cards: Array[Byte]
   ) {
-    def this() = this(null, null, 0, 0, 0, null)
+    def this() = this(null, null, 0, 0, 0, 0, null)
   }
   
   class Action(
@@ -105,7 +106,7 @@ object PostgreSQL {
           _id,
           java.util.UUID.fromString(player),
           pos,
-          amount.toDouble, net.toDouble,
+          amount.toDouble, net.toDouble, net.toDouble / _play.bigBlind,
           (cards: Array[Byte])
       )
     }
@@ -138,7 +139,7 @@ object PostgreSQL {
     }
   }
   
-  class Storage extends AbstractStorage {
+  class Storage extends BatchedStorage {
     def batch(id: java.util.UUID)(f: PlayHistoryBatch => Unit) = {
       val b = new Batch(id)
       f(b)

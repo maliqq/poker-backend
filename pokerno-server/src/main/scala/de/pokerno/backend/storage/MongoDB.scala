@@ -3,7 +3,7 @@ package de.pokerno.backend.storage
 import com.mongodb.casbah.Imports._
 
 import math.{BigDecimal => Decimal}
-import de.pokerno.backend.{Storage => AbstractStorage, PlayHistoryBatch}
+import de.pokerno.backend.{BatchedStorage, PlayHistoryBatch}
 import de.pokerno.{model, poker}
 
 object MongoDB {
@@ -93,7 +93,7 @@ object MongoDB {
     }
   }
   
-  class Storage(client: MongoClient) extends AbstractStorage {
+  class Storage(client: MongoClient) extends BatchedStorage {
     val db      = client("plays")
     val deals   = db("deals")
     

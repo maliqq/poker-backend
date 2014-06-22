@@ -36,7 +36,14 @@ abstract class PlayHistoryBatch {
 }
 
 abstract class Storage {
-  
+  def write(roomId: java.util.UUID, game: model.Game, stake: model.Stake, play: model.Play)
+}
+
+sealed class DummyStorage extends Storage {
+  def write(roomId: java.util.UUID, game: model.Game, stake: model.Stake, play: model.Play) {}
+}
+
+abstract class BatchedStorage extends Storage {
   protected def batch(id: java.util.UUID)(batch: PlayHistoryBatch => Unit)
   
   def write(roomId: java.util.UUID, game: model.Game, stake: model.Stake, play: model.Play) {
@@ -64,5 +71,4 @@ abstract class Storage {
       }
     }
   }
-
 }

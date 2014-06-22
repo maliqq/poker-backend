@@ -3,7 +3,7 @@ package de.pokerno.backend.storage
 import com.datastax.driver.core.{Cluster, Session, BatchStatement}
 
 import math.{BigDecimal => Decimal}
-import de.pokerno.backend.{Storage => AbstractStorage, PlayHistoryBatch}
+import de.pokerno.backend.{BatchedStorage, PlayHistoryBatch}
 import de.pokerno.{model, poker}
 
 object Cassandra {
@@ -98,7 +98,7 @@ object Cassandra {
     def write() = session.execute(_batch)
   }
   
-  class Storage(session: Session) extends AbstractStorage {
+  class Storage(session: Session) extends BatchedStorage {
     //private def session = Connection.connect(node, keyspace)
     import collection.JavaConverters._
     def batch(id: java.util.UUID)(f: PlayHistoryBatch => Unit) = {

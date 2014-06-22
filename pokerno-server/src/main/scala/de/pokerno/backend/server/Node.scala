@@ -21,8 +21,10 @@ object Node {
     log.info("starting with config: {}", config)
     
     val id = config.id
+    var storage: de.pokerno.backend.Storage = new de.pokerno.backend.DummyStorage
+    var pokerDb: Option[pokerdb.Service] = None
     
-    val pokerDbService = config.dbProps.map { file =>
+    config.dbProps.map { file =>
       val f = new java.io.FileInputStream(file)
       val props = new java.util.Properties
       props.load(f)
@@ -38,12 +40,13 @@ object Node {
         def receive = { case _ => }
       }))
       
-      new pokerdb.Service()
+      storage = new de.pokerno.backend.storage.PostgreSQL.Storage
+      pokerDb = Some(new pokerdb.Service())
       ///pokerdb.Connection.connect(props)
     }
       
     log.info("starting node at {}", config.host)
-    val node = system.actorOf(Props(classOf[Node], id, pokerDbService), name = "node-main")
+    val node = system.actorOf(Props(classOf[Node], id, pokerDb, storage), name = "node-main")
 
     config.rpc.map { rpcConfig ⇒
       log.info("starting rpc with config: {}", rpcConfig)
@@ -87,7 +90,11 @@ object Node {
   
 }
 
-class Node(nodeId: java.util.UUID, pokerdb: Option[de.pokerno.data.pokerdb.thrift.PokerDB.FutureIface]) extends Actor with ActorLogging {
+class Node(
+    nodeId: java.util.UUID,
+    pokerdb: Option[de.pokerno.data.pokerdb.thrift.PokerDB.FutureIface],
+    storage: de.pokerno.backend.Storage
+  ) extends Actor with ActorLogging {
   import context._
   import concurrent.duration._
   import util.{ Success, Failure }
@@ -102,9 +109,6 @@ class Node(nodeId: java.util.UUID, pokerdb: Option[de.pokerno.data.pokerdb.thrif
   //
   val history = actorOf(Props(new Actor {
     import de.pokerno.model
-    
-    val storage = new de.pokerno.backend.storage.PostgreSQL.Storage
-    
     def receive = {
       case (id: java.util.UUID, game: model.Game, stake: model.Stake, play: model.Play) =>
         //log.info("writing {} {}", id, play)

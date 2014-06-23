@@ -63,7 +63,7 @@ object Node {
     
     config.api.map { apiConfig =>
       import spray.can.Http
-      val httpApi = system.actorOf(Props(classOf[Api]), name = "http-api")
+      val httpApi = system.actorOf(Props(classOf[Api], node), name = "http-api")
       akka.io.IO(Http) ! Http.Bind(httpApi, config.host, port = apiConfig.port)
     }
 
@@ -89,23 +89,23 @@ object Node {
     command: cmd.Command
   )
   
+  case object Metrics
+  
 }
 
 class Node(
-    nodeId: java.util.UUID,
-    pokerdb: Option[de.pokerno.data.pokerdb.thrift.PokerDB.FutureIface],
+    val nodeId: java.util.UUID,
+    val pokerdb: Option[de.pokerno.data.pokerdb.thrift.PokerDB.FutureIface],
     storage: de.pokerno.backend.Storage
-  ) extends Actor with ActorLogging {
+  ) extends Actor with ActorLogging with node.Metrics {
   import context._
   import concurrent.duration._
   import util.{ Success, Failure }
   import CommandConversions._
-
+  
   val balance = new de.pokerno.finance.Service()
   val persist = actorOf(Props(classOf[Persistence], pokerdb),
       name = "node-persist")
-  val metrics = actorOf(Props(classOf[node.Metrics], nodeId.toString(), pokerdb),
-      name = "node-metrics")
       
   //
   val history = actorOf(Props(new Actor {
@@ -122,12 +122,13 @@ class Node(
   )
   
   override def preStart {
+    startReporting()
   }
 
   def receive = {
     // new connection
     case msg @ Gateway.Connect(conn) if conn.room.isDefined ⇒
-      metrics ! msg
+      metrics.connected(conn.hasPlayer)
       
       val id = conn.room.get
 
@@ -141,7 +142,7 @@ class Node(
       }
 
     case msg @ Gateway.Disconnect(conn) if conn.room.isDefined ⇒
-      metrics ! msg
+      metrics.disconnected(conn.hasPlayer)
       
       val id = conn.room.get
 
@@ -155,7 +156,7 @@ class Node(
 
     // catch player messages
     case msg @ Gateway.Message(conn, event) if conn.player.isDefined && conn.room.isDefined ⇒
-      metrics ! msg
+      metrics.messageReceived()
       
       implicit val player = conn.player.get
       val id = conn.room.get
@@ -197,6 +198,9 @@ class Node(
         case Failure(_) =>
           log.warning("Room not found: {}", id)
       }
+     
+    case Node.Metrics =>
+      sender ! metrics.registry
 
     case x ⇒
       log.warning("unhandled: {}", x)

@@ -25,56 +25,78 @@ import de.pokerno.data.pokerdb.thrift
 trait Reporting { m: Metrics =>
   def report() {
     val m = thrift.metrics.Node(
-        totalConnections.getCount(),
-        playerConnections.getCount(),
-        offlinePlayers.getCount(),
-        thrift.metrics.Meter(mean = connects.getMeanRate(), rate15 = Some(connects.getFifteenMinuteRate())),
-        thrift.metrics.Meter(mean = disconnects.getMeanRate(), rate15 = Some(disconnects.getFifteenMinuteRate())),
-        thrift.metrics.Meter(mean = messagesReceived.getMeanRate(), rate15 = Some(messagesReceived.getFifteenMinuteRate()))
+        metrics.totalConnections.getCount(),
+        metrics.playerConnections.getCount(),
+        metrics.offlinePlayers.getCount(),
+        thrift.metrics.Meter(mean = metrics.connects.getMeanRate(), rate15 = Some(metrics.connects.getFifteenMinuteRate())),
+        thrift.metrics.Meter(mean = metrics.disconnects.getMeanRate(), rate15 = Some(metrics.disconnects.getFifteenMinuteRate())),
+        thrift.metrics.Meter(mean = metrics.messagesReceived.getMeanRate(), rate15 = Some(metrics.messagesReceived.getFifteenMinuteRate()))
     )
     pokerdb match {
-      case Some(service) => service.reportNodeMetrics(nodeId, m)
+      case Some(service) => service.reportNodeMetrics(nodeId.toString(), m)
       case _ => println(m)
     }
   }
 }
 
-class Metrics(val nodeId: String, val pokerdb: Option[thrift.PokerDB.FutureIface]) extends Actor with ActorLogging with Reporting {
+trait Metrics extends Reporting { a: Actor =>
+  val nodeId: java.util.UUID
+  val pokerdb: Option[thrift.PokerDB.FutureIface]
+  
   import context._
+//  
+//  private def startGraphite() {
+//    import com.codahale.metrics.graphite._
+//    val graphite = new Graphite(new java.net.InetSocketAddress("localhost", 2003))
+//    val reporter = GraphiteReporter.forRegistry(metrics.registry).
+//                        prefixedWith("nodes." + nodeId).
+//                        convertRatesTo(TimeUnit.SECONDS).
+//                        convertDurationsTo(TimeUnit.MILLISECONDS).
+//                        filter(MetricFilter.ALL).
+//                        build(graphite)
+//    reporter.start(1, TimeUnit.MINUTES)
+//  }
   
-  val metrics = new MetricRegistry
-  
-  val totalConnections    = metrics.counter("total_connections")
-  val playerConnections   = metrics.counter("player_connections")
-  val offlinePlayers      = metrics.counter("offlinePlayers")
-  val connects            = metrics.meter("connects")
-  val disconnects         = metrics.meter("disconnects")
-  val messagesReceived    = metrics.meter("messages_received")
-  //val messagesBroadcasted = metrics.meter("messages_broadcasted")
-  //val messagesSent        = metrics.meter("messages_sent")
-  
-  override def preStart() {
+  def startReporting() {
     system.scheduler.schedule(1.minute, 1.minute) {
       report()
     }
+    //startGraphite()
     //report()
   }
   
-  def receive = {
-    case Gateway.Connect(conn) =>
+  abstract class MetricsHandler {
+    val registry = new MetricRegistry
+    
+    val totalConnections    = registry.counter("total_connections")
+    val playerConnections   = registry.counter("player_connections")
+    val offlinePlayers      = registry.counter("offlinePlayers")
+    val connects            = registry.meter("connects")
+    val disconnects         = registry.meter("disconnects")
+    val messagesReceived    = registry.meter("messages_received")
+    //val messagesBroadcasted = registry.meter("messages_broadcasted")
+    //val messagesSent        = registry.meter("messages_sent")
+    
+    def connected(isPlayer: Boolean = false)
+    def disconnected(isPlayer: Boolean = false)
+    def messageReceived()
+  }
+  
+  val metrics = new MetricsHandler {
+    def connected(isPlayer: Boolean = false) {
       totalConnections.inc()
-      if (conn.player.isDefined)
-        playerConnections.inc()
+      if (isPlayer) playerConnections.inc()
       connects.mark()
+    }
     
-    case Gateway.Disconnect(conn) =>
+    def disconnected(isPlayer: Boolean = false) {
       totalConnections.dec()
-      if (conn.player.isDefined)
-        playerConnections.dec()
+      if (isPlayer) playerConnections.dec()
       disconnects.mark()
-    
-    case Gateway.Message(_, _) =>
+    }
+    def messageReceived() {
       messagesReceived.mark()
+    }
   }
   
 }

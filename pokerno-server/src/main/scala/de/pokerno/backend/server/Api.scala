@@ -1,6 +1,6 @@
 package de.pokerno.backend.server
 
-import akka.actor.{Actor, ActorLogging, ActorSystem}
+import akka.actor.{Actor, ActorRef, ActorLogging, ActorSystem}
 import akka.pattern.ask
 
 import spray.routing.{HttpService, RequestContext}
@@ -8,7 +8,7 @@ import spray.http._
 import util.{Success, Failure}
 import concurrent.duration._
 
-class Api extends Actor with ActorLogging with Api.Service {
+class Api(val node: ActorRef) extends Actor with ActorLogging with Api.Service {
   def actorRefFactory = context
   def receive = runRoute(route)
 }
@@ -16,12 +16,13 @@ class Api extends Actor with ActorLogging with Api.Service {
 object Api {
   trait Service extends HttpService { a: ActorLogging =>
     val codec = de.pokerno.protocol.Codec.Json
+    val node: ActorRef
     
     implicit def executionContext = actorRefFactory.dispatcher
 
     val route = pathPrefix("node") {
-      path("metrics") {
-        complete("ok")
+      path("metrics") { ctx =>
+        askNode(Node.Metrics, ctx)
       } ~ pathEnd {
         get {
           complete("ok")
@@ -54,6 +55,19 @@ object Api {
         get {
           complete("ok")
         }
+      }
+    }
+    
+    // asks
+    
+    def askNode(msg: Any, ctx: RequestContext) {
+      val f = node.ask(msg)(1 second)
+      f.onComplete {
+        case Success(resp) =>
+          ctx.complete(codec.encodeAsString(resp))
+        case Failure(err) =>
+          log.error("Error while asking node: {}", err.getMessage)
+          ctx.complete(StatusCodes.InternalServerError)
       }
     }
     

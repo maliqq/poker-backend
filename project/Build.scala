@@ -170,6 +170,7 @@ object PokernoBuild extends Build {
       //version := "0.0.1",
       libraryDependencies ++= testDeps ++ Seq(
         "com.codahale.metrics" % "metrics-core" % "3.0.1",
+        //"com.codahale.metrics" % "metrics-graphite" % "3.0.1",
         "io.spray" % "spray-can" % "1.2.1",
         "io.spray" % "spray-routing" % "1.2.1",
         "org.zeromq" % "jzmq" % "3.0.1",

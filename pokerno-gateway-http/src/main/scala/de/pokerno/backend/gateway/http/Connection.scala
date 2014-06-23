@@ -20,6 +20,8 @@ trait Connection {
   def auth: Option[String]
   // player identified by auth string
   def player: Option[String]
+  
+  def hasPlayer = player.isDefined
 
 }
 

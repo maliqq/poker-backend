@@ -70,8 +70,9 @@ object Node {
     node
   }
 
-  import com.fasterxml.jackson.annotation.JsonProperty
+  import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnoreProperties}
   
+  @JsonIgnoreProperties(ignoreUnknown = true)
   case class CreateRoom(
     @JsonProperty id: String,
     @JsonProperty variation: Variation,

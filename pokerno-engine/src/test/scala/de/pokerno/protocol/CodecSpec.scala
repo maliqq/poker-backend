@@ -180,7 +180,8 @@ class CodecSpec extends FunSpec {
       val table = new Table(1)
       val game = Game(GameType.Texas)
       val stake = Stake(100)
-      val round = new gameplay.betting.Round(table, game, stake)
+      val play = new Play
+      val round = new gameplay.betting.Round(table, game, stake, play)
       val seat = new Sitting(1, new Player("A"))
       round.requireBet(seat)
       Json.encode(round) should equal("""{"pot":{"side":[],"total":0}}""")

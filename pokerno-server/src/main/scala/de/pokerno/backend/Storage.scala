@@ -14,7 +14,7 @@ abstract class PlayHistoryBatch {
     button: Int,            // staring position at the table
     board: poker.Cards,
     pot: Decimal,           // total size of the pot
-    rake: BigDecimal        // rake
+    rake: Option[Decimal]        // rake
   )
 
   def writePosition(
@@ -55,7 +55,7 @@ abstract class BatchedStorage extends Storage {
         stake,
         play.button,
         play.board,
-        play.pot.total, play.rake.total)
+        play.pot.total, play.rake.map(_.total))
       
       play.seating.map { case (player, pos) =>
         val amount = play.stacks(player)

@@ -80,7 +80,7 @@ object PostgreSQL {
       button:   Int,            // staring position at the table
       board:    poker.Cards,
       pot:      Decimal,           // total size of the pot
-      rake:     Decimal        // rake
+      rake:     Option[Decimal]        // rake
     ) {
       _play = new Play(
           _id,
@@ -90,7 +90,7 @@ object PostgreSQL {
           stake.bigBlind.toDouble, stake.smallBlind.toDouble, stake.ante.map(_.toDouble), stake.bringIn.map(_.toDouble),
           button,
           (board: Array[Byte]),
-          pot.toDouble, rake.toDouble
+          pot.toDouble, rake.map(_.toDouble).getOrElse(0)
       )
     }
     

@@ -16,11 +16,11 @@ private[gameplay] case class Showdown(ctx: stg.Context) extends Stage {
   def apply() = {
     val inPot = table.sitting filter (_.inPot)
     if (inPot.size == 1) {
-      winner(round.pot, inPot.head)
+      winner(play.pot, inPot.head)
     } else {
       val hiHands = gameOptions.hiRanking.map(showHands(_))
       val loHands = gameOptions.loRanking.map(showHands(_))
-      winners(round.pot, hiHands, loHands)
+      winners(play.pot, hiHands, loHands)
     }
   }
   

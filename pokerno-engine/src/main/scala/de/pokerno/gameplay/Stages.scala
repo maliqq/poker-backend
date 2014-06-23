@@ -10,6 +10,7 @@ private[gameplay] object Stages {
     import Stages._
     import de.pokerno.gameplay.stages.{ PostBlinds,  RotateGame, PostAntes, Showdown, PlayStart, PlayStop }
     
+    // TODO for {} yield
     lazy val beforeStreets = new stg.Builder[stg.Context] {
       stage[PlayStart]    ("play-start")
       stage[RotateGame]   ("rotate-game")

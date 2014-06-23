@@ -1,7 +1,7 @@
 package de.pokerno.gameplay
 
 import de.pokerno.model._
-import de.pokerno.finance.thrift.Balance.{FutureIface => Balance}
+import de.pokerno.finance.thrift.Payment.{FutureIface => Balance}
 
 trait ContextLike extends context.Button {
   //
@@ -58,7 +58,7 @@ class Context(
       new Events(id)
       )
   
-  lazy val bettingRound: betting.Round = new betting.Round(table, game, stake)
+  lazy val bettingRound: betting.Round = new betting.Round(table, game, stake, play)
   lazy val discardingRound: discarding.Round = new discarding.Round(table, game, dealer)
   lazy val gameRotation = new Rotation(variation.asInstanceOf[Mix].games)
 

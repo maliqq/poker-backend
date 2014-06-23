@@ -46,11 +46,11 @@ object Stake {
 }
 
 class StakeBuilder {
-  @JsonProperty var bigBlind: Decimal = null
-  @JsonProperty var smallBlind: Option[Decimal] = None
+  @JsonProperty("big_blind") var bigBlind: Decimal = null
+  @JsonProperty("small_blind") var smallBlind: Option[Decimal] = None
   @JsonProperty var ante: Option[Decimal] = None
-  @JsonProperty var bringIn: Option[Decimal] = None
-  @JsonProperty var buyIn: Option[Tuple2[Int, Int]] = None
+  @JsonProperty("bring_in") var bringIn: Option[Decimal] = None
+  @JsonProperty("buy_in") var buyIn: Option[Tuple2[Int, Int]] = None
   
   def build(): Stake = {
     assert(bigBlind != null) // FIXME
@@ -67,11 +67,11 @@ class StakeBuilder {
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonDeserialize(builder = classOf[StakeBuilder])
 case class Stake(
-    @JsonProperty bigBlind: Decimal,
-    @JsonProperty smallBlind: Decimal,
-    @JsonProperty buyIn: Tuple2[Int, Int],
+    @JsonProperty("big_blind") bigBlind: Decimal,
+    @JsonProperty("small_blind") smallBlind: Decimal,
+    @JsonProperty("buy_in") buyIn: Tuple2[Int, Int],
     @JsonProperty ante: Option[Decimal],
-    @JsonProperty bringIn: Option[Decimal]) {
+    @JsonProperty("bring_in") bringIn: Option[Decimal]) {
 
   def buyInAmount: Tuple2[Decimal, Decimal] = (bigBlind * buyIn._1, bigBlind * buyIn._2)
   

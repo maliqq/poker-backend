@@ -104,9 +104,9 @@ object Game {
 }
 
 class GameBuilder {
-  @JsonProperty var `type`: String = null
-  @JsonProperty var limit: String = null
-  @JsonProperty var tableSize: Integer = null
+  @JsonProperty var `type`: String = null // FIXME: JsonProperty("game_type")
+  @JsonProperty var limit: String = null // FIXME: JsonProperty("game_limit")
+  @JsonProperty("table_size") var tableSize: Integer = null
   
   def build(): Game = Game(`type`: GameType, Option(limit: GameLimit), Option[Int](tableSize))
 }
@@ -115,7 +115,7 @@ class GameBuilder {
 class Game(
     @JsonProperty val `type`: GameType,
     @JsonProperty val limit: GameLimit,
-    @JsonProperty val tableSize: Int
+    @JsonProperty("table_size") val tableSize: Int
   ) extends Variation {
   
   def options = `type`.options

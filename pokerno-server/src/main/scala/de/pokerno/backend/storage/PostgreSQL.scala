@@ -37,7 +37,7 @@ object PostgreSQL {
       var pos: Int,
       var amount: Double,
       var net: Double,
-      var netBB: Double,
+      @Column("net_bb") var netBB: Double,
       var cards: Array[Byte]
   ) {
     def this() = this(null, null, 0, 0, 0, 0, null)

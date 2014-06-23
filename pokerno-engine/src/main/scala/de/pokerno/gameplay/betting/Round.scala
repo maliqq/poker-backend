@@ -6,11 +6,13 @@ import de.pokerno.util.Colored._
 import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnore, JsonInclude, JsonGetter}
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-class Round(_table: Table, game: Game, stake: Stake) extends GameplayRound(_table) {
+class Round(_table: Table, game: Game, stake: Stake, play: Play) extends GameplayRound(_table) {
   protected override def acting_=(sitting: seat.Sitting) {
     acting.map(_.notBetting())
     super.acting = sitting
   }
+  
+  import play.pot
   
   override def reset() {
     super.reset()
@@ -20,9 +22,6 @@ class Round(_table: Table, game: Game, stake: Stake) extends GameplayRound(_tabl
   }
   
   @JsonIgnore var bigBets: Boolean = false
-  
-  @JsonProperty val pot = new Pot
-  @JsonProperty val rake: Option[SidePot] = None
 
   // limit number of raises per one street
   private final val MaxRaiseCount = 8

@@ -135,18 +135,6 @@ object PokernoBuild extends Build {
     ) ++ assemblySettings
   )
 
-  lazy val finance = Project(
-    id = "pokerno-finance",
-    base = file("pokerno-finance"),
-    settings = Project.defaultSettings ++ Seq(
-      name := "pokerno-finance",
-      libraryDependencies ++= testDeps ++ Seq(
-        "postgresql" % "postgresql" % "9.1-901.jdbc4",
-        "org.squeryl" %% "squeryl" % "0.9.5-6"
-      )
-    )
-  ) dependsOn(protocol)
-
   lazy val data = Project(
     id = "pokerno-data",
     base = file("pokerno-data"),
@@ -164,6 +152,15 @@ object PokernoBuild extends Build {
       )
     )
   ) dependsOn(engine)
+
+  lazy val finance = Project(
+    id = "pokerno-finance",
+    base = file("pokerno-finance"),
+    settings = Project.defaultSettings ++ Seq(
+      name := "pokerno-finance",
+      libraryDependencies ++= testDeps
+    )
+  ) dependsOn(protocol, data)
 
   lazy val server = Project(
     id = "pokerno-server",

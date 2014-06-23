@@ -6,7 +6,7 @@ import com.twitter.finagle.thrift.ThriftClientFramedCodec
 import org.apache.thrift.protocol.{TBinaryProtocol, TProtocolFactory}
 import com.twitter.finagle.{Service => FinagleService}
 
-object Balance {
+object Payment {
   def buildClient(addr: java.net.SocketAddress) = {
     val protocol = new TBinaryProtocol.Factory()
     val balanceService = ClientBuilder().
@@ -14,13 +14,13 @@ object Balance {
                                 hosts(Seq(addr)).
                                 hostConnectionLimit(1).
                                 build()
-    val balanceClient = new de.pokerno.finance.thrift.Balance.FinagledClient(balanceService)
+    val balanceClient = new de.pokerno.finance.thrift.Payment.FinagledClient(balanceService)
     balanceClient
   }
 }
 
-trait Balance {
+trait Payment {
   
-  val balance = Balance.buildClient(new java.net.InetSocketAddress("localhost", 3031))
+  val balance = Payment.buildClient(new java.net.InetSocketAddress("localhost", 3031))
   
 }

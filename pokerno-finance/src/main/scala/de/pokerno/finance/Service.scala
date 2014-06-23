@@ -15,7 +15,7 @@ object Service {
   def start(addr: InetSocketAddress) {
     val protocol = new TBinaryProtocol.Factory()
     
-    val service = new thrift.Balance.FinagledService(new Service, protocol)
+    val service = new thrift.Payment.FinagledService(new Service, protocol)
     
     val server = ServerBuilder().
       codec(ThriftServerFramedCodec()).
@@ -26,7 +26,7 @@ object Service {
 
 }
 
-class Service extends thrift.Balance.FutureIface {
+class Service extends thrift.Payment.FutureIface {
   //import java.util.concurrent.atomic.AtomicReference
   
   type Player = String
@@ -99,20 +99,43 @@ class Service extends thrift.Balance.FutureIface {
     }
   }
   
+  def join(playerId: String, amount: Double, roomId: String): Future[Unit] = Future{
+  }
+  
+  def leave(playerId: String, amount: Double, roomId: String): Future[Unit] = Future{}
+  
+  def register(playerId: String, tournamentId: String): Future[Unit] = Future{}
+  
+  def freeroll(playerId: String, tournamentId: String): Future[Unit] = Future{}
+  
+  def ticket(playerId: String, tournamentId: String, ticketId: String): Future[Unit] = Future{}
+  
+  def unregister(playerId: String, tournamentId: String): Future[Unit] = Future{}
+  
+  def rebuy(playerId: String, tournamentId: String): Future[Unit] = Future{}
+  
+  def doubleRebuy(playerId: String, tournamentId: String): Future[Unit] = Future{}
+  
+  def addon(playerId: String, tournamentId: String): Future[Unit] = Future{}
+  
+  def award(playerId: String, tournamentId: String, placeNumber: Long): Future[Unit] = Future{}
+  
+  def bounty(playerId: String, knockedPlayerId: String, tournamentId: String): Future[Unit] = Future{}
+  
   val refillAmount: Decimal = 10000
   val refillEvery = 1.hour
   
   import java.time.temporal.{ChronoUnit, TemporalUnit}
   import java.time.Instant
   
-  private def refill(player: Player, amount: Decimal = refillAmount): Decimal = {
+  private def refill(playerId: Player, amount: Decimal = refillAmount): Decimal = {
     def refilled() = {
       //Console printf("player %s: refilled with %.2f\n", player, amount)
-      _refills(player) = new java.util.Date()
+      _refills(playerId) = new java.util.Date()
       amount
     }
     
-    val lastRefill = _refills.get(player)
+    val lastRefill = _refills.get(playerId)
     
     lastRefill match {
       case Some(date) =>
@@ -121,17 +144,17 @@ class Service extends thrift.Balance.FutureIface {
         if (date.toInstant().isBefore(deadline)) refilled()
         else {
           val diff = ChronoUnit.MINUTES.between(date.toInstant(), now)
-          throw new thrift.Error("player %s: can't refill balance; last refill was %d minutes ago" format(player, diff))
+          throw new thrift.Error("player %s: can't refill balance; last refill was %d minutes ago" format(playerId, diff))
         }
       case _ => refilled()
     }
   }
   
-  private def balanceOrInitial(player: Player): Decimal = _balances.synchronized {
-    if (!_balances.contains(player)) {
-      val amount = refill(player)
-      _balances.put(player, amount)
+  private def balanceOrInitial(playerId: Player): Decimal = _balances.synchronized {
+    if (!_balances.contains(playerId)) {
+      val amount = refill(playerId)
+      _balances.put(playerId, amount)
       amount
-    } else _balances.get(player).get
+    } else _balances.get(playerId).get
   }
 }

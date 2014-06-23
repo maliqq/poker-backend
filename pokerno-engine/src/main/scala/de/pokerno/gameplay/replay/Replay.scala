@@ -2,7 +2,7 @@ package de.pokerno.gameplay.replay
 
 import de.pokerno.poker.{ Deck, Card, Cards }
 import de.pokerno.model._
-import de.pokerno.finance.thrift.Balance.{FutureIface => Balance}
+import de.pokerno.finance.thrift.Payment.{FutureIface => Balance}
 import de.pokerno.protocol
 import de.pokerno.protocol.cmd
 import de.pokerno.gameplay.{Events, Context => Gameplay, stg}

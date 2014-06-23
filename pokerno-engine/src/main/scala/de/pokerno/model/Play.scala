@@ -3,7 +3,7 @@ package de.pokerno.model
 import de.pokerno.poker.{Card, Cards}
 import collection.mutable.ListBuffer
 import de.pokerno.protocol.Serializers.Cards2Binary
-import com.fasterxml.jackson.annotation.{JsonGetter, JsonProperty, JsonInclude}
+import com.fasterxml.jackson.annotation.{JsonGetter, JsonProperty, JsonInclude, JsonIgnore}
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.module.scala.JsonScalaEnumeration
 
@@ -12,7 +12,7 @@ case class Play(val id: java.util.UUID = java.util.UUID.randomUUID()) {
   // timestamps
   val started: java.util.Date = new java.util.Date()
   val pot = new Pot
-  val rake = new SidePot
+  val rake: Option[SidePot] = None
   
   private var _ended: java.util.Date = null
   @JsonGetter def ended = _ended
@@ -34,7 +34,7 @@ case class Play(val id: java.util.UUID = java.util.UUID.randomUUID()) {
   
   private var _button: Int = 0
   
-  def button = _button
+  @JsonIgnore def button = _button
   def button_=(pos: Int) = _button = pos
   
   private val _seating = collection.mutable.Map[Player, Int]().withDefaultValue(0)
@@ -56,7 +56,7 @@ case class Play(val id: java.util.UUID = java.util.UUID.randomUUID()) {
     net(player) -= amount
   }
   
-  val knownCards = collection.mutable.Map[Player, Cards]()
+  @JsonProperty("known_cards") val knownCards = collection.mutable.Map[Player, Cards]()
   def show(player: Player, cards: Cards) {
     knownCards(player) = cards
   }

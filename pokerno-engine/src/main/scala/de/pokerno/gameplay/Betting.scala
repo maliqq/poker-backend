@@ -46,7 +46,7 @@ private[gameplay] trait Betting {
       seat.clearAction()
       if (seat.inPot) seat.playing()
     }
-    events broadcast Events.declarePot(round.pot)
+    events broadcast Events.declarePot(play.pot)
   }
 }
 

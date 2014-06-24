@@ -15,7 +15,7 @@ object Bonus {
  * */
 sealed case class Bonus(
     var amount: Double,
-    @Column("payee_id") var payeeId: Long,
+    @Column("to_id") var payeeId: Long,
     @Column(name="currency_id", optionType=classOf[Long]) var currencyId: Option[Long],
     var state: String,
     @Column("created_at") var created: java.sql.Timestamp = now()

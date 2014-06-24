@@ -17,9 +17,9 @@ object Transfer {
  * */
 sealed class Transfer(
     var amount: Double,
-    var payerId: Long,
+    @Column("from_id") var payerId: Long,
     @Column(name="currency_id", optionType=classOf[Long]) var currencyId: Option[Long],
-    var payeeId: Long,
+    @Column("to_id") var payeeId: Long,
     var state: String,
     var created: java.sql.Timestamp = now()
     ) extends Payment(PaymentType.Transfer) {

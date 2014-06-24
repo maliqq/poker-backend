@@ -17,7 +17,7 @@ object Withdraw {
  * */
 sealed class Withdraw(
     var amount: Double,
-    @Column("payer_id") var payerId: Long,
+    @Column("from_id") var payerId: Long,
     @Column(name="currency_id", optionType=classOf[Long]) var currencyId: Option[Long],
     var state: String,
     @Column("created_at") var created: java.sql.Timestamp = now()

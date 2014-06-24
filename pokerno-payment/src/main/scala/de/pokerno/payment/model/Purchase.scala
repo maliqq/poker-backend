@@ -18,7 +18,7 @@ object Purchase {
  * */
 sealed class Purchase(
     var amount: Double,
-    @Column("payer_id") var payerId: Long,
+    @Column("from_id") var payerId: Long,
     @Column(name="currency_id", optionType=classOf[Long]) var currencyId: Option[Long],
     @Column("order_id") var orderId: Long,
     var state: String,

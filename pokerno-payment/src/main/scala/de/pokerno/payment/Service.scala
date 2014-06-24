@@ -1,4 +1,4 @@
-package de.pokerno.finance
+package de.pokerno.payment
 
 import math.{BigDecimal => Decimal}
 import org.apache.thrift.protocol.{TBinaryProtocol, TProtocolFactory}
@@ -7,6 +7,7 @@ import com.twitter.finagle.thrift.ThriftServerFramedCodec
 import com.twitter.finagle.{Service => FinagleService}
 import com.twitter.util.Future
 import concurrent.duration._
+import java.util.UUID
 
 object Service {
   
@@ -28,7 +29,7 @@ object Service {
 
 class Service extends thrift.Payment.FutureIface {
   //import java.util.concurrent.atomic.AtomicReference
-  implicit def uuidFromString(s: String): java.util.UUID = java.util.UUID.fromString(s)
+  implicit def uuidFromString(s: String): UUID = UUID.fromString(s)
 
   type Player = String
   

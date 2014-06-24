@@ -2,6 +2,7 @@ package de.pokerno.data.pokerdb
 
 import com.twitter.util.Future
 import org.slf4j.LoggerFactory
+import java.util.UUID
 
 object Service {
   import org.apache.thrift.protocol.TBinaryProtocol
@@ -27,7 +28,7 @@ class Service extends thrift.PokerDB.FutureIface {
   import ThriftConversions._
   import de.pokerno.protocol.{thrift => protocol}
 
-  implicit def uuidFromString(s: String): java.util.UUID = java.util.UUID.fromString(s)
+  implicit def uuidFromString(s: String): UUID = UUID.fromString(s)
   
   val log = LoggerFactory.getLogger(getClass)
 

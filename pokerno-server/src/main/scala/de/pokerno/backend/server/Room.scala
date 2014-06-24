@@ -47,7 +47,7 @@ case object NoneRunning extends Data
 case class Running(ctx: gameplay.Context, ref: ActorRef) extends Data
 
 case class RoomEnv(
-    balance: de.pokerno.finance.Service,
+    balance: de.pokerno.payment.Service,
     history: Option[ActorRef] = None,
     persist: Option[ActorRef] = None,
     pokerdb: Option[de.pokerno.data.pokerdb.thrift.PokerDB.FutureIface] = None,

@@ -153,11 +153,11 @@ object PokernoBuild extends Build {
     )
   ) dependsOn(engine)
 
-  lazy val finance = Project(
-    id = "pokerno-finance",
-    base = file("pokerno-finance"),
+  lazy val payment = Project(
+    id = "pokerno-payment",
+    base = file("pokerno-payment"),
     settings = Project.defaultSettings ++ Seq(
-      name := "pokerno-finance",
+      name := "pokerno-payment",
       libraryDependencies ++= testDeps
     )
   ) dependsOn(protocol, data)
@@ -186,7 +186,7 @@ object PokernoBuild extends Build {
     ) ++ assemblySettings ++ Seq(
       assemblyOption in assembly ~= { _.copy(includeScala = false, includeDependency = false) }
     )
-  ) dependsOn(engine, finance, data, protocol, httpGateway, stompGateway)
+  ) dependsOn(engine, payment, data, protocol, httpGateway, stompGateway)
 
   lazy val ai = Project(
     id = "pokerno-ai",

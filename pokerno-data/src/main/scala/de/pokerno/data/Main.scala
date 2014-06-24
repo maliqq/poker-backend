@@ -1,6 +1,7 @@
 package de.pokerno.data
 
 import de.pokerno.data.pokerdb.PokerDB
+import java.util.UUID
 
 object Main {
 
@@ -18,7 +19,7 @@ object Main {
     session.setLogger(println(_))
     session.bindToCurrentThread
     
-    val seat = new PokerDB.Seat(java.util.UUID.randomUUID(), 1, java.util.UUID.randomUUID(), 10000, "none")
+    val seat = new PokerDB.Seat(UUID.randomUUID(), 1, UUID.randomUUID(), 10000, "none")
     
     println(PokerDB.createSeat(seat).id)
     

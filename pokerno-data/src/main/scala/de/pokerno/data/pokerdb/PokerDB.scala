@@ -5,6 +5,7 @@ import org.squeryl.annotations.Column
 import org.squeryl.dsl._
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.internals.FieldMetaData
+import java.util.UUID
 
 object PokerDB extends Schema {
   sealed case class Node(
@@ -14,12 +15,12 @@ object PokerDB extends Schema {
       @Column("connects_rate") var connectsRate: Double,
       @Column("disconnects_rate") var disconnectsRate: Double,
       @Column("messages_received_rate") var messagesReceivedRate: Double
-  ) extends KeyedEntity[java.util.UUID] {
-    var id: java.util.UUID = null
+  ) extends KeyedEntity[UUID] {
+    var id: UUID = null
   }
   
   sealed case class Room(
-      @Column(name = "node_id") var nodeId: java.util.UUID,
+      @Column(name = "node_id") var nodeId: UUID,
       var state: String,
       var name: String,
       @Column(name = "game_id", optionType = classOf[Long]) var gameId: Option[Long],
@@ -31,8 +32,8 @@ object PokerDB extends Schema {
       @Column("plays_rate") var playsRate: Double,
       @Column("players_per_flop") var playersPerFlop: Double,
       @Column("average_pot") var average_pot: Double
-      ) extends KeyedEntity[java.util.UUID] {
-    var id: java.util.UUID = null
+      ) extends KeyedEntity[UUID] {
+    var id: UUID = null
     def this() = this(null, "", "", None, None, 0, 0, 0, 0, 0, 0, 0)
   }
   
@@ -57,9 +58,9 @@ object PokerDB extends Schema {
   }
   
   sealed case class Seat(
-      @Column("room_id") var roomId: java.util.UUID,
+      @Column("room_id") var roomId: UUID,
       var pos: Int,
-      @Column("player_id") var playerId: java.util.UUID,
+      @Column("player_id") var playerId: UUID,
       var stack: Double,
       var state: String
   ) extends KeyedEntity[Long] {
@@ -79,7 +80,8 @@ object PokerDB extends Schema {
       @Column(name = "game_id", optionType = classOf[Int]) var gameId: Option[Long],
       @Column(name = "mix_id", optionType = classOf[Int]) var mixId: Option[Long],
       @Column("buy_in_id") var buyInId: Long
-  ) {
+  ) extends KeyedEntity[UUID]{
+    var id: UUID = null
     def this() = this(None, None, 0)
   }
   
@@ -107,21 +109,23 @@ object PokerDB extends Schema {
     on(room.gameId === game.map(_.id), room.mixId === mix.map(_.id), room.stakeId === stake.id)
   )
   
-  def getRoomStake(roomId: java.util.UUID): Stake = {
+  def getRoomStake(roomId: UUID): Stake = {
     join(rooms, stakes)((room, stake) =>
+      where(room.id === roomId)
       select(stake)
       on(room.stakeId === stake.id)
     ).head
   }
   
-  def getTournamentBuyIn(tournamentId: java.util.UUID): TournamentBuyIn = {
+  def getTournamentBuyIn(tournamentId: UUID): TournamentBuyIn = {
     join(tournaments, tournamentBuyIns)((tournament, tournamentBuyIn) =>
+      where(tournament.id === tournamentId)
       select(tournamentBuyIn)
       on(tournament.buyInId === tournamentBuyIn.id)
     ).head
   }
   
-  def updateNodeMetrics(nodeId: java.util.UUID, metrics: thrift.metrics.Node) {
+  def updateNodeMetrics(nodeId: UUID, metrics: thrift.metrics.Node) {
     update(nodes)(node =>
       where(node.id === nodeId)
       set(
@@ -136,14 +140,14 @@ object PokerDB extends Schema {
   }
   
   // FIXME copypaste
-  def getRooms(nodeId: java.util.UUID) = join(rooms, games.leftOuter, mixes.leftOuter, stakes)((room, game, mix, stake) =>
+  def getRooms(nodeId: UUID) = join(rooms, games.leftOuter, mixes.leftOuter, stakes)((room, game, mix, stake) =>
     where(room.nodeId === nodeId)
     select((room, game, mix, stake))
     on(room.gameId === game.map(_.id), room.mixId === mix.map(_.id), room.stakeId === stake.id)
   )
   
   // FIXME copypaste
-  def getRoom(id: java.util.UUID): Tuple4[Room, Option[Game], Option[Mix], Stake] =
+  def getRoom(id: UUID): Tuple4[Room, Option[Game], Option[Mix], Stake] =
     join(rooms, games.leftOuter, mixes.leftOuter, stakes)((room, game, mix, stake) =>
       where(room.id === id)
       select((room, game, mix, stake))
@@ -161,15 +165,15 @@ object PokerDB extends Schema {
     seats.insert(s)
   }
   
-  def deleteSeat(roomId: java.util.UUID, player: java.util.UUID) = seats.deleteWhere(seat =>
+  def deleteSeat(roomId: UUID, player: UUID) = seats.deleteWhere(seat =>
       (seat.roomId === roomId and seat.playerId === player)
     )
     
-//  def deleteSeat(roomId: java.util.UUID, pos: Int, player: java.util.UUID) = seats.deleteWhere(seat =>
+//  def deleteSeat(roomId: UUID, pos: Int, player: UUID) = seats.deleteWhere(seat =>
 //      (seat.roomId === roomId and seat.pos === pos and seat.playerId === player)
 //    )
   
-  def updateRoomMetrics(roomId: java.util.UUID, metrics: thrift.metrics.Room) {
+  def updateRoomMetrics(roomId: UUID, metrics: thrift.metrics.Room) {
     update(rooms)(room =>
       where(room.id === roomId)
       set(
@@ -183,13 +187,13 @@ object PokerDB extends Schema {
     )
   }
     
-  def updateRoomState(id: java.util.UUID, state: String) =
+  def updateRoomState(id: UUID, state: String) =
     update(rooms)(room =>
       where(room.id === id)
       set(room.state := state)
     )
   
-  def updateSeatState(roomId: java.util.UUID, pos: Int, player: java.util.UUID, state: String) =
+  def updateSeatState(roomId: UUID, pos: Int, player: UUID, state: String) =
     update(seats)(seat =>
       where(seat.roomId === roomId and seat.pos === pos and seat.playerId === player)
       set(seat.state := state)

@@ -1,4 +1,4 @@
-package de.pokerno.finance.model
+package de.pokerno.payment.model
 
 import org.squeryl.KeyedEntity
 import org.squeryl.annotations.Column
@@ -21,8 +21,12 @@ object PaymentState {
   final val Failed = "failed"
 }
 
-abstract class Payment(var `type`: String)  extends KeyedEntity[Long] {
+abstract class Payment(
+    var `type`: String,
+    @Column(name="currency_id", optionType=classOf[Long]) var currencyId: Option[Long]
+    )  extends KeyedEntity[Long] {
   var id: Long = 0
+  
   var amount: Double
   var state: String
   @Column("created_at") var created: java.sql.Timestamp

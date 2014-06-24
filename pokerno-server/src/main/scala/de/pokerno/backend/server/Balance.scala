@@ -14,7 +14,7 @@ object Payment {
                                 hosts(Seq(addr)).
                                 hostConnectionLimit(1).
                                 build()
-    val balanceClient = new de.pokerno.finance.thrift.Payment.FinagledClient(balanceService)
+    val balanceClient = new de.pokerno.payment.thrift.Payment.FinagledClient(balanceService)
     balanceClient
   }
 }

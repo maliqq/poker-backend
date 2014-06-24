@@ -108,7 +108,7 @@ class Node(
   import CommandConversions._
   
   val pokerdb = env.db
-  val balance = new de.pokerno.finance.Service()
+  val balance = new de.pokerno.payment.Service()
   val persist = actorOf(Props(classOf[Persistence], pokerdb),
       name = "node-persist")
       

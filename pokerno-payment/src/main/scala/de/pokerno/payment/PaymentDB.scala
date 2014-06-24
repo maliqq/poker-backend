@@ -1,17 +1,19 @@
-package de.pokerno.finance
+package de.pokerno.payment
 
 import org.squeryl._
 import org.squeryl.dsl._
 import org.squeryl.PrimitiveTypeMode._
 import model._
-import model.payment._
+import java.util.UUID
 
 import de.pokerno.data.pokerdb.PokerDB
 
 object PaymentDB extends Schema {
   
-  class Player(var id: java.util.UUID) {
+  class Player(var id: UUID) {
   }
+  
+  val currencies = table[Currency]("currencies")
   
   val balances = table[Balance]("balances")
   val players = table[Player]("players")
@@ -24,11 +26,18 @@ object PaymentDB extends Schema {
   val orders = table[Order]("payment_orders")
   
   // returns balance of specified currency for player playerId
-  def createBalance(playerId: java.util.UUID, currencyId: Option[Long] = None, initial: Double = 0): Balance = {
+  def createBalance(playerId: UUID, currencyId: Option[Long] = None, initial: Double = 0): Balance = {
     balances.insert(Balance.create(playerId, currencyId, initial))
   }
   
-  def getBalance(playerId: java.util.UUID, currencyId: Option[Long] = None): Balance = {
+  def getCurrencyByCode(code: String): Currency = {
+    from(currencies)((currency) =>
+      where(currency.code === code)
+      select(currency)
+    ).head
+  }
+  
+  def getBalance(playerId: UUID, currencyId: Option[Long] = None): Balance = {
     // FIXME handle not found
     from(balances)((balance) =>
       where(balance.playerId === playerId and (
@@ -38,10 +47,11 @@ object PaymentDB extends Schema {
     ).head
   }
   
-  def join(playerId: java.util.UUID, amount: Double, roomId: java.util.UUID) {
+  def join(playerId: UUID, amount: Double, roomId: UUID) {
     val stake = PokerDB.getRoomStake(roomId)
     val bb = stake.bigBlind
     val (min, max) = (stake.buyInMin * bb, stake.buyInMax * bb)
+    // validations
     if (amount < min) {
       throw new thrift.Error("Minimum buy in is: %.2f (%d BB); got: %.2f" format(min, stake.buyInMin, amount))
     }
@@ -56,7 +66,7 @@ object PaymentDB extends Schema {
     }
   }
   
-  def leave(playerId: java.util.UUID, amount: Double, roomId: java.util.UUID) {
+  def leave(playerId: UUID, amount: Double, roomId: UUID) {
     val stake = PokerDB.getRoomStake(roomId)
     inTransaction {
       val balance = getBalance(playerId, stake.currencyId)
@@ -65,7 +75,7 @@ object PaymentDB extends Schema {
     }
   }
   
-  def register(playerId: java.util.UUID, tournamentId: java.util.UUID) {
+  def register(playerId: UUID, tournamentId: UUID) {
     val buyIn = PokerDB.getTournamentBuyIn(tournamentId)
     val amount = buyIn.price + buyIn.fee
     // TODO check tournament start date, state

@@ -1,7 +1,7 @@
 package de.pokerno.gameplay
 
 import de.pokerno.model._
-import de.pokerno.finance.thrift.Payment.{FutureIface => Balance}
+import de.pokerno.payment.thrift.Payment.{FutureIface => Balance}
 
 trait ContextLike extends context.Button {
   //

@@ -9,62 +9,67 @@ import de.pokerno.backend.{ gateway ⇒ gw }
 import de.pokerno.backend.Gateway
 import de.pokerno.backend.gateway.http
 import de.pokerno.protocol._
-import de.pokerno.backend.server.node.Service
+import de.pokerno.backend.server.node.Bootstrap
 import de.pokerno.data.pokerdb
 
-object Node {
+trait Initialize {
+  type Storage = de.pokerno.backend.storage.PostgreSQL.Storage
+  
+  def initDb(file: String)(implicit system: ActorSystem): NodeEnv = {
+    val f = new java.io.FileInputStream(file)
+    val props = new java.util.Properties
+    props.load(f)
+    
+    system.actorOf(Props(new Actor with ActorLogging {
+      val session = pokerdb.PokerDB.Connection.connect(props)
+      session.setLogger(println(_))
+      // FIXME
+      org.squeryl.SessionFactory.externalTransactionManagementAdapter = Some(() => {
+        Some(session)
+      })
+      
+      override def preStart = {
+        log.info("connection context started")
+      }
+      
+      def receive = { case _ => }
+    }))
+    
+    NodeEnv(
+      Some(new Storage),
+      Some(new pokerdb.Service())
+    )
+  }
+}
 
+case class NodeEnv(
+    storage: Option[de.pokerno.backend.Storage] = None,
+    db: Option[pokerdb.Service] = None
+)
+
+object Node extends Initialize {
+  
   val log = LoggerFactory.getLogger(getClass)
   implicit val system = ActorSystem("node")
   
   def start(config: Config): ActorRef = {
-    log.info("starting with config: {}", config)
-    
     val id = config.id
-    var storage: de.pokerno.backend.Storage = new de.pokerno.backend.DummyStorage
-    var pokerDb: Option[pokerdb.Service] = None
+    log.info(f"starting node $id (${config.host})")
     
-    config.dbProps.map { file =>
-      val f = new java.io.FileInputStream(file)
-      val props = new java.util.Properties
-      props.load(f)
-      
-      system.actorOf(Props(new Actor {
-        val session = pokerdb.PokerDB.Connection.connect(props)
-        //session.setLogger(println(_))
-        // FIXME
-        org.squeryl.SessionFactory.externalTransactionManagementAdapter = Some(() => {
-          Some(session)
-        }) 
-        
-        def receive = { case _ => }
-      }))
-      
-      storage = new de.pokerno.backend.storage.PostgreSQL.Storage
-      pokerDb = Some(new pokerdb.Service())
-      ///pokerdb.Connection.connect(props)
-    }
-      
+    val env = config.dbProps.map { initDb(_) }.getOrElse(NodeEnv())
+    
     log.info("starting node at {}", config.host)
-    val node = system.actorOf(Props(classOf[Node], id, pokerDb, storage), name = "node-main")
-
-    config.rpc.map { rpcConfig ⇒
-      log.info("starting rpc with config: {}", rpcConfig)
-      Service(node, new java.net.InetSocketAddress(rpcConfig.host, rpcConfig.port))
-    }
+    val node = system.actorOf(Props(classOf[Node], id, env), name = "node-main")
     
-    config.http.map { httpConfig ⇒
-      val httpGateway = system.actorOf(Props(classOf[gw.Http.Gateway], Some(node)), name = "http-gateway")
-
-      log.info("starting HTTP server with config: {}", httpConfig)
-      val server = new gw.http.Server(httpGateway, httpConfig)
-      server.start
+    val boot = new Bootstrap(node)
+    config.rpc.map { c ⇒
+      boot.withRpc(c.host, c.port)
     }
-    
-    config.api.map { apiConfig =>
-      import spray.can.Http
-      val httpApi = system.actorOf(Props(classOf[Api], node), name = "http-api")
-      akka.io.IO(Http) ! Http.Bind(httpApi, config.host, port = apiConfig.port)
+    config.http.map { c ⇒
+      boot.withHttp(c)
+    }
+    config.api.map { c =>
+      boot.withApi(config.host, c.port)
     }
 
     node
@@ -95,27 +100,22 @@ object Node {
 
 class Node(
     val nodeId: java.util.UUID,
-    val pokerdb: Option[de.pokerno.data.pokerdb.thrift.PokerDB.FutureIface],
-    storage: de.pokerno.backend.Storage
+    env: NodeEnv
   ) extends Actor with ActorLogging with node.Metrics {
   import context._
   import concurrent.duration._
   import util.{ Success, Failure }
   import CommandConversions._
   
+  val pokerdb = env.db
   val balance = new de.pokerno.finance.Service()
   val persist = actorOf(Props(classOf[Persistence], pokerdb),
       name = "node-persist")
       
   //
-  val history = actorOf(Props(new Actor {
-    import de.pokerno.model
-    def receive = {
-      case (id: java.util.UUID, game: model.Game, stake: model.Stake, play: model.Play) =>
-        //log.info("writing {} {}", id, play)
-        storage.write(id, game, stake, play)
-    }
-  }), name = "play-history-writer")
+  val history = env.storage.map { storage =>
+    actorOf(Props(classOf[de.pokerno.backend.PlayHistoryWriter]), name = "play-history-writer")
+  }
   
   val broadcasts = Seq[Broadcast](
       //new Broadcast.Zeromq("tcp://127.0.0.1:5555")
@@ -132,7 +132,7 @@ class Node(
       
       val id = conn.room.get
 
-      actorSelection(id).resolveOne(1 second).onComplete {
+      tryFindActor(id)  {
         case Success(room) ⇒
           room ! Room.Connect(conn)
 
@@ -146,7 +146,7 @@ class Node(
       
       val id = conn.room.get
 
-      actorSelection(id).resolveOne(1 second).onComplete {
+      tryFindActor(id) {
         case Success(room) ⇒
           room ! Room.Disconnect(conn)
 
@@ -161,50 +161,52 @@ class Node(
       implicit val player = conn.player.get
       val id = conn.room.get
 
-      actorSelection(id).resolveOne(1 second).onComplete {
-        case Success(room) ⇒
-          room ! (event: Command)
-
-        case Failure(_) ⇒
-          log.warning("Room not found: {}", id)
+      findRoom(id) { room =>
+        room ! (event: Command)
       }
 
     case Node.CreateRoom(id, variation, stake) ⇒
       actorSelection(id).resolveOne(1 second).onComplete {
         case Failure(_) ⇒
           log.info("spawning new room with id={}", id)
-          val room = context.actorOf(Props(classOf[Room],
-              java.util.UUID.fromString(id), // FIXME
+          val room = context.actorOf(Props(classOf[Room], java.util.UUID.fromString(id), // FIXME
               variation,
               stake,
-              balance, persist, history, pokerdb, broadcasts), name = id)
+              newRoomEnv), name = id)
           room
         case _ ⇒
           log.warning("Room exists: {}", id)
       }
 
-    case Node.ChangeRoomState(id, newState) ⇒
-      actorSelection(id).resolveOne(1 second).onComplete {
-        case Success(room) ⇒
-          room ! newState
-        case Failure(_) ⇒
-          log.warning("Room not found: {}", id)
-      }
+    case Node.ChangeRoomState(id, newState) ⇒ findRoom(id) { room =>
+      room ! newState
+    }
     
-    case Node.SendCommand(id, cmd) =>
-      actorSelection(id).resolveOne(1 second).onComplete {
-        case Success(room) =>
-          room ! cmd
-        case Failure(_) =>
-          log.warning("Room not found: {}", id)
-      }
-     
+    case Node.SendCommand(id, cmd) => findRoom(id) { room =>
+      room ! cmd
+    }
+      
     case Node.Metrics =>
-      sender ! metrics.registry
+      sender ! metrics.registry.getMetrics()
 
     case x ⇒
       log.warning("unhandled: {}", x)
   }
+  
+  private def findRoom(id: String)(f: (ActorRef) => Any) {
+    tryFindActor(id) {
+      case Success(room) =>
+        f(room)
+      case Failure(_) =>
+        log.warning("Room not found: {}", id)
+    }
+  }
+  
+  private def tryFindActor(id: String)(f: util.Try[ActorRef] => Any) {
+    actorSelection(id).resolveOne(1 second).onComplete(f)
+  }
+  
+  private def newRoomEnv = RoomEnv(balance, Some(persist), history, pokerdb, broadcasts)
 
   override def postStop {
   }

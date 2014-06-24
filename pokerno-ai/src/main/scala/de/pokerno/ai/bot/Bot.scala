@@ -2,6 +2,8 @@ package de.pokerno.ai.bot
 
 import de.pokerno.model._
 import de.pokerno.poker._
+import de.pokerno.gameplay.{Notification, Route}
+import de.pokerno.backend.server.Room
 import de.pokerno.backend.Gateway
 import de.pokerno.protocol.{msg => message}
 import de.pokerno.protocol.cmd
@@ -16,10 +18,12 @@ trait Context {
 
   var opponentsNum: Int = 0
   var street: String = ""
-  var bet: Decimal = .0
+  var put: Decimal = .0
   var pot: Decimal = .0
   var cards: Cards = Cards.empty
   var board: Cards = Cards.empty
+  var stack: Decimal
+  def total = stack + put
 }
 
 object Action {
@@ -33,7 +37,7 @@ object Action {
 class Bot(room: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var stake: Stake)
     extends Actor with Context with Simple {
   
-  val id: String = f"bot-${pos+1}"//java.util.UUID.randomUUID().toString
+  val id: String = java.util.UUID.randomUUID().toString //f"bot-${pos+1}"
   val player = new Player(id)
 
   import context._
@@ -43,6 +47,7 @@ class Bot(room: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
   }
   
   def join() {
+    room ! Room.Subscribe(id)
     room ! cmd.JoinPlayer(pos, player, stack)
   }
   
@@ -51,9 +56,18 @@ class Bot(room: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
 
     room ! cmd.AddBet(player, b)
   }
-
+  
   def receive = {
-    case message.DeclarePlayStart() ⇒
+    case Notification(msg, _, to) =>
+      if (to match {
+        case Route.All => true
+        case Route.One(_id) if _id == id => true
+        case _ => false
+      }) handleMessage(msg)
+  }
+
+  def handleMessage(msg: de.pokerno.protocol.GameEvent) = msg match {
+    case message.DeclarePlayStart(play) ⇒
       cards = Cards.empty
       board = Cards.empty
       pot = .0
@@ -63,37 +77,35 @@ class Bot(room: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
     //  game = _game
     //  stake = _stake
 
-    case message.DeclareWinner(_pos, winner, amount) if _pos == pos ⇒
+    case message.DeclareWinner(position, amount) if pos == position.pos ⇒
       stack += amount
 
     case message.DeclareStreet(name) ⇒
       street = name.toString()
 
-    case message.DeclarePot(total, _side, _rake) ⇒
-      pot = total
-      bet = .0
+    case message.DeclarePot(_pot, _rake) ⇒
+      pot = _pot.total
+      put = .0
 
     case message.DealBoard(_cards) =>
       board ++= (_cards: Cards)
     
-    case message.DealHole(_pos, player, Left(_cards)) if _pos == pos =>
+    case message.DealHole(position, Left(_cards)) if pos == position.pos =>
       cards ++= (_cards: Cards)
       Console printf ("*** BOT #%d: %s\n", pos, cards)
     
-    case message.DealDoor(_pos, player, Left(_cards)) if _pos == pos =>
+    case message.DealDoor(position, Left(_cards)) if pos == position.pos =>
       cards ++= (_cards: Cards)
       Console printf ("*** BOT #%d: %s\n", pos, cards)
 
-    case message.AskBet(_pos, _, call, raise) if _pos == pos ⇒
+    case message.AskBet(position, call, raise) if pos == position.pos ⇒
       system.scheduler.scheduleOnce(1 second) {
-        decide(call, raise)
+        decide(call, raise.getOrElse((.0, .0)))
       }
 
-    case message.DeclareBet(_pos, _player, _bet) if _pos == pos ⇒
-      _bet match {
-        case a: Bet.Active =>
-          bet = a.amount
-      }
+    case message.DeclareBet(position, _bet, _timeout) if pos == position.pos ⇒
+      if (_bet.isActive)
+        put = _bet.toActive.amount
 
     case _ ⇒
   }
@@ -101,23 +113,24 @@ class Bot(room: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
 
   def doCheck() = addBet(Bet.check)
   def doFold() {
-    bet = .0
+    put = .0
     addBet(Bet.fold)
   }
 
-  def doRaise(amount: Decimal) {
-    stack += bet - amount
-    bet = amount
+  def doRaise(_amount: Decimal) {
+    val amount = _amount.intValue
+    stack += put - amount
+    put = amount
     addBet(Bet raise amount)
   }
 
   def doCall(amount: Decimal) {
     stack -= amount
-    bet += amount
+    put += amount
     addBet(Bet call amount)
   }
 
-  def decide(call: Decimal, raise: MinMax[Decimal]) =
+  def decide(call: Decimal, raise: Tuple2[Decimal, Decimal]) =
     if (cards.size != 2) {
       Console printf ("*** can't decide with cards=%s\n", cards)
       doFold()
@@ -126,15 +139,15 @@ class Bot(room: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
       val decision = if (board.size == 0) decidePreflop(cards)
       else decideBoard(cards, board)
 
-      Console printf ("*** decision=%s call=%.2f minRaise=%.2f maxRaise=%.2f\n", decision, call, raise.min, raise.max)
+      Console printf ("*** decision=%s call=%.2f minRaise=%.2f maxRaise=%.2f\n", decision, call, raise._1, raise._2)
       invoke(decision, call, raise)
     }
 
-  def invoke(decision: Decision, call: Decimal, raise: MinMax[Decimal]) {
-    val minRaise = raise.min
-    val maxRaise = raise.max
+  def invoke(decision: Decision, call: Decimal, raise: Tuple2[Decimal, Decimal]) {
+    val minRaise = raise._1
+    val maxRaise = raise._2
 
-    val min = if (call > stack + bet) stack + bet else call
+    val min = if (call > total) total else call
     val max = decision.maxBet
 
     var action = if (minRaise.toDouble == .0 && maxRaise.toDouble == .0)
@@ -154,16 +167,16 @@ class Bot(room: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
       case Action.Fold ⇒ doFold()
 
       case Action.CheckFold ⇒
-        if (call == bet)
+        if (call == put)
           doCheck()
         else
           doFold()
 
       case Action.CheckCall ⇒
-        if (call == bet || call.toDouble == .0)
+        if (call == put || call.toDouble == .0)
           doCheck()
         else if (call > .0)
-          doCall(List(stack + bet, call).min - bet) // FIXME WTF
+          doCall(List(total, call).min - put) // FIXME WTF
 
       case Action.Raise ⇒
         if (minRaise == maxRaise)
@@ -179,7 +192,7 @@ class Bot(room: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
         if (minRaise == maxRaise)
           doRaise(maxRaise)
         else
-          doRaise(stack + bet)
+          doRaise(total)
     }
   }
 }

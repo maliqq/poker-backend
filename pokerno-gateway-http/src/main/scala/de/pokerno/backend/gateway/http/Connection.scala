@@ -67,6 +67,12 @@ class HttpConnection(
   override def toString = f"room:$room session:$sessionId player:$player"
 }
 
+object ConnectionEvent {
+  case class Connect(channel: Channel, conn: Connection)
+  case class Disconnect(channel: Channel)
+  case class Message(channel: Channel, data: String)
+}
+
 trait ChannelConnections[T <: Connection] {
 
   def gw: ActorRef
@@ -74,15 +80,15 @@ trait ChannelConnections[T <: Connection] {
   def connection(ch: Channel, req: http.FullHttpRequest): HttpConnection
 
   def connect(channel: Channel, req: http.FullHttpRequest) {
-    gw ! Event.Connect(channel, connection(channel, req))
+    gw ! ConnectionEvent.Connect(channel, connection(channel, req))
   }
 
   def disconnect(channel: Channel) {
-    gw ! Event.Disconnect(channel)
+    gw ! ConnectionEvent.Disconnect(channel)
   }
 
   def message(channel: Channel, data: String) {
-    gw ! Event.Message(channel, data)
+    gw ! ConnectionEvent.Message(channel, data)
   }
 
 }

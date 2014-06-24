@@ -8,7 +8,7 @@ import math.{ BigDecimal ⇒ Decimal }
 trait Simple {
   def stake: Stake
   def stack: Decimal
-  def bet: Decimal
+  def put: Decimal
 
   def decidePreflop(cards: Cards): Decision = {
     val group = Tables sklanskyMalmuthGroup (cards.head, cards.last)
@@ -27,12 +27,12 @@ trait Simple {
         raiseChance = .2)
 
       case 3 | 4 ⇒ Decision(
-        maxBet = stack + bet,
+        maxBet = stack + put,
         raiseChance = .5,
         allInChance = .1)
 
       case 1 | 2 ⇒ Decision(
-        maxBet = stack + bet,
+        maxBet = stack + put,
         raiseChance = .5,
         allInChance = .1)
     }
@@ -47,16 +47,16 @@ trait Simple {
     val tightness = 0.7
     if (chances.wins > tightness)
       Decision(
-        maxBet = stack + bet,
+        maxBet = stack + put,
         raiseChance = .5,
         allInChance = .5)
     else if (chances.wins > tightness / 2)
       Decision(
-        maxBet = (stack + bet) / 3.0,
+        maxBet = (stack + put) / 3.0,
         raiseChance = .2)
     else if (chances.ties > 0.8)
       Decision(
-        maxBet = stack + bet,
+        maxBet = stack + put,
         raiseChance = .0,
         allInChance = .0)
     else

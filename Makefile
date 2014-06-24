@@ -2,6 +2,8 @@ start:
 	./sbt "project pokerno-server" "run --rpc --http-api --websocket --restore ./restore.json --db-props ./etc/database.properties --id 02b82428-fc15-4d66-ba53-bc0b85c1330f"
 start-replayer:
 	./sbt "project pokerno-replay" "run --http"
+start-bots:
+	./sbt "project pokerno-ai" "run --db-props ./etc/database.properties --id 30552f31-f871-4d05-aa08-83402a01efba"
 compile:
 	./sbt "project pokerno-server" compile
 build:

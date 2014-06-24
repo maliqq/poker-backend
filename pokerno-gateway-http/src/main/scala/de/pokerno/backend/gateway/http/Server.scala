@@ -60,9 +60,8 @@ case class Server(gw: ActorRef, config: Config) {
         p.addLast(EventSource.Handler.Name, new EventSource.Handler(es.path, gw))
       }
 
-      config.handlers.map {
-        case (name, handler) ⇒
-          p.addLast(name, handler())
+      config.handlers.map { case (name, handler) ⇒
+        p.addLast(name, handler())
       }
     }
   }

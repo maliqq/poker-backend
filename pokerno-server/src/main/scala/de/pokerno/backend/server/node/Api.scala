@@ -1,4 +1,6 @@
-package de.pokerno.backend.server
+package de.pokerno.backend.server.node
+
+import de.pokerno.backend.server.{Node, Room}
 
 import akka.actor.{Actor, ActorRef, ActorLogging, ActorSystem}
 import akka.pattern.ask
@@ -20,21 +22,27 @@ object Api {
     
     implicit def executionContext = actorRefFactory.dispatcher
 
-    val route = pathPrefix("node") {
-      path("metrics") { ctx =>
-        askNode(Node.Metrics, ctx)
-      } ~ pathEnd {
+    val route =
+    pathPrefix("node") {
+      path("metrics") {
+        get { ctx =>
+          askNode(Node.Metrics, ctx)
+        }
+      } ~
+      pathEnd {
         get {
           complete("ok")
         }
       }
-    } ~ pathPrefix("rooms" / Segment) { roomId =>
+    } ~
+    pathPrefix("rooms" / Segment) { roomId =>
       pathEnd {
         get { ctx =>
           askRoom(roomId, Room.PlayState, ctx)
         }
       }
-    } ~ path("rooms") {
+    } ~
+    path("rooms") {
       get {
         // index
         complete("ok")
@@ -50,7 +58,8 @@ object Api {
       delete {
         complete("ok")
       }
-    } ~ pathPrefix("players" / Segment) { playerId =>
+    } ~
+    pathPrefix("players" / Segment) { playerId =>
       pathEnd {
         get {
           complete("ok")

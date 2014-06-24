@@ -10,11 +10,50 @@ import de.pokerno.backend.Gateway
 import de.pokerno.protocol.{GameEvent, PlayerEvent}
 
 object Http {
-  class Gateway(node: Option[ActorRef])
-      extends Actor with ActorLogging {
+  trait Broadcast {
+    def broadcast(msg: Any)(implicit connections: Iterable[http.Connection]) {
+      val data = GameEvent.encode(msg)
+      connections.map { _.send(data) }
+    }
+    
+    def broadcast(msg: Any, to: String)(implicit connections: Iterable[http.Connection]) {
+      val data = GameEvent.encode(msg)
+      connections.find { _.sessionId == to } map { _.send(data) }
+    }
+    
+    def broadcast(msg: Any, to: Route)(implicit connections: Iterable[http.Connection]) {
+      val data = GameEvent.encode(msg)
+      connections.map { conn ⇒
+        if (to match {
+          case Route.All ⇒ true // broadcast
 
-    def this() = this(None)
+          case Route.Except(ids) ⇒ // skip
+            conn.hasPlayer && !ids.contains(conn.player.get)
 
+          case Route.One(id) ⇒ // notify one
+            conn.hasPlayer && conn.player.get == id
+
+          case _ ⇒ false
+        }) conn.send(data)
+      }
+    }
+  }
+  
+  object Event {
+    abstract class Connect
+    abstract class Disconnect
+    abstract class Message
+  }
+  
+  abstract class Events {
+    def connect(conn: http.Connection): Event.Connect
+    def disconnect(conn: http.Connection): Event.Disconnect
+    def message(conn: http.Connection, msg: String): Event.Message
+  }
+  
+  class Gateway(ref: ActorRef, events: Events)
+      extends Actor with ActorLogging with Broadcast {
+    
     import concurrent.duration._
     import context._
 
@@ -26,29 +65,31 @@ object Http {
     case class Tick(conn: http.Connection)
 
     def receive = {
-      case http.Event.Connect(channel, conn) ⇒
+      case http.ConnectionEvent.Connect(channel, conn) ⇒
         //if (!conn.room.isDefined)
         //  conn.close()
         //else
         if (!channelConnections.contains(channel)) {
           channelConnections.put(channel, conn)
           log.info("{} connected", conn)
-          node.map { _ ! Gateway.Connect(conn) }
+          ref ! events.connect(conn)
+          //node.map { _ ! Gateway.Connect(conn) }
         }
 
-      case http.Event.Disconnect(channel) ⇒
+      case http.ConnectionEvent.Disconnect(channel) ⇒
         channelConnections.remove(channel).map { conn ⇒
           log.info("{} disconnected", conn)
-          node.map { _ ! Gateway.Disconnect(conn) }
+          ref ! events.disconnect(conn)
+          //node.map { _ ! Gateway.Disconnect(conn) }
         }
 
-      case http.Event.Message(channel, data) ⇒
+      case http.ConnectionEvent.Message(channel, data) ⇒
         channelConnections.get(channel) map { conn ⇒
           if (conn.player.isDefined && conn.room.isDefined) {
             try {
-              val msg = PlayerEvent.decode(data.getBytes)
-              log.info("got {} from {}", msg, conn)
-              node.map { _ ! Gateway.Message(conn, msg) }
+              log.info("got {} from {}", data, conn)
+              ref ! events.message(conn, data)
+              //node.map { _ ! Gateway.Message(conn, msg) }
             } catch {
               case err: Throwable ⇒ // TODO
                 log.error("message error: {}", err.getMessage)
@@ -58,26 +99,11 @@ object Http {
 
       // TODO: moved to watchers?
       case Notification(msg, _, to) ⇒
-        val data = GameEvent.encode(msg)
-        log.info("broadcasting {}", msg)
-        // FIXME !!!
-        to match {
-          case Route.All ⇒ broadcast(data)
-          case Route.One(id) ⇒
-            channelConnections.values.foreach { conn ⇒
-              if (conn.player.getOrElse(conn.sessionId) == id)
-                conn.send(msg)
-            }
-        }
+        broadcast(msg, to)(channelConnections.values)
 
       case x ⇒
         log.warning("unhandled: {}", x)
     }
-
-    private def broadcast(msg: Any) =
-      channelConnections.foreach { case (channel, conn) ⇒
-        conn.send(msg)
-      }
 
     override def postStop {
     }

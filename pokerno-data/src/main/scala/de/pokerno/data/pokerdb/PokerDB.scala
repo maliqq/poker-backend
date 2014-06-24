@@ -101,9 +101,20 @@ object PokerDB extends Schema {
     )
   }
   
-  def getRooms(nodeId: java.util.UUID) = roomsWithGamesAndStakes.where(_._1.nodeId === nodeId)
+  // FIXME copypaste
+  def getRooms(nodeId: java.util.UUID) = join(rooms, games.leftOuter, mixes.leftOuter, stakes)((room, game, mix, stake) =>
+    where(room.nodeId === nodeId)
+    select((room, game, mix, stake))
+    on(room.gameId === game.map(_.id), room.mixId === mix.map(_.id), room.stakeId === stake.id)
+  )
   
-  def getRoom(id: java.util.UUID) = roomsWithGamesAndStakes.where(_._1.id === id).head
+  // FIXME copypaste
+  def getRoom(id: java.util.UUID): Tuple4[Room, Option[Game], Option[Mix], Stake] =
+    join(rooms, games.leftOuter, mixes.leftOuter, stakes)((room, game, mix, stake) =>
+      where(room.id === id)
+      select((room, game, mix, stake))
+      on(room.gameId === game.map(_.id), room.mixId === mix.map(_.id), room.stakeId === stake.id)
+    ).head
   
   def createSeat(s: Seat) = inTransaction {
 //    val c =

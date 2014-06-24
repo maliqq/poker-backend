@@ -3,6 +3,17 @@ package de.pokerno.backend
 import math.{BigDecimal => Decimal}
 import de.pokerno.{model, poker}
 
+import akka.actor.Actor
+
+class PlayHistoryWriter(storage: Storage) extends Actor {
+  import de.pokerno.model
+  def receive = {
+    case (id: java.util.UUID, game: model.Game, stake: model.Stake, play: model.Play) =>
+      //log.info("writing {} {}", id, play)
+      storage.write(id, game, stake, play)
+  }
+}
+
 abstract class PlayHistoryBatch {
   def writeEntry(
     roomId: java.util.UUID,
@@ -37,10 +48,6 @@ abstract class PlayHistoryBatch {
 
 abstract class Storage {
   def write(roomId: java.util.UUID, game: model.Game, stake: model.Stake, play: model.Play)
-}
-
-sealed class DummyStorage extends Storage {
-  def write(roomId: java.util.UUID, game: model.Game, stake: model.Stake, play: model.Play) {}
 }
 
 abstract class BatchedStorage extends Storage {

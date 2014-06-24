@@ -24,8 +24,8 @@ object Room {
     val Closed    = state("closed")
   }
   
-  case class Connect(conn: http.Connection)
-  case class Disconnect(conn: http.Connection)
+  case class Connect(conn: http.Connection) extends de.pokerno.backend.gateway.Http.Event.Connect
+  case class Disconnect(conn: http.Connection) extends de.pokerno.backend.gateway.Http.Event.Disconnect
   
   trait ChangeState
 
@@ -35,6 +35,7 @@ object Room {
   
   case class ChangedState(id: String, newState: State.Value)
 
+  case class Subscribe(name: String)
   case class Observe(observer: ActorRef, name: String)
   
   case object PlayState
@@ -45,15 +46,18 @@ sealed trait Data
 case object NoneRunning extends Data
 case class Running(ctx: gameplay.Context, ref: ActorRef) extends Data
 
-class Room(
-  val id: java.util.UUID,
-  variation: model.Variation,
-  val stake: model.Stake,
-  val balance: de.pokerno.finance.Service,
-  val persist: ActorRef,
-  val history: ActorRef,
-  pokerdb: Option[de.pokerno.data.pokerdb.thrift.PokerDB.FutureIface],
-  broadcasts: Seq[Broadcast])
+case class RoomEnv(
+    balance: de.pokerno.finance.Service,
+    history: Option[ActorRef] = None,
+    persist: Option[ActorRef] = None,
+    pokerdb: Option[de.pokerno.data.pokerdb.thrift.PokerDB.FutureIface] = None,
+    broadcasts: Seq[Broadcast] = Seq()
+  )
+
+class Room(id: java.util.UUID,
+    variation: model.Variation,
+    val stake: model.Stake,
+    env: RoomEnv)
     extends Actor
     with ActorLogging
     with FSM[Room.State.Value, Data]
@@ -62,6 +66,10 @@ class Room(
     with Observers
     //with Balance
     with gameplay.DealCycle {
+  
+  import env._
+  
+  val balance = env.balance
   
   def roomId = id.toString()
   
@@ -73,16 +81,12 @@ class Room(
   import concurrent.duration._
   import Room._
 
-  val watchers      = observe(classOf[Watchers],
-                    f"room-$roomId-watchers")
-  val journal       = observe(classOf[Journal],
-                    f"room-$roomId-journal", "/tmp", roomId)
-  val metrics       = observe(classOf[Metrics],
-                    f"room-$roomId-metrics", roomId, pokerdb)
-  val broadcasting  = observe(classOf[Broadcasting],
-                    f"room-$roomId-broadcasts", roomId, broadcasts)
-  notify(persist, f"room-$roomId-persist")
-  notify(history, f"room-$roomId-history")
+  val watchers      = observe(classOf[Watchers], f"room-$roomId-watchers")
+  val journal       = observe(classOf[Journal], f"room-$roomId-journal", "/tmp", roomId)
+  val metrics       = observe(classOf[Metrics], f"room-$roomId-metrics", roomId, pokerdb)
+  val broadcasting  = observe(classOf[Broadcasting], f"room-$roomId-broadcasts", roomId, broadcasts)
+  
+  persist.map { notify(_, f"room-$roomId-persist") }
   
   log.info("starting room {}", roomId)
   startWith(State.Waiting, NoneRunning)
@@ -138,7 +142,7 @@ class Room(
     // current deal stopped
     case Event(gameplay.Deal.Done, Running(ctx, deal)) ⇒
       log.info("deal complete")
-      history ! (id, ctx.game, ctx.stake, ctx.play)
+      history.map { _ ! (id, ctx.game, ctx.stake, ctx.play) }
       val after = nextDealAfter
       self ! gameplay.Deal.Next(after)
       stay() using (NoneRunning)
@@ -202,6 +206,11 @@ class Room(
       events.broker.subscribe(observer, name)
       // TODO !!!!!
       //events.start(table, variation, stake, )
+      stay()
+    
+    case Event(Room.Subscribe(name), _) =>
+      Console printf("\n\n\n%s subscribed!\n\n\n", name)
+      events.broker.subscribe(sender, name)
       stay()
 
     case Event(Connect(conn), current) ⇒
@@ -275,9 +284,9 @@ class Room(
   onTransition {
     case State.Waiting -> State.Active ⇒
       self ! gameplay.Deal.Next(firstDealAfter)
-      persist ! Room.ChangedState(roomId, State.Active)
+      persist.map { _ ! Room.ChangedState(roomId, State.Active) }
     case State.Active -> State.Waiting =>
-      persist ! Room.ChangedState(roomId, State.Waiting)
+      persist.map { _ ! Room.ChangedState(roomId, State.Waiting) }
   }
   
   initialize()

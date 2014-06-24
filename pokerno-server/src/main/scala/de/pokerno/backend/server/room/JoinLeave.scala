@@ -57,13 +57,14 @@ trait JoinLeave { room: Room =>
   
   protected def leavePlayer(player: Player) {
     table.playerSeat(player) map { seat =>
-      if (seat.canLeave || notRunning) {
-        table.clearSeat(seat.pos)
-        balance.deposit(seat.player, seat.stackAmount.toDouble)
-        events broadcast gameplay.Events.playerLeave(seat)
-      } else running.map { case Running(ctx, ref) =>
-        ref ! gameplay.Betting.Cancel(player)
+      if (!seat.canLeave) {
+        running.map { case Running(ctx, ref) =>
+          ref ! gameplay.Betting.Cancel(player)
+        }
       }
+      table.clearSeat(seat.pos)
+      balance.deposit(seat.player, seat.stackAmount.toDouble)
+      events broadcast gameplay.Events.playerLeave(seat)
     }
   }
 

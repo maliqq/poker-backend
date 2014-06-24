@@ -25,8 +25,6 @@ package object poker {
   
   type Cards = Seq[Card]
   
-  def empty: Cards = Seq()
-
   implicit def cards2binary(v: Cards): Array[Byte] = if (v == null) null else v.map(_.toByte).toArray
 
 }

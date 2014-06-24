@@ -71,6 +71,7 @@ object Main {
         Console printf("loaded from db ::: game: %s stake: %s\n", game, stake)
         
         val room = system.actorOf(Props(classOf[Room], id, game, stake, env.copy(
+            pokerdb = Some(nodeEnv.db.get),
             history = Some(system.actorOf(Props(classOf[PlayHistoryWriter], nodeEnv.storage.get)))
         )), name = "poker-instance")
         

@@ -7,7 +7,7 @@ import java.util.UUID
 object Purchase {
   def create(balance: Balance, order: Order) = {
     val state = "pending"
-    new Purchase(-order.price, balance.id, balance.currencyId, order.id, state, java.sql.Timestamp.from(java.time.Instant.now()))
+    new Purchase(-order.price, balance.id, balance.currencyId, order.id, state)
   }
 }
 
@@ -17,11 +17,11 @@ object Purchase {
 sealed class Purchase(
     var amount: Double,
     @Column("payer_id") var payerId: Long,
-    _currencyId: Option[Long],
+    @Column(name="currency_id", optionType=classOf[Long]) var currencyId: Option[Long],
     @Column("order_id") var orderId: Long,
     var state: String,
-    @Column("created_at") var created: java.sql.Timestamp
-    ) extends Payment(PaymentType.Purchase, _currencyId) {
+    @Column("created_at") var created: java.sql.Timestamp = now()
+    ) extends Payment(PaymentType.Purchase) {
 }
 
 object Order {

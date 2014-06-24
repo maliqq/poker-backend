@@ -1,9 +1,11 @@
 package de.pokerno.payment.model
 
+import org.squeryl.annotations.Column
+
 object Withdraw {
   def create(balance: Balance, amount: Double) = {
     val state = "pending"
-    new Withdraw(amount, balance.id, balance.currencyId, state, java.sql.Timestamp.from(java.time.Instant.now()))
+    new Withdraw(amount, balance.id, balance.currencyId, state)
   }
 }
 
@@ -12,9 +14,9 @@ object Withdraw {
  * */
 sealed class Withdraw(
     var amount: Double,
-    var payerId: Long,
-    _currencyId: Option[Long],
+    @Column("payer_id") var payerId: Long,
+    @Column(name="currency_id", optionType=classOf[Long]) var currencyId: Option[Long],
     var state: String,
-    var created: java.sql.Timestamp
-    ) extends Payment(PaymentType.Withdraw, _currencyId) {
+    @Column("created_at") var created: java.sql.Timestamp = now()
+    ) extends Payment(PaymentType.Withdraw) {
 }

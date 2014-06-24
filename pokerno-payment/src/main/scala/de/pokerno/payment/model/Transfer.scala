@@ -1,8 +1,10 @@
 package de.pokerno.payment.model
 
+import org.squeryl.annotations.Column
+
 object Transfer {
   def create(from: Balance, to: Balance, amount: Double, state: String) = {
-    new Transfer(amount, from.id, from.currencyId, to.id, state, java.sql.Timestamp.from(java.time.Instant.now()))
+    new Transfer(amount, from.id, from.currencyId, to.id, state)
   }
 }
 
@@ -12,8 +14,9 @@ object Transfer {
 sealed class Transfer(
     var amount: Double,
     var payerId: Long,
-    _currencyId: Option[Long],
+    @Column(name="currency_id", optionType=classOf[Long]) var currencyId: Option[Long],
     var payeeId: Long,
     var state: String,
-    var created: java.sql.Timestamp) extends Payment(PaymentType.Transfer, _currencyId) {
+    var created: java.sql.Timestamp = now()
+    ) extends Payment(PaymentType.Transfer) {
 }

@@ -5,10 +5,14 @@ import org.squeryl.annotations.Column
 
 object PaymentType {
   final val Transfer  = "Payment::Transfer"
+
   final val Deposit   = "Payment::Deposit"
   final val Withdraw  = "Payment::Withdraw"
+  
   final val Purchase  = "Payment::Purchase"
+
   final val Award = "Payment::Award"
+  final val Bonus = "Payment::Bonus"
 }
 
 object PaymentState {
@@ -22,13 +26,12 @@ object PaymentState {
 }
 
 abstract class Payment(
-    var `type`: String,
-    @Column(name="currency_id", optionType=classOf[Long]) var currencyId: Option[Long]
-    )  extends KeyedEntity[Long] {
+    var `type`: String)  extends KeyedEntity[Long] {
   var id: Long = 0
   
   var amount: Double
   var state: String
   @Column("created_at") var created: java.sql.Timestamp
   @Column("updated_at") var updated: java.sql.Timestamp = null
+  @Column(name="currency_id", optionType=classOf[Long]) var currencyId: Option[Long]
 }

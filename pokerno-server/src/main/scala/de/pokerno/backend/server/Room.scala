@@ -209,7 +209,6 @@ class Room(id: java.util.UUID,
       stay()
     
     case Event(Room.Subscribe(name), _) =>
-      Console printf("\n\n\n%s subscribed!\n\n\n", name)
       events.broker.subscribe(sender, name)
       stay()
 

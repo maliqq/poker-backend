@@ -1,5 +1,7 @@
 package de.pokerno.finance.model
 
-class Currency {
-
+sealed class Currency(
+    var id: Long,
+    var code: String
+) {
 }

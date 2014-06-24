@@ -2,7 +2,6 @@ package de.pokerno.data.pokerdb
 
 import org.squeryl._
 import org.squeryl.annotations.Column
-import org.squeryl.adapters.PostgreSqlAdapter
 import org.squeryl.dsl._
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.internals.FieldMetaData
@@ -23,9 +22,9 @@ object PokerDB extends Schema {
       @Column(name = "node_id") var nodeId: java.util.UUID,
       var state: String,
       var name: String,
-      @Column(name = "game_id", optionType = classOf[Int]) var gameId: Option[Int],
-      @Column(name = "mix_id", optionType = classOf[Int]) var mixId: Option[Int],
-      @Column("stake_id") var stakeId: Int,
+      @Column(name = "game_id", optionType = classOf[Long]) var gameId: Option[Long],
+      @Column(name = "mix_id", optionType = classOf[Long]) var mixId: Option[Long],
+      @Column("stake_id") var stakeId: Long,
       @Column("players_count") var playersCount: Long,
       @Column("waiting_count") var waitingCount: Long,
       @Column("watching_count") var watchingCount: Long,
@@ -42,9 +41,10 @@ object PokerDB extends Schema {
       @Column("small_blind") var smallBlind: Double,
       @Column(optionType = classOf[Double])  var ante: Option[Double],
       @Column("buy_in_min") var buyInMin: Int,
-      @Column("buy_in_max") var buyInMax: Int) extends KeyedEntity[Long] {
+      @Column("buy_in_max") var buyInMax: Int,
+      @Column(name = "currency_id", optionType=classOf[Long]) var currencyId: Option[Long]) extends KeyedEntity[Long] {
     var id: Long = 0
-    def this() = this(0, 0, None, 0, 0)
+    def this() = this(0, 0, None, 0, 0, None)
   }
   
   sealed case class Game(
@@ -74,7 +74,24 @@ object PokerDB extends Schema {
     var id: Long = 0
     def this() = this("", None, 0)
   }
-
+  
+  sealed case class Tournament(
+      @Column(name = "game_id", optionType = classOf[Int]) var gameId: Option[Long],
+      @Column(name = "mix_id", optionType = classOf[Int]) var mixId: Option[Long],
+      @Column("buy_in_id") var buyInId: Long
+  ) {
+    def this() = this(None, None, 0)
+  }
+  
+  sealed case class TournamentBuyIn(
+      @Column(name = "currency_id", optionType=classOf[Long]) var currencyId: Option[Long], 
+      var price: Double,
+      var fee: Double
+    ) {
+    var id: Long = 0
+    def this() = this(None, 0, 0) 
+  }
+  
   val nodes     = table[Node]("nodes")
   val rooms     = table[Room]("poker_rooms")
   val games     = table[Game]("poker_variations")
@@ -82,10 +99,27 @@ object PokerDB extends Schema {
   val stakes    = table[Stake]("poker_stakes")
   val seats     = table[Seat]("poker_seats")
   
+  val tournaments       = table[Tournament]("poker_tournaments")
+  val tournamentBuyIns  = table[TournamentBuyIn]("poker_tournament_buy_ins")
+  
   lazy val roomsWithGamesAndStakes = join(rooms, games.leftOuter, mixes.leftOuter, stakes)((room, game, mix, stake) =>
     select((room, game, mix, stake))
     on(room.gameId === game.map(_.id), room.mixId === mix.map(_.id), room.stakeId === stake.id)
   )
+  
+  def getRoomStake(roomId: java.util.UUID): Stake = {
+    join(rooms, stakes)((room, stake) =>
+      select(stake)
+      on(room.stakeId === stake.id)
+    ).head
+  }
+  
+  def getTournamentBuyIn(tournamentId: java.util.UUID): TournamentBuyIn = {
+    join(tournaments, tournamentBuyIns)((tournament, tournamentBuyIn) =>
+      select(tournamentBuyIn)
+      on(tournament.buyInId === tournamentBuyIn.id)
+    ).head
+  }
   
   def updateNodeMetrics(nodeId: java.util.UUID, metrics: thrift.metrics.Node) {
     update(nodes)(node =>
@@ -160,35 +194,5 @@ object PokerDB extends Schema {
       where(seat.roomId === roomId and seat.pos === pos and seat.playerId === player)
       set(seat.state := state)
     )
-  
-  object Connection {
-    def connect(): Session = {
-      val props = System.getProperties()
-      connect(props)
-    }
-    
-    def connect(props: java.util.Properties): Session = {
-      val driver            = props.getProperty("database.driver")
-      val url               = props.getProperty("database.url")
-      val user              = props.getProperty("database.username")
-      val password          = props.getProperty("database.password")
-      
-      connect(driver, url, user, password)
-    }
-    
-    def connect(driver: String, url: String, user: String, password: String): Session = {
-      val sessionCreator = () => {
-        Class.forName(driver)
-        val jdbcConnection = java.sql.DriverManager.getConnection(url, user, password)
-        //jdbcConnection.setAutoCommit(false)
-        Session.create(jdbcConnection, new PostgreSqlAdapter {
-          import org.squeryl.internals.FieldMetaData
-          override def createSequenceName(fmd: FieldMetaData) = fmd.parentMetaData.viewOrTable.name + "_" + fmd.columnName + "_seq"
-        })
-      }
-      //SessionFactory.concreteFactory = Some(sessionCreator)
-      sessionCreator()
-    }
-  }
 
 }

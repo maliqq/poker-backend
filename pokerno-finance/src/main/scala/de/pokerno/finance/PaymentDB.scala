@@ -1,119 +1,106 @@
 package de.pokerno.finance
 
 import org.squeryl._
-import org.squeryl.annotations.Column
-import org.squeryl.adapters.PostgreSqlAdapter
 import org.squeryl.dsl._
 import org.squeryl.PrimitiveTypeMode._
-import org.squeryl.internals.FieldMetaData
+import model._
+import model.payment._
+
+import de.pokerno.data.pokerdb.PokerDB
 
 object PaymentDB extends Schema {
   
-  object Tags {
-    final val Transfer  = "transfer"
-    final val Deposit   = "deposit"
-    final val Withdraw  = "withdraw"
-    final val Purchase  = "purchase"
+  class Player(var id: java.util.UUID) {
   }
   
-  sealed class Currency(var id: Long)
-  sealed class Account(var id: Long)
-  
-  // PAYMENTS
-  abstract class Payment(var _type: String) {
-    var amount: Double
-    var state: String
-    var created: java.sql.Timestamp
-    var updated: java.sql.Timestamp = null
-    def approve() {}
-    def reject() {}
-  }
-  
-  // TRANSFERS
-  object Transfer {
-    def create(from: Balance, to: Balance, amount: Double, state: String) = {
-      new Transfer(amount, from.id, to.id, state, java.sql.Timestamp.from(java.time.Instant.now()))
-    }
-  }
-  sealed class Transfer(var amount: Double, var payerId: Long, var payeeId: Long, var state: String, var created: java.sql.Timestamp) extends Payment(Tags.Transfer) {
-  }
-  
-  // DEPOSITS
-  object Deposit {
-    def create(balance: Balance, amount: Double, state: String) = {
-      new Deposit(amount, balance.id, state, java.sql.Timestamp.from(java.time.Instant.now()))
-    }
-  }
-  sealed class Deposit(var amount: Double, var payeeId: Long, var state: String, var created: java.sql.Timestamp) extends Payment(Tags.Deposit) {
-  }
-  
-  // WITHDRAWS
-  object Withdraw {
-    def create(balance: Balance, amount: Double, state: String) = {
-      new Withdraw(amount, balance.id, state, java.sql.Timestamp.from(java.time.Instant.now()))
-    }
-  }
-  sealed class Withdraw(var amount: Double, var payerId: Long, var state: String, var created: java.sql.Timestamp) extends Payment(Tags.Withdraw) {
-  }
-  
-  // PURCHASES
-  object Purchase {
-    def create(balance: Balance, order: Order, state: String) = {
-      new Purchase(order.amount, balance.id, order.id, state, java.sql.Timestamp.from(java.time.Instant.now()))
-    }
-  }
-  sealed class Purchase(var amount: Double, var payerId: Long, var orderId: Long, var state: String, var created: java.sql.Timestamp) extends Payment(Tags.Purchase) {
-  }
-  
-  sealed class Order(var id: Long, var amount: Double, var state: String, var itemId: String, var itemType: String, var itemMetaData: String) {
-    def pay() {
-    }
-  }
-  
-  sealed class Balance(
-      var id: Long,
-      var currencyId: Long,
-      var amount: Double
-  ) {
-    
-    def charge(diff: Double) {
-      update(balances)((balance) =>
-        where(balance.id === this.id)
-        set(balance.amount := balance.amount + diff)
-      )
-    }
-    
-  }
-
   val balances = table[Balance]("balances")
+  val players = table[Player]("players")
   
-  def withdraw(balance: Balance, amount: Double) = inTransaction {
-    balance.charge(-amount) // block amount for withdraw
-    val payment = Withdraw.create(balance, amount = amount, state = "pending")
+  //val payments = table[Payment]("payments")
+  val deposits = table[Deposit]("payments")
+  val withdraws = table[Withdraw]("payments")
+  val transfers = table[Transfer]("payments")
+  val purchases = table[Purchase]("payments")
+  val orders = table[Order]("payment_orders")
+  
+  // returns balance of specified currency for player playerId
+  def createBalance(playerId: java.util.UUID, currencyId: Option[Long] = None, initial: Double = 0): Balance = {
+    balances.insert(Balance.create(playerId, currencyId, initial))
+  }
+  
+  def getBalance(playerId: java.util.UUID, currencyId: Option[Long] = None): Balance = {
+    // FIXME handle not found
+    from(balances)((balance) =>
+      where(balance.playerId === playerId and (
+          if (currencyId.isDefined) balance.currencyId === currencyId.get
+          else balance.currencyId.isNull))
+      select(balance)
+    ).head
+  }
+  
+  def join(playerId: java.util.UUID, amount: Double, roomId: java.util.UUID) {
+    val stake = PokerDB.getRoomStake(roomId)
+    val bb = stake.bigBlind
+    val (min, max) = (stake.buyInMin * bb, stake.buyInMax * bb)
+    if (amount < min) {
+      throw new thrift.Error("Minimum buy in is: %.2f (%d BB); got: %.2f" format(min, stake.buyInMin, amount))
+    }
+    if (amount > max) {
+      throw new thrift.Error("Maximum buy in is: %.2f (%d BB); got: %.2f" format(max, stake.buyInMax, amount))
+    }
+    
+    inTransaction {
+      val balance = getBalance(playerId, stake.currencyId)
+      val order = orders.insert(Order.buyIn(playerId, amount, roomId))
+      purchase(balance, order)
+    }
+  }
+  
+  def leave(playerId: java.util.UUID, amount: Double, roomId: java.util.UUID) {
+    val stake = PokerDB.getRoomStake(roomId)
+    inTransaction {
+      val balance = getBalance(playerId, stake.currencyId)
+      val order = orders.insert(Order.leave(playerId, amount, roomId))
+      purchase(balance, order)
+    }
+  }
+  
+  def register(playerId: java.util.UUID, tournamentId: java.util.UUID) {
+    val buyIn = PokerDB.getTournamentBuyIn(tournamentId)
+    val amount = buyIn.price + buyIn.fee
+    // TODO check tournament start date, state
+    inTransaction {
+      val balance = getBalance(playerId, buyIn.currencyId)
+      val order = orders.insert(Order.register(playerId, amount, tournamentId))
+      purchase(balance, order)
+    }
   }
   
   def cancelWithdraw(payment: Withdraw) = inTransaction {
     val balance = balances.where((balance) => balance.id === payment.payerId).head
     balance.charge(payment.amount)
-    payment.reject() // rolback if state != "pending"
+    //payment.reject() // rollback if state != "pending"
   }
   
-  def deposit(balance: Balance, amount: Double) = inTransaction {
+  private def withdraw(balance: Balance, amount: Double) = {
+    val payment = withdraws.insert(Withdraw.create(balance, -amount))
+    balance.charge(payment.amount) // block amount for withdraw
+  }
+
+  private def deposit(balance: Balance, amount: Double) = {
     //val payment = Deposit.create(balance, amount = amount, state = "approved")
     balance.charge(amount)
   }
   
-  def transfer(from: Balance, to: Balance, amount: Double) = inTransaction {
+  private def transfer(from: Balance, to: Balance, amount: Double) = {
     from.charge(-amount)
     to.charge(amount)
     //val payment = Transfer.create(from, to, amount = amount, state = "pending")
   }
   
-  def purchase(balance: Balance, order: Order) = inTransaction {
-    balance.charge(order.amount)
-    val payment = Purchase.create(balance, order, "pending")
-    order.pay() // rollback if state != "pending"
-    payment.approve()
+  private def purchase(balance: Balance, order: Order) = {
+    val payment = purchases.insert(Purchase.create(balance, order))
+    balance.charge(payment.amount)
   }
   
 }

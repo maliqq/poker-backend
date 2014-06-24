@@ -28,7 +28,8 @@ object Service {
 
 class Service extends thrift.Payment.FutureIface {
   //import java.util.concurrent.atomic.AtomicReference
-  
+  implicit def uuidFromString(s: String): java.util.UUID = java.util.UUID.fromString(s)
+
   type Player = String
   
   private val _balances = collection.mutable.Map[Player, Decimal]()
@@ -100,6 +101,7 @@ class Service extends thrift.Payment.FutureIface {
   }
   
   def join(playerId: String, amount: Double, roomId: String): Future[Unit] = Future{
+    PaymentDB.join(playerId, amount, roomId)
   }
   
   def leave(playerId: String, amount: Double, roomId: String): Future[Unit] = Future{}
@@ -120,7 +122,8 @@ class Service extends thrift.Payment.FutureIface {
   
   def award(playerId: String, tournamentId: String, placeNumber: Long): Future[Unit] = Future{}
   
-  def bounty(playerId: String, knockedPlayerId: String, tournamentId: String): Future[Unit] = Future{}
+  def bounty(playerId: String, knockedPlayerId: String, tournamentId: String): Future[Unit] = Future{
+  }
   
   val refillAmount: Decimal = 10000
   val refillEvery = 1.hour

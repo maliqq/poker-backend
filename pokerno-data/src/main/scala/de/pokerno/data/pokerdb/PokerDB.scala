@@ -8,6 +8,30 @@ import org.squeryl.internals.FieldMetaData
 import java.util.UUID
 
 object PokerDB extends Schema {
+  
+  object Node {
+    
+    def getRooms(nodeId: UUID) = join(rooms, games.leftOuter, mixes.leftOuter, stakes)((room, game, mix, stake) =>
+      where(room.nodeId === nodeId)
+      select((room, game, mix, stake))
+      on(room.gameId === game.map(_.id), room.mixId === mix.map(_.id), room.stakeId === stake.id)
+    )
+    
+    def updateMetrics(nodeId: UUID, metrics: thrift.metrics.Node) {
+      update(nodes)(node =>
+        where(node.id === nodeId)
+        set(
+            node.totalConnectionsCount  := metrics.totalConnections,
+            node.playerConnectionsCount := metrics.playerConnections,
+            node.offlinePlayersCount    := metrics.offlinePlayers,
+            node.connectsRate           := metrics.connects.rate15.get,
+            node.disconnectsRate        := metrics.disconnects.rate15.get,
+            node.messagesReceivedRate   := metrics.messagesReceived.rate15.get
+          )
+      )
+    }
+  }
+  
   sealed case class Node(
       @Column("total_connections_count") var totalConnectionsCount: Long,
       @Column("player_connections_count") var playerConnectionsCount: Long,
@@ -17,6 +41,44 @@ object PokerDB extends Schema {
       @Column("messages_received_rate") var messagesReceivedRate: Double
   ) extends KeyedEntity[UUID] {
     var id: UUID = null
+  }
+  
+  object Room {
+    
+    def get(id: UUID): Tuple4[Room, Option[Game], Option[Mix], Stake] =
+      join(rooms, games.leftOuter, mixes.leftOuter, stakes)((room, game, mix, stake) =>
+        where(room.id === id)
+        select((room, game, mix, stake))
+        on(room.gameId === game.map(_.id), room.mixId === mix.map(_.id), room.stakeId === stake.id)
+      ).head
+      
+    def getStake(roomId: UUID): Stake =
+      join(rooms, stakes)((room, stake) =>
+        where(room.id === roomId)
+        select(stake)
+        on(room.stakeId === stake.id)
+      ).head
+      
+    def updateMetrics(roomId: UUID, metrics: thrift.metrics.Room) {
+      update(rooms)(room =>
+        where(room.id === roomId)
+        set(
+            room.playersCount     := metrics.players,
+            room.waitingCount     := metrics.waiting,
+            room.watchingCount    := metrics.watching,
+            room.playsRate        := metrics.plays.rate15.get,
+            room.average_pot      := metrics.pots.mean,
+            room.playersPerFlop   := metrics.playersPerFlop.mean
+          )
+      )
+    }
+      
+    def updateState(id: UUID, state: String) =
+      update(rooms)(room =>
+        where(room.id === id)
+        set(room.state := state)
+      )
+    
   }
   
   sealed case class Room(
@@ -57,6 +119,33 @@ object PokerDB extends Schema {
     def this() = this("", None, None, 0)
   }
   
+  object Seat {
+    
+    def create(s: Seat) = inTransaction {
+  //    val c =
+  //      from(seats)((seat) =>
+  //        where(seat.roomId === s.roomId and seat.playerId === s.playerId)
+  //        compute(count(seat.id))
+  //      )
+  //    if ((c:Long) == 0)
+      destroy(s.roomId, s.playerId)
+      seats.insert(s)
+    }
+    
+    def destroy(roomId: UUID, player: UUID) = seats.deleteWhere(seat =>
+        (seat.roomId === roomId and seat.playerId === player)
+      )
+      
+  //  def deleteSeat(roomId: UUID, pos: Int, player: UUID) = seats.deleteWhere(seat =>
+  //      (seat.roomId === roomId and seat.pos === pos and seat.playerId === player)
+  //    )
+    def updateState(roomId: UUID, pos: Int, player: UUID, state: String) =
+      update(seats)(seat =>
+        where(seat.roomId === roomId and seat.pos === pos and seat.playerId === player)
+        set(seat.state := state)
+      )
+  }
+  
   sealed case class Seat(
       @Column("room_id") var roomId: UUID,
       var pos: Int,
@@ -74,6 +163,18 @@ object PokerDB extends Schema {
       @Column("table_size") var tableSize: Int) extends KeyedEntity[Long] {
     var id: Long = 0
     def this() = this("", None, 0)
+  }
+  
+  object Tournament {
+    
+    def getBuyIn(tournamentId: UUID): TournamentBuyIn = {
+      join(tournaments, tournamentBuyIns)((tournament, tournamentBuyIn) =>
+        where(tournament.id === tournamentId)
+        select(tournamentBuyIn)
+        on(tournament.buyInId === tournamentBuyIn.id)
+      ).head
+    }
+    
   }
   
   sealed case class Tournament(
@@ -109,94 +210,4 @@ object PokerDB extends Schema {
     on(room.gameId === game.map(_.id), room.mixId === mix.map(_.id), room.stakeId === stake.id)
   )
   
-  def getRoomStake(roomId: UUID): Stake = {
-    join(rooms, stakes)((room, stake) =>
-      where(room.id === roomId)
-      select(stake)
-      on(room.stakeId === stake.id)
-    ).head
-  }
-  
-  def getTournamentBuyIn(tournamentId: UUID): TournamentBuyIn = {
-    join(tournaments, tournamentBuyIns)((tournament, tournamentBuyIn) =>
-      where(tournament.id === tournamentId)
-      select(tournamentBuyIn)
-      on(tournament.buyInId === tournamentBuyIn.id)
-    ).head
-  }
-  
-  def updateNodeMetrics(nodeId: UUID, metrics: thrift.metrics.Node) {
-    update(nodes)(node =>
-      where(node.id === nodeId)
-      set(
-          node.totalConnectionsCount  := metrics.totalConnections,
-          node.playerConnectionsCount := metrics.playerConnections,
-          node.offlinePlayersCount    := metrics.offlinePlayers,
-          node.connectsRate           := metrics.connects.rate15.get,
-          node.disconnectsRate        := metrics.disconnects.rate15.get,
-          node.messagesReceivedRate   := metrics.messagesReceived.rate15.get
-        )
-    )
-  }
-  
-  // FIXME copypaste
-  def getRooms(nodeId: UUID) = join(rooms, games.leftOuter, mixes.leftOuter, stakes)((room, game, mix, stake) =>
-    where(room.nodeId === nodeId)
-    select((room, game, mix, stake))
-    on(room.gameId === game.map(_.id), room.mixId === mix.map(_.id), room.stakeId === stake.id)
-  )
-  
-  // FIXME copypaste
-  def getRoom(id: UUID): Tuple4[Room, Option[Game], Option[Mix], Stake] =
-    join(rooms, games.leftOuter, mixes.leftOuter, stakes)((room, game, mix, stake) =>
-      where(room.id === id)
-      select((room, game, mix, stake))
-      on(room.gameId === game.map(_.id), room.mixId === mix.map(_.id), room.stakeId === stake.id)
-    ).head
-  
-  def createSeat(s: Seat) = inTransaction {
-//    val c =
-//      from(seats)((seat) =>
-//        where(seat.roomId === s.roomId and seat.playerId === s.playerId)
-//        compute(count(seat.id))
-//      )
-//    if ((c:Long) == 0)
-    deleteSeat(s.roomId, s.playerId)
-    seats.insert(s)
-  }
-  
-  def deleteSeat(roomId: UUID, player: UUID) = seats.deleteWhere(seat =>
-      (seat.roomId === roomId and seat.playerId === player)
-    )
-    
-//  def deleteSeat(roomId: UUID, pos: Int, player: UUID) = seats.deleteWhere(seat =>
-//      (seat.roomId === roomId and seat.pos === pos and seat.playerId === player)
-//    )
-  
-  def updateRoomMetrics(roomId: UUID, metrics: thrift.metrics.Room) {
-    update(rooms)(room =>
-      where(room.id === roomId)
-      set(
-          room.playersCount     := metrics.players,
-          room.waitingCount     := metrics.waiting,
-          room.watchingCount    := metrics.watching,
-          room.playsRate        := metrics.plays.rate15.get,
-          room.average_pot      := metrics.pots.mean,
-          room.playersPerFlop   := metrics.playersPerFlop.mean
-        )
-    )
-  }
-    
-  def updateRoomState(id: UUID, state: String) =
-    update(rooms)(room =>
-      where(room.id === id)
-      set(room.state := state)
-    )
-  
-  def updateSeatState(roomId: UUID, pos: Int, player: UUID, state: String) =
-    update(seats)(seat =>
-      where(seat.roomId === roomId and seat.pos === pos and seat.playerId === player)
-      set(seat.state := state)
-    )
-
 }

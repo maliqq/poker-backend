@@ -5,9 +5,11 @@ import org.squeryl.KeyedEntity
 import java.util.UUID
 
 object Purchase {
+  import de.pokerno.payment.PaymentDB._
+
   def create(balance: Balance, order: Order) = {
     val state = "pending"
-    new Purchase(-order.price, balance.id, balance.currencyId, order.id, state)
+    purchases.insert(new Purchase(-order.price, balance.id, balance.currencyId, order.id, state))
   }
 }
 

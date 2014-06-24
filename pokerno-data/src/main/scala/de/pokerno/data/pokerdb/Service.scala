@@ -33,7 +33,7 @@ class Service extends thrift.PokerDB.FutureIface {
   val log = LoggerFactory.getLogger(getClass)
 
   def getRooms(nodeId: String): Future[Seq[thrift.Room]] = Future {
-    val rooms = PokerDB.getRooms(nodeId)
+    val rooms = PokerDB.Node.getRooms(nodeId)
     rooms.map { case (room, game, mix, stake) =>
       thrift.Room(
         room.id.toString(),
@@ -47,11 +47,11 @@ class Service extends thrift.PokerDB.FutureIface {
   }
   
   def reportNodeMetrics(nodeId: String, metrics: thrift.metrics.Node): Future[Unit] = Future {
-    PokerDB.updateNodeMetrics(nodeId, metrics)
+    PokerDB.Node.updateMetrics(nodeId, metrics)
   }
   
   def getRoom(id: String): Future[thrift.Room] = Future {
-    val (room, game, mix, stake) = PokerDB.getRoom(id)
+    val (room, game, mix, stake) = PokerDB.Room.get(id)
     thrift.Room(
         room.id.toString(),
         room.state,
@@ -71,26 +71,26 @@ class Service extends thrift.PokerDB.FutureIface {
     
     log.info("room %s changed state to %s" format(id, newState))
     
-    PokerDB.updateRoomState(id, newState)
+    PokerDB.Room.updateState(id, newState)
   }
   
   def reportRoomMetrics(roomId: String, metrics: thrift.metrics.Room): Future[Unit] = Future {
-    PokerDB.updateRoomMetrics(roomId, metrics)
+    PokerDB.Room.updateMetrics(roomId, metrics)
   }
   
   def registerSeat(roomId: String, pos: Int, player: String, amount: Double): Future[Unit] = Future {
     val seat = new PokerDB.Seat(roomId, pos, player, amount, "taken")
     
     log.info("registering seat: {}", seat)
-    PokerDB.createSeat(seat)
+    PokerDB.Seat.create(seat)
   }
   
   def changeSeatState(roomId: String, pos: Int, player: String, state: protocol.SeatState): Future[Unit] = Future {
-    PokerDB.updateSeatState(roomId, pos, player, state.name.toLowerCase)
+    PokerDB.Seat.updateState(roomId, pos, player, state.name.toLowerCase)
   }
   
   def unregisterSeat(roomId: String, pos: Int, player: String, amount: Double): Future[Unit] = Future {
-    PokerDB.deleteSeat(roomId, player)
+    PokerDB.Seat.destroy(roomId, player)
   }
   
 }

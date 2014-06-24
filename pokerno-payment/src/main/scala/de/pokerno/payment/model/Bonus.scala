@@ -3,11 +3,16 @@ package de.pokerno.payment.model
 import org.squeryl.annotations.Column
 
 object Bonus {
-  def create(balance: Balance, amount: Double) {
-    new Bonus(amount, balance.id, balance.currencyId, "pending")
+  import de.pokerno.payment.PaymentDB._
+  
+  def create(balance: Balance, amount: Double) = {
+    _bonuses.insert(new Bonus(amount, balance.id, balance.currencyId, "pending"))
   }
 }
 
+/*
+ * Эмиссия денег
+ * */
 sealed case class Bonus(
     var amount: Double,
     @Column("payee_id") var payeeId: Long,

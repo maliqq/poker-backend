@@ -3,9 +3,12 @@ package de.pokerno.payment.model
 import org.squeryl.annotations.Column
 
 object Withdraw {
+
+  import de.pokerno.payment.PaymentDB._
+  
   def create(balance: Balance, amount: Double) = {
     val state = "pending"
-    new Withdraw(amount, balance.id, balance.currencyId, state)
+    withdraws.insert(new Withdraw(amount, balance.id, balance.currencyId, state))
   }
 }
 

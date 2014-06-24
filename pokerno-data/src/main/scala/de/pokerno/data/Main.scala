@@ -21,9 +21,9 @@ object Main {
     
     val seat = new PokerDB.Seat(UUID.randomUUID(), 1, UUID.randomUUID(), 10000, "none")
     
-    println(PokerDB.createSeat(seat).id)
+    println(PokerDB.Seat.create(seat).id)
     
-    println(PokerDB.createSeat(seat).id)
+    println(PokerDB.Seat.create(seat).id)
     
     val (room, game, mix, stake) = PokerDB.roomsWithGamesAndStakes.head
     println(room)

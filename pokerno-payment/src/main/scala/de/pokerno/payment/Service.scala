@@ -29,83 +29,87 @@ object Service {
 
 class Service extends thrift.Payment.FutureIface {
   //import java.util.concurrent.atomic.AtomicReference
+  import model._
   implicit def uuidFromString(s: String): UUID = UUID.fromString(s)
-
-  type Player = String
   
-  private val _balances = collection.mutable.Map[Player, Decimal]()
-  private val _inPlay = collection.mutable.Map[Player, Decimal]()
-  private val _refills = collection.mutable.Map[Player, java.util.Date]()
-  
-  def total(player: Player): Future[Double] = Future {
-    val balance: Decimal = balanceOrInitial(player)
-    val inplay: Decimal = _inPlay.getOrElse(player, 0)
-    (balance + inplay).toDouble
+  def total(player: String): Future[Double] = Future {
+    val playerId: UUID = player
+    val balance = Balance.getOrCreate(playerId)
+    balance.amount + balance.inPlay.getOrElse(.0)
   }
   
-  def available(player: Player): Future[Double] = Future {
-    val value: Decimal = balanceOrInitial(player)
-    value.toDouble
+  def available(player: String): Future[Double] = Future {
+    val playerId: UUID = player
+    val balance = Balance.getOrCreate(playerId)
+    balance.amount
   }
   
-  def inPlay(player: Player): Future[Double] = Future {
-    val value: Decimal= _inPlay.getOrElse(player, 0)
-    value.toDouble
+  def inPlay(player: String): Future[Double] = Future {
+    val playerId: UUID = player
+    val balance = Balance.getOrCreate(playerId)
+    balance.inPlay.getOrElse(.0)
   }
   
-  def deposit(player: Player, amount: Double): Future[Unit] = Future {
+  def deposit(player: String, amount: Double): Future[Unit] = Future {
+    val playerId: UUID = player
+    val balance = Balance.getOrCreate(playerId)
     
-    _balances.synchronized {
-      val balance: Decimal = balanceOrInitial(player)
-      _balances.put(player, balance + amount)
-
-      val inplay: Decimal = _balances.getOrElse(player, 0)
-      if (inplay > amount) {// FIXME
-        _inPlay.put(player, inplay - amount)
-      }
-    }
+//    _balances.synchronized {
+//      val balance: Decimal = balanceOrInitial(player)
+//      _balances.put(player, balance + amount)
+//
+//      val inplay: Decimal = _balances.getOrElse(player, 0)
+//      if (inplay > amount) {// FIXME
+//        _inPlay.put(player, inplay - amount)
+//      }
+//    }
     
   }
   
-  def withdraw(player: Player, amount: Double): Future[Unit] = Future {
+  def withdraw(player: String, amount: Double): Future[Unit] = Future {
     if (amount < 0) throw new thrift.Error("player %s: asked %.2f < 0" format(player, amount))
     
-    _balances.synchronized {
-      var balance: Decimal = _balances.getOrElse(player, 0)
-      val inplay: Decimal = _inPlay.getOrElse(player, 0)
-      val total = balance + inplay
-      
-      if (amount > balance) {
-        balance = refill(player, refillAmount - inplay)
-        _balances.put(player, balance)
-      }
-      
-      if (amount > balance) {
-        throw new thrift.Error("player %s: not enough money; asked: %.2f have: %.2f" format(player, amount, balance))
-      }
-      
-      _balances.put(player, balance - amount)
-
-      _inPlay.put(player, inplay + amount)
-    }
+    val playerId: UUID = player
+    val balance = Balance.getOrCreate(playerId)
+    
+//    _balances.synchronized {
+//      var balance: Decimal = _balances.getOrElse(player, 0)
+//      val inplay: Decimal = _inPlay.getOrElse(player, 0)
+//      val total = balance + inplay
+//      
+//      if (amount > balance) {
+//        balance = refill(player, refillAmount - inplay)
+//        _balances.put(player, balance)
+//      }
+//      
+//      if (amount > balance) {
+//        throw new thrift.Error("player %s: not enough money; asked: %.2f have: %.2f" format(player, amount, balance))
+//      }
+//      
+//      _balances.put(player, balance - amount)
+//
+//      _inPlay.put(player, inplay + amount)
+//    }
     
   }
   
-  def advance(player: Player, amount: Double): Future[Unit] = Future {
-    _inPlay.synchronized {
-      val inplay: Decimal = _inPlay.getOrElse(player, 0)
-      val newAmount = inplay + amount
-      if (newAmount > 0) {
-        _inPlay.put(player, newAmount)
-      } else throw new thrift.Error("player %s: can't spend %.2f of %.2f" format(player, amount, inplay))
-    }
+  def advance(player: String, amount: Double): Future[Unit] = Future {
+//    _inPlay.synchronized {
+//      val inplay: Decimal = _inPlay.getOrElse(player, 0)
+//      val newAmount = inplay + amount
+//      if (newAmount > 0) {
+//        _inPlay.put(player, newAmount)
+//      } else throw new thrift.Error("player %s: can't spend %.2f of %.2f" format(player, amount, inplay))
+//    }
   }
   
   def join(playerId: String, amount: Double, roomId: String): Future[Unit] = Future{
     PaymentDB.join(playerId, amount, roomId)
   }
   
-  def leave(playerId: String, amount: Double, roomId: String): Future[Unit] = Future{}
+  def leave(playerId: String, amount: Double, roomId: String): Future[Unit] = Future{
+    PaymentDB.leave(playerId, amount, roomId)
+  }
   
   def register(playerId: String, tournamentId: String): Future[Unit] = Future{}
   
@@ -126,39 +130,4 @@ class Service extends thrift.Payment.FutureIface {
   def bounty(playerId: String, knockedPlayerId: String, tournamentId: String): Future[Unit] = Future{
   }
   
-  val refillAmount: Decimal = 10000
-  val refillEvery = 1.hour
-  
-  import java.time.temporal.{ChronoUnit, TemporalUnit}
-  import java.time.Instant
-  
-  private def refill(playerId: Player, amount: Decimal = refillAmount): Decimal = {
-    def refilled() = {
-      //Console printf("player %s: refilled with %.2f\n", player, amount)
-      _refills(playerId) = new java.util.Date()
-      amount
-    }
-    
-    val lastRefill = _refills.get(playerId)
-    
-    lastRefill match {
-      case Some(date) =>
-        val now = Instant.now()
-        val deadline = now.minus(refillEvery.toHours, ChronoUnit.HOURS)
-        if (date.toInstant().isBefore(deadline)) refilled()
-        else {
-          val diff = ChronoUnit.MINUTES.between(date.toInstant(), now)
-          throw new thrift.Error("player %s: can't refill balance; last refill was %d minutes ago" format(playerId, diff))
-        }
-      case _ => refilled()
-    }
-  }
-  
-  private def balanceOrInitial(playerId: Player): Decimal = _balances.synchronized {
-    if (!_balances.contains(playerId)) {
-      val amount = refill(playerId)
-      _balances.put(playerId, amount)
-      amount
-    } else _balances.get(playerId).get
-  }
 }

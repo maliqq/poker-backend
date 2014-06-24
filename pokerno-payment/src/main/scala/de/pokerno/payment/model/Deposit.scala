@@ -3,8 +3,11 @@ package de.pokerno.payment.model
 import org.squeryl.annotations.Column
 
 object Deposit {
+
+  import de.pokerno.payment.PaymentDB._
+
   def create(balance: Balance, amount: Double, state: String) = {
-    new Deposit(amount, balance.id, balance.currencyId, state)
+    deposits.insert(new Deposit(amount, balance.id, balance.currencyId, state))
   }
 }
 

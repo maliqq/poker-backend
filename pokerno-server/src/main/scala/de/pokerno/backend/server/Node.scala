@@ -21,7 +21,7 @@ trait Initialize {
     props.load(f)
     
     system.actorOf(Props(new Actor with ActorLogging {
-      val session = pokerdb.PokerDB.Connection.connect(props)
+      val session = de.pokerno.data.db.Connection.connect(props)
       session.setLogger(println(_))
       // FIXME
       org.squeryl.SessionFactory.externalTransactionManagementAdapter = Some(() => {
@@ -114,7 +114,7 @@ class Node(
       
   //
   val history = env.storage.map { storage =>
-    actorOf(Props(classOf[de.pokerno.backend.PlayHistoryWriter]), name = "play-history-writer")
+    actorOf(Props(classOf[de.pokerno.backend.PlayHistoryWriter], storage), name = "play-history-writer")
   }
   
   val broadcasts = Seq[Broadcast](

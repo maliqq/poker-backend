@@ -16,7 +16,7 @@ class Bootstrap(node: ActorRef)(implicit val system: ActorSystem) {
   
   def withHttp(httpConfig: gw.http.Config) {
     
-    val httpGateway = system.actorOf(Props(classOf[gw.Http.Gateway], Gateway, node), name = "http-gateway")
+    val httpGateway = system.actorOf(Props(classOf[gw.Http.Gateway], node, Gateway), name = "http-gateway")
 
     log("starting HTTP server with config: %s\n", httpConfig)
     val server = new gw.http.Server(httpGateway, httpConfig)

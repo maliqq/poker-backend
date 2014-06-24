@@ -3,9 +3,13 @@ package de.pokerno.payment.model
 import org.squeryl.annotations.Column
 
 object Transfer {
+
+  import de.pokerno.payment.PaymentDB._
+
   def create(from: Balance, to: Balance, amount: Double, state: String) = {
-    new Transfer(amount, from.id, from.currencyId, to.id, state)
+    transfers.insert(new Transfer(amount, from.id, from.currencyId, to.id, state))
   }
+  
 }
 
 /*

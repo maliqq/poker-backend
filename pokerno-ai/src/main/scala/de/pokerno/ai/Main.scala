@@ -6,6 +6,7 @@ import akka.actor.{ ActorSystem, Props }
 import math.{ BigDecimal ⇒ Decimal }
 import de.pokerno.model._
 import de.pokerno.backend.server.{Node, Room, RoomEnv}
+import concurrent.duration._
 
 object Main {
   case class Config(
@@ -13,6 +14,7 @@ object Main {
     dbProps: Option[String] = None,
     // retrieve info from database with room id
     id: Option[String] = None,
+    speed: FiniteDuration = 1.second,
     // or play with these params:
     tableSize: Int = 9,
     botsNum: Int = 9,
@@ -29,6 +31,13 @@ object Main {
     opt[Int]('t', "bots-num") text("Number of bots") action { (value, c) =>
       if (value <= c.tableSize) c.copy(botsNum = value)
       else c
+    }
+    
+    opt[String]("speed") text("Speed") action { (value, c) =>
+      val d = Duration(value)
+      if (d.isFinite) {
+        c.copy(speed = FiniteDuration(d.toMillis, java.util.concurrent.TimeUnit.MILLISECONDS))
+      } else c
     }
     
     opt[String]("id") text("Room ID") action { (value, c) =>
@@ -98,7 +107,7 @@ object Main {
             room,
             i - 1, // nr
             c.chips, // starting stack
-            game, stake))
+            game, stake, c.speed))
       }
   
       //room ! Room.Observe(gw, "http-gateway")

@@ -3,7 +3,7 @@ start:
 start-replayer:
 	./sbt "project pokerno-replay" "run --http"
 start-bots:
-	./sbt "project pokerno-ai" "run --db-props ./etc/database.properties --id 30552f31-f871-4d05-aa08-83402a01efba"
+	./sbt "project pokerno-ai" "run --db-props ./etc/database.properties --id 30552f31-f871-4d05-aa08-83402a01efba --speed 200ms"
 compile:
 	./sbt "project pokerno-server" compile
 build:

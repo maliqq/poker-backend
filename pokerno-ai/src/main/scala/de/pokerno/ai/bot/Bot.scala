@@ -34,7 +34,7 @@ object Action {
   object Raise
 }
 
-class Bot(room: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var stake: Stake)
+class Bot(room: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var stake: Stake, speed: FiniteDuration)
     extends Actor with Context with Simple {
   
   val id: String = java.util.UUID.randomUUID().toString //f"bot-${pos+1}"
@@ -99,7 +99,7 @@ class Bot(room: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
       Console printf ("*** BOT #%d: %s\n", pos, cards)
 
     case message.AskBet(position, call, raise) if pos == position.pos ⇒
-      system.scheduler.scheduleOnce(1 second) {
+      system.scheduler.scheduleOnce(speed) {
         decide(call, raise.getOrElse((.0, .0)))
       }
 

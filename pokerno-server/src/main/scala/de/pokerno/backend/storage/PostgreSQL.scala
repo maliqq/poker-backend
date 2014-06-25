@@ -126,8 +126,8 @@ object PostgreSQL {
           bet.name,
           bet.isCheck,
           bet.isFold,
-          if (bet.isRaise) Some(bet.toActive.amount.toDouble) else None,
           if (bet.isCall) Some(bet.toActive.amount.toDouble) else None,
+          if (bet.isRaise) Some(bet.toActive.amount.toDouble) else None,
           null, null
       )
     }

@@ -6,7 +6,8 @@ object Deposit {
 
   import de.pokerno.payment.PaymentDB._
 
-  def create(balance: Balance, amount: Double, state: String) = {
+  def create(balance: Balance, amount: Double) = {
+    val state = "pending"
     deposits.insert(new Deposit(amount, balance.id, balance.currencyId, state))
   }
 }

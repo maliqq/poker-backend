@@ -6,7 +6,8 @@ object Transfer {
 
   import de.pokerno.payment.PaymentDB._
 
-  def create(from: Balance, to: Balance, amount: Double, state: String) = {
+  def create(from: Balance, to: Balance, amount: Double) = {
+    val state = "pending"
     transfers.insert(new Transfer(amount, from.id, from.currencyId, to.id, state))
   }
   

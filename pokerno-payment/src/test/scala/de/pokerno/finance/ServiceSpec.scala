@@ -1,4 +1,4 @@
-package de.pokerno.finance
+package de.pokerno.payment
 
 import org.scalatest._
 import org.scalatest.Matchers._

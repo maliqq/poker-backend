@@ -15,12 +15,24 @@ private[gameplay] case class Showdown(ctx: stg.Context) extends Stage {
   
   def apply() = {
     val inPot = table.sitting filter (_.inPot)
+    val pot = play.pot
+
+    // return uncalled bet
+    pot.sidePots.headOption map { sidePot =>
+      sidePot.uncalled() map { case (player, amount) =>
+        sidePot.members(player) -= amount
+        table.playerSeat(player).map { won(_, amount) }
+      }
+    }
+
     if (inPot.size == 1) {
-      winner(play.pot, inPot.head)
+      // one wins whole pot
+      winner(pot, inPot.head)
     } else {
+      // distribute pot between winners
       val hiHands = gameOptions.hiRanking.map(showHands(_))
       val loHands = gameOptions.loRanking.map(showHands(_))
-      winners(play.pot, hiHands, loHands)
+      winners(pot, hiHands, loHands)
     }
   }
   
@@ -38,16 +50,20 @@ private[gameplay] case class Showdown(ctx: stg.Context) extends Stage {
     val winner = sitting.player
     val amount = side.total
     distribute(side, Map(winner -> amount))
-    sitting wins amount
-    events broadcast Events.declareWinner(sitting, amount)
+    won(sitting, amount)
   }
   
   private def distribute(sidePot: SidePot, winners: Map[Player, Decimal]) {
     sidePot.members.foreach { case (member, amount) =>
       if (winners.contains(member)) {
-        play.winner(member, winners(member))
+        play.winner(member, winners(member) - amount)
       } else play.loser(member, amount)
     }
+  }
+
+  private def won(sitting: seat.Sitting, amount: Decimal) {
+    sitting wins amount
+    events broadcast Events.declareWinner(sitting, amount)
   }
 
   private def winners(pot: Pot, hi: Option[Map[Player, Hand]], lo: Option[Map[Player, Hand]]) = {
@@ -88,10 +104,7 @@ private[gameplay] case class Showdown(ctx: stg.Context) extends Stage {
       distribute(side, winners)
 
       winners foreach { case (winner, amount) ⇒
-        table.playerSeat(winner) map { sitting =>
-          sitting wins amount
-          events broadcast Events.declareWinner(sitting, amount)
-        }
+        table.playerSeat(winner) map { won(_, amount) }
       }
     }
   }

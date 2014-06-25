@@ -76,7 +76,7 @@ class Journal(storageDir: String, room: String) extends Actor with ActorLogging 
       case msg.DeclareHand(pos, cards, hand) ⇒
         write("%s shows %s (%s)", pos.player, cards, hand.description)
 
-      case msg.DeclareWinner(pos, amount) ⇒
+      case msg.DeclareWinner(pos, amount, _) ⇒
         write("%s collected %.2f from pot", pos.player, amount)
 
       case msg.DeclarePlayStop() ⇒

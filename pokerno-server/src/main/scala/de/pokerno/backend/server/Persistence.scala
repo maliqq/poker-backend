@@ -22,20 +22,20 @@ class Persistence(service: Option[pokerdb.thrift.PokerDB.FutureIface]) extends A
   }
   
   def handleAndStore: Receive = {
-    
     case Notification(payload, Route.One(roomId), _) =>
       payload match {
         case msg.PlayerJoin(pos, amount) =>
-          service.get.registerSeat(roomId, pos.pos, pos.player, amount.toDouble)
+          getService.startSession(roomId, pos.player, pos.pos, amount.toDouble)
           
         case msg.PlayerLeave(pos) => // TODO tell how much money left
-          service.get.unregisterSeat(roomId, pos.pos, pos.player, 0) // FIXME amount?
+          getService.endSession(roomId, pos.player, pos.pos, 0) // FIXME amount?
         
         case _ => // ignore
       }
     
     case Room.ChangedState(id, newState) =>
-      service.get.changeRoomState(id, ThriftState.valueOf(newState.toString().toLowerCase).get)
-
+      getService.changeRoomState(id, ThriftState.valueOf(newState.toString().toLowerCase).get)
   }
+  
+  private def getService = service.get
 }

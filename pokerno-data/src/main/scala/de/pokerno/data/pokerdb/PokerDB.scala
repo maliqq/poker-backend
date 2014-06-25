@@ -119,42 +119,46 @@ object PokerDB extends Schema {
     def this() = this("", None, None, 0)
   }
   
-  object Seat {
+  object PlaySession {
     
-    def create(s: Seat) = inTransaction {
+    def create(roomId: UUID, playerId: UUID, pos: Int, stack: Double) = inTransaction {
   //    val c =
   //      from(seats)((seat) =>
   //        where(seat.roomId === s.roomId and seat.playerId === s.playerId)
   //        compute(count(seat.id))
   //      )
   //    if ((c:Long) == 0)
-      destroy(s.roomId, s.playerId)
-      seats.insert(s)
+      end(roomId, playerId) // ended previous session
+      sessions.insert(new PlaySession(roomId, playerId, pos, stack))
     }
     
-    def destroy(roomId: UUID, player: UUID) = seats.deleteWhere(seat =>
-        (seat.roomId === roomId and seat.playerId === player)
+    def end(roomId: UUID, playerId: UUID) = update(sessions)(session =>
+        where(session.roomId === roomId and session.playerId === playerId)
+        set(
+            session.ended := now()
+          )
       )
       
   //  def deleteSeat(roomId: UUID, pos: Int, player: UUID) = seats.deleteWhere(seat =>
   //      (seat.roomId === roomId and seat.pos === pos and seat.playerId === player)
   //    )
-    def updateState(roomId: UUID, pos: Int, player: UUID, state: String) =
-      update(seats)(seat =>
-        where(seat.roomId === roomId and seat.pos === pos and seat.playerId === player)
-        set(seat.state := state)
-      )
+//    def updateState(roomId: UUID, pos: Int, player: UUID, state: String) =
+//      update(seats)(seat =>
+//        where(seat.roomId === roomId and seat.pos === pos and seat.playerId === player)
+//        set(seat.state := state)
+//      )
   }
   
-  sealed case class Seat(
+  sealed case class PlaySession(
       @Column("room_id") var roomId: UUID,
-      var pos: Int,
       @Column("player_id") var playerId: UUID,
-      var stack: Double,
-      var state: String
+      var pos: Int,
+      @Column("starting_stack") var startingStack: Double,
+      @Column("started_at") var started: java.sql.Timestamp = now()
   ) extends KeyedEntity[Long] {
     var id: Long = 0
-    def this() = this(null, 0, null, 0, "")
+    @Column("ended_at") var ended: java.sql.Timestamp = null
+    def this() = this(null, null, 0, 0, null)
   }
   
   sealed case class Mix(
@@ -197,10 +201,10 @@ object PokerDB extends Schema {
   
   val nodes     = table[Node]("nodes")
   val rooms     = table[Room]("poker_rooms")
+  val sessions  = table[PlaySession]("poker_play_sessions")
   val games     = table[Game]("poker_variations")
   val mixes     = table[Mix]("poker_variations")
   val stakes    = table[Stake]("poker_stakes")
-  val seats     = table[Seat]("poker_seats")
   
   val tournaments       = table[Tournament]("poker_tournaments")
   val tournamentBuyIns  = table[TournamentBuyIn]("poker_tournament_buy_ins")

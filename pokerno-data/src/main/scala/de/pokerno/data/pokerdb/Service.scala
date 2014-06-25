@@ -78,19 +78,12 @@ class Service extends thrift.PokerDB.FutureIface {
     PokerDB.Room.updateMetrics(roomId, metrics)
   }
   
-  def registerSeat(roomId: String, pos: Int, player: String, amount: Double): Future[Unit] = Future {
-    val seat = new PokerDB.Seat(roomId, pos, player, amount, "taken")
-    
-    log.info("registering seat: {}", seat)
-    PokerDB.Seat.create(seat)
+  def startSession(roomId: String, player: String, pos: Int, amount: Double): Future[Unit] = Future {
+    PokerDB.PlaySession.create(roomId, player, pos, amount)
   }
   
-  def changeSeatState(roomId: String, pos: Int, player: String, state: protocol.SeatState): Future[Unit] = Future {
-    PokerDB.Seat.updateState(roomId, pos, player, state.name.toLowerCase)
-  }
-  
-  def unregisterSeat(roomId: String, pos: Int, player: String, amount: Double): Future[Unit] = Future {
-    PokerDB.Seat.destroy(roomId, player)
+  def endSession(roomId: String, player: String, pos: Int, amount: Double): Future[Unit] = Future {
+    PokerDB.PlaySession.end(roomId, player)
   }
   
 }

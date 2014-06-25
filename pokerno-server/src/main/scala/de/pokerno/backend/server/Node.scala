@@ -22,7 +22,7 @@ trait Initialize {
     
     system.actorOf(Props(new Actor with ActorLogging {
       val session = de.pokerno.data.db.Connection.connect(props)
-      session.setLogger(println(_))
+      //session.setLogger(println(_))
       // FIXME
       org.squeryl.SessionFactory.externalTransactionManagementAdapter = Some(() => {
         Some(session)
@@ -109,14 +109,10 @@ class Node(
   
   val pokerdb = env.db
   val balance = new de.pokerno.payment.Service()
-  val persist = actorOf(Props(classOf[Persistence], pokerdb),
-      name = "node-persist")
-      
-  //
+  val persist = actorOf(Props(classOf[Persistence], pokerdb), name = "node-persist")
   val history = env.storage.map { storage =>
     actorOf(Props(classOf[de.pokerno.backend.PlayHistoryWriter], storage), name = "play-history-writer")
   }
-  
   val broadcasts = Seq[Broadcast](
       //new Broadcast.Zeromq("tcp://127.0.0.1:5555")
   )
@@ -206,7 +202,7 @@ class Node(
     actorSelection(id).resolveOne(1 second).onComplete(f)
   }
   
-  private def newRoomEnv = RoomEnv(balance, Some(persist), history, pokerdb, broadcasts)
+  private def newRoomEnv = RoomEnv(balance, history, Some(persist), pokerdb, broadcasts)
 
   override def postStop {
   }

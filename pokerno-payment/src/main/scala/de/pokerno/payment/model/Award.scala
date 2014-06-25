@@ -4,24 +4,24 @@ import org.squeryl.annotations.Column
 import org.squeryl.KeyedEntity
 import java.util.UUID
 
-object Purchase {
+object Award {
   import de.pokerno.payment.PaymentDB._
 
   def create(balance: Balance, order: Order) = {
     val state = "pending"
-    purchases.insert(new Purchase(-order.price, balance.id, balance.currencyId, order.id, state))
+    awards.insert(new Award(order.price, balance.id, balance.currencyId, order.id, state))
   }
 }
 
 /*
- * Оплата за байин или участие в турнире
+ * Выдача средств (вывод со стола или выигрыш в турнире)
  * */
-sealed class Purchase(
+sealed class Award(
     var amount: Double,
-    @Column("from_id") var payerId: Long,
+    @Column("to_id") var payeeId: Long,
     @Column(name="currency_id", optionType=classOf[Long]) var currencyId: Option[Long],
     @Column("order_id") var orderId: Long,
     var state: String,
     @Column("created_at") var created: java.sql.Timestamp = now()
-    ) extends Payment(PaymentType.Purchase) {
+    ) extends Payment(PaymentType.Award) {
 }

@@ -23,6 +23,7 @@ object PaymentDB extends Schema {
   val withdraws = table[Withdraw]("payments")
   val transfers = table[Transfer]("payments")
   val purchases = table[Purchase]("payments")
+  val awards = table[Award]("payments")
   val orders = table[Order]("payment_orders")
   
   val _bonuses = table[Bonus]("payments")
@@ -64,7 +65,7 @@ object PaymentDB extends Schema {
     inTransaction {
       val balance = Balance.get(playerId, stake.currencyId)
       val order = orders.insert(Order.leave(playerId, amount, roomId))
-      purchase(balance, order)
+      award(balance, order)
     }
   }
   
@@ -103,6 +104,11 @@ object PaymentDB extends Schema {
   
   private def purchase(balance: Balance, order: Order) = {
     val payment = Purchase.create(balance, order)
+    balance.charge(payment.amount)
+  }
+  
+  private def award(balance: Balance, order: Order) = {
+    val payment = Award.create(balance, order)
     balance.charge(payment.amount)
   }
   

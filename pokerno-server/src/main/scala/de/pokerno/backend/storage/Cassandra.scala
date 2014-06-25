@@ -42,7 +42,8 @@ object Cassandra {
       button: Int,            // staring position at the table
       board: poker.Cards,
       pot: Decimal,           // total size of the pot
-      rake: Option[Decimal]        // rake
+      rake: Option[Decimal],        // rake
+      uncalled: Decimal
     ) {
       val bound = insertPlay.bind(
           roomId, _id,

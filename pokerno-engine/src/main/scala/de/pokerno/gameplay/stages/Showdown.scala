@@ -21,6 +21,7 @@ private[gameplay] case class Showdown(ctx: stg.Context) extends Stage {
     pot.sidePots.headOption map { sidePot =>
       sidePot.uncalled() map { case (player, amount) =>
         sidePot.members(player) -= amount
+        play.uncalled = amount
         table.playerSeat(player).map { won(_, amount) }
       }
     }

@@ -13,6 +13,7 @@ case class Play(val id: java.util.UUID = java.util.UUID.randomUUID()) {
   val started: java.util.Date = new java.util.Date()
   val pot = new Pot
   val rake: Option[SidePot] = None
+  @JsonIgnore var uncalled: Decimal = 0
   
   private var _ended: java.util.Date = null
   @JsonGetter def ended = _ended

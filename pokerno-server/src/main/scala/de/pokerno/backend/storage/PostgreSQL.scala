@@ -26,9 +26,10 @@ object PostgreSQL {
       var button: Int,
       var board: Array[Byte],
       var pot: Double,
-      var rake: Double
+      var rake: Double,
+      var uncalled: Double
   ) extends KeyedEntity[java.util.UUID] {
-    def this() = this(null, null, null, null, "", "", 0, 0, None, None, 0, null, 0, 0)
+    def this() = this(null, null, null, null, "", "", 0, 0, None, None, 0, null, 0, 0, 0)
   }
   
   class Position(
@@ -53,10 +54,11 @@ object PostgreSQL {
       var fold: Boolean,
       @Column(name="call", optionType = classOf[Double]) var call: Option[Double],
       @Column(name="raise", optionType = classOf[Double]) var raise: Option[Double],
+      @Column(name="force", optionType = classOf[Double]) var force: Option[Double],
       var cards: Array[Byte],
       var muck: java.lang.Boolean
   ) {
-    def this() = this(null, null, null, "", "", false, false, None, None, null, null)
+    def this() = this(null, null, null, "", "", false, false, None, None, None, null, null)
   }
   
   object PlayHistoryDB extends Schema {
@@ -80,7 +82,8 @@ object PostgreSQL {
       button:   Int,            // staring position at the table
       board:    poker.Cards,
       pot:      Decimal,           // total size of the pot
-      rake:     Option[Decimal]        // rake
+      rake:     Option[Decimal],        // rake
+      uncalled: Decimal
     ) {
       _play = new Play(
           _id,
@@ -90,7 +93,8 @@ object PostgreSQL {
           stake.bigBlind.toDouble, stake.smallBlind.toDouble, stake.ante.map(_.toDouble), stake.bringIn.map(_.toDouble),
           button,
           (board: Array[Byte]),
-          pot.toDouble, rake.map(_.toDouble).getOrElse(0)
+          pot.toDouble, rake.map(_.toDouble).getOrElse(0),
+          uncalled.toDouble
       )
     }
     
@@ -128,6 +132,7 @@ object PostgreSQL {
           bet.isFold,
           if (bet.isCall) Some(bet.toActive.amount.toDouble) else None,
           if (bet.isRaise) Some(bet.toActive.amount.toDouble) else None,
+          if (bet.isForced) Some(bet.toForced.amount.toDouble) else None,
           null, null
       )
     }

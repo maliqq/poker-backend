@@ -26,7 +26,8 @@ object MongoDB {
       button:   Int,            // staring position at the table
       board:    poker.Cards,
       pot:      Decimal,           // total size of the pot
-      rake:     Option[Decimal]        // rake
+      rake:     Option[Decimal],        // rake
+      uncalled: Decimal
     ) {
       _playObj = MongoDBObject(
           "room_id" -> roomId,

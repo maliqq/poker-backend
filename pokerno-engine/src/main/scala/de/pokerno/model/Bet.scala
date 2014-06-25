@@ -74,28 +74,30 @@ object Bet {
   
   case class Raise(@JsonIgnore amount: Decimal) extends Active {
     def name = "raise"
-    def betType = BetType.Raise 
+    def betType = BetType.Raise
+    override def isRaise = true
     @JsonProperty("raise") def raise = amount
   }
   case class Call(@JsonIgnore amount: Decimal) extends Active {
     def name = "call"
     def betType = BetType.Call
+    override def isCall = true
     @JsonProperty("call") def call = amount
   }
   
   trait Passive extends Bet
   
   case object Check extends Passive {
-    override def isCheck = true
     def name = "check"
     def betType = BetType.Check
+    override def isCheck = true
     @JsonProperty("check") final val check = true
   }
   
   case object Fold extends Passive {
-    override def isFold = true
     def name = "fold"
     def betType = BetType.Fold
+    override def isFold = true
     @JsonProperty("fold") final val fold = true
   }
   

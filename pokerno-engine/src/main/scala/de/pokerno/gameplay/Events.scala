@@ -83,8 +83,8 @@ object Events {
   
   def addBet(sitting: seat.Sitting, bet: Bet, timeout: Option[Boolean] = None)
                                 = msg.DeclareBet(sitting.asPosition, bet, timeout)
-  def declareWinner(sitting: seat.Sitting, amount: Decimal)
-                                = msg.DeclareWinner(sitting.asPosition, amount)
+  def declareWinner(sitting: seat.Sitting, amount: Decimal, uncalled: Option[Boolean] = None)
+                                = msg.DeclareWinner(sitting.asPosition, amount, uncalled)
   def declareHand(sitting: seat.Sitting, cards: Cards, hand: Hand)
                                 = msg.DeclareHand(sitting.asPosition, cards, hand)
   def showCards(sitting: seat.Sitting, cards: Cards, muck: Boolean = false)

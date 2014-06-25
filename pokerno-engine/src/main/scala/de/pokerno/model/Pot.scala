@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.{ JsonValue, JsonIgnore, JsonProperty, J
 
 class SidePot(val capFrom: Decimal = 0, val cap: Option[Decimal] = None) {
   // members
-  var members: collection.mutable.Map[Player, Decimal] = collection.mutable.Map.empty
+  var members = collection.mutable.Map[Player, Decimal]()
   
   def isMember(member: Player)  = members.contains(member)
   @JsonValue def total: Decimal = members.values.sum
@@ -34,7 +34,7 @@ class SidePot(val capFrom: Decimal = 0, val cap: Option[Decimal] = None) {
 
     left
   }
-
+  
   def split(member: Player, left: Decimal): Tuple2[SidePot, SidePot] = split(member, left, left)
 
   def split(member: Player, _amount: Decimal, left: Decimal, cap: Option[Decimal] = None): Tuple2[SidePot, SidePot] = {
@@ -60,6 +60,20 @@ class SidePot(val capFrom: Decimal = 0, val cap: Option[Decimal] = None) {
     }
 
     (_new, _old)
+  }
+  
+  def uncalled(): Option[Tuple2[Player, Decimal]] = {
+    if (members.size == 1) {
+      return members.headOption
+    }
+    if (members.size > 1) {
+      val sorted = members.toSeq.sortBy(_._2).reverse
+      val max = sorted.head // max bet
+      val (called, under) = sorted.span(_._2 == max._2) // how much called max bet
+      if (called.size == 1)
+        return Some(max._1, max._2 - under.head._2)
+    }
+    None
   }
 
   override def toString = {
@@ -134,9 +148,15 @@ class Pot {
     //Console printf("main=%s\nside=%s", main, side)
   }
   
-  def complete() {
+  def complete() = {
+    val uncalled = main.uncalled()
+    // adjust with uncalled bet
+    uncalled.map { case (member, amount) =>
+      main.members(member) -= amount
+    }
     if (main.isActive) _side ++= List(main)
     main = new SidePot
+    uncalled
   }
 
 //  def complete() {

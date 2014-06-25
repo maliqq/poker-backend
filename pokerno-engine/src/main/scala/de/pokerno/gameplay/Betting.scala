@@ -42,6 +42,17 @@ private[gameplay] trait Betting {
   // current betting round finished
   def complete() {
     round.reset()
+
+    // declare uncalled bet
+    play.pot.complete() match {
+      case Some((player, amount)) =>
+        table.playerSeat(player).map { sitting =>
+          events broadcast Events.declareWinner(sitting, amount, uncalled = Some(true))
+        }
+      case _ =>
+    }
+    
+    // prepare seats for next round or showdown
     table.sitting.foreach { seat =>
       seat.clearAction()
       if (seat.inPot) seat.playing()

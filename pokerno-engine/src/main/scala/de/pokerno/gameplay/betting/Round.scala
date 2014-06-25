@@ -18,7 +18,6 @@ class Round(_table: Table, game: Game, stake: Stake, play: Play) extends Gamepla
     super.reset()
     raiseCount = 0
     _cachedCallAmount = 0
-    pot.complete()
   }
   
   @JsonIgnore var bigBets: Boolean = false

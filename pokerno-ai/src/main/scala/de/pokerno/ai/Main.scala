@@ -54,7 +54,7 @@ object Main {
     parser.parse(args, Config()) map { c =>
       val system = ActorSystem("poker-ai")
       
-      val env = RoomEnv(new de.pokerno.finance.Service())
+      val env = RoomEnv(new de.pokerno.payment.Service())
           
       val (room, game, stake) = if (c.dbProps.isDefined && c.id.isDefined) {
         // connect to db
@@ -64,7 +64,7 @@ object Main {
         
         val nodeEnv = Node.initDb(c.dbProps.get)(system)
         val id = java.util.UUID.fromString(c.id.get)
-        val (_, _game, _, _stake) = PokerDB.getRoom(id)
+        val (_, _game, _, _stake) = PokerDB.Room.get(id)
         val game: Game = _game.get
         val stake: Stake = _stake
         

@@ -87,8 +87,6 @@ class Room(id: java.util.UUID,
   val broadcasting  = observe(classOf[Broadcasting], f"room-$roomId-broadcasts", roomId, broadcasts)
   
   persist.map { notify(_, f"room-$roomId-persist") }
-  persist.get ! "1"
-  persist.get ! "2"
   
   log.info("starting room {}", roomId)
   startWith(State.Waiting, NoneRunning)

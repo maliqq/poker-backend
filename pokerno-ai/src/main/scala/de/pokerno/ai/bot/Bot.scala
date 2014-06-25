@@ -77,7 +77,7 @@ class Bot(room: ActorRef, var pos: Int, var stack: Decimal, var game: Game, var 
     //  game = _game
     //  stake = _stake
 
-    case message.DeclareWinner(position, amount) if pos == position.pos ⇒
+    case message.DeclareWinner(position, amount, _) if pos == position.pos ⇒
       stack += amount
 
     case message.DeclareStreet(name) ⇒

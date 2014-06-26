@@ -41,24 +41,25 @@ object Tournament {
   class Structure(
     val level: Duration,
     val break: Duration)
-
-  import Format._
-}
-
-class Tournament(val game: Game, val buyIn: Tournament.BuyIn, val format: Tournament.Format.Value) extends Actor with ActorLogging {
-  val entries: collection.mutable.Map[Player, Tournament.Entry] = collection.mutable.Map.empty
-  val tables: List[Table] = List.empty
-
-  override def preStart() {
-
-  }
-
+  
   case class Register(player: Player)
   case class Rebuy(player: Player)
   case class Addon(player: Player)
   case class Knockout(winner: Player, looser: Player)
   case class Eliminate(player: Player)
 
+  import Format._
+}
+
+class Tournament(val game: Game, val buyIn: Tournament.BuyIn, val format: Tournament.Format.Value) extends Actor with ActorLogging {
+  import Tournament._
+  
+  val entries = collection.mutable.Map[Player, Tournament.Entry]()
+  val tables = List[Table]()
+
+  override def preStart() {
+  }
+  
   def bucketize(total: Int, perBucket: Int) = List.range(0, total).
     zipWithIndex.
     groupBy { x ⇒ Math.floor(x._2 / total.toDouble * perBucket) }.

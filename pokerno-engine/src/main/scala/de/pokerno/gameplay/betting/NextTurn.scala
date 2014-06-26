@@ -18,21 +18,21 @@ private[gameplay] object NextTurn {
     
     yellow("\t| call=%s\n\t| called: %s\n\t| notCalled: %s\n\t| notChecked: %s\n", call, called, notCalled, notChecked)
 
-    if (called.nonEmpty) {
-      notChecked.find(_.isPlaying) map { playing =>
-        return (
-            if (called.forall(_.isAllIn)) {
-              warn("everyone goes all-in to %s (check)", playing.player)
-              Betting.Showdown
-            } else {
-              warn("%s not checked yet", playing.player)
-              GameplayRound.Require(playing)
-            }
-          )
-      }
-    }
-    
     if (notCalled.isEmpty) {
+      if (called.nonEmpty) {
+        notChecked.find(_.isPlaying) map { playing =>
+          return (
+              if (called.forall(_.isAllIn)) {
+                warn("everyone goes all-in to %s (check)", playing.player)
+                Betting.Showdown
+              } else {
+                warn("%s not checked yet", playing.player)
+                GameplayRound.Require(playing)
+              }
+            )
+        }
+      }
+    
       notChecked.headOption map { playing =>
         warn("everyone checked to %s", playing.player)
         return GameplayRound.Require(playing)

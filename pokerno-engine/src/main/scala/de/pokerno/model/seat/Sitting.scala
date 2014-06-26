@@ -156,11 +156,9 @@ class Sitting(
     _masks = Array()
   }
   
-  // AUTOPLAY
-  
   override def toString = {
     val b = new StringBuilder
-    b.append("%s (%s) [".format(player, _state))
+    b.append("Seat %d: %s (%s) [".format(pos, player, _state))
     b.append("%.2f - %.2f".format(stackAmount, putAmount))
     _call.map { v =>
       b.append(" / call: %.2f".format(v)) }

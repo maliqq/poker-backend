@@ -8,19 +8,19 @@ class PotSpec extends FunSpec {
     implicit def string2player(s: String) = new Player(s)
 
     it("split pot 1") {
-      val pot = new SidePot(0, Some(100))
+      val pot = new SidePot(Some(100))
       val p = new Player("P")
       val left = pot.add(p, 120)
       left should equal(20)
-      pot.isMember(p) should be(true)
+      pot.contains(p) should be(true)
       pot.total should equal(100)
     }
 
     it("split pot 2") {
-      val pot = new SidePot(0, Some(100))
+      val pot = new SidePot(Some(100))
       val p = new Player("P")
       pot.add(p, 100) should equal(0)
-      pot.isMember(p) should be(true)
+      pot.contains(p) should be(true)
       pot.total should equal(100)
     }
 
@@ -28,7 +28,7 @@ class PotSpec extends FunSpec {
       val pot = new SidePot
       val p = new Player("P")
       pot.add(p, 100) should equal(0)
-      pot.isMember(p) should be(true)
+      pot.contains(p) should be(true)
       pot.total should equal(100)
 
       pot.add(p, 100) should equal(0)
@@ -41,36 +41,40 @@ class PotSpec extends FunSpec {
       val b = new Player("B")
       val c = new Player("C")
 
-      pot.members = collection.mutable.Map(
-        a -> 10,
-        b -> 30,
-        c -> 40
-      )
-      val (_new, _old) = pot.split(a, 10)
+      pot.members.put(a, 10)
+      pot.members.put(b, 30)
+      pot.members.put(c, 40)
+      val _new = pot.split(a, 10).get
 
-      _old.cap.get should equal(20)
-      _old.members(a) should equal(20)
-      _old.members(b) should equal(20)
-      _old.members(c) should equal(20)
-
-      _new.cap.isDefined should be(false)
-      _new.members(b) should equal(10)
+      pot.cap.isDefined should be(false)
+      pot.members(b) should equal(10)
+      pot.members(c) should equal(20)
+      pot.contains(a) should be(false)
+      
+      _new.cap.get should equal(20)
+      _new.members(a) should equal(20)
+      _new.members(b) should equal(20)
       _new.members(c) should equal(20)
-      _new.isMember(a) should be(false)
     }
 
     it("all in - 2 players, 1 allin") {
       val pot = new Pot
       val a = new Player("A")
       val b = new Player("B")
+      
       pot.add(a, 100) should equal(0)
       pot.add(b, 60, true) should equal(0)
+      
+      pot.side.size should equal(1)
+      
+      pot.main.contains(a) should be(true)
+      pot.main.contains(b) should be(false)
+      
+      pot.side.head.contains(a) should be(true)
+      pot.side.head.contains(b) should be(true)
+      
       pot.main.total should equal(40)
-      pot.main.isMember(a) should be(true)
-      pot.main.isMember(b) should be(false)
       pot.side.head.total should equal(120)
-      pot.side.head.isMember(a) should be(true)
-      pot.side.head.isMember(b) should be(true)
     }
 
     it("all in - three players, 1 allin") {
@@ -78,17 +82,23 @@ class PotSpec extends FunSpec {
       val a = new Player("A")
       val b = new Player("B")
       val c = new Player("C")
+      
       pot.add(a, 100) should equal(0)
       pot.add(b, 100) should equal(0)
       pot.add(c, 60, true) should equal(0)
+      
+      pot.side.size should equal(1)
+      
+      pot.main.contains(a) should be(true)
+      pot.main.contains(b) should be(true)
+      pot.main.contains(c) should be(false)
+      
+      pot.side.head.contains(a) should be(true)
+      pot.side.head.contains(b) should be(true)
+      pot.side.head.contains(c) should be(true)
+      
       pot.main.total should equal(80)
-      pot.main.isMember(a) should be(true)
-      pot.main.isMember(b) should be(true)
-      pot.main.isMember(c) should be(false)
       pot.side.head.total should equal(180)
-      pot.side.head.isMember(a) should be(true)
-      pot.side.head.isMember(b) should be(true)
-      pot.side.head.isMember(c) should be(true)
     }
 
     it("all in - three players, middle player allin") {
@@ -100,52 +110,57 @@ class PotSpec extends FunSpec {
       pot.add(a, 100) should equal(0)
       pot.add(b, 60, true) should equal(0)
       pot.add(c, 100) should equal(0)
+      
+      pot.side.size should equal(1)
+
+      pot.main.contains(a) should be(true)
+      pot.main.contains(b) should be(false)
+      pot.main.contains(c) should be(true)
+
+      pot.side.head.contains(a) should be(true)
+      pot.side.head.contains(b) should be(true)
+      pot.side.head.contains(c) should be(true)
 
       pot.main.total should equal(80)
-
-      pot.main.isMember(a) should be(true)
-      pot.main.isMember(b) should be(false)
-      pot.main.isMember(c) should be(true)
-
       pot.side.head.total should equal(180)
-      pot.side.head.isMember(a) should be(true)
-      pot.side.head.isMember(b) should be(true)
-      pot.side.head.isMember(c) should be(true)
     }
 
     it("all in - 4 players, 2 allins") {
       val pot = new Pot
+      
       val a = new Player("A")
       val b = new Player("B")
       val c = new Player("C")
       val d = new Player("D")
+      
       pot.add(a, 100) should equal(0)
       pot.add(b, 60, true) should equal(0)
       pot.add(c, 100) should equal(0)
       pot.add(d, 500) should equal(0)
       pot.add(a, 250, true) should equal(0)
       pot.add(c, 400) should equal(0)
-
-      val side1 = pot.side.head
+      
+      pot.side.size should equal(2)
+      
+      val side1 = pot.side(1)
       side1.total should equal(240)
-      side1.isMember(a) should be(true)
-      side1.isMember(b) should be(true)
-      side1.isMember(c) should be(true)
-      side1.isMember(d) should be(true)
+      side1.contains(a) should be(true)
+      side1.contains(b) should be(true)
+      side1.contains(c) should be(true)
+      side1.contains(d) should be(true)
 
-      val side2 = pot.side(1)
+      val side2 = pot.side.head
       side2.total should equal(870)
-      side2.isMember(a) should be(true)
-      side2.isMember(b) should be(false)
-      side2.isMember(c) should be(true)
-      side2.isMember(d) should be(true)
+      side2.contains(a) should be(true)
+      side2.contains(b) should be(false)
+      side2.contains(c) should be(true)
+      side2.contains(d) should be(true)
 
-      val side3 = pot.main
-      side3.total should equal(300)
-      side3.isMember(a) should be(false)
-      side3.isMember(b) should be(false)
-      side3.isMember(c) should be(true)
-      side3.isMember(d) should be(true)
+      pot.main.total should equal(300)
+      pot.main.contains(a) should be(false)
+      pot.main.contains(b) should be(false)
+      pot.main.contains(c) should be(true)
+      pot.main.contains(d) should be(true)
     }
 
     it("all in - 4 players, 1 allin") {
@@ -162,20 +177,22 @@ class PotSpec extends FunSpec {
       pot.add(a, 10) should equal(0)
       pot.add(b, 20) should equal(0)
       pot.add(d, 10) should equal(0)
+      
+      pot.side.size should equal(1)
 
-      val side1 = pot.side.last
-      side1.total should equal(28)
-      side1.isMember(a) should be(true)
-      side1.isMember(b) should be(true)
-      side1.isMember(c) should be(true)
-      side1.isMember(d) should be(true)
+      val side = pot.side.head
+      side.contains(a) should be(true)
+      side.contains(b) should be(true)
+      side.contains(c) should be(true)
+      side.contains(d) should be(true)
 
-      val side2 = pot.main
-      side2.total should equal(59)
-      side2.isMember(a) should be(true)
-      side2.isMember(b) should be(true)
-      side2.isMember(c) should be(false)
-      side2.isMember(d) should be(true)
+      pot.main.contains(a) should be(true)
+      pot.main.contains(b) should be(true)
+      pot.main.contains(c) should be(false)
+      pot.main.contains(d) should be(true)
+      
+      side.total should equal(28)
+      pot.main.total should equal(59)
     }
 
     it("all in - 4 players, 2 allin") {
@@ -192,27 +209,30 @@ class PotSpec extends FunSpec {
       pot.add(a, 2, true) should equal(0)
       pot.add(b, 20) should equal(0)
       pot.add(d, 10) should equal(0)
+      
+      pot.side.size should equal(2)
 
-      val side1 = pot.side.head
-      side1.total should equal(28)
-      side1.isMember(a) should be(true)
-      side1.isMember(b) should be(true)
-      side1.isMember(c) should be(true)
-      side1.isMember(d) should be(true)
+      val side1 = pot.side(1)
+      side1.contains(a) should be(true)
+      side1.contains(b) should be(true)
+      side1.contains(c) should be(true)
+      side1.contains(d) should be(true)
 
-      val side2 = pot.side(1)
-      side2.total should equal(15)
-      side2.isMember(a) should be(true)
-      side2.isMember(b) should be(true)
-      side2.isMember(c) should be(false)
-      side2.isMember(d) should be(true)
+      val side2 = pot.side.head
+      side2.contains(a) should be(true)
+      side2.contains(b) should be(true)
+      side2.contains(c) should be(false)
+      side2.contains(d) should be(true)
 
       val side3 = pot.main
+      side3.contains(a) should be(false)
+      side3.contains(b) should be(true)
+      side3.contains(c) should be(false)
+      side3.contains(d) should be(true)
+
+      side1.total should equal(28)
+      side2.total should equal(15)
       side3.total should equal(36)
-      side3.isMember(a) should be(false)
-      side3.isMember(b) should be(true)
-      side3.isMember(c) should be(false)
-      side3.isMember(d) should be(true)
     }
 
     it("all in - 4 players, 2 allins, 1 round") {
@@ -221,32 +241,35 @@ class PotSpec extends FunSpec {
       val b = new Player("B")
       val c = new Player("C")
       val d = new Player("D")
-
+      
       pot.add(a, 5, true) should equal(0)
       pot.add(b, 10) should equal(0)
       pot.add(c, 8, true) should equal(0)
       pot.add(d, 10) should equal(0)
+      
+      pot.side.size should equal(2)
+      
+      val side1 = pot.side(1)
+      side1.contains(a) should be(true)
+      side1.contains(b) should be(true)
+      side1.contains(c) should be(true)
+      side1.contains(d) should be(true)
 
-      val side1 = pot.side.head
-      side1.total should equal(20)
-      side1.isMember(a) should be(true)
-      side1.isMember(b) should be(true)
-      side1.isMember(c) should be(true)
-      side1.isMember(d) should be(true)
-
-      val side2 = pot.side(1)
-      side2.total should equal(9)
-      side2.isMember(a) should be(false)
-      side2.isMember(b) should be(true)
-      side2.isMember(c) should be(true)
-      side2.isMember(d) should be(true)
+      val side2 = pot.side.head
+      side2.contains(a) should be(false)
+      side2.contains(b) should be(true)
+      side2.contains(c) should be(true)
+      side2.contains(d) should be(true)
 
       val side3 = pot.main
+      side3.contains(a) should be(false)
+      side3.contains(b) should be(true)
+      side3.contains(c) should be(false)
+      side3.contains(d) should be(true)
+
+      side1.total should equal(20)
+      side2.total should equal(9)
       side3.total should equal(4)
-      side3.isMember(a) should be(false)
-      side3.isMember(b) should be(true)
-      side3.isMember(c) should be(false)
-      side3.isMember(d) should be(true)
     }
 
     it("all in - 4 players, 1 allin, 1 round") {
@@ -260,20 +283,23 @@ class PotSpec extends FunSpec {
       pot.add(b, 10) should equal(0)
       pot.add(c, 7, true) should equal(0)
       pot.add(d, 10) should equal(0)
+      
+      pot.side.size should equal(1)
 
       val side1 = pot.side.head
-      side1.total should equal(28)
-      side1.isMember(a) should be(true)
-      side1.isMember(b) should be(true)
-      side1.isMember(c) should be(true)
-      side1.isMember(d) should be(true)
+      side1.contains(a) should be(true)
+      side1.contains(b) should be(true)
+      side1.contains(c) should be(true)
+      side1.contains(d) should be(true)
 
       val side2 = pot.main
+      side2.contains(a) should be(true)
+      side2.contains(b) should be(true)
+      side2.contains(c) should be(false)
+      side2.contains(d) should be(true)
+
+      side1.total should equal(28)
       side2.total should equal(9)
-      side2.isMember(a) should be(true)
-      side2.isMember(b) should be(true)
-      side2.isMember(c) should be(false)
-      side2.isMember(d) should be(true)
     }
 
     it("all in - 4 players, 1 allin raise") {
@@ -290,16 +316,15 @@ class PotSpec extends FunSpec {
       pot.add(d, 17) should equal(0)
       pot.add(a, 7) should equal(0)
       pot.add(b, 7) should equal(0)
+      
+      pot.side.size should equal(0)
 
-      val side1 = pot.side.head
-      side1.total should equal(68)
-      side1.isMember(a) should be(true)
-      side1.isMember(b) should be(true)
-      side1.isMember(c) should be(true)
-      side1.isMember(d) should be(true)
+      pot.main.contains(a) should be(true)
+      pot.main.contains(b) should be(true)
+      pot.main.contains(c) should be(true)
+      pot.main.contains(d) should be(true)
 
-      val side2 = pot.main
-      side2.total should equal(0)
+      pot.main.total should equal(68)
     }
 
     it("all in - 4 players, 1 allin raise, 1 allin call") {
@@ -314,20 +339,22 @@ class PotSpec extends FunSpec {
       pot.add(b, 7, true) should equal(0)
       pot.add(c, 17) should equal(0)
       pot.add(d, 17) should equal(0)
+      
+      pot.side.size should equal(1)
+      
+      val side = pot.side.head
+      side.contains(a) should be(true)
+      side.contains(b) should be(true)
+      side.contains(c) should be(true)
+      side.contains(d) should be(true)
 
-      val side1 = pot.side.head
-      side1.total should equal(28)
-      side1.isMember(a) should be(true)
-      side1.isMember(b) should be(true)
-      side1.isMember(c) should be(true)
-      side1.isMember(d) should be(true)
+      pot.main.contains(a) should be(true)
+      pot.main.contains(b) should be(false)
+      pot.main.contains(c) should be(true)
+      pot.main.contains(d) should be(true)
 
-      val side2 = pot.side.last
-      side2.total should equal(30)
-      side2.isMember(a) should be(true)
-      side2.isMember(b) should be(false)
-      side2.isMember(c) should be(true)
-      side2.isMember(d) should be(true)
+      side.total should equal(28)
+      pot.main.total should equal(30)
     }
 
     it("all in - 4 players, 1 allin raise, 1 allin call, 1 allin re-raise") {
@@ -342,7 +369,6 @@ class PotSpec extends FunSpec {
       pot.add(b, 7, true) should equal(0)
       pot.add(c, 34, true) should equal(0)
       pot.add(d, 34) should equal(0)
-
       pot.total should equal(92)
     }
 

@@ -147,7 +147,7 @@ class CodecSpec extends FunSpec {
       val pot1 = new Pot
       Json.encode(pot1) should equal("""{"side":[],"total":0}""")
       
-      val pot2 = new SidePot(0)
+      val pot2 = new SidePot
       pot2.members("A") = 500
       pot2.members("B") = 1000
       

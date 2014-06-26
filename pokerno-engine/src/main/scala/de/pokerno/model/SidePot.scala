@@ -3,62 +3,123 @@ package de.pokerno.model
 import java.util.Locale
 import com.fasterxml.jackson.annotation.JsonValue
 
-class SidePot(val capFrom: Decimal = 0, val cap: Option[Decimal] = None) {
+class SidePot(var cap: Option[Decimal] = None) {
   // members
-  var members = collection.mutable.Map[Player, Decimal]()
+  val members = collection.mutable.Map.empty[Player, Decimal].withDefaultValue(0)
   
-  def isMember(member: Player)  = members.contains(member)
-  @JsonValue def total: Decimal = members.values.sum
-  def isActive: Boolean         = members.size > 0 && total > .0
+  //def get(player: Player): Decimal  = members(player)
+  def contains(player: Player)      = members.contains(player)
+  def isEmpty                       = members.size == 0 || total == 0
+  @JsonValue def total: Decimal     = members.values.sum
+  //def isActive: Boolean             = members.size > 0 && total > .0
 
-  def add(member: Player, left: Decimal): Decimal = add(member, left, left)
+  def add(player: Player, uncalled: Decimal): Decimal = {
+    if (uncalled == 0) return 0
 
-  def add(member: Player, _amount: Decimal, left: Decimal): Decimal = {
-    if (left == 0) return 0
-
-    val value: Decimal = members.getOrElse(member, 0)
-    val amount = value + _amount
-    val newValue = value + left
-
-    if (!cap.isDefined) {
-      members(member) = newValue
+    if (cap.isEmpty) {
+      members(player) += uncalled
       return 0
     }
 
-    val capAmount = cap.get
-    if (amount >= capFrom && capAmount <= amount) { // (capAmount > value) {
-      members(member) = capAmount
-      return newValue - capAmount
+    val _cap = cap.get
+    val amount = members(player) + uncalled
+    if (amount >= _cap) { // (capAmount > value) {
+      members(player) = _cap
+      return amount - _cap
     }
 
-    left
+    uncalled
   }
   
-  def split(member: Player, left: Decimal): Tuple2[SidePot, SidePot] = split(member, left, left)
-
-  def split(member: Player, _amount: Decimal, left: Decimal, cap: Option[Decimal] = None): Tuple2[SidePot, SidePot] = {
-    val value: Decimal = members getOrElse (member, 0)
-    val bet = value + left
-    val amount = value + _amount
-
-    members(member) = bet
-
-    val _new = new SidePot(amount, cap map { capAmount ⇒
-      capAmount - bet
-    } orElse (Some(amount)))
-
-    _new.members = members
-      .filter { case (key, _value) ⇒ _value > bet && key != member }
-      .map { case (key, _value) ⇒ (key, _value - bet) }
-
-    val _old = new SidePot(capFrom, Some(bet))
-
-    _old.members = members map {
-      case (key, _value) ⇒
-        (key, List(_value, bet).min)
+  def extract(player: Player, amount: Decimal): SidePot = {
+    val p = new SidePot(Some(amount))
+    members.foreach { case (k, v) =>
+      val uncalled = p.add(k, v)
+      if (uncalled == 0) { // fit in the pot
+        members.remove(k) 
+      } else {
+        members(k) = uncalled
+      }
     }
-
-    (_new, _old)
+    p
+    /*
+    player-1: 100 (all-in)
+    player-2: 200??
+    => (2 pots, CAP)
+    player-2: 100
+    +[100]
+    player-1: 100
+    player-2: 100
+    ______________________________________
+    player-1: 100
+    player-2: 1000
+    player-3: 1000
+    player-4: 1200 (all-in)
+    => (1 pot - 0 upper)
+    +[1200]
+    player-1: 100
+    player-2: 1000
+    player-3: 1000
+    player-4: 1200
+    ______________________________________
+    player-1: 100
+    player-2: 1000 (all-in)
+    player-3: 1200 (all-in)
+    => (2 pots - 0 upper, CAP)
+    player-3: 200 (all-in)
+    +[1000]
+    player-1: 100
+    player-2: 1000 (all-in)
+    player-3: 1000
+    ______________________________________
+    player-1: 400
+    player-2: 500
+    player-3: 100 (all-in)
+    => (2 pots, 2 upper)
+    player-1: 300
+    player-2: 400
+    +[100]
+    player-1: 100
+    player-2: 100
+    player-3: 100(all-in)
+    ______________________________________
+    player-1: 300(all-in)
+    player-2: 200
+    player-3: 100(all-in)
+    => (2 pots, 2 upper, CAP)
+    player-1: 200(all-in)
+    player-2: 100
+    +[100]
+    player-1: 100
+    player-2: 100
+    player-3: 100(all-in)
+     * */
+  }
+  
+  def split(player: Player, uncalled: Decimal): Option[SidePot] = {
+    members(player) += uncalled
+    
+    val value = members(player)
+    val upper = members.filter { case (k, v) =>
+      k != player && v > value
+    }
+    if (upper.size == 0 && !cap.isDefined) {
+      cap = Some(value)
+      return None
+    }
+    val amount = if (cap.isDefined) {
+      val _cap = cap.get
+      if (_cap > value) {
+        cap = Some(_cap - value)
+        value
+      } else {
+        cap = Some(value - _cap)
+        _cap
+      }
+    } else value
+    
+    val _side = extract(player, amount)
+    Some(_side)
   }
   
   def uncalled(): Option[Tuple2[Player, Decimal]] = {
@@ -78,17 +139,17 @@ class SidePot(val capFrom: Decimal = 0, val cap: Option[Decimal] = None) {
   override def toString = {
     val s = new StringBuilder
 
+    s.append("{(total: %.2f" formatLocal (Locale.US, total))
+    //if (cap.isDefined)
+    s.append(" cap: %.2f" formatLocal (Locale.US, cap.getOrElse(.0)))
+    s.append(")\n")
     s.append(
-      members.map {
-        case (member, amount) ⇒
-          "* %s:\t%.2f" formatLocal (Locale.US, member, amount)
+      members.map {case (player, amount) ⇒
+        "\t%s: %.2f" formatLocal (Locale.US, player, amount)
       }.mkString("\n")
     )
-    s.append(" = %.2f" formatLocal (Locale.US, total))
-    //if (cap.isDefined)
-    s.append(" (cap: %.2f+%.2f)" formatLocal (Locale.US, capFrom, cap.getOrElse(.0)))
+    s.append("\n}")
 
-    s.append("\n")
     s.toString()
   }
 }

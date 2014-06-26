@@ -12,53 +12,55 @@ class Pot {
   
   private var inactive: List[SidePot] = List.empty
   
-  @JsonProperty def total: Decimal = _side.map(_.total).sum
+  @JsonProperty def total: Decimal = main.total + _side.map(_.total).sum
 
   import collection.mutable.ListBuffer
   
   def sidePots: List[SidePot] = {
     var pots = new ListBuffer[SidePot]
-    if (main.isActive)
+    if (!main.isEmpty)
       pots += main
     (side ++ inactive) foreach { side ⇒
-      if (side.isActive)
+      if (!side.isEmpty)
         pots += side
     }
     pots.toList
   }
 
-  def split(member: Player, _amount: Decimal, left: Decimal) {
-    val value: Decimal = main.members.getOrElse(member, 0)
-    val amount = value + _amount
-    if (main.capFrom <= amount) {
-      //Console printf("splitting main: %s for member %s with amount %s/%s", main, member, amount, left)
-      val (_new, _old) = main split (member, _amount, left)
-      _side :+= _old
-      main = _new
-    } else {
-      var (skip, newSide) = side.span { sidePot ⇒
-        sidePot.capFrom <= amount
-      }
-
-      val current = if (!skip.isEmpty) {
-        val _current = skip.last
-        skip = skip.dropRight(1)
-        _current
-      } else {
-        val _current = newSide.head
-        newSide = newSide.drop(1)
-        _current
-      }
-
-      //Console printf("splitting side: %s for member %s with amount %s/%s and current cap", current, member, amount, left)
-      val (_new, _old) = current split (member, _amount, left, current.cap)
-      _side = skip ++ List(_old, _new) ++ newSide
-    }
+  //def split(player: Player, uncalled: Decimal) {
+//    val value = main.members(player)
+//    val amount = value + diff
+//    Console printf("----------------\nmain=%s\n", main)
+//    //if (amount >= main.call) {
+//      Console printf("splitting main: %s for player %s with amount: %s uncalled: %s\n", main, player, amount, uncalled)
+//      val (_new, _old) = main split (player, diff, uncalled)
+//      _side = _old :: _side
+//      main = _new
+//    } else {
+//      var (newSide, skip) = side.span { sidePot ⇒
+//        sidePot.call <= amount
+//      }
+//      Console printf("newSide=%s skip=%s\n", newSide, skip)
+//
+//      val current = if (skip.isEmpty) {
+//        val _current = newSide.head
+//        newSide = newSide.drop(1)
+//        _current
+//      } else {
+//        val _current = skip.last
+//        skip = skip.dropRight(1)
+//        _current
+//      }
+//      Console printf("splitting side: %s for player %s with amount: %s uncalled: %s and current cap: %s\n", current, player, amount, uncalled, current.cap)
+//      
+//      val (_new, _old) = current split (player, diff, uncalled, current.cap)
+//      _side = newSide ++ List(_old, _new) ++ skip
+//    }
     //Console printf("main=%s\nside=%s", main, side)
-  }
+  //}
   
   def complete() {
-    if (main.isActive) _side ++= List(main)
+    if (!main.isEmpty) _side = main :: _side
     main = new SidePot
   }
 
@@ -68,26 +70,34 @@ class Pot {
 //    _side = List.empty
 //  }
 
-  private def allocate(member: Player, amount: Decimal) =
-    side.foldLeft[Decimal](amount) {
-      case (left, sidePot) ⇒
-        sidePot add (member, amount, left)
+  private def advance(player: Player, diff: Decimal) =
+    _side.foldLeft[Decimal](diff) { case (uncalled, sidePot) ⇒
+      sidePot add (player, uncalled)
     }
 
-  def add(member: Player, amount: Decimal, isAllIn: Boolean = false): Decimal = {
-    val left = allocate (member, amount)
-
-    if (isAllIn && left != 0) {
-      split (member, amount, left)
-      0
-    } else main add (member, amount, left)
+  def add(player: Player, diff: Decimal, isAllIn: Boolean = false): Decimal = {
+    var uncalled = advance (player, diff)
+    if (isAllIn && uncalled != 0) {
+      main.split(player, uncalled) match {
+        case Some(side) => _side = side :: _side
+        case None =>
+      }
+      return 0
+    }
+    if (main.cap.isDefined && uncalled != 0) {
+      uncalled = main add (player, uncalled)
+      if (uncalled == 0) return 0
+      _side = main :: _side
+      main = new SidePot
+    }
+    main add (player, uncalled)
   }
 
   override def toString = {
     val s = new StringBuilder
 
-    s.append(main.toString)
-    sidePots foreach { sidePot ⇒
+    s.append("MAIN:\n" + main.toString + "\nSIDE:\n")
+    _side foreach { sidePot ⇒
       s.append(sidePot.toString + "\n")
     }
 

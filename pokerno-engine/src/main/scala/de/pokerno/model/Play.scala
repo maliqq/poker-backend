@@ -25,10 +25,10 @@ case class Play(val id: java.util.UUID = java.util.UUID.randomUUID()) {
 
   private val _actions = collection.mutable.Map[Street.Value, ListBuffer[Action]]()
   def actions = _actions
-  def action(player: Player, bet: Bet) {
+  def action(a: Action) {
     if (!_actions.contains(street))
       _actions.put(street, ListBuffer.empty) // .withDefault didn't work
-    _actions(street) += Action(player, bet)
+    _actions(street) += a
   }
   
   @JsonSerialize(converter=classOf[Cards2Binary]) var board: Cards = ListBuffer[Card]()

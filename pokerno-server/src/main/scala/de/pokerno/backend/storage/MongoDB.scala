@@ -69,7 +69,9 @@ object MongoDB {
       at: java.util.Date,     // event date
       player: String,         // player acted
       street: String,         // street
-      bet: model.Bet          // card or chip actin
+      bet: model.Bet,          // card or chip actin
+      isAllIn: Option[Boolean],
+      isTimeout: Option[Boolean]
     ) {
       if (!_actions.contains(street)) {
         _actions(street) = ListBuffer.empty

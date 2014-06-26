@@ -74,7 +74,9 @@ object Cassandra {
       at: java.util.Date,     // event date
       player: String,         // player acted
       street: String,         // street
-      bet: model.Bet          // card or chip actin
+      bet: model.Bet,          // card or chip actin
+      isAllIn: Option[Boolean],
+      isTimeout: Option[Boolean]
     ) {
       val betMarker: String = if (bet.isForced) bet.name else null
       val raise: java.lang.Double = if (bet.isRaise) bet.toActive.amount.toDouble else null

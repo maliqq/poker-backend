@@ -84,6 +84,9 @@ class Round(_table: Table, game: Game, stake: Stake, play: Play) extends Gamepla
       if (!posting.isCall && sitting.putAmount > _cachedCallAmount)
         _cachedCallAmount = sitting.putAmount
       pot add (player, diff, sitting.isAllIn)
+      // if (sitting.isAllIn) {
+      //   posting.toActive.allIn()
+      // }
     }
 
     posting

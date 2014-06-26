@@ -12,5 +12,8 @@ build-deps:
 	./sbt "project pokerno-server" assembly-package-dependency
 deploy:
 	scp $(FILE) root@pokerno:/apps/poker-server/bin/server.jar
+	make restart
+restart:
+	ssh root@pokerno sv restart poker-server
 sloc:
 	find . -path ./pokerno-protocol -prune -o -name "*.scala" -print | xargs cloc | grep Scala | awk '{print $$5}'

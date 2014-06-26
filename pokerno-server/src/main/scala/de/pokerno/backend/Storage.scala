@@ -41,7 +41,9 @@ abstract class PlayHistoryBatch {
     at: java.util.Date,     // event date
     player: String,         // player acted
     street: String,         // street
-    bet: model.Bet                // card or chip actin
+    bet: model.Bet,                // card or chip actin
+    isAllIn: Option[Boolean],
+    isTimeout: Option[Boolean]
   )
 
   def write()
@@ -74,8 +76,8 @@ abstract class BatchedStorage extends Storage {
       }
 
       play.actions.foreach { case (street, actions) =>
-        actions.foreach { case model.Action(player, bet, at) =>
-          batch.writeAction(at, player, street.toString(), bet)
+        actions.foreach { case model.Action(player, bet, at, isAllIn, isForced, isTimeout) =>
+          batch.writeAction(at, player, street.toString(), bet, isAllIn, isTimeout)
         }
       }
     }

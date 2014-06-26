@@ -28,14 +28,15 @@ private[gameplay] trait Betting {
   def addBet(sitting: seat.Sitting, bet: Bet, timeout: Boolean = false, forced: Boolean = false) {
     val posted = round.addBet(sitting, bet)
     val _timeout = if (timeout) Some(true) else None
-    play.action(sitting.player, posted)
+    val _allIn = if (sitting.isAllIn) Some(true) else None
+    play.action(Action(sitting.player, posted, isTimeout = _timeout, isAllIn = _allIn))
     events broadcast Events.addBet(sitting, posted, _timeout)
   }
 
   // force bet
   def forceBet(sitting: seat.Sitting, betType: BetType.Forced) {
     val posted = round.forceBet(sitting, betType)
-    play.action(sitting.player, posted)
+    play.action(Action(sitting.player, posted, isForced = Some(true)))
     events broadcast Events.addBet(sitting, posted)
   }
 

@@ -55,10 +55,12 @@ object PostgreSQL {
       @Column(name="call", optionType = classOf[Double]) var call: Option[Double],
       @Column(name="raise", optionType = classOf[Double]) var raise: Option[Double],
       @Column(name="force", optionType = classOf[Double]) var force: Option[Double],
+      @Column(name="all_in", optionType = classOf[Boolean]) var isAllIn: Option[Boolean],
+      @Column(name="timeout", optionType = classOf[Boolean]) var isTimeout: Option[Boolean],
       var cards: Array[Byte],
       var muck: java.lang.Boolean
   ) {
-    def this() = this(null, null, null, "", "", false, false, None, None, None, null, null)
+    def this() = this(null, null, null, "", "", false, false, None, None, None, None, None, null, null)
   }
   
   object PlayHistoryDB extends Schema {
@@ -120,7 +122,9 @@ object PostgreSQL {
       at: java.util.Date,     // event date
       player: String,         // player acted
       street: String,         // street
-      bet: model.Bet          // card or chip actin
+      bet: model.Bet,          // card or chip actin
+      isAllIn: Option[Boolean],
+      isTimeout: Option[Boolean]
     ) {
       _actions += new Action(
           _id,
@@ -133,6 +137,7 @@ object PostgreSQL {
           if (bet.isCall) Some(bet.toActive.amount.toDouble) else None,
           if (bet.isRaise) Some(bet.toActive.amount.toDouble) else None,
           if (bet.isForced) Some(bet.toForced.amount.toDouble) else None,
+          isAllIn, isTimeout,
           null, null
       )
     }

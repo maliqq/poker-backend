@@ -110,7 +110,7 @@ object Main {
             game, stake, c.speed))
       }
   
-      //room ! Room.Observe(gw, "http-gateway")
+      room ! Room.Observe(gw, "http-gateway")
     }
   }
 }

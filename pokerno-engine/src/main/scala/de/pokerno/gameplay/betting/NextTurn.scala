@@ -39,7 +39,7 @@ private[gameplay] object NextTurn {
       }
       
       return (
-          if (called.exists(_.isAllIn)) {
+          if (called.size - called.count(_.isAllIn) <= 1) {
             warn("everyone called all-in")
             Betting.Showdown
           } else {

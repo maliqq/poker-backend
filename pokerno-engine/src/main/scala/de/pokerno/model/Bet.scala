@@ -70,6 +70,9 @@ trait Bet {
 object Bet {
   trait Active extends Bet {
     @JsonIgnore def amount: Decimal
+    // @JsonIgnore protected var _isAllIn = false
+    // def allIn() = _isAllIn = true
+    // def isAllIn: Boolean = _isAllIn
   }
   
   case class Raise(@JsonIgnore amount: Decimal) extends Active {

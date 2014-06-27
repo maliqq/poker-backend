@@ -1,6 +1,7 @@
 package de.pokerno.gameplay.stages
 
 import de.pokerno.model._
+import de.pokerno.model.table.seat._
 import de.pokerno.poker._
 import de.pokerno.gameplay.{Events, Stage, stg}
 import scala.math.{BigDecimal => Decimal}
@@ -22,7 +23,7 @@ private[gameplay] case class Showdown(ctx: stg.Context) extends Stage {
       sidePot.uncalled() map { case (player, amount) =>
         sidePot.members(player) -= amount
         play.uncalled = amount
-        table.playerSeat(player).map { won(_, amount, uncalled = true) }
+        table(player).map { won(_, amount, uncalled = true) }
       }
     }
 
@@ -47,11 +48,11 @@ private[gameplay] case class Showdown(ctx: stg.Context) extends Stage {
     sortedHands.takeWhile(_._2 == bestHand._2)
   }
 
-  private def winner(pot: Pot, sitting: seat.Sitting) = pot.sidePots foreach { side ⇒
-    val winner = sitting.player
+  private def winner(pot: Pot, seat: Sitting) = pot.sidePots foreach { side ⇒
+    val winner = seat.player
     val amount = side.total
     distribute(side, Map(winner -> amount))
-    won(sitting, amount)
+    won(seat, amount)
   }
   
   private def distribute(sidePot: SidePot, winners: Map[Player, Decimal]) {
@@ -62,9 +63,9 @@ private[gameplay] case class Showdown(ctx: stg.Context) extends Stage {
     }
   }
 
-  private def won(sitting: seat.Sitting, amount: Decimal, uncalled: Boolean = false) {
-    sitting wins amount
-    events broadcast Events.declareWinner(sitting, amount, uncalled = if (uncalled) Some(true) else None)
+  private def won(seat: Sitting, amount: Decimal, uncalled: Boolean = false) {
+    seat wins amount
+    events broadcast Events.declareWinner(seat, amount, uncalled = if (uncalled) Some(true) else None)
   }
 
   private def winners(pot: Pot, hi: Option[Map[Player, Hand]], lo: Option[Map[Player, Hand]]) = {
@@ -105,7 +106,7 @@ private[gameplay] case class Showdown(ctx: stg.Context) extends Stage {
       distribute(side, winners)
 
       winners foreach { case (winner, amount) ⇒
-        table.playerSeat(winner) map { won(_, amount) }
+        table(winner) map { won(_, amount) }
       }
     }
   }

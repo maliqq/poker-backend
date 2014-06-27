@@ -10,9 +10,10 @@ object Table {
 @JsonPropertyOrder(Array("button","seats"))
 class Table(@JsonIgnore val size: Int) {
   import Table._
+  import table.seat._
   
-  private val _seats: collection.mutable.MutableList[Seat] =
-    collection.mutable.MutableList.tabulate(size) { i => seat.Empty(i) }
+  private val _seats: collection.mutable.MutableList[table.Seat] =
+    collection.mutable.MutableList.tabulate(size) { i => Empty(i) }
 
   // BUTTON
   private val _button = new Ring(seats)
@@ -21,15 +22,15 @@ class Table(@JsonIgnore val size: Int) {
   
   // SEATS
   @JsonProperty def seats = _seats
-  def seatsFrom(from: Int): Seq[Seat] = {
+  def seatsFrom(from: Int): Seq[table.Seat] = {
     val (before, after) = seats.zipWithIndex span (_._2 <= from)
     after.map(_._1) ++ before.map(_._1)
   }
   def seatsFromButton() = seatsFrom(button)
 
   // SITTING
-  def sitting: Seq[seat.Sitting] = _seats.filter(_.isInstanceOf[seat.Sitting]).asInstanceOf[Seq[seat.Sitting]]
-  def sittingFrom(pos: Int) = seatsFrom(pos).filter(_.isInstanceOf[seat.Sitting]).asInstanceOf[Seq[seat.Sitting]]
+  def sitting: Seq[Sitting] = _seats.filter(_.isInstanceOf[Sitting]).asInstanceOf[Seq[Sitting]]
+  def sittingFrom(pos: Int) = seatsFrom(pos).filter(_.isInstanceOf[Sitting]).asInstanceOf[Seq[Sitting]]
   def sittingFromButton() = sittingFrom(button)
   
   override def toString = {
@@ -47,34 +48,37 @@ class Table(@JsonIgnore val size: Int) {
   
   private val _seating: collection.mutable.Map[Player, Int] = collection.mutable.Map.empty
 
-  def takeSeat(pos: Int, player: Player, amount: Option[Decimal] = None) = {
-    if (hasPlayer(player))
+  def take(pos: Int, player: Player, amount: Option[Decimal] = None) = {
+    if (has(player))
       throw AlreadyJoined()
-    val sitting = new seat.Sitting(pos, player)
-    amount map (sitting buyIn (_))
-    addPlayer(pos, player)
-    _seats(pos) = sitting
-    sitting
+    val seat = new Sitting(pos, player)
+    amount map (seat buyIn (_))
+    add(pos, player)
+    _seats(pos) = seat
+    seat
   }
 
-  def clearSeat(pos: Int): Unit = seats(pos) match {
-    case sitting: seat.Sitting =>
-      removePlayer(sitting.player)
-      _seats(pos) = seat.Empty(pos)
+  def clear(pos: Int): Unit = seats(pos) match {
+    case seat: Sitting =>
+      remove(seat.player)
+      _seats(pos) = Empty(pos)
     case _ =>
   }
 
-  def playerPos(player: Player): Option[Int] =    _seating.get(player)
-  def hasPlayer(player: Player): Boolean =        _seating.contains(player)
+  def indexOf(player: Player): Option[Int]    = _seating.get(player)
+  def pos(player: Player): Option[Int]        = indexOf(player)
+
+  def contains(player: Player): Boolean       = _seating.contains(player)
+  def has(player: Player): Boolean            = has(player)
   
-  def playerSeat(player: Player): Option[seat.Sitting] = playerPos(player) map { pos =>
+  def apply(player: Player): Option[Sitting] = pos(player) map { pos =>
     _seats(pos) match {
-      case sitting: seat.Sitting => sitting
+      case seat: Sitting => seat
       case _ => return None
     }
   }
   
-  private def addPlayer(at: Int, player: Player): Unit =  _seating(player) = at
-  private def removePlayer(player: Player): Unit =        _seating.remove(player)
+  private def add(at: Int, player: Player): Unit =  _seating(player) = at
+  private def remove(player: Player): Unit =        _seating.remove(player)
   
 }

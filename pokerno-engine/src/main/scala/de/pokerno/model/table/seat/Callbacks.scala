@@ -1,4 +1,4 @@
-package de.pokerno.model.seat
+package de.pokerno.model.table.seat
 
 object Callbacks {
 

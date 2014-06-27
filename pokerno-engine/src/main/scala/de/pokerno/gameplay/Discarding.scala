@@ -1,7 +1,8 @@
 package de.pokerno.gameplay
 
 import de.pokerno.poker.Cards
-import de.pokerno.model.{Player, seat}
+import de.pokerno.model.Player
+import de.pokerno.model.table.seat.Sitting
 
 private[gameplay] trait Discarding {
 
@@ -11,20 +12,20 @@ private[gameplay] trait Discarding {
   
   def round = discardingRound
   
-  def require(sitting: seat.Sitting) {
-    round.requireDiscard(sitting)
-    events broadcast Events.requireDiscard(sitting)
+  def require(seat: Sitting) {
+    round.requireDiscard(seat)
+    events broadcast Events.requireDiscard(seat)
   }
   
-  def discardCards(sitting: seat.Sitting, cards: Cards) {
-    val newCards = round.discard(sitting, cards)
+  def discardCards(seat: Sitting, cards: Cards) {
+    val newCards = round.discard(seat, cards)
     // TODO play.action(...)
-    events.publish(Events.discardCards(sitting, newCards)) { _.only(sitting.player) }
-    events.publish(Events.discardCardsNum(sitting, newCards.size)) { _.except(sitting.player) }
+    events.publish(Events.discardCards(seat, newCards)) { _.only(seat.player) }
+    events.publish(Events.discardCardsNum(seat, newCards.size)) { _.except(seat.player) }
   }
   
-  def standPat(sitting: seat.Sitting) {
-    events broadcast Events.discardCardsNum(sitting, 0)
+  def standPat(seat: Sitting) {
+    events broadcast Events.discardCardsNum(seat, 0)
   }
   
   def complete() {

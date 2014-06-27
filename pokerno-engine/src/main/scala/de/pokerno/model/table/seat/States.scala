@@ -1,8 +1,9 @@
-package de.pokerno.model.seat
+package de.pokerno.model.table.seat
 
-import de.pokerno.model.{Seat, SeatStateRef}
 import com.fasterxml.jackson.annotation.{JsonAutoDetect, JsonIgnore, JsonInclude, JsonProperty, JsonPropertyOrder, JsonGetter}
 import com.fasterxml.jackson.module.scala.JsonScalaEnumeration
+import de.pokerno.model.table.Seat.State
+import de.pokerno.model.table.SeatStateRef
 
 trait Transitions {
   class States[T](initial: T) {
@@ -12,7 +13,6 @@ trait Transitions {
 
 trait States {
 
-  import Seat.State
   import Callbacks._
   
   def stackAmount: Decimal

@@ -1,6 +1,8 @@
 package de.pokerno.backend.server.room
 
-import de.pokerno.model.{Player, Stake, Seat, seat, Table}
+import de.pokerno.model.{Player, Stake, Table}
+import de.pokerno.model.table.seat.Sitting
+import de.pokerno.model.table.Seat
 import de.pokerno.gameplay
 import de.pokerno.protocol.cmd
 import de.pokerno.backend.server.{Room, Running}
@@ -15,9 +17,9 @@ trait JoinLeave { room: Room =>
     val cmd.JoinPlayer(pos, player, amount) = join
     val buyInAmount = Option(amount)
     
-    def reserve(): Option[seat.Sitting] = {
+    def reserve(): Option[Sitting] = {
       try {
-        val seat = table.takeSeat(join.pos, join.player)
+        val seat = table.take(join.pos, join.player)
         return Some(seat)
       } catch {
         case err: Seat.IsTaken ⇒
@@ -32,13 +34,13 @@ trait JoinLeave { room: Room =>
     }
     
     reserve() match {
-      case Some(sitting) =>
+      case Some(seat) =>
         if (buyInAmount.isDefined) {
           val f = balance.join(player, amount.toDouble, roomId)
           f.onSuccess { _ =>
             // TODO: reserve seat first 
-            sitting.buyIn(amount)
-            events broadcast gameplay.Events.playerJoin(sitting)
+            seat.buyIn(amount)
+            events broadcast gameplay.Events.playerJoin(seat)
           }
           
           f.onFailure { case err: de.pokerno.payment.thrift.Error =>
@@ -47,7 +49,7 @@ trait JoinLeave { room: Room =>
           }
         } else {
           balance.available(player).onSuccess { amount =>
-            events broadcast gameplay.Events.requireBuyIn(sitting, stake, amount)
+            events broadcast gameplay.Events.requireBuyIn(seat, stake, amount)
           }
         }
         
@@ -56,15 +58,16 @@ trait JoinLeave { room: Room =>
   }
   
   protected def leavePlayer(player: Player) {
-    table.playerSeat(player) map { seat =>
-      if (!seat.canLeave) {
-        running.map { case Running(ctx, ref) =>
+    table(player) map { seat =>
+      if (seat.notActive) {
+        table.clear(seat.pos)
+        balance.leave(seat.player, seat.stackAmount.toDouble, roomId)
+        events broadcast gameplay.Events.playerLeave(seat)
+      } else {
+        running map { case Running(ctx, ref) =>
           ref ! gameplay.Betting.Cancel(player)
         }
       }
-      table.clearSeat(seat.pos)
-      balance.leave(seat.player, seat.stackAmount.toDouble, roomId)
-      events broadcast gameplay.Events.playerLeave(seat)
     }
   }
 

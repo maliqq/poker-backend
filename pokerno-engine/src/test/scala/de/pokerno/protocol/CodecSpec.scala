@@ -7,7 +7,7 @@ import math.{BigDecimal => Decimal}
 class CodecSpec extends FunSpec {
 
   import de.pokerno.model._
-  import de.pokerno.model.seat._
+  import de.pokerno.model.table.seat._
   import de.pokerno.poker.Deck
   
   object Json extends Codec.Json {

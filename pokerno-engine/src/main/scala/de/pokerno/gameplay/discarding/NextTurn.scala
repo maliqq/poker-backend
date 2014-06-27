@@ -1,11 +1,11 @@
 package de.pokerno.gameplay.discarding
 
-import de.pokerno.model.seat
+import de.pokerno.model.table.seat.Sitting
 import de.pokerno.gameplay.{Round => GameplayRound}
 
 private[gameplay] object NextTurn {
   
-  def decide(all: Seq[seat.Sitting]): GameplayRound.Transition = {
+  def decide(all: Seq[Sitting]): GameplayRound.Transition = {
     // TODO
     all.find(_.isPlaying).map { playing =>
       return GameplayRound.Require(playing)

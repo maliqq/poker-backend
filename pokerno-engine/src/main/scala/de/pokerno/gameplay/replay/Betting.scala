@@ -6,7 +6,9 @@ import de.pokerno.gameplay.Round
 import gameplay.betting.NextTurn
 import de.pokerno.gameplay.stg
 import de.pokerno.protocol.cmd
-import de.pokerno.model.{Bet, BetType, Seat, Player, seat}
+import de.pokerno.model.{Bet, BetType, Player}
+import de.pokerno.model.table.Seat
+import de.pokerno.model.table.seat.Sitting
 import concurrent.duration.Duration
 
 private[replay] case class Betting(
@@ -41,7 +43,7 @@ private[replay] case class Betting(
             seat.player
           }
 
-          table.playerSeat(player) map { seat =>
+          table(player) map { seat =>
             if (seat.isActive)
               forceBet(seat, BetType.Ante)
           }
@@ -53,8 +55,8 @@ private[replay] case class Betting(
 
     // пассивные ставки игроков - блайнды
     if (!bettingStarted && gameOptions.hasBlinds && active.size >= 2) {
-      var sb: Option[seat.Sitting] = None
-      var bb: Option[seat.Sitting] = None
+      var sb: Option[Sitting] = None
+      var bb: Option[Sitting] = None
 
       forcedBets.find(_.bet.isInstanceOf[Bet.SmallBlind]) foreach { bet ⇒
         sb = active.find { seat =>

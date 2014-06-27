@@ -172,7 +172,7 @@ class Room(id: java.util.UUID,
       stay()
     
     case Event(cmd.AdvanceStack(player, amount), _) =>
-      table.playerSeat(player).map { seat =>
+      table(player).map { seat =>
         seat.buyIn(amount)
       }
       runOrStay()
@@ -246,7 +246,7 @@ class Room(id: java.util.UUID,
       stay()
    
     case Event(cmd.ComeBack(player), _) =>
-      table.playerSeat(player).map { seat =>
+      table(player).map { seat =>
         // we're ready
         seat.ready()
         events broadcast gameplay.Events.playerComeBack(seat)
@@ -254,7 +254,7 @@ class Room(id: java.util.UUID,
       runOrStay()
       
     case Event(cmd.SitOut(player), current) =>
-      table.playerSeat(player).map { seat =>
+      table(player).map { seat =>
         current match {
           case NoneRunning =>
             // do sit out immediately

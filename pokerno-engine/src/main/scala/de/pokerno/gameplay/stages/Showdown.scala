@@ -22,7 +22,7 @@ private[gameplay] case class Showdown(ctx: stg.Context) extends Stage {
       sidePot.uncalled() map { case (player, amount) =>
         sidePot.members(player) -= amount
         play.uncalled = amount
-        table.playerSeat(player).map { won(_, amount) }
+        table.playerSeat(player).map { won(_, amount, uncalled = true) }
       }
     }
 
@@ -62,9 +62,9 @@ private[gameplay] case class Showdown(ctx: stg.Context) extends Stage {
     }
   }
 
-  private def won(sitting: seat.Sitting, amount: Decimal) {
+  private def won(sitting: seat.Sitting, amount: Decimal, uncalled: Boolean = false) {
     sitting wins amount
-    events broadcast Events.declareWinner(sitting, amount)
+    events broadcast Events.declareWinner(sitting, amount, uncalled = if (uncalled) Some(true) else None)
   }
 
   private def winners(pot: Pot, hi: Option[Map[Player, Hand]], lo: Option[Map[Player, Hand]]) = {

@@ -39,7 +39,7 @@ private[gameplay] class Context(_gameplay: Gameplay, ref: ActorRef) extends Roun
       info("[betting] %s cancel", player)
       addBet(seat, Bet.fold, forced = true)
       ref ! nextTurn()
-    case None =>
+    case _ =>
   }
   
   // timeout bet

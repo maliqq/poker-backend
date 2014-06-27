@@ -10,20 +10,10 @@ private[gameplay] case class PlayStart(ctx: stg.Context) extends Stage {
   def apply() = {
     table.sitting.foreach { seat =>
       seat.clearCards()
-      if (seat.isAllIn) {
-        seat.taken()
-        balance.available(seat.player).onSuccess { amount =>
-          events broadcast Events.requireBuyIn(seat, stake, amount)
-        }
-      }
       if (seat.canPlay) {
         seat.playing()
         play.sit(seat)
       }
-    }
-    
-    if (table.sitting.count(_.canPlay) <= 1) {
-      throw Stage.Exit
     }
     
     events broadcast Events.playStart(ctx.gameplay)

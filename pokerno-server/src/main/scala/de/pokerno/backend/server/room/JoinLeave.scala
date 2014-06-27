@@ -5,7 +5,7 @@ import de.pokerno.model.table.seat.Sitting
 import de.pokerno.model.table.Seat
 import de.pokerno.gameplay
 import de.pokerno.protocol.cmd
-import de.pokerno.backend.server.{Room, Running}
+import de.pokerno.backend.server.Room
 
 trait JoinLeave { room: Room =>
 
@@ -57,15 +57,19 @@ trait JoinLeave { room: Room =>
     }
   }
   
+  protected def leaveSeat(seat: Sitting) {
+    table.clear(seat.pos)
+    balance.leave(seat.player, seat.stackAmount.toDouble, roomId)
+    events broadcast gameplay.Events.playerLeave(seat)
+  }
+  
   protected def leavePlayer(player: Player) {
     table(player) map { seat =>
       if (seat.notActive) {
-        table.clear(seat.pos)
-        balance.leave(seat.player, seat.stackAmount.toDouble, roomId)
-        events broadcast gameplay.Events.playerLeave(seat)
+        leaveSeat(seat)
       } else {
-        table(player) map { _.leave }
-        running map { case Running(ctx, ref) =>
+        seat.leave
+        running map { case Room.Running(ctx, ref) =>
           ref ! gameplay.Betting.Cancel(player)
         }
       }

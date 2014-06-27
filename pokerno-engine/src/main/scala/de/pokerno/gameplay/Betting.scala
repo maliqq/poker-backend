@@ -20,9 +20,30 @@ private[gameplay] trait Betting {
   // require bet
   def require(seat: Sitting) {
     round.requireBet(seat)
-    round.acting map { seat =>
+    
+    if (seat.willLeave) {
+      seat.autoplay.checkFolds
+    }
+    
+    if (!seat.autoplay.isDefined || !autoplay(seat)) {
       events broadcast Events.requireBet(seat)
     }
+  }
+  
+  def autoplay(seat: Sitting): Boolean = {
+    val bet = if (seat.callAmount > 0) {
+      if (seat.autoplay.willCallAny)
+        Some(Bet.call(seat.callAmount))
+      else if (seat.autoplay.willFold || seat.autoplay.willCheckFold)
+        Some(Bet.fold)
+      else
+        None
+    } else Some(Bet.check)
+    
+    bet.map { _bet =>
+      addBet(seat, _bet, forced = true)
+      true
+    }.getOrElse(false)
   }
 
   // add bet

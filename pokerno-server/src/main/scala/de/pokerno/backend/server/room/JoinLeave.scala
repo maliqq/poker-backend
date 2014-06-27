@@ -64,6 +64,7 @@ trait JoinLeave { room: Room =>
         balance.leave(seat.player, seat.stackAmount.toDouble, roomId)
         events broadcast gameplay.Events.playerLeave(seat)
       } else {
+        table(player) map { _.leave }
         running map { case Running(ctx, ref) =>
           ref ! gameplay.Betting.Cancel(player)
         }

@@ -69,7 +69,7 @@ class Table(@JsonIgnore val size: Int) {
   def pos(player: Player): Option[Int]        = indexOf(player)
 
   def contains(player: Player): Boolean       = _seating.contains(player)
-  def has(player: Player): Boolean            = has(player)
+  def has(player: Player): Boolean            = contains(player)
   
   def apply(player: Player): Option[Sitting] = pos(player) map { pos =>
     _seats(pos) match {

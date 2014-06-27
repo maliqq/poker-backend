@@ -22,7 +22,7 @@ private[gameplay] class Context(_gameplay: Gameplay, ref: ActorRef) extends Roun
   // add bet
   def add(player: Player, bet: Bet): Unit =
     round.acting match {
-      case Some(seat) if seat.player == player =>
+      case Some(seat) if seat.player == player && !seat.willLeave => // FIXME willLeave
         
         info("[betting] %s add %s", player, bet)
         addBet(seat, bet)
@@ -35,17 +35,10 @@ private[gameplay] class Context(_gameplay: Gameplay, ref: ActorRef) extends Roun
   
   //
   def cancel(player: Player) = round.acting match {
-    case Some(seat) =>
+    case Some(seat) if seat.player == player =>
       info("[betting] %s cancel", player)
-      if (seat.player == player) {
-        // leaving currently acting player: just fold
-        addBet(seat, Bet.fold, forced = true)
-        seat.leave()
-        ref ! nextTurn()
-      } else {
-        // in headsup - return uncalled bet, fold
-        // in multipot - just leave orphan bet
-      }
+      addBet(seat, Bet.fold, forced = true)
+      ref ! nextTurn()
     case None =>
   }
   

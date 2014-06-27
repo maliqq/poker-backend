@@ -22,7 +22,7 @@ private[gameplay] class Context(_gameplay: Gameplay, ref: ActorRef) extends Roun
   // add bet
   def add(player: Player, bet: Bet): Unit =
     round.acting match {
-      case Some(seat) if seat.player == player && !seat.willLeave => // FIXME willLeave
+      case Some(seat) if seat.player == player && !seat.isLeaving => // FIXME willLeave
         
         info("[betting] %s add %s", player, bet)
         addBet(seat, bet)

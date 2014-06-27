@@ -6,6 +6,7 @@ import de.pokerno.poker.{Cards, MaskedCards, cards2binary}
 import de.pokerno.model.Bet
 import de.pokerno.model.table.SeatStateRef
 import de.pokerno.model.table.Seat.State
+import de.pokerno.model.autoplay.{SitOut, Leave, Stack}
 import de.pokerno.util.Colored._
 
 @JsonPropertyOrder(Array("state","player","stack","put","action"))
@@ -15,7 +16,7 @@ class Sitting(
     _player: Player,
     @JsonIgnore protected var _state: State.Value = State.Taken,
     private var _stack: Option[Decimal] = None
-    ) extends Auto(_pos, _player) with States with Actions with Timers with Validations{
+    ) extends Auto(_pos, _player) with States with Actions with Timers with Validations with SitOut with Leave{
   import de.pokerno.model.table.Seat.Presence
   import Callbacks._
   

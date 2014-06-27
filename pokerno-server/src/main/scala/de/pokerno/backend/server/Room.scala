@@ -139,14 +139,18 @@ class Room(id: java.util.UUID,
     // current deal stopped
     case Event(gameplay.Deal.Done, Running(ctx, deal)) ⇒
       log.info("deal complete")
+      
       history.map { _ ! (id, ctx.game, ctx.stake, ctx.play) }
+      
       val after = nextDealAfter
       self ! gameplay.Deal.Next(after)
+      
       stay() using (NoneRunning)
 
     // schedule next deal in *after* seconds
     case Event(gameplay.Deal.Next(after), NoneRunning) ⇒
       log.info("next deal will start in {}", after)
+      events.broadcast(gameplay.Events.announceStart(after))
       system.scheduler.scheduleOnce(after, self, gameplay.Deal.Start)
       stay()
 
@@ -244,9 +248,10 @@ class Room(id: java.util.UUID,
    
     case Event(cmd.ComeBack(player), _) =>
       table(player).map { seat =>
-        // we're ready
-        seat.ready()
-        events broadcast gameplay.Events.playerComeBack(seat)
+        if (seat.isSitOut) {
+          seat.ready()
+          events broadcast gameplay.Events.playerComeBack(seat)
+        }
       }
       tryResume()
       
@@ -255,7 +260,7 @@ class Room(id: java.util.UUID,
         current match {
           case NoneRunning =>
             // do sit out immediately
-            seat.idle()
+            seat.sitOut()
             events broadcast gameplay.Events.playerSitOut(seat)
             
           case _ =>             seat.toggleSitOut()

@@ -1,17 +1,20 @@
 package de.pokerno.model.autoplay
 
-trait SitOut {
+import de.pokerno.model.table.seat.States
+
+trait SitOut { s: States =>
   
-  private var _willSitOut = false
+  private var _sittingOut = false
   
-  def willSitOut = _willSitOut
-  
-  def sitOut() {
-    if (!willSitOut) _willSitOut = true
-  }
+  def isSittingOut = _sittingOut
   
   def toggleSitOut() {
-    _willSitOut = !willSitOut
+    _sittingOut = !_sittingOut
+  }
+  
+  def sitOut() {
+    idle()
+    _sittingOut = false
   }
   
 }

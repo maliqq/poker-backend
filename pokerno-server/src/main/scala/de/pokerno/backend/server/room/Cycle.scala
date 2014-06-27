@@ -19,13 +19,16 @@ trait Cycle { room: Room ⇒
 
   def tryDealStart(): State = {
     table.sitting.foreach { seat =>
-      if (seat.willLeave) {
+      if (seat.isLeaving) {
         leaveSeat(seat)
       } else if (seat.isAllIn) {
         seat.taken()
         balance.available(seat.player).onSuccess { amount =>
           events broadcast Events.requireBuyIn(seat, stake, amount)
         }
+      } else if (seat.isSittingOut) {
+        //seat.autoplay.folds - for tournament mode
+        seat.sitOut()
       }
       // FIXME: clear cards?
     }

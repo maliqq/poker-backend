@@ -68,7 +68,7 @@ trait JoinLeave { room: Room =>
       if (seat.notActive || notRunning) {
         leaveSeat(seat)
       } else {
-        seat.leave
+        seat.leaving
         running map { case Room.Running(ctx, ref) =>
           ref ! gameplay.Betting.Cancel(player)
         }

@@ -31,6 +31,9 @@ class Events(id: String) {
 }
 
 object Events {
+  
+  def announceStart(after: concurrent.duration.FiniteDuration) = msg.AnnounceStart(after.toSeconds) 
+  
   def playStart(ctx: Context)         = msg.DeclarePlayStart(msg.PlayState(ctx))
   def playStop()                      = msg.DeclarePlayStop()
   def streetStart(name: Street.Value) = msg.DeclareStreet(name)

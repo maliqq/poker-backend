@@ -39,6 +39,7 @@ object GameEvent extends Codec.Json {
 
   //new JsonSubTypes.Type(name = "seat:", value = classOf[DeclareSeat]),
 
+  new JsonSubTypes.Type(name = "start:announce",    value = classOf[message.AnnounceStart]),
   new JsonSubTypes.Type(name = "start:",            value = classOf[message.DeclareStart]),
   new JsonSubTypes.Type(name = "table:button",      value = classOf[message.ButtonChange]),
   new JsonSubTypes.Type(name = "game:",             value = classOf[message.GameChange]),

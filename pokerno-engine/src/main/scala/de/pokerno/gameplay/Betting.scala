@@ -21,7 +21,7 @@ private[gameplay] trait Betting {
   def require(seat: Sitting) {
     round.requireBet(seat)
     
-    if (seat.willLeave) {
+    if (seat.isLeaving) {
       seat.autoplay.checkFolds
     }
     

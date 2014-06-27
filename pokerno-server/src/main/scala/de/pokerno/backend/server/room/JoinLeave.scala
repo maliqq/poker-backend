@@ -65,7 +65,7 @@ trait JoinLeave { room: Room =>
   
   protected def leavePlayer(player: Player) {
     table(player) map { seat =>
-      if (seat.notActive) {
+      if (seat.notActive || notRunning) {
         leaveSeat(seat)
       } else {
         seat.leave

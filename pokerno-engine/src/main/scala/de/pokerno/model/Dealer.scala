@@ -8,7 +8,7 @@ class Dealer(private val _deck: Deck = new Deck) {
   private var _board: Cards = Cards.empty
   def board = _board
 
-  private var _pockets: collection.mutable.Map[Player, Cards] = collection.mutable.Map.empty
+  private var _pockets = collection.mutable.Map.empty[Player, Cards]
   
   def pocket(p: Player): Cards = _pockets.getOrElse(p, Cards.empty)
 
@@ -42,7 +42,6 @@ class Dealer(private val _deck: Deck = new Deck) {
       if (replace.contains(card)) replace(card)
       else card
     }
-    Console printf("%sreplace: %s (%s) [%s->%s]%s\n", Console.RED, cards, replace, pocketCards, newCards, Console.RESET)
     _pockets(p) = newCards
     newCards
   }

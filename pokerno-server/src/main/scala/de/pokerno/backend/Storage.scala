@@ -19,8 +19,7 @@ abstract class PlayHistoryBatch {
     roomId: java.util.UUID,
     started: java.util.Date,
     ended: java.util.Date,
-    game: model.GameType,
-    limit: model.GameLimit,
+    game: model.Game,
     stake: model.Stake,
     button: Int,            // staring position at the table
     board: poker.Cards,
@@ -61,7 +60,7 @@ abstract class BatchedStorage extends Storage {
       batch.writeEntry(
         roomId,
         play.started, play.ended,
-        game.`type`, game.limit,
+        game,
         stake,
         play.button,
         play.board,

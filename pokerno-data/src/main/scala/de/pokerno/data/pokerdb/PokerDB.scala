@@ -112,7 +112,7 @@ object PokerDB extends Schema {
   
   sealed case class Game(
       var variation: String,
-      var limit: Option[String],
+      @Column("game_limit") var limit: Option[String],
       @Column(optionType = classOf[Int]) var speed: Option[Int],
       @Column("table_size") var tableSize: Int) extends KeyedEntity[Long] {
     var id: Long = 0

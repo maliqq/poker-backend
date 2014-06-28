@@ -1,6 +1,6 @@
 package de.pokerno.data
 
-import de.pokerno.data.pokerdb.PokerDB
+import pokerdb.PokerDB
 import java.util.UUID
 
 object Main {
@@ -19,7 +19,7 @@ object Main {
     session.setLogger(println(_))
     session.bindToCurrentThread
     
-    println(PokerDB.PlaySession.create(UUID.randomUUID(), UUID.randomUUID(), 1, 10000).id)
+    println(pokerdb.model.PlaySession.create(UUID.randomUUID(), UUID.randomUUID(), 1, 10000).id)
     
     val (room, game, mix, stake) = PokerDB.roomsWithGamesAndStakes.head
     println(room)

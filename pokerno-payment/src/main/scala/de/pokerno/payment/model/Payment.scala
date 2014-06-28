@@ -31,7 +31,7 @@ abstract class Payment(
   
   var amount: Double
   var state: String
-  @Column("created_at") var created: java.sql.Timestamp
-  @Column("updated_at") var updated: java.sql.Timestamp = null
+  @Column("created_at") var created: Timestamp
+  @Column("updated_at") var updated: Timestamp = null
   @Column(name="currency_id", optionType=classOf[Long]) var currencyId: Option[Long]
 }

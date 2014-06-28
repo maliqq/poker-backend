@@ -3,7 +3,6 @@ package de.pokerno.payment.model
 import org.squeryl.KeyedEntity
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.annotations.Column
-import java.util.UUID
 
 object Balance {
   

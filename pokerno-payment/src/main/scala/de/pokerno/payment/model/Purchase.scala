@@ -2,7 +2,6 @@ package de.pokerno.payment.model
 
 import org.squeryl.annotations.Column
 import org.squeryl.KeyedEntity
-import java.util.UUID
 
 object Purchase {
   import de.pokerno.payment.PaymentDB._
@@ -22,6 +21,6 @@ sealed class Purchase(
     @Column(name="currency_id", optionType=classOf[Long]) var currencyId: Option[Long],
     @Column("order_id") var orderId: Long,
     var state: String,
-    @Column("created_at") var created: java.sql.Timestamp = now()
+    @Column("created_at") var created: Timestamp = now()
     ) extends Payment(PaymentType.Purchase) {
 }

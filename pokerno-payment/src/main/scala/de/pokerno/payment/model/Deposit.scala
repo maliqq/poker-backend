@@ -21,6 +21,6 @@ sealed class Deposit(
     @Column("to_id") var payeeId: Long,
     @Column(name="currency_id", optionType=classOf[Long]) var currencyId: Option[Long],
     var state: String,
-    @Column("created_at") var created: java.sql.Timestamp = now()
+    @Column("created_at") var created: Timestamp = now()
     ) extends Payment(PaymentType.Deposit) {
 }

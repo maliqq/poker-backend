@@ -33,7 +33,7 @@ class Service extends thrift.PokerDB.FutureIface {
   val log = LoggerFactory.getLogger(getClass)
 
   def getRooms(nodeId: String): Future[Seq[thrift.Room]] = Future {
-    val rooms = PokerDB.Node.getRooms(nodeId)
+    val rooms = model.Node.getRooms(nodeId)
     rooms.map { case (room, game, mix, stake) =>
       thrift.Room(
         room.id.toString(),
@@ -47,11 +47,11 @@ class Service extends thrift.PokerDB.FutureIface {
   }
   
   def reportNodeMetrics(nodeId: String, metrics: thrift.metrics.Node): Future[Unit] = Future {
-    PokerDB.Node.updateMetrics(nodeId, metrics)
+    model.Node.updateMetrics(nodeId, metrics)
   }
   
   def getRoom(id: String): Future[thrift.Room] = Future {
-    val (room, game, mix, stake) = PokerDB.Room.get(id)
+    val (room, game, mix, stake) = model.Room.get(id)
     thrift.Room(
         room.id.toString(),
         room.state,
@@ -71,19 +71,19 @@ class Service extends thrift.PokerDB.FutureIface {
     
     log.info("room %s changed state to %s" format(id, newState))
     
-    PokerDB.Room.updateState(id, newState)
+    model.Room.updateState(id, newState)
   }
   
   def reportRoomMetrics(roomId: String, metrics: thrift.metrics.Room): Future[Unit] = Future {
-    PokerDB.Room.updateMetrics(roomId, metrics)
+    model.Room.updateMetrics(roomId, metrics)
   }
   
   def startSession(roomId: String, player: String, pos: Int, amount: Double): Future[Unit] = Future {
-    PokerDB.PlaySession.create(roomId, player, pos, amount)
+    model.PlaySession.create(roomId, player, pos, amount)
   }
   
   def endSession(roomId: String, player: String, pos: Int, amount: Double): Future[Unit] = Future {
-    PokerDB.PlaySession.end(roomId, player)
+    model.PlaySession.end(roomId, player)
   }
   
 }

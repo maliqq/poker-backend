@@ -2,7 +2,6 @@ package de.pokerno.payment.model
 
 import org.squeryl.annotations.Column
 import org.squeryl.KeyedEntity
-import java.util.UUID
 
 object Order {
   def buyIn(playerId: UUID, amount: Double, itemId: UUID) = {

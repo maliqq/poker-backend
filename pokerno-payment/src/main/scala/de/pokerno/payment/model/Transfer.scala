@@ -22,6 +22,6 @@ sealed class Transfer(
     @Column(name="currency_id", optionType=classOf[Long]) var currencyId: Option[Long],
     @Column("to_id") var payeeId: Long,
     var state: String,
-    var created: java.sql.Timestamp = now()
+    var created: Timestamp = now()
     ) extends Payment(PaymentType.Transfer) {
 }

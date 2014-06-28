@@ -6,7 +6,7 @@ import org.squeryl.PrimitiveTypeMode._
 import model._
 import java.util.UUID
 
-import de.pokerno.data.pokerdb.PokerDB
+import de.pokerno.data.pokerdb
 
 object PaymentDB extends Schema {
   
@@ -33,7 +33,7 @@ object PaymentDB extends Schema {
   )
   
   def join(playerId: UUID, amount: Double, roomId: UUID) {
-    val stake = PokerDB.Room.getStake(roomId)
+    val stake = pokerdb.model.Room.getStake(roomId)
     val isPlayMoney = stake.currencyId.isEmpty
     val bb = stake.bigBlind
     val (min, max) = (stake.buyInMin * bb, stake.buyInMax * bb)
@@ -61,7 +61,7 @@ object PaymentDB extends Schema {
   case object Refill extends PlayMoney.RefillStrategy
   
   def leave(playerId: UUID, amount: Double, roomId: UUID) {
-    val stake = PokerDB.Room.getStake(roomId)
+    val stake = pokerdb.model.Room.getStake(roomId)
     inTransaction {
       val balance = Balance.get(playerId, stake.currencyId)
       val order = orders.insert(Order.leave(playerId, amount, roomId))
@@ -70,7 +70,7 @@ object PaymentDB extends Schema {
   }
   
   def register(playerId: UUID, tournamentId: UUID) {
-    val buyIn = PokerDB.Tournament.getBuyIn(tournamentId)
+    val buyIn = pokerdb.model.Tournament.getBuyIn(tournamentId)
     val amount = buyIn.price + buyIn.fee
     // TODO check tournament start date, state
     inTransaction {

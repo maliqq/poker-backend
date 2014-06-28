@@ -7,7 +7,6 @@ import com.twitter.finagle.thrift.ThriftServerFramedCodec
 import com.twitter.finagle.{Service => FinagleService}
 import com.twitter.util.Future
 import concurrent.duration._
-import java.util.UUID
 
 object Service {
   
@@ -30,7 +29,7 @@ object Service {
 class Service extends thrift.Payment.FutureIface {
   //import java.util.concurrent.atomic.AtomicReference
   import model._
-  implicit def uuidFromString(s: String): UUID = UUID.fromString(s)
+  implicit def uuidFromString(s: String): UUID = java.util.UUID.fromString(s)
   
   def total(player: String): Future[Double] = Future {
     val playerId: UUID = player
@@ -104,20 +103,24 @@ class Service extends thrift.Payment.FutureIface {
   }
   
   def join(playerId: String, amount: Double, roomId: String): Future[Unit] = Future{
-    PaymentDB.join(playerId, amount, roomId)
+    Cash.join(playerId, amount, roomId)
   }
   
   def leave(playerId: String, amount: Double, roomId: String): Future[Unit] = Future{
-    PaymentDB.leave(playerId, amount, roomId)
+    Cash.leave(playerId, amount, roomId)
   }
   
-  def register(playerId: String, tournamentId: String): Future[Unit] = Future{}
-  
-  def freeroll(playerId: String, tournamentId: String): Future[Unit] = Future{}
-  
-  def ticket(playerId: String, tournamentId: String, ticketId: String): Future[Unit] = Future{}
+  def register(playerId: String, tournamentId: String): Future[Unit] = Future{
+    Tournament.register(playerId, tournamentId)
+  }
   
   def unregister(playerId: String, tournamentId: String): Future[Unit] = Future{}
+  
+  def freeroll(playerId: String, tournamentId: String): Future[Unit] = Future{
+  }
+  
+  def ticket(playerId: String, tournamentId: String, ticketId: String): Future[Unit] = Future{
+  }
   
   def rebuy(playerId: String, tournamentId: String): Future[Unit] = Future{}
   

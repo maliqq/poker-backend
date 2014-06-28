@@ -36,7 +36,7 @@ trait JoinLeave { room: Room =>
     reserve() match {
       case Some(seat) =>
         if (buyInAmount.isDefined) {
-          val f = balance.join(player, amount.toDouble, roomId)
+          val f = balance.join(roomId, player, amount.toDouble)
           f.onSuccess { _ =>
             // TODO: reserve seat first 
             seat.buyIn(amount)
@@ -59,7 +59,7 @@ trait JoinLeave { room: Room =>
   
   protected def leaveSeat(seat: Sitting) {
     table.clear(seat.pos)
-    balance.leave(seat.player, seat.stackAmount.toDouble, roomId)
+    balance.leave(roomId, seat.player, seat.stackAmount.toDouble)
     events broadcast gameplay.Events.playerLeave(seat)
   }
   

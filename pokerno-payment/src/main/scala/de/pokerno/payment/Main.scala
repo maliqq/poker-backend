@@ -21,7 +21,7 @@ object Main {
     val tournamentId = java.util.UUID.fromString("6f9123a3-ad75-48e6-bc81-19c12f29f96a")
     
     Balance.create(playerId, initial = 10000, currencyId = Some(currency.id))
-    Cash.join(playerId, 500, roomId)
+    Cash.join(roomId, playerId, 500)
   }
   
 }

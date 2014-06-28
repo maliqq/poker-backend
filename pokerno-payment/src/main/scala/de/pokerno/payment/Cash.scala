@@ -14,7 +14,7 @@ object Cash {
 
   case object Refill extends PlayMoney.RefillStrategy
   
-  def join(playerId: UUID, amount: Double, roomId: UUID) {
+  def join(roomId: UUID, playerId: UUID, amount: Double) {
     val stake = pokerdb.model.Room.getStake(roomId)
     val isPlayMoney = stake.currencyId.isEmpty
     val bb = stake.bigBlind
@@ -40,7 +40,7 @@ object Cash {
     }
   }
   
-  def leave(playerId: UUID, amount: Double, roomId: UUID) {
+  def leave(roomId: UUID, playerId: UUID, amount: Double) {
     val stake = pokerdb.model.Room.getStake(roomId)
     inTransaction {
       val balance = Balance.get(playerId, stake.currencyId)

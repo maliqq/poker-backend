@@ -12,7 +12,7 @@ object Tournament {
 
   import PaymentDB._
 
-  def register(playerId: UUID, tournamentId: UUID) {
+  def register(tournamentId: UUID, playerId: UUID) {
     val buyIn = pokerdb.model.Tournament.getBuyIn(tournamentId)
     val amount = buyIn.price + buyIn.fee
     // TODO check tournament start date, state

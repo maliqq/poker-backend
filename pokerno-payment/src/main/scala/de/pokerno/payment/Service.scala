@@ -102,35 +102,35 @@ class Service extends thrift.Payment.FutureIface {
 //    }
   }
   
-  def join(playerId: String, amount: Double, roomId: String): Future[Unit] = Future{
-    Cash.join(playerId, amount, roomId)
+  def join(roomId: String, playerId: String, amount: Double): Future[Unit] = Future{
+    Cash.join(roomId, playerId, amount)
   }
   
-  def leave(playerId: String, amount: Double, roomId: String): Future[Unit] = Future{
-    Cash.leave(playerId, amount, roomId)
+  def leave(roomId: String, playerId: String, amount: Double): Future[Unit] = Future{
+    Cash.leave(roomId, playerId, amount)
   }
   
-  def register(playerId: String, tournamentId: String): Future[Unit] = Future{
-    Tournament.register(playerId, tournamentId)
+  def register(tournamentId: String, playerId: String): Future[Unit] = Future{
+    Tournament.register(tournamentId, playerId)
   }
   
-  def unregister(playerId: String, tournamentId: String): Future[Unit] = Future{}
+  def unregister(tournamentId: String, playerId: String): Future[Unit] = Future{}
   
-  def freeroll(playerId: String, tournamentId: String): Future[Unit] = Future{
+  def freeroll(tournamentId: String, playerId: String): Future[Unit] = Future{
   }
   
-  def ticket(playerId: String, tournamentId: String, ticketId: String): Future[Unit] = Future{
+  def ticket(tournamentId: String, playerId: String, ticketId: String): Future[Unit] = Future{
   }
   
-  def rebuy(playerId: String, tournamentId: String): Future[Unit] = Future{}
+  def rebuy(tournamentId: String, playerId: String): Future[Unit] = Future{}
   
-  def doubleRebuy(playerId: String, tournamentId: String): Future[Unit] = Future{}
+  def doubleRebuy(tournamentId: String, playerId: String): Future[Unit] = Future{}
   
-  def addon(playerId: String, tournamentId: String): Future[Unit] = Future{}
+  def addon(tournamentId: String, playerId: String): Future[Unit] = Future{}
   
-  def award(playerId: String, tournamentId: String, placeNumber: Long): Future[Unit] = Future{}
+  def award(tournamentId: String, playerId: String, placeNumber: Long): Future[Unit] = Future{}
   
-  def bounty(playerId: String, knockedPlayerId: String, tournamentId: String): Future[Unit] = Future{
+  def bounty(tournamentId: String, playerId: String, knockedPlayerId: String): Future[Unit] = Future{
   }
   
 }

@@ -1,8 +1,6 @@
-package de.pokerno.model.seat
+package de.pokerno.model.table.seat
 
 import com.fasterxml.jackson.annotation.{JsonAutoDetect, JsonIgnore, JsonInclude, JsonProperty, JsonGetter}
-
-import de.pokerno.model.{Seat, Player}
 
 class Acting(_pos: Int, _player: Player) extends Position(_pos, _player) {
   def asPosition: Position = new Position(pos, player)

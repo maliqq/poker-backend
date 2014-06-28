@@ -3,7 +3,8 @@ package de.pokerno.gameplay.round
 import akka.actor.{ActorRef, Cancellable}
 import org.slf4j.LoggerFactory
 import de.pokerno.gameplay.{Round, Context => Gameplay}
-import de.pokerno.model.{Player, seat}
+import de.pokerno.model.Player
+import de.pokerno.model.table.seat.Sitting
 
 private[gameplay] abstract class Context(val gameplay: Gameplay) {
   protected val log = LoggerFactory.getLogger(getClass)
@@ -15,7 +16,7 @@ private[gameplay] abstract class Context(val gameplay: Gameplay) {
   var timer: Option[Cancellable] = None
   
   def nextTurn(): Round.Transition
-  def require(sitting: seat.Sitting): Unit
+  def require(seat: Sitting): Unit
   def complete(): Unit
   def cancel(player: Player): Unit
   def timeout(): Unit

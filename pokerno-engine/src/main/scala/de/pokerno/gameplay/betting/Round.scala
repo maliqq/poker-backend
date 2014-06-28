@@ -1,15 +1,16 @@
 package de.pokerno.gameplay.betting
 
 import de.pokerno.model._
+import de.pokerno.model.table.seat.Sitting
 import de.pokerno.gameplay.{Context => Gameplay, Round => GameplayRound}
 import de.pokerno.util.Colored._
 import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnore, JsonInclude, JsonGetter}
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 class Round(_table: Table, game: Game, stake: Stake, play: Play) extends GameplayRound(_table) {
-  protected override def acting_=(sitting: seat.Sitting) {
+  protected override def acting_=(seat: Sitting) {
     acting.map(_.notBetting())
-    super.acting = sitting
+    super.acting = seat
   }
   
   import play.pot
@@ -29,62 +30,62 @@ class Round(_table: Table, game: Game, stake: Stake, play: Play) extends Gamepla
   private var _cachedCallAmount: Decimal = 0
   def callAmount = _cachedCallAmount
   
-  def forceBet(sitting: seat.Sitting, betType: BetType.Forced): Bet = {
+  def forceBet(seat: Sitting, betType: BetType.Forced): Bet = {
     val amount = stake amount betType
     _cachedCallAmount = amount
     
-    sitting.call = amount
-    acting = sitting
+    seat.call = amount
+    acting = seat
 
-    val stack = sitting.stackAmount
+    val stack = seat.stackAmount
     val amt = List(stack, amount) min
     val bet = betType(amt)
 
-    addBet(sitting, bet)
+    addBet(seat, bet)
   }
 
-  def requireBet(sitting: seat.Sitting) = {
+  def requireBet(seat: Sitting) = {
     // current amount to call
     val amount = _cachedCallAmount//_seats.filter(_.inPot).map(_.putAmount).max
     
-    sitting.call = amount
-    acting = sitting
+    seat.call = amount
+    acting = seat
     
-    val total = sitting.total
+    val total = seat.total
     if (total <= amount || raiseCount >= MaxRaiseCount)
-      sitting.disableRaise()
+      seat.disableRaise()
     else {
       val limit = game.limit
       val blind = if (bigBets) stake.bigBlind * 2 else stake.bigBlind
       val (min, max) = limit raise (total, blind + amount, pot.total)
-      sitting.raise = (List(total, min) min, List(total, max) min)
+      seat.raise = (List(total, min) min, List(total, max) min)
     }
   }
   
-  def addBet(sitting: seat.Sitting, _bet: Bet): Bet = {
-    sitting.actingTimer.cancel()
+  def addBet(seat: Sitting, _bet: Bet): Bet = {
+    seat.actingTimer.cancel()
     
-    val player = sitting.player
+    val player = seat.player
     
     val posting = {
-      val _posting = sitting.posting(_bet)
+      val _posting = seat.posting(_bet)
     
-      if (sitting.canBet(_posting, stake)) _posting
+      if (seat.canBet(_posting, stake)) _posting
       else {
-        warn("bet %s is not valid; seat=%s\n", _posting, sitting)
+        warn("bet %s is not valid; seat=%s\n", _posting, seat)
         Bet.fold
       }
     }
 
-    val diff = sitting postBet posting
+    val diff = seat postBet posting
 
     if (posting.isActive) {
       if (posting.isRaise)
         raiseCount += 1
-      if (!posting.isCall && sitting.putAmount > _cachedCallAmount)
-        _cachedCallAmount = sitting.putAmount
-      pot add (player, diff, sitting.isAllIn)
-      // if (sitting.isAllIn) {
+      if (!posting.isCall && seat.putAmount > _cachedCallAmount)
+        _cachedCallAmount = seat.putAmount
+      pot add (player, diff, seat.isAllIn)
+      // if (seat.isAllIn) {
       //   posting.toActive.allIn()
       // }
     }

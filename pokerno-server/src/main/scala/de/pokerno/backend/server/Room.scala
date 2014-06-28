@@ -39,12 +39,11 @@ object Room {
   case class Observe(observer: ActorRef, name: String)
   
   case object PlayState
-  
-}
 
-sealed trait Data
-case object NoneRunning extends Data
-case class Running(ctx: gameplay.Context, ref: ActorRef) extends Data
+  sealed trait Data
+  case object NoneRunning extends Data
+  case class Running(ctx: gameplay.Context, ref: ActorRef) extends Data
+}
 
 case class RoomEnv(
     balance: de.pokerno.payment.Service,
@@ -55,18 +54,22 @@ case class RoomEnv(
   )
 
 class Room(id: java.util.UUID,
-    variation: model.Variation,
+    val variation: model.Variation,
     val stake: model.Stake,
     env: RoomEnv)
     extends Actor
     with ActorLogging
-    with FSM[Room.State.Value, Data]
+    with FSM[Room.State.Value, Room.Data]
     with JoinLeave
     with Presence
     with Observers
-    //with Balance
-    with gameplay.DealCycle {
-  
+    with Cycle {
+    //with Balance {
+
+  import context._
+  import context.dispatcher
+  import concurrent.duration._
+  import Room._
   import env._
   
   val balance = env.balance
@@ -75,11 +78,6 @@ class Room(id: java.util.UUID,
   
   val table = new model.Table(variation.tableSize)
   val events = new gameplay.Events(roomId)
-
-  import context._
-  import context.dispatcher
-  import concurrent.duration._
-  import Room._
 
   val watchers      = observe(classOf[Watchers], f"room-$roomId-watchers")
   val journal       = observe(classOf[Journal], f"room-$roomId-journal", "/tmp", roomId)
@@ -111,7 +109,7 @@ class Room(id: java.util.UUID,
   waiting {
     case Event(join: cmd.JoinPlayer, NoneRunning) ⇒
       joinPlayer(join)
-      runOrStay()
+      tryResume()
   }
   
   closed {
@@ -131,8 +129,7 @@ class Room(id: java.util.UUID,
 
     // first deal in active state
     case Event(gameplay.Deal.Start, NoneRunning) ⇒
-      log.info("deal start")
-      stay() using startDeal()
+      tryDealStart()
 
     // current deal cancelled
     case Event(gameplay.Deal.Cancel, Running(_, deal)) ⇒
@@ -142,14 +139,18 @@ class Room(id: java.util.UUID,
     // current deal stopped
     case Event(gameplay.Deal.Done, Running(ctx, deal)) ⇒
       log.info("deal complete")
+      
       history.map { _ ! (id, ctx.game, ctx.stake, ctx.play) }
+      
       val after = nextDealAfter
       self ! gameplay.Deal.Next(after)
+      
       stay() using (NoneRunning)
 
     // schedule next deal in *after* seconds
     case Event(gameplay.Deal.Next(after), NoneRunning) ⇒
       log.info("next deal will start in {}", after)
+      events.broadcast(gameplay.Events.announceStart(after))
       system.scheduler.scheduleOnce(after, self, gameplay.Deal.Start)
       stay()
 
@@ -172,10 +173,10 @@ class Room(id: java.util.UUID,
       stay()
     
     case Event(cmd.AdvanceStack(player, amount), _) =>
-      table.playerSeat(player).map { seat =>
+      table(player).map { seat =>
         seat.buyIn(amount)
       }
-      runOrStay()
+      tryResume()
       
 //    case Event(comeback: cmd.ComeBack, _) =>
 //      stay()
@@ -229,7 +230,7 @@ class Room(id: java.util.UUID,
       watchers ! Watchers.Watch(conn)
 
       // start new deal if needed
-      runOrStay()
+      tryResume()
 
     case Event(Disconnect(conn), _) ⇒
       watchers ! Watchers.Unwatch(conn)
@@ -246,19 +247,20 @@ class Room(id: java.util.UUID,
       stay()
    
     case Event(cmd.ComeBack(player), _) =>
-      table.playerSeat(player).map { seat =>
-        // we're ready
-        seat.ready()
-        events broadcast gameplay.Events.playerComeBack(seat)
+      table(player).map { seat =>
+        if (seat.isSitOut) {
+          seat.ready()
+          events broadcast gameplay.Events.playerComeBack(seat)
+        }
       }
-      runOrStay()
+      tryResume()
       
     case Event(cmd.SitOut(player), current) =>
-      table.playerSeat(player).map { seat =>
+      table(player).map { seat =>
         current match {
           case NoneRunning =>
             // do sit out immediately
-            seat.idle()
+            seat.sitOut()
             events broadcast gameplay.Events.playerSitOut(seat)
             
           case _ =>             seat.toggleSitOut()
@@ -298,14 +300,9 @@ class Room(id: java.util.UUID,
   def isRunning = stateData != NoneRunning
   def notRunning = stateData == NoneRunning
   
-  def runOrStay() = {
+  def tryResume() = {
     if (notRunning && canStart) toActive()
     else stay()
   }
-
-  private def startDeal(): Running = {
-    val ctx = new gameplay.Context(roomId, table, variation, stake, balance, events)
-    val deal = actorOf(Props(classOf[gameplay.Deal], ctx), name = f"room-$roomId-deal-${ctx.play.id}")
-    Running(ctx, deal)
-  }
+  
 }

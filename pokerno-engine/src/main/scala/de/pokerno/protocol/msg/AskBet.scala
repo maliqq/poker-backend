@@ -2,7 +2,7 @@ package de.pokerno.protocol.msg
 
 import com.fasterxml.jackson.annotation.{JsonProperty, JsonUnwrapped}
 
-import de.pokerno.model.seat.{Acting, Position}
+import de.pokerno.model.table.seat.{Acting, Position}
 
 object AskBet {
   def apply(seat: Acting): AskBet = AskBet(seat.asPosition, seat.callAmount, seat.raise)

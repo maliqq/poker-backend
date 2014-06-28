@@ -22,8 +22,8 @@ abstract class DealCards(
     }
 }
 
-import de.pokerno.model.Seat
-import de.pokerno.model.seat.{Sitting, Position}
+import de.pokerno.model.table.Seat
+import de.pokerno.model.table.seat.{Sitting, Position}
 
 object DealHole {
   def apply(pos: Position, cards: Either[Cards, Int]): DealHole = new DealHole(pos, cards)

@@ -15,7 +15,7 @@ trait Presence { a: Actor ⇒
   case class Away(player: model.Player)
 
   def playerOffline(player: model.Player) {
-    table.playerSeat(player) map { seat =>
+    table(player) map { seat =>
       seat.offline()
       seat.actingTimer.pause()
       seat.reconnectTimer.start(new model.AkkaTimers(system.scheduler, system.dispatcher)) {
@@ -26,7 +26,7 @@ trait Presence { a: Actor ⇒
   }
 
   def playerAway(player: model.Player) {
-    table.playerSeat(player) map { seat =>
+    table(player) map { seat =>
       seat.away()
       seat.actingTimer.destroy()
       // auto kick
@@ -36,7 +36,7 @@ trait Presence { a: Actor ⇒
   }
 
   def playerOnline(player: model.Player) {
-    table.playerSeat(player) map { seat =>
+    table(player) map { seat =>
       seat.online()
       seat.actingTimer.resume()
       seat.reconnectTimer.cancel()

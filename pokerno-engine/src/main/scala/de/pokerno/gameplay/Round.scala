@@ -5,10 +5,11 @@ import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnore, JsonInclude, 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 
 import de.pokerno.poker.Cards
-import de.pokerno.model.{Table, Game, Player, Dealer, seat}
+import de.pokerno.model.{Table, Game, Player, Dealer}
+import de.pokerno.model.table.seat.{Sitting, Acting}
 
-private[gameplay] class Sitting2Acting extends com.fasterxml.jackson.databind.util.StdConverter[Option[seat.Sitting], Option[seat.Acting]] {
-  override def convert(sitting: Option[seat.Sitting]): Option[seat.Acting] = sitting.map(_.asActing)
+private[gameplay] class Sitting2Acting extends com.fasterxml.jackson.databind.util.StdConverter[Option[Sitting], Option[Acting]] {
+  override def convert(seat: Option[Sitting]): Option[Acting] = seat.map(_.asActing)
 }
 
 private[gameplay] object Round {
@@ -16,7 +17,7 @@ private[gameplay] object Round {
   trait Transition
   
   // require action from this position
-  case class Require(sitting: seat.Sitting) extends Transition
+  case class Require(seat: Sitting) extends Transition
 
   // stop current deal
   case object Stop extends Transition
@@ -42,11 +43,11 @@ private[gameplay] abstract class Round(table: Table) {
   def seats = _seats
   
   // ACTING
-  private var _acting: Option[seat.Sitting] = None
+  private var _acting: Option[Sitting] = None
   @JsonSerialize(converter = classOf[Sitting2Acting])  def acting = _acting
-  protected def acting_=(sitting: seat.Sitting) {
-    _acting = Some(sitting)
-    _seats = table.sittingFrom(sitting.pos)
+  protected def acting_=(seat: Sitting) {
+    _acting = Some(seat)
+    _seats = table.sittingFrom(seat.pos)
   }
   
   @JsonGetter def current = _acting map(_.pos)

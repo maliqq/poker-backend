@@ -44,9 +44,9 @@ case class Play(val id: java.util.UUID = java.util.UUID.randomUUID()) {
   private val _stacks = collection.mutable.Map[Player, Decimal]().withDefaultValue(0)
   def stacks = _stacks
   
-  def sit(sitting: seat.Sitting) {
-    _seating.put(sitting.player, sitting.pos)
-    _stacks.put(sitting.player, sitting.stackAmount)
+  def sit(seat: table.seat.Sitting) {
+    _seating.put(seat.player, seat.pos)
+    _stacks.put(seat.player, seat.stackAmount)
   }
   
   val net = collection.mutable.Map[Player, Decimal]().withDefaultValue(0)

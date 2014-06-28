@@ -1,11 +1,11 @@
 package de.pokerno.gameplay.betting
 
 import concurrent.duration._
+import de.pokerno.model.table.seat.Sitting
 import de.pokerno.gameplay.{Betting, stg, Context => Gameplay, Round => GameplayRound}
 import de.pokerno.util.Colored._
 
 private[gameplay] object NextTurn {
-  import de.pokerno.model.seat.Sitting
   
   def decide(all: Seq[Sitting], call: Decimal): GameplayRound.Transition = {
     if (all.size < 2) {

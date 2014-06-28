@@ -1,4 +1,4 @@
-package de.pokerno.model
+package de.pokerno.model.table
 
 import org.slf4j.LoggerFactory
 import com.fasterxml.jackson.annotation.{JsonIgnore, JsonProperty, JsonInclude, JsonAutoDetect, JsonPropertyOrder}

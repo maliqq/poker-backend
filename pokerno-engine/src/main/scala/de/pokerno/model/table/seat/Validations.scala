@@ -1,6 +1,6 @@
-package de.pokerno.model.seat
+package de.pokerno.model.table.seat
 
-import de.pokerno.model.{Seat, Bet, Stake}
+import de.pokerno.model.{Bet, Stake}
 import de.pokerno.util.Colored._
 
 trait Validations { seat: Sitting =>
@@ -70,7 +70,5 @@ trait Validations { seat: Sitting =>
         // TODO warn
         false
     }
-
-  def canLeave = notActive
   
 }

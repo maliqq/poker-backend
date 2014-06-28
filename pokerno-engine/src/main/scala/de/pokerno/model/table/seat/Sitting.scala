@@ -1,9 +1,12 @@
-package de.pokerno.model.seat
+package de.pokerno.model.table.seat
 
 import com.fasterxml.jackson.annotation.{JsonAutoDetect, JsonIgnore, JsonIgnoreProperties, JsonInclude, JsonProperty, JsonPropertyOrder, JsonGetter}
 import com.fasterxml.jackson.module.scala.JsonScalaEnumeration
 import de.pokerno.poker.{Cards, MaskedCards, cards2binary}
-import de.pokerno.model.{Player, Bet, Seat, SeatStateRef}
+import de.pokerno.model.Bet
+import de.pokerno.model.table.SeatStateRef
+import de.pokerno.model.table.Seat.State
+import de.pokerno.model.autoplay.{SitOut, Leave, Stack}
 import de.pokerno.util.Colored._
 
 @JsonPropertyOrder(Array("state","player","stack","put","action"))
@@ -11,10 +14,10 @@ import de.pokerno.util.Colored._
 class Sitting(
     _pos: Int,
     _player: Player,
-    @JsonIgnore protected var _state: Seat.State.Value = Seat.State.Taken,
+    @JsonIgnore protected var _state: State.Value = State.Taken,
     private var _stack: Option[Decimal] = None
-    ) extends Auto(_pos, _player) with States with Actions with Timers with Validations{
-  import Seat._
+    ) extends Auto(_pos, _player) with States with Actions with Timers with Validations with SitOut with Leave{
+  import de.pokerno.model.table.Seat.Presence
   import Callbacks._
   
   def asActing: Acting = {

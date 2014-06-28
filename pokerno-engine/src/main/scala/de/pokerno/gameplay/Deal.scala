@@ -17,23 +17,6 @@ object Deal {
 
 }
 
-trait DealCycle { a: Actor ⇒
-
-  import context._
-
-  final val minimumReadyPlayersToStart = 2
-  // TODO move to config
-  final val firstDealAfter = 10.seconds
-  final val nextDealAfter = 5.seconds
-
-  def table: Table
-
-  protected def canStart: Boolean = {
-    table.sitting.count(_ canPlay) == minimumReadyPlayersToStart
-  }
-
-}
-
 class Deal(val gameplay: Context) extends Actor
     with ActorLogging
     with Stages.Default {

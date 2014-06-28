@@ -1,7 +1,6 @@
-package de.pokerno.model.seat
+package de.pokerno.model.table.seat
 
 import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnore, JsonGetter, JsonAutoDetect}
-import de.pokerno.model.{Player, Seat}
 
 class Position(
     pos: Int,

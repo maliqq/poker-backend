@@ -4,7 +4,6 @@ import org.slf4j.{ Logger, LoggerFactory }
 import akka.actor.{ Actor, ActorLogging, ActorRef, Props, ActorSystem }
 
 import de.pokerno.model.{Variation, Stake}
-import de.pokerno.model.Seat.{State => SeatState}
 import de.pokerno.backend.{ gateway ⇒ gw }
 import de.pokerno.backend.Gateway
 import de.pokerno.backend.gateway.http

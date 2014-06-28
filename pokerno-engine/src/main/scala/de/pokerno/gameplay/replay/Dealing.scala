@@ -57,7 +57,7 @@ private[replay] case class Dealing(
   private def dealPocket(_type: DealType.Value, _cards: Either[Cards, Option[Int]], _player: Option[Player]) {
     val seat = _player match {
       case Some(p) ⇒
-        table.playerSeat(p).get
+        table(p).get
 
       case None ⇒
         round.acting.get

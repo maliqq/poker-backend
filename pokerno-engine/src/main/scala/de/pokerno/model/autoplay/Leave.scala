@@ -1,8 +1,10 @@
 package de.pokerno.model.autoplay
 
 trait Leave {
-  private var _willLeave = false
-  def willLeave = _willLeave
+  private var _leaving = false
+  def isLeaving = _leaving
   
-  def leave() = _willLeave = true
+  def leaving() = {
+    _leaving = true
+  }
 }

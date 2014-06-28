@@ -2,10 +2,11 @@ package de.pokerno.model
 
 import org.scalatest._
 import org.scalatest.Matchers._
-import seat._
 
 class TableSpec extends FunSpec {
-
+  import de.pokerno.model.table.seat._
+  import de.pokerno.model.table.Seat.State
+  
   describe("Table") {
     it("new") {
       val table = new Table(6)
@@ -23,12 +24,12 @@ class TableSpec extends FunSpec {
       val pos = 0
       val stack = 1000
 
-      table.takeSeat(pos, player, Some(stack))
+      table.take(pos, player, Some(stack))
 
       val seat: Sitting = table.seats(0).asInstanceOf[Sitting]
       seat.player should equal(player)
       seat.stack should equal(stack)
-      seat.state should equal(Seat.State.Ready)
+      seat.state should equal(State.Ready)
     }
   }
 

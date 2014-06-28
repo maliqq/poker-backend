@@ -5,9 +5,9 @@ import org.scalatest.Matchers._
 
 
 class SeatSpec extends FunSpec {
-  import Seat.State
-  import seat._
-
+  import de.pokerno.model.table.seat._
+  import de.pokerno.model.table.Seat.State
+  
   describe("Seat") {
     it("toString") {
       val seat = new Empty(-1)

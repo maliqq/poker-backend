@@ -16,9 +16,9 @@ private[gameplay] class Context(_gameplay: Gameplay, ref: ActorRef) extends Roun
   def nextTurn(): GameplayRound.Transition = NextTurn.decide(round.seats.filter(_.inPot))
   
   def discard(player: Player, cards: Cards) = round.acting match {
-    case Some(sitting) if sitting.player == player =>
+    case Some(seat) if seat.player == player =>
       timer.map(_.cancel())
-      discardCards(sitting, cards)
+      discardCards(seat, cards)
       ref ! nextTurn()
     
     case _ =>
@@ -26,14 +26,14 @@ private[gameplay] class Context(_gameplay: Gameplay, ref: ActorRef) extends Roun
   }
   
   def cancel(player: Player) = round.acting match {
-    case Some(sitting) if sitting.player == player =>
+    case Some(seat) if seat.player == player =>
       // TODO player left
     case _ =>
   }
   
   def timeout() = round.acting match {
-    case Some(sitting) =>
-      standPat(sitting)
+    case Some(seat) =>
+      standPat(seat)
       ref ! nextTurn()
       
     case _ =>

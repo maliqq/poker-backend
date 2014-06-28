@@ -1,6 +1,7 @@
 package de.pokerno.gameplay.betting
 
-import de.pokerno.model.{Player, Bet, Seat}
+import de.pokerno.model.{Player, Bet}
+import de.pokerno.model.table.Seat
 import de.pokerno.gameplay.round.{Context => RoundContext}
 import de.pokerno.gameplay.{Betting, Context => Gameplay}
 import de.pokerno.util.Colored._ 
@@ -21,10 +22,10 @@ private[gameplay] class Context(_gameplay: Gameplay, ref: ActorRef) extends Roun
   // add bet
   def add(player: Player, bet: Bet): Unit =
     round.acting match {
-      case Some(sitting) if sitting.player == player =>
+      case Some(seat) if seat.player == player && !seat.isLeaving => // FIXME willLeave
         
         info("[betting] %s add %s", player, bet)
-        addBet(sitting, bet)
+        addBet(seat, bet)
         // next turn
         ref ! nextTurn()
         
@@ -34,18 +35,11 @@ private[gameplay] class Context(_gameplay: Gameplay, ref: ActorRef) extends Roun
   
   //
   def cancel(player: Player) = round.acting match {
-    case Some(sitting) =>
+    case Some(seat) if seat.player == player =>
       info("[betting] %s cancel", player)
-      if (sitting.player == player) {
-        // leaving currently acting player: just fold
-        addBet(sitting, Bet.fold, forced = true)
-        sitting.leave()
-        ref ! nextTurn()
-      } else {
-        // in headsup - return uncalled bet, fold
-        // in multipot - just leave orphan bet
-      }
-    case None =>
+      addBet(seat, Bet.fold, forced = true)
+      ref ! nextTurn()
+    case _ =>
   }
   
   // timeout bet

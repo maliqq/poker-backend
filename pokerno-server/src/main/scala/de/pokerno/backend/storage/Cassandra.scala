@@ -36,8 +36,7 @@ object Cassandra {
       roomId: java.util.UUID,
       started: java.util.Date,
       ended: java.util.Date,
-      game: model.GameType,
-      limit: model.GameLimit,
+      game: model.Game,
       stake: model.Stake,
       button: Int,            // staring position at the table
       board: poker.Cards,

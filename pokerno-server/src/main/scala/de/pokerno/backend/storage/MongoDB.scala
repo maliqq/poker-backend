@@ -20,8 +20,7 @@ object MongoDB {
       roomId:   java.util.UUID,
       started:  java.util.Date,
       ended:    java.util.Date,
-      game:     model.GameType,
-      limit:    model.GameLimit,
+      game:     model.Game,
       stake:    model.Stake,
       button:   Int,            // staring position at the table
       board:    poker.Cards,
@@ -33,8 +32,9 @@ object MongoDB {
           "room_id" -> roomId,
           "started" -> started,
           "ended" -> ended,
-          "game" -> game.toString(),
-          "limit" -> limit.toString(),
+          "game_type" -> game.`type`.toString(),
+          "game_limit" -> game.limit.toString(),
+          "table_size" -> game.tableSize,
           "stake" -> MongoDBObject(
               "big_blind" -> stake.bigBlind,
               "small_blind" -> stake.smallBlind,

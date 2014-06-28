@@ -19,6 +19,7 @@ object PostgreSQL {
       var ended: java.sql.Timestamp,
       @Column("game_type") var game: String,
       @Column("game_limit") var limit: String,
+      @Column("table_size") var tableSize: Int,
       @Column("big_blind") var bigBlind: Double,
       @Column("small_blind") var smallBlind: Double,
       @Column(name = "ante", optionType=classOf[Double]) var ante: Option[Double],
@@ -29,7 +30,7 @@ object PostgreSQL {
       var rake: Double,
       var uncalled: Double
   ) extends KeyedEntity[java.util.UUID] {
-    def this() = this(null, null, null, null, "", "", 0, 0, None, None, 0, null, 0, 0, 0)
+    def this() = this(null, null, null, null, "", "", 0, 0, 0, None, None, 0, null, 0, 0, 0)
   }
   
   class Position(
@@ -54,13 +55,13 @@ object PostgreSQL {
       var fold: Boolean,
       @Column(name="call", optionType = classOf[Double]) var call: Option[Double],
       @Column(name="raise", optionType = classOf[Double]) var raise: Option[Double],
-      @Column(name="force", optionType = classOf[Double]) var force: Option[Double],
+      //@Column(name="force", optionType = classOf[Double]) var force: Option[Double],
       @Column(name="all_in", optionType = classOf[Boolean]) var isAllIn: Option[Boolean],
       @Column(name="timeout", optionType = classOf[Boolean]) var isTimeout: Option[Boolean],
       var cards: Array[Byte],
       var muck: java.lang.Boolean
   ) {
-    def this() = this(null, null, null, "", "", false, false, None, None, None, None, None, null, null)
+    def this() = this(null, null, null, "", "", false, false, None, None, None, None, null, null)
   }
   
   object PlayHistoryDB extends Schema {
@@ -78,8 +79,7 @@ object PostgreSQL {
       roomId:   java.util.UUID,
       started:  java.util.Date,
       ended:    java.util.Date,
-      game:     model.GameType,
-      limit:    model.GameLimit,
+      game:     model.Game,
       stake:    model.Stake,
       button:   Int,            // staring position at the table
       board:    poker.Cards,
@@ -91,7 +91,7 @@ object PostgreSQL {
           _id,
           roomId,
           started, ended,
-          game.toString(), limit.toString(),
+          game.`type`.toString(), game.limit.toString(), game.tableSize,
           stake.bigBlind.toDouble, stake.smallBlind.toDouble, stake.ante.map(_.toDouble), stake.bringIn.map(_.toDouble),
           button,
           (board: Array[Byte]),
@@ -134,9 +134,12 @@ object PostgreSQL {
           bet.name,
           bet.isCheck,
           bet.isFold,
-          if (bet.isCall) Some(bet.toActive.amount.toDouble) else None,
+          if (bet.isCall)
+            Some(bet.toActive.amount.toDouble)
+          else if (bet.isForced)
+            Some(bet.toForced.amount.toDouble)
+          else None,
           if (bet.isRaise) Some(bet.toActive.amount.toDouble) else None,
-          if (bet.isForced) Some(bet.toForced.amount.toDouble) else None,
           isAllIn, isTimeout,
           null, null
       )

@@ -1,5 +1,7 @@
 package de.pokerno.model.tournament
 
-class Level {
-
+case class Level(
+  smallBlind: Int,
+  bigBlind: Int,
+  ante: Option[Int] = None) {
 }

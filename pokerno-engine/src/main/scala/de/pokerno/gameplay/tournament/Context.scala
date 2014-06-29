@@ -3,8 +3,9 @@ package de.pokerno.gameplay.tournament
 import de.pokerno.model._
 import de.pokerno.gameplay._
 
-class BuyIn {
+abstract class BuyIn {
   val startingStack: Int
+  val addonStack: Option[Int]
 }
 
 abstract class Context {

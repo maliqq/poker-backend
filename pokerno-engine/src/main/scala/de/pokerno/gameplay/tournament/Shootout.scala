@@ -18,6 +18,7 @@ trait Shootout {
   ------ 16 players - 4 rounds
   ------ 32 players - 5 rounds
   ------ 64 players - 6 rounds
+  ------ 128/256/512/1024/2048/4096/8192/16384/32768
   
   Double shootout scheme:
           [Final table: X players]

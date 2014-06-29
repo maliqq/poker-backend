@@ -1,90 +1,88 @@
 package de.pokerno.gameplay.tournament
 
-import akka.actor.{ Actor, ActorRef, ActorLogging }
-
-import de.pokerno.model._
-import concurrent.duration._
+import akka.actor.{Actor, ActorLogging, FSM}
 
 object Tournament {
-
-  case class BuyIn(
-      price: Decimal, // buy in price
-      stack: Int, // stack for entry and re-entry (rebuy)
-      fee: Option[Decimal] = None, // buy in fee
-      addonStack: Option[Int] = None, // stack for add-on
-      bounty: Option[Decimal] = None // price for knock out
-      ) {
-  }
-
-  object Format extends Enumeration {
-    val Freezout, Knockout, Shootout = Value
-  }
-
-  case class RebuysPolicy(
-    rebuys: Boolean = false,
-    addons: Boolean = false,
-    rebuyPeriod: Duration,
-    addonBreakPeriod: Duration,
-    maxRebuys: Int)
-
-  class Level(
-      val smallBlind: Int,
-      val bigBlind: Int,
-      val ante: Option[Int] = None) {
-  }
-
-  class Structure(
-    val level: Duration,
-    val break: Duration)
-  
   case class Register(player: Player)
   case class Rebuy(player: Player)
   case class Addon(player: Player)
   case class Knockout(winner: Player, looser: Player)
   case class Eliminate(player: Player)
-
-  import Format._
+  
+  trait State
+  case object Waiting extends State
+  case object WaitingShootoutRoundCompletion extends State
+  case object Active extends State
+  case object Bubble extends State
+  trait Data
 }
 
-class Tournament(val game: Game, val buyIn: Tournament.BuyIn, val format: Tournament.Format.Value) extends Actor with ActorLogging {
+class Tournament extends Actor with FSM[Tournament.State, Tournament.Data] {
   import Tournament._
   
-  val entries = collection.mutable.Map[Player, Tournament.Entry]()
-  val tables = List[Table]()
-
-  override def preStart() {
+  override def preStart {
   }
   
-  def bucketize(total: Int, perBucket: Int) = List.range(0, total).
-    zipWithIndex.
-    groupBy { x ⇒ Math.floor(x._2 / total.toDouble * perBucket) }.
-    map { case (k, v) ⇒ (k, v.map(_._1)) }
-
-  def initialSeating() {
-    val buckets = bucketize(entries.size, game.tableSize)
-
+  /*
+  == Фаза ожидания
+  Условия начала турнира:
+  - достигнуто нужное количество зарегистрированных игроков
+  - турнир запущен по таймеру, есть гарантированная сумма выплат
+  Условия отмены турнира:
+  - турнир запущен по таймеру, не достигнуто минимальное количество игроков
+  Принимает следующие типы сообщений:
+  - вход на турнир
+  - отмена входа и возврат взноса
+  Раздает следующие типы сообщений:
+  - анонс старта турнира
+  - турнир отменен
+  - рассадка игроков
+  */
+  when(Waiting) {
+    case Event(_, _) =>
+      stay()
   }
-
-  def receive = {
-    case Register(player) ⇒
-      entries += (player -> Tournament.Entry(buyIn.stack))
-
-    case Rebuy(player) ⇒
-      val entry = entries(player)
-      entry.rebuysCount += 1
-      entry.stack += buyIn.stack
-
-    case Addon(player) ⇒
-      val entry = entries(player)
-      if (!entry.addon) {
-        entry.addon = true
-        entry.stack += buyIn.addonStack.get
-      }
-
-    case Knockout(winner, looser) ⇒
-      val entry = entries(winner)
-      entry.knockoutsCount += 1
-
-    case Eliminate(player) ⇒
+  
+  /*
+  == Активная фаза турнира
+  Принимает следующие типы сообщений:
+  - в случае поздней регистрации - входы новых игроков на турнир без возможности возврата средств
+  - вылеты игроков из турнира
+    - при возможности докупиться - запрашивать докупку
+  Раздает следующие типы сообщений:
+  - анонс перерывов
+  - анонс перерыва с аддоном
+  - баббл
+  - рассадка игроков
+  */
+  when(Active) {
+    case Event(_, _) =>
+      stay()
   }
+  
+  /*
+  Баббл - синхронный старт всех раздач за столом
+  */
+  when(Bubble) {
+    case Event(_, _) =>
+      stay()
+  }
+  
+  /*
+  Ждем окончания раунда в шутаут-турнире
+  */
+  when(WaitingShootoutRoundCompletion) {
+    case Event(_, _) =>
+      stay()
+  }
+  
+  whenUnhandled {
+    case _ =>
+      stay()
+  }
+  
+  override def postStop {
+    
+  }
+  
 }

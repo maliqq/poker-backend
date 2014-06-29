@@ -7,5 +7,6 @@ trait Timers {
   
   val actingTimer       = new Countdown("acting", 30.seconds)
   val reconnectTimer    = new Countdown("reconnect", 15.seconds)
+  val awayTimer         = new Countdown("away", 10.minutes)
   
 }

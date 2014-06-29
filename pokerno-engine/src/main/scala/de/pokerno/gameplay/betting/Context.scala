@@ -45,18 +45,16 @@ private[gameplay] class Context(_gameplay: Gameplay, ref: ActorRef) extends Roun
   // timeout bet
   def timeout() = round.acting match {
     case Some(seat) =>
-      val bet: Bet = seat.state match {
-        case Seat.State.Away ⇒
-          // force fold
-          Bet.fold
-  
-        case _ ⇒
+      // TODO sit-out by counter
+      val bet: Bet = 
+        if (seat.isAway) Bet.fold
+        else {
           // force check/fold
           if (round.callAmount == 0 || seat.isCalled(round.callAmount))
             Bet.check
           else Bet.fold
-      }
-  
+        }
+
       addBet(seat, bet, timeout = true)
       ref ! nextTurn()
     

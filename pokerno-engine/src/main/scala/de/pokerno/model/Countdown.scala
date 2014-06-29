@@ -1,7 +1,7 @@
 package de.pokerno.model
 
 import com.fasterxml.jackson.annotation.{JsonValue, JsonInclude}
-import akka.actor.{Cancellable, Scheduler}
+import akka.actor.{Actor, Cancellable, Scheduler}
 import concurrent.duration._
 import de.pokerno.util.Colored._
 

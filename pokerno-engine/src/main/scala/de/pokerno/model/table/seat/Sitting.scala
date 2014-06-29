@@ -51,7 +51,7 @@ class Sitting(
     presenceCallbacks.on(old, _presence)
   }
 
-  private var _lastSeenOnline: Option[java.util.Date] = None
+  private var _lastSeenOnline: Option[java.time.Instant] = None
   def lastSeenOnline = _lastSeenOnline
   
   private val presenceCallbacks = new Callbacks[Option[Presence.Value]]()
@@ -59,7 +59,7 @@ class Sitting(
     case (_old, _new) ⇒
       _new match {
         case Some(Presence.Offline) ⇒
-          _lastSeenOnline = Some(new java.util.Date())
+          _lastSeenOnline = Some(java.time.Instant.now())
         case _ ⇒ // nothing
       }
   }

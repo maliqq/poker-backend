@@ -4,6 +4,7 @@ import akka.actor.Actor
 import de.pokerno.model
 import de.pokerno.gameplay
 import concurrent.duration._
+import de.pokerno.protocol.cmd
 
 trait Presence { a: Actor ⇒
 
@@ -29,6 +30,9 @@ trait Presence { a: Actor ⇒
     table(player) map { seat =>
       seat.away()
       seat.actingTimer.done()
+      seat.awayTimer.start(new model.AkkaTimers(system.scheduler, system.dispatcher)) {
+        self ! cmd.KickPlayer(player)
+      }
       // auto kick
       // TODO: notify away
       //events.publish(gameplay.Events.playerAway(pos, player)) { _.all() }
@@ -38,6 +42,7 @@ trait Presence { a: Actor ⇒
   def playerOnline(player: model.Player) {
     table(player) map { seat =>
       seat.online()
+      seat.awayTimer.cancel()
       seat.actingTimer.resume()
       seat.reconnectTimer.cancel()
       events broadcast gameplay.Events.playerOnline(seat)

@@ -43,7 +43,7 @@ trait JoinLeave { room: Room =>
             events broadcast gameplay.Events.playerJoin(seat)
           }
           
-          f.onFailure { case err: de.pokerno.payment.thrift.Error =>
+          f.onFailure { case err: de.pokerno.payment.thrift.NotEnoughMoney =>
             log.error("balance error: %s", err.message)
             events broadcast gameplay.Events.error(err)
           }

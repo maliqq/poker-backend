@@ -21,10 +21,10 @@ object Cash {
     val (min, max) = (stake.buyInMin * bb, stake.buyInMax * bb)
     // validations
     if (amount < min) {
-      throw new thrift.Error("Minimum buy in is: %.2f (%d BB); got: %.2f" format(min, stake.buyInMin, amount))
+      throw new thrift.BuyInRequired("Minimum buy in is: %.2f (%d BB); got: %.2f" format(min, stake.buyInMin, amount))
     }
     if (amount > max) {
-      throw new thrift.Error("Maximum buy in is: %.2f (%d BB); got: %.2f" format(max, stake.buyInMax, amount))
+      throw new thrift.BuyInRequired("Maximum buy in is: %.2f (%d BB); got: %.2f" format(max, stake.buyInMax, amount))
     }
     
     inTransaction {
@@ -33,7 +33,7 @@ object Cash {
         Refill.refill(balance) // TODO side-effects
       }
       if (balance.amount < amount) {
-        throw new thrift.Error("player %s: not enough money; asked: %.2f have: %.2f" format(playerId, amount, balance.amount))
+        throw new thrift.NotEnoughMoney("player %s: not enough money; asked: %.2f have: %.2f" format(playerId, amount, balance.amount))
       }
       val order = orders.insert(Order.buyIn(playerId, amount, roomId))
       purchase(balance, order)

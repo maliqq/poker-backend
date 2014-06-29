@@ -69,7 +69,8 @@ object PokernoBuild extends Build {
     //"com.twitter" % "ostrich" % "2.3.0"
     "org.scala-lang" % "scala-reflect" % "2.10.3",
     "com.twitter" %% "util-core" % "6.10.0",
-    "commons-codec" % "commons-codec" % "1.9"
+    "commons-codec" % "commons-codec" % "1.9",
+    "com.codahale.metrics" % "metrics-core" % "3.0.1"
   )
   
   lazy val testDeps = Seq(
@@ -169,7 +170,6 @@ object PokernoBuild extends Build {
       name := "pokerno-server",
       //version := "0.0.1",
       libraryDependencies ++= testDeps ++ Seq(
-        "com.codahale.metrics" % "metrics-core" % "3.0.1",
         //"com.codahale.metrics" % "metrics-graphite" % "3.0.1",
         "io.spray" % "spray-can" % "1.2.1",
         "io.spray" % "spray-routing" % "1.2.1",

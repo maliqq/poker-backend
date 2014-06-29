@@ -18,6 +18,7 @@ object PokerDB extends Schema {
   
   val tournaments       = table[Tournament]("poker_tournaments")
   val tournamentBuyIns  = table[TournamentBuyIn]("poker_tournament_buy_ins")
+  val tournamentEntries = table[TournamentEntry]("poker_tournament_entries")
   
   lazy val roomsWithGamesAndStakes = join(rooms, games.leftOuter, mixes.leftOuter, stakes)((room, game, mix, stake) =>
     select((room, game, mix, stake))

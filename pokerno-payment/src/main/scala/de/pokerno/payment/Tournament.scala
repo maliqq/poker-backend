@@ -20,6 +20,7 @@ object Tournament {
       val balance = Balance.get(playerId, buyIn.currencyId)
       val order = orders.insert(Order.register(playerId, amount, tournamentId))
       purchase(balance, order)
+      pokerdb.model.TournamentEntry.create(tournamentId, playerId)
     }
   }
   

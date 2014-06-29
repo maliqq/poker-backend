@@ -6,11 +6,6 @@ import de.pokerno.model._
 import concurrent.duration._
 
 object Tournament {
-  case class Entry(var stack: Decimal) {
-    var rebuysCount: Int = 0
-    var addon: Boolean = false
-    var knockoutsCount: Int = 0
-  }
 
   case class BuyIn(
       price: Decimal, // buy in price

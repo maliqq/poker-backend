@@ -4,6 +4,7 @@ import de.pokerno.model._
 import de.pokerno.gameplay._
 
 class BuyIn {
+  val startingStack: Int
 }
 
 abstract class Context {
@@ -12,4 +13,6 @@ abstract class Context {
   val balance: de.pokerno.payment.thrift.Payment.FutureIface
   val events: Events
   val buyIn: BuyIn
+  
+  def startingStack = buyIn.startingStack
 }

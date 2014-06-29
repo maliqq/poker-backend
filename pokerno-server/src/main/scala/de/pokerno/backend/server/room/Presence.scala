@@ -28,7 +28,7 @@ trait Presence { a: Actor ⇒
   def playerAway(player: model.Player) {
     table(player) map { seat =>
       seat.away()
-      seat.actingTimer.destroy()
+      seat.actingTimer.done()
       // auto kick
       // TODO: notify away
       //events.publish(gameplay.Events.playerAway(pos, player)) { _.all() }

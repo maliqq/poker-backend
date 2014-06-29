@@ -22,71 +22,90 @@ class AkkaTimers(scheduler: Scheduler, ec: concurrent.ExecutionContext) extends 
   }
 }
 
-abstract class Timer(timers: Timers) {
-  var timer: Cancellable = create()
+class Pausable(timers: Timers, initialDuration: FiniteDuration) {
+  private var ticked = FiniteDuration(0, MILLISECONDS)
   
-  def create(): Cancellable
-  def done(): Unit
+  private var started: java.time.Instant = null
+  private var _timer: Cancellable = null
   
-  def cancel() = timer.cancel()
-  def resume() = timer = create()
+  start()
   
-  def destroy() = {
-    cancel()
-    done()
+  def cancel() = _timer.cancel()
+  
+  def pause() = {
+    _timer.cancel()
+    ticked += FiniteDuration(java.time.Instant.now().toEpochMilli() - started.toEpochMilli(), MILLISECONDS)
   }
   
+  def resume() = {
+    restart()
+  }
+  
+  def left = initialDuration - ticked
+  
+  private def restart() {
+    restart(left)
+  }
+  
+  private def restart(left: FiniteDuration) {
+    started = java.time.Instant.now()
+    _timer = start(left)
+  }
+  
+  private def start() {
+    restart(initialDuration)
+  }
+  
+  private def start(duration: FiniteDuration) = timers.after(duration) {
+    done()
+    cleanup()
+  }
+  
+  def done() = {}
+  def cleanup() = {}
 }
 
-class Countdown(val name: String, capacity: Int) {
-  private var _clock = capacity
-  @JsonValue def clock: Option[Int] = if (timer.isDefined) Some(_clock) else None
-  
-  var timer: Option[Timer] = None
+class Countdown(val name: String, duration: FiniteDuration) {
+  private var timer: Option[Pausable] = None
   
   def start(timers: Timers)(f: => Unit) {
-    _clock = capacity
-    timer = Some(new Timer(timers) {
-      def create() = timers.every(1 second, 1 second) {
-        tick()
+    timer = Some(new Pausable(timers, duration) {
+      override def done = f
+      override def cleanup = {
+        timer = None
       }
-      
-      def done() = f
     })
   }
   
-  def cancel() {
-    info("[countdown] Cancelling %s", name)
-    _cancel()
-    _clock = 0
-    timer = None
-  }
-  
   def pause() {
-    info("[countdown] Pausing %s; %ds left", name, _clock)
-    _cancel()
+    timer.map { t =>
+      t.pause()
+      info("[countdown] Pausing %s; %s left", name, t.left)
+    }
   }
-  
-  private def _cancel() {
-    timer.map(_.cancel())
-  }
-  
+
   def resume() {
-    if (_clock > 0) {
-      info("[countdown] resuming %s; %ds left", name, _clock)
-      timer.map(_.resume())
+    timer.map { t =>
+      info("[countdown] resuming %s; %s left", name, t.left)
+      t.resume()
     }
   }
   
-  def tick() {
-    _clock -= 1
-    if (_clock <= 0) destroy()
+  def cancel() {
+    timer.map { t =>
+      info("[countdown] Cancelling %s", name)
+      t.cancel()
+      timer = None
+    }
   }
-  
-  def destroy() {
-    info("[countdown] %s done", name)
-    timer.map(_.destroy())
-    timer = None
+
+  def done() {
+    timer.map { t =>
+      info("[countdown] Done %s", name)
+      t.cancel()
+      t.done()
+      timer = None
+    }
   }
-   
+
 }

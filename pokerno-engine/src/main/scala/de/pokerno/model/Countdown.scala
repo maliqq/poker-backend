@@ -65,7 +65,7 @@ class Pausable(timers: Timers, initialDuration: FiniteDuration) {
   def cleanup() = {}
 }
 
-class Countdown(val name: String, duration: FiniteDuration) {
+class Countdown(name: String, duration: FiniteDuration) {
   private var timer: Option[Pausable] = None
   
   def start(timers: Timers)(f: => Unit) {

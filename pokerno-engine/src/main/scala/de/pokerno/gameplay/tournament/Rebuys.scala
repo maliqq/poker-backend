@@ -6,27 +6,33 @@ trait Rebuys {
   
   val ctx: Context
   import ctx._
-  def tournamentId = ctx.id.toString
-  val payment: de.pokerno.payment.thrift.Payment.FutureIface
-  val entries = collection.mutable.Map.empty[Player, Entry]
-
+  
+  /*
+  Ребаи возможны при нулевом стеке, в перерывах либо по запросу во время текущей раздачи.
+  В последнем случае пополнение происходит после окончания текущей раздачи.
+  */
   def rebuy(playerId: Player) {
     val f = payment.rebuy(tournamentId, playerId)
     f.onSuccess { _ =>
+      val entry = entries(playerId)
+      entry.rebuysCount += 1
+      entry.stack += buyIn.startingStack
+      metrics.rebuys.inc()
     }
     f.onFailure { case _ =>
     }
   }
   
-  def rebuy_(playerId: Player) {
-    val entry = entries(playerId)
-    entry.rebuysCount += 1
-    entry.stack += buyIn.startingStack
-  }
-  
+  /*
+   Сдвоенные ребаи возможны при нулевом стеке
+  */
   def doubleRebuy(playerId: Player) {
     val f = payment.doubleRebuy(tournamentId, playerId)
     f.onSuccess { _ =>
+      val entry = entries(playerId)
+      entry.rebuysCount += 2
+      entry.stack += buyIn.startingStack * 2
+      metrics.rebuys.inc(2)
     }
     f.onFailure { case _ =>
     }

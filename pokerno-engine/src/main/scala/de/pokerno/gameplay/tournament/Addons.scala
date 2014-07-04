@@ -15,16 +15,15 @@ trait Addons {
   def addon(playerId: Player) {
     val f = payment.addon(tournamentId, playerId)
     f.onSuccess { _ =>
+      val entry = entries(playerId)
+      if (!entry.addon) {
+        entry.addon = true
+        entry.stack += buyIn.addonStack.get
+      }
+      metrics.addons.inc()
     }
+    
     f.onFailure { case _ =>
-    }
-  }
-  
-  def addon_(playerId: Player) {
-    val entry = entries(playerId)
-    if (!entry.addon) {
-      entry.addon = true
-      entry.stack += buyIn.addonStack.get
     }
   }
   

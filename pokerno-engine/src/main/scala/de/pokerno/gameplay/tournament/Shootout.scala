@@ -1,8 +1,13 @@
 package de.pokerno.gameplay.tournament
 
-trait Shootout {
+import de.pokerno.model._
+import de.pokerno.model.tournament._
+import util.Random
+
+trait Shootout extends Rebalance {
   
   def tableSize: Int
+  def entrantsCount: Int
   
   /*
   Headsup scheme:
@@ -41,5 +46,16 @@ trait Shootout {
   - хедзап: автоматический переход в следующий раунд либо возврат байина
   - неполные столы
   */
+  
+  def rebalance: Seq[List[Int]] = {
+    val roundN      = Math.floor(Math.log(entrantsCount) / Math.log(tableSize)).intValue
+    val roundNum = if (tableSize > 2 && roundN == 1 && entrantsCount >= tableSize * 2) { // we can build headsup tables to the final
+      roundN + 1
+    } else roundN
+    
+    val tablesCount   = Math.pow(tableSize, roundNum - 1).intValue
+    println("entrantsCount=", entrantsCount, "roundNum=", roundNum,"tablesCount=",tablesCount)
+    bucketize(entrantsCount, tableSize, tablesCount)
+  }
 
 }

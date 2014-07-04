@@ -3,6 +3,7 @@ package de.pokerno.gameplay
 import de.pokerno.protocol.GameEvent
 
 import de.pokerno.model._
+import de.pokerno.model.tournament._
 import de.pokerno.model.table.seat.Sitting
 import de.pokerno.poker.{ Hand, Card, Cards }
 import de.pokerno.protocol.msg
@@ -85,13 +86,11 @@ object Events {
     msg.AskBuyIn(seat.asPosition, stake.buyInAmount, available)
   }
   
-  def addBet(seat: Sitting, bet: Bet, timeout: Option[Boolean] = None)
-                                = msg.DeclareBet(seat.asPosition, bet, timeout)
-  def declareWinner(seat: Sitting, amount: Decimal, uncalled: Option[Boolean] = None)
-                                = msg.DeclareWinner(seat.asPosition, amount, uncalled)
-  def declareHand(seat: Sitting, cards: Cards, hand: Hand)
-                                = msg.DeclareHand(seat.asPosition, cards, hand)
-  def showCards(seat: Sitting, cards: Cards, muck: Boolean = false)
-                                = msg.ShowCards(seat.asPosition, cards, muck)
+  def addBet(seat: Sitting, bet: Bet, timeout: Option[Boolean] = None) = msg.DeclareBet(seat.asPosition, bet, timeout)
+  def declareWinner(seat: Sitting, amount: Decimal, uncalled: Option[Boolean] = None) = msg.DeclareWinner(seat.asPosition, amount, uncalled)
+  def declareHand(seat: Sitting, cards: Cards, hand: Hand) = msg.DeclareHand(seat.asPosition, cards, hand)
+  def showCards(seat: Sitting, cards: Cards, muck: Boolean = false) = msg.ShowCards(seat.asPosition, cards, muck)
     
+  // tournaments
+  def levelUp(number: Int, level: Level) = msg.LevelUp(number, level)
 }

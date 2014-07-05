@@ -172,11 +172,6 @@ class Room(id: java.util.UUID,
       // TODO broadcast
       stay()
     
-    case Event(cmd.AdvanceStack(player, amount), _) =>
-      table(player).map { seat =>
-        seat.buyIn(amount)
-      }
-      tryResume()
       
 //    case Event(comeback: cmd.ComeBack, _) =>
 //      stay()
@@ -268,6 +263,18 @@ class Room(id: java.util.UUID,
       }
       
       stay()
+    
+    case Event(cmd.AdvanceStack(player, amount), _) =>
+      table(player).map { seat =>
+        if (seat.isTaken) {
+          seat.buyIn(amount)
+          events broadcast gameplay.Events.playerJoin(seat)
+        } else {
+          seat.buyIn(amount)
+          // TODO ???
+        }
+      }
+      tryResume()
       
     case Event(PlayState, NoneRunning) =>
       sender ! api.PlayState(roomId, table, variation, stake)

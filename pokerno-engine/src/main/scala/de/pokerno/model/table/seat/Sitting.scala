@@ -36,6 +36,7 @@ class Sitting(
           if (isEmpty) throw new IllegalStateException("can't change emtpy seat state: %s" format (this))
 
         case State.Away ⇒
+          // FIXME: java.lang.IllegalStateException
           if (isOnline) throw new IllegalStateException("can't change seat state to away: %s (%s)" format (this, _presence))
         
         case _ =>

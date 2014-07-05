@@ -18,7 +18,27 @@ abstract class Shootout9 extends Shootout {
 class ShootoutSpec extends FunSpec {
   
   describe("Binary shootout") {
+    it("rebalance normalized shootout") {
+      //val t = 16
+      val t = 4
+      for (roundsNum <- (2 to t)) {
+        val n = Math.pow(2, roundsNum).intValue
+        val map = new Shootout2{
+          def entrantsCount = n
+        }.rebalance
+        map.size should equal(Math.pow(2, roundsNum - 1).intValue)
+      }
+    }
     
+    it("rebalance with waiting next level") {
+      val map = new Shootout2{
+        def entrantsCount = 342
+      }.rebalance
+      println(map)
+      // 342 = 256 players next level
+      // a=pow*2-n
+      // a=170 waiting+72 pairs(resulting 36 passing next level)
+    }
   }
   
   describe("Double shootout - 9max") {

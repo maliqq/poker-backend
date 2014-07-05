@@ -23,7 +23,7 @@ object GameLimit {
 
   case object Pot extends GameLimit {
     def name = "pot-limit"
-    def raise(total: Decimal, bb: Decimal, potSize: Decimal) = (bb, potSize)
+    def raise(total: Decimal, bb: Decimal, potSize: Decimal) = (bb, List(potSize, bb).max)
   }
   
   implicit def string2limit(v: String): GameLimit = v match {

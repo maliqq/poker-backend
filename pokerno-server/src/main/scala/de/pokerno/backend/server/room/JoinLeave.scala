@@ -25,10 +25,11 @@ trait JoinLeave { room: Room =>
         case err: Seat.IsTaken ⇒
           val seat = table.seats(join.pos) 
           log.warning("Can't join player {} at {}: seat is taken ({})", player, pos, seat)
-          events broadcast gameplay.Events.error(err)
+          events.publish(gameplay.Events.error(err)) { _.one(join.player) }
+        
         case err: Table.AlreadyJoined ⇒
           log.warning("Can't join player {} at {}: already joined", player, pos)
-          events broadcast gameplay.Events.error(err)
+          events.publish(gameplay.Events.error(err)) { _.one(join.player) }
       }
       None
     }
@@ -46,18 +47,21 @@ trait JoinLeave { room: Room =>
           f.onFailure {
             case err: de.pokerno.payment.thrift.NotEnoughMoney =>
               log.error("balance error: {}", err.message)
-              events broadcast gameplay.Events.error(err)
+              events.publish(gameplay.Events.error(err)) { _.one(join.player) }
+            
             case err: de.pokerno.payment.thrift.BuyInRequired =>
               log.error("balance error: {}", err.message)
-              events broadcast gameplay.Events.error(err)
+              events.publish(gameplay.Events.error(err)) { _.one(join.player) }
           }
         } else {
+          // ask buy in
           balance.available(player).onSuccess { amount =>
-            events broadcast gameplay.Events.requireBuyIn(seat, stake, amount)
+            events.publish(gameplay.Events.requireBuyIn(seat, stake, amount)) { _.one(join.player) }
           }
+          // TODO notify seat reserved
         }
         
-      case _ => 
+      case _ =>
     }
   }
   

@@ -5,5 +5,5 @@ import de.pokerno.model.table.seat.Position
 
 sealed case class AskBuyIn(
     @JsonUnwrapped position: Position,
-    @JsonProperty buyIn: Tuple2[Decimal, Decimal],
+    @JsonProperty("buy_in") buyIn: Tuple2[Decimal, Decimal],
     @JsonProperty available: Decimal) extends GameEvent {}

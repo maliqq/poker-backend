@@ -2,22 +2,25 @@ package de.pokerno.gameplay.tournament
 
 trait Rebalance {
 
-  def bucketize(total: Int, perBucket: Int, bucketsCount: Int) = {
-    val n = Math.floor(total / perBucket).intValue
+  def rebalance(total: Int, n: Int, bucketsCount: Int): Tuple2[Seq[List[Int]], List[Int]] = {
     
     val indexes = List.range(0, total)
-    val buckets = indexes.grouped(List(n, perBucket).min).toList
+    val buckets = indexes.grouped(n).toList
     
-    println("n=", n, "perBucket=", perBucket, "buckets.size=", buckets.size, "bucketsCount=", bucketsCount)
-    // (n=,171,perBucket=,2,buckets.size=,171,bucketsCount=,128)
+    //println("n=", n, "buckets.size=", buckets.size, "bucketsCount=", bucketsCount)
     
-    if (buckets.size > bucketsCount) {
-      // TODO optimize
-      val (result, _last) = buckets.splitAt(bucketsCount)
-      var last = _last.flatten
-      val (zipping, tail) = result.splitAt(last.size)
-      zipping.zip(last).map{ case (t, x) => x::t } ++ tail
-    } else buckets
+    if (buckets.size == bucketsCount) {
+      return (buckets, List.empty)
+    }
+    
+    // TODO optimize
+    val (result, _last) = buckets.splitAt(bucketsCount)
+    var last = _last.flatten
+    val (zipping, tail) = result.splitAt(last.size)
+    val normalized = zipping.zip(last).map { case (t, x) => x::t }
+    if (n == 1) {
+      (normalized, tail.flatten)
+    } else (normalized ++ tail, List.empty)
   }
   
 }

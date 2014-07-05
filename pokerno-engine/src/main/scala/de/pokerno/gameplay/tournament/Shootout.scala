@@ -47,15 +47,13 @@ trait Shootout extends Rebalance {
   - неполные столы
   */
   
-  def rebalance: Seq[List[Int]] = {
-    val roundN      = Math.floor(Math.log(entrantsCount) / Math.log(tableSize)).intValue
-    val roundNum = if (tableSize > 2 && roundN == 1 && entrantsCount >= tableSize * 2) { // we can build headsup tables to the final
-      roundN + 1
-    } else roundN
-    
-    val tablesCount   = Math.pow(tableSize, roundNum - 1).intValue
-    println("entrantsCount=", entrantsCount, "roundNum=", roundNum,"tablesCount=",tablesCount)
-    bucketize(entrantsCount, tableSize, tablesCount)
+  def roundsNum = Math.ceil(Math.log(entrantsCount) / Math.log(tableSize)).intValue
+  def tablesCount = Math.pow(tableSize, roundsNum - 1).intValue
+  
+  def rebalance: Tuple2[Seq[List[Int]], List[Int]] = {
+    //println("entrantsCount=", entrantsCount, "roundNum=", roundsNum,"tablesCount=",tablesCount)
+    val n = Math.floor(entrantsCount / tablesCount).intValue
+    rebalance(entrantsCount, n, tablesCount)
   }
 
 }

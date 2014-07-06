@@ -1,5 +1,10 @@
 package de.pokerno.gameplay.tournament
 
-object SitAndGo {
-
+trait SitAndGo {
+  
+  def minEntrantsCount: Int
+  def maxEntrantsCount: Int
+  
+  def isSitAndGo = minEntrantsCount == maxEntrantsCount
+  
 }

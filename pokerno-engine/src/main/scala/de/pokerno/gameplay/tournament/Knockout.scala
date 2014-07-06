@@ -7,8 +7,13 @@ trait Knockout {
   import ctx._
 
   def knockout(winner: Player, loser: Player) {
-    val entry = entries(winner)
-    entry.knockoutsCount += 1
+    val f = payment.bounty(tournamentId, winner, loser)
+    f.onSuccess { _ => // TODO return amount awarded
+      val entry = entries(winner)
+      entry.knockoutsCount += 1
+    }
+    f.onFailure { _ =>
+    }
   }
   
 }

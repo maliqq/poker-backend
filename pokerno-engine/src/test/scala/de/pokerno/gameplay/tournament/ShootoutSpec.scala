@@ -62,7 +62,8 @@ class ShootoutSpec extends FunSpec {
     }
     
     it("rebalance with incomplete tables") {
-      for (i <- (18 to 80)) {
+      //for (i <- (18 to 80)) {
+        val i = 20
         val shootout = new Shootout9 {
           def entrantsCount = i
         }
@@ -70,11 +71,11 @@ class ShootoutSpec extends FunSpec {
         shootout.roundsNum should equal(2)
         
         val (map, _) = shootout.rebalance
-        //println(map)
+        println(map)
         
         map.size should equal(9)
         map.filter { _.size == 9 }.size should equal(if (i < 72) 0 else i % 9)
-      }
+      //}
     }
   }
   

@@ -1,5 +1,7 @@
 package de.pokerno.gameplay.tournament
 
-class Guarantee {
+trait Guarantee {
 
+  final val minimumPlayersRequiredToStart = 2
+  
 }

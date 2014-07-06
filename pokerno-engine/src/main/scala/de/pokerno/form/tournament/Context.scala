@@ -1,4 +1,4 @@
-package de.pokerno.gameplay.tournament
+package de.pokerno.form.tournament
 
 import de.pokerno.model._
 import de.pokerno.model.tournament._

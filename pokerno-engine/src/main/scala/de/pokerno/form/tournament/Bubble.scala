@@ -1,4 +1,4 @@
-package de.pokerno.gameplay.tournament
+package de.pokerno.form.tournament
 
 object Bubble {
   case object Pause

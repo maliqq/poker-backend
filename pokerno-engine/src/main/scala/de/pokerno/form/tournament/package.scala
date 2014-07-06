@@ -1,6 +1,6 @@
-package de.pokerno.gameplay
+package de.pokerno.form
 
-package de.pokerno.form.tournament tournament {
+package object tournament {
   type Decimal = math.BigDecimal
   type Player = de.pokerno.model.Player
 }

@@ -1,4 +1,4 @@
-package de.pokerno.gameplay.tournament
+package de.pokerno.form.tournament
 
 import org.scalatest._
 import org.scalatest.Matchers._

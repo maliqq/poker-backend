@@ -23,7 +23,7 @@ object Route {
 
 case class Notification(message: GameEvent, from: Route = Route.NoOne, to: Route = Route.All) // from: Route = Route.NoOne, 
 
-private[gameplay] class Broker(id: String) extends ActorEventBus
+class Broker(id: String) extends ActorEventBus
     with ScanningClassification {
 
   type Classifier = String

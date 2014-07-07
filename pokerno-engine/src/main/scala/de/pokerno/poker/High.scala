@@ -28,7 +28,7 @@ private[poker] trait HighHand { self: CardSet ⇒
       paired.get(2) match {
         case None ⇒ return None
         case Some(pairs) ⇒
-          val minor = pairs.sorted(CardOrdering.ByHead).head
+          val minor = pairs.sorted(CardOrdering.ByHead).reverse.head
           val major = sets.head
           (major, minor)
       }

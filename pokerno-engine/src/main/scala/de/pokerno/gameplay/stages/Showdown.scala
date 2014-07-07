@@ -10,7 +10,39 @@ import scala.math.{BigDecimal => Decimal}
  * Стадия вскрытия карт
  */
 
-private[gameplay] case class Showdown(ctx: stg.Context) extends Stage {
+private[gameplay] trait ShowdownStrategy {
+  
+  def best(pot: SidePot, hands: Map[Player, Hand]): List[Tuple2[Player, Hand]] = {
+    val handsForThisPot = hands.toList.filter { case (player, hand) ⇒
+      pot.members.contains(player)
+    }
+    val sortedHands = handsForThisPot.sortBy { _._2 }.reverse
+    
+    println(sortedHands)
+
+    val bestHand = sortedHands.head
+    sortedHands.takeWhile(_._2 == bestHand._2)
+  }
+  
+  def rank(pocketCards: Cards, boardCards: Cards, ranking: Hand.Ranking): Hand = {
+    if (boardCards.size == 0)
+      return ranking(pocketCards).get // FIXME None.get
+
+    val hands: List[Option[Hand]] = if (pocketCards.size > 2) {
+      val _hands = for {
+        pair ← pocketCards combinations 2;
+        board ← boardCards combinations 3
+      } yield ranking(pair ++ board)
+      _hands.toList
+    } else List(ranking(pocketCards ++ boardCards))
+
+    hands.flatten.max(Ranking)
+  }
+
+  
+}
+
+private[gameplay] case class Showdown(ctx: stg.Context) extends Stage with ShowdownStrategy {
   
   import ctx.gameplay._
   
@@ -38,16 +70,6 @@ private[gameplay] case class Showdown(ctx: stg.Context) extends Stage {
     }
   }
   
-  private def best(pot: SidePot, hands: Map[Player, Hand]): List[Tuple2[Player, Hand]] = {
-    val handsForThisPot = hands.toList.filter { case (player, hand) ⇒
-      pot.members.contains(player)
-    }
-    val sortedHands = handsForThisPot.sortBy { _._2 }.reverse
-
-    val bestHand = sortedHands.head
-    sortedHands.takeWhile(_._2 == bestHand._2)
-  }
-
   private def winner(pot: Pot, seat: Sitting) = pot.sidePots foreach { side ⇒
     val winner = seat.player
     val amount = side.total
@@ -110,29 +132,12 @@ private[gameplay] case class Showdown(ctx: stg.Context) extends Stage {
       }
     }
   }
-
-  private def rank(player: Player, ranking: Hand.Ranking): Tuple2[Cards, Hand] = {
-    val pocket = dealer pocket player
-    val board = dealer.board
-
-    if (board.size == 0)
-      return (pocket, ranking(pocket).get) // FIXME None.get
-
-    val hands: List[Option[Hand]] = if (pocket.size > 2) {
-      val _hands = for {
-        pair ← pocket combinations 2;
-        board ← dealer.board combinations 3
-      } yield ranking(pair ++ board)
-      _hands.toList
-    } else List(ranking(pocket ++ board))
-
-    (pocket, hands.flatten.max(Ranking))
-  }
-
+  
   private def showHands(ranking: Hand.Ranking): Map[Player, Hand] =
     table.sitting.filter(_.inPot).foldLeft(Map[Player, Hand]()) { case (hands, seat) =>
       val player = seat.player
-      val (pocket, hand) = rank(seat.player, ranking)
+      val pocket = dealer.pocket(player)
+      val hand = rank(pocket, dealer.board, ranking)
       
       //events.publish(message.ShowCards(pos = pos, player = player, cards = pocket))
       play.show(player, pocket)

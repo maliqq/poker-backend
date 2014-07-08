@@ -21,7 +21,14 @@ class PlayerEventSpec extends FunSpec {
     }
     
     it("AddOn") {
-      
+      val buyIn = PlayerEvent.decode("""{"buyin":2000}""")
+      buyIn match {
+        case message.BuyIn(amount) =>
+          amount should equal(2000)
+        
+        case _ =>
+          throw new Exception("not buy in")
+      }
     }
     
     it("BuyIn") {

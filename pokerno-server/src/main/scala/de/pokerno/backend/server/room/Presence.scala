@@ -6,12 +6,9 @@ import de.pokerno.gameplay
 import concurrent.duration._
 import de.pokerno.protocol.cmd
 
-trait Presence { a: Actor ⇒
+trait Presence { room: Room ⇒
 
   import context._
-  
-  def table: model.Table
-  def events: gameplay.Events
 
   case class Away(player: model.Player)
 
@@ -46,6 +43,10 @@ trait Presence { a: Actor ⇒
       seat.actingTimer.resume()
       seat.reconnectTimer.cancel()
       events broadcast gameplay.Events.playerOnline(seat)
+      if (seat.isTaken) {
+        // ask again
+        askBuyIn(seat)
+      }
     }
   }
 

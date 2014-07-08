@@ -3,7 +3,7 @@ package de.pokerno.gameplay.betting
 import de.pokerno.model.{Player, Bet}
 import de.pokerno.model.table.Seat
 import de.pokerno.gameplay.round.{Context => RoundContext}
-import de.pokerno.gameplay.{Betting, Context => Gameplay}
+import de.pokerno.gameplay.{Events, Betting, Context => Gameplay}
 import de.pokerno.util.Colored._ 
 import akka.actor.{ActorRef, Cancellable}
 import concurrent.duration._
@@ -49,6 +49,10 @@ private[gameplay] class Context(_gameplay: Gameplay, ref: ActorRef) extends Roun
       val bet: Bet = 
         if (seat.isAway) Bet.fold
         else {
+          // sit out
+          seat.sitOut
+          events.broadcast(Events.playerSitOut(seat))
+          
           // force check/fold
           if (round.callAmount == 0 || seat.isCalled(round.callAmount))
             Bet.check

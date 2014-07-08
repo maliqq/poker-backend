@@ -267,8 +267,7 @@ class Room(id: java.util.UUID,
     case Event(cmd.AdvanceStack(player, amount), _) =>
       table(player).map { seat =>
         if (seat.isTaken) {
-          seat.buyIn(amount)
-          events broadcast gameplay.Events.playerJoin(seat)
+          buyInSeat(seat, amount)
         } else {
           seat.buyIn(amount)
           // TODO ???

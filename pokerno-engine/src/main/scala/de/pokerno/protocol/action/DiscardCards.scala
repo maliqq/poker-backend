@@ -6,7 +6,7 @@ import de.pokerno.protocol.Serializers.Binary2Cards
 import org.apache.commons.codec.binary.Base64
 
 object DiscardCards {
-  import de.pokerno.poker.Cards._
+  import de.pokerno.poker.Cards.fromBinary
   
   @JsonCreator def build(b: String): DiscardCards = {
     DiscardCards(fromBinary(Base64.decodeBase64(b)))

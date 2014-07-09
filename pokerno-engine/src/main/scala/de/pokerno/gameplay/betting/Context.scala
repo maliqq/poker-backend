@@ -47,12 +47,9 @@ private[gameplay] class Context(_gameplay: Gameplay, ref: ActorRef) extends Roun
     case Some(seat) =>
       // TODO sit-out by counter
       val bet: Bet = 
-        if (seat.isAway) Bet.fold
-        else {
-          // sit out
-          seat.idle()
-          events.broadcast(Events.playerSitOut(seat))
-          
+        if (seat.isAway) {
+          Bet.fold
+        } else {
           // force check/fold
           if (round.callAmount == 0 || seat.isCalled(round.callAmount))
             Bet.check
@@ -60,6 +57,12 @@ private[gameplay] class Context(_gameplay: Gameplay, ref: ActorRef) extends Roun
         }
 
       addBet(seat, bet, timeout = true)
+      
+      if (seat.isFolded) {
+        seat.idle()
+        events.broadcast(Events.playerSitOut(seat))
+      }
+      
       ref ! nextTurn()
     
     case None =>

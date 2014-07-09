@@ -255,10 +255,10 @@ class Room(id: java.util.UUID,
         current match {
           case NoneRunning =>
             // do sit out immediately
-            seat.sitOut()
+            seat.idle()
             events broadcast gameplay.Events.playerSitOut(seat)
             
-          case _ =>             seat.toggleSitOut()
+          case _ =>             seat.toggleSittingOut()
         }
       }
       

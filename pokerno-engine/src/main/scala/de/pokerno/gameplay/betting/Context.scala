@@ -50,7 +50,7 @@ private[gameplay] class Context(_gameplay: Gameplay, ref: ActorRef) extends Roun
         if (seat.isAway) Bet.fold
         else {
           // sit out
-          seat.sitOut
+          seat.idle()
           events.broadcast(Events.playerSitOut(seat))
           
           // force check/fold

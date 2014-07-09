@@ -7,14 +7,8 @@ trait SitOut { s: States =>
   private var _sittingOut = false
   
   def isSittingOut = _sittingOut
-  
-  def toggleSitOut() {
+  def toggleSittingOut() {
     _sittingOut = !_sittingOut
-  }
-  
-  def sitOut() {
-    idle()
-    _sittingOut = false
   }
   
 }

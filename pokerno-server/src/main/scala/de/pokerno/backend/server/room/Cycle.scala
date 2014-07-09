@@ -28,7 +28,8 @@ trait Cycle { room: Room ⇒
         }
       } else if (seat.isSittingOut) {
         //seat.autoplay.folds - for tournament mode
-        seat.sitOut()
+        seat.idle()
+        seat.toggleSittingOut()
       }
       // FIXME: clear cards?
     }

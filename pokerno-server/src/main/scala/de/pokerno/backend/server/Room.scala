@@ -19,25 +19,24 @@ case class RoomEnv(
     broadcasts: Seq[Broadcast] = Seq()
   )
 
-class Room(id: java.util.UUID,
+class Room(val id: java.util.UUID,
     val variation: model.Variation,
     val stake: model.Stake,
     env: RoomEnv)
     extends de.pokerno.form.CashRoom with Observers {
 
-  import env._
-  
   val balance = env.balance
-  
-  def roomId = id.toString()
   
   val table = new model.Table(variation.tableSize)
   val events = new gameplay.Events(roomId)
+  
+  val persist = env.persist
+  val history = env.history
 
   val watchers      = observe(classOf[de.pokerno.form.room.Watchers], f"room-$roomId-watchers")
   val journal       = observe(classOf[de.pokerno.form.room.Journal], f"room-$roomId-journal", "/tmp", roomId)
-  val metrics       = observe(classOf[de.pokerno.form.cash.Metrics], f"room-$roomId-metrics", roomId, pokerdb)
-  val broadcasting  = observe(classOf[Broadcasting], f"room-$roomId-broadcasts", roomId, broadcasts)
+  val metrics       = observe(classOf[de.pokerno.form.cash.Metrics], f"room-$roomId-metrics", roomId, env.pokerdb)
+  val broadcasting  = observe(classOf[Broadcasting], f"room-$roomId-broadcasts", roomId, env.broadcasts)
   
   persist.map { notify(_, f"room-$roomId-persist") }
   

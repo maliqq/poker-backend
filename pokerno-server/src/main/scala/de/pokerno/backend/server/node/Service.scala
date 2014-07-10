@@ -24,15 +24,15 @@ class Service(node: ActorRef) extends thrift.rpc.Node.FutureIface {
   def maintenance: Future[Unit] = Future{}
   
   def close(id: String): Future[Unit] = Future{
-    node ! Node.ChangeRoomState(id, Room.Close)
+    node ! Node.ChangeRoomState(id, de.pokerno.form.Room.Close)
   }
   
   def pause(id: String, reason: thrift.rpc.PauseReason): Future[Unit] = Future{
-    node ! Node.ChangeRoomState(id, Room.Pause)
+    node ! Node.ChangeRoomState(id, de.pokerno.form.Room.Pause)
   }
   
   def resume(id: String): Future[Unit] = Future{
-    node ! Node.ChangeRoomState(id, Room.Resume)
+    node ! Node.ChangeRoomState(id, de.pokerno.form.Room.Resume)
   }
   
   def cancelCurrentDeal(id: String) = Future{}

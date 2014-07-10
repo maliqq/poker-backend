@@ -1,4 +1,4 @@
-package de.pokerno.backend.server
+package de.pokerno.form.cash
 
 import akka.actor.{ Actor, ActorLogging }
 import com.codahale.metrics._

@@ -85,7 +85,7 @@ object Node extends Initialize {
   
   case class ChangeRoomState(
     id: String,
-    newState: Room.ChangeState
+    newState: de.pokerno.form.Room.ChangeState
   )
   
   case class SendCommand(
@@ -129,7 +129,7 @@ class Node(
 
       tryFindActor(id)  {
         case Success(room) ⇒
-          room ! Room.Connect(conn)
+          room ! de.pokerno.form.Room.Connect(conn)
 
         case Failure(_) ⇒
           log.warning("room {} not found for conn {}", id, conn)
@@ -143,7 +143,7 @@ class Node(
 
       tryFindActor(id) {
         case Success(room) ⇒
-          room ! Room.Disconnect(conn)
+          room ! de.pokerno.form.Room.Disconnect(conn)
 
         case Failure(_) ⇒
           log.warning("room {} not found for conn {}", id, conn)

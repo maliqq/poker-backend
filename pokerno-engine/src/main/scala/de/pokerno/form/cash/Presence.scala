@@ -1,12 +1,13 @@
-package de.pokerno.backend.server
+package de.pokerno.form.cash
 
 import akka.actor.Actor
 import de.pokerno.model
 import de.pokerno.gameplay
 import concurrent.duration._
 import de.pokerno.protocol.cmd
+import de.pokerno.form.CashRoom
 
-trait Presence { room: Room ⇒
+trait Presence extends de.pokerno.form.room.Presence { room: CashRoom ⇒
 
   import context._
 

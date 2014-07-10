@@ -1,23 +1,16 @@
-package de.pokerno.backend.server.room
+package de.pokerno.form.cash
 
 import de.pokerno.model.{Player, Stake, Table}
 import de.pokerno.model.table.seat.Sitting
 import de.pokerno.model.table.Seat
 import de.pokerno.gameplay
 import de.pokerno.protocol.cmd
-import de.pokerno.backend.server.Room
+import de.pokerno.form.{Room, CashRoom}
 import math.{BigDecimal => Decimal}
 
-trait JoinLeave { room: Room =>
-
-  def table: Table
-  def stake: Stake
-  def events: gameplay.Events
+trait JoinLeave extends de.pokerno.form.room.JoinLeave { room: CashRoom =>
   
-  protected def joinPlayer(join: cmd.JoinPlayer) {
-    val cmd.JoinPlayer(pos, player, _amount) = join
-    val amount = Option(_amount)
-    
+  def joinPlayer(player: Player, pos: Int, amount: Option[Decimal]) {
     reserveSeat(pos, player) match {
       case Some(seat) =>
         if (amount.isDefined) {
@@ -29,6 +22,12 @@ trait JoinLeave { room: Room =>
         
       case _ =>
     }
+  }
+  
+  protected def joinPlayer(join: cmd.JoinPlayer) {
+    val cmd.JoinPlayer(pos, player, _amount) = join
+    
+    joinPlayer(player, pos, Option(_amount))
   }
   
   protected def reserveSeat(pos: Int, player: Player): Option[Sitting] = {
@@ -79,7 +78,7 @@ trait JoinLeave { room: Room =>
     }
   }
   
-  protected def leaveSeat(seat: Sitting) {
+  def leaveSeat(seat: Sitting) {
     table.clear(seat.pos)
     if (seat.stackAmount > 0) {
       balance.leave(roomId, seat.player, seat.stackAmount.toDouble)
@@ -87,7 +86,7 @@ trait JoinLeave { room: Room =>
     events broadcast gameplay.Events.playerLeave(seat)
   }
   
-  protected def leavePlayer(player: Player) {
+  def leavePlayer(player: Player) {
     table(player) map { seat =>
       if (seat.notActive || notRunning) {
         leaveSeat(seat)

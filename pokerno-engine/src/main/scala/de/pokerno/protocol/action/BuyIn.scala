@@ -1,12 +1,15 @@
 package de.pokerno.protocol.action
 
-import com.fasterxml.jackson.annotation.JsonValue
+import com.fasterxml.jackson.annotation.{JsonValue, JsonCreator}
 
-sealed case class BuyIn(
-  @JsonValue val amount: Decimal
+object BuyIn {
+  @JsonCreator def apply(amount: Number): BuyIn = new BuyIn(amount)
+}
+
+sealed class BuyIn(
+  val amount: Decimal
 ) extends PlayerEvent {
   
-  def this(amount: Int) = this(amount: Decimal)
-  def this(amount: Double) = this(amount: Decimal)
+  def this(amount: Number) = this(amount.doubleValue())
   
 }

@@ -39,8 +39,8 @@ object Seat {
     val SitOut = state("sit-out")
     val Idle = SitOut // alias
     // disconnected
-    val Off = state("off")
-    val Away = Off
+    val Away = state("away")
+    val Off = Away
   }
 
   object Presence extends Enumeration {

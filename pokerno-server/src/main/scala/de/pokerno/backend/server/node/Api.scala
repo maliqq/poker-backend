@@ -38,7 +38,7 @@ object Api {
     pathPrefix("rooms" / Segment) { roomId =>
       pathEnd {
         get { ctx =>
-          askRoom(roomId, Room.PlayState, ctx)
+          askRoom(roomId, de.pokerno.form.Room.PlayState, ctx)
         }
       }
     } ~

@@ -1,13 +1,13 @@
-package de.pokerno.backend.server.room
+package de.pokerno.form.cash
 
 import akka.actor.Props
 import concurrent.duration._
-import de.pokerno.backend.server.Room
+import de.pokerno.form.{Room, CashRoom}
 import de.pokerno.model._
 import de.pokerno.gameplay
 import de.pokerno.gameplay.Events
 
-trait Cycle { room: Room ⇒
+trait Cycle { room: CashRoom ⇒
 
   import context._
   import Room._

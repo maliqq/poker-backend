@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 
 object Codec {
 
-  trait Json {
+  trait Json extends de.pokerno.network.Codec {
     import de.pokerno.poker.Cards
 
     import com.fasterxml.jackson.module.scala.DefaultScalaModule

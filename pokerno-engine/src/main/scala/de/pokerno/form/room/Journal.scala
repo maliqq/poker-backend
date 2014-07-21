@@ -1,4 +1,4 @@
-package de.pokerno.backend.server
+package de.pokerno.form.room
 
 import akka.actor.{ Actor, ActorLogging }
 import de.pokerno.model.Bet

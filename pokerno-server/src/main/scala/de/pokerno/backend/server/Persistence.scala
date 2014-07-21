@@ -33,7 +33,7 @@ class Persistence(service: Option[pokerdb.thrift.PokerDB.FutureIface]) extends A
         case _ => // ignore
       }
     
-    case Room.ChangedState(id, newState) =>
+    case de.pokerno.form.Room.ChangedState(id, newState) =>
       getService.changeRoomState(id, ThriftState.valueOf(newState.toString().toLowerCase).get)
   }
   

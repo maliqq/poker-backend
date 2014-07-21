@@ -99,6 +99,16 @@ object PokernoBuild extends Build {
   //   ScroogeSBT.scroogeBuildOptions in Compile := Seq("--finagle", "-s"),
   //   ScroogeSBT.scroogeThriftOutputFolder in Compile <<= (sourceDirectory) { _ / "main/scala" }
   // )
+
+  lazy val network = Project(
+    id = "pokerno-network",
+    base = file("pokerno-network"),
+    settings = Project.defaultSettings ++ Seq(
+      name := "pokerno-network",
+      version := "0.0.1",
+      libraryDependencies ++= deps ++ testDeps
+    ) ++ assemblySettings
+  )
   
   lazy val engine = Project(
     id = "pokerno-engine",
@@ -108,7 +118,7 @@ object PokernoBuild extends Build {
       version := "0.0.1",
       libraryDependencies ++= deps ++ testDeps
     ) ++ assemblySettings
-  ) dependsOn(protocol)
+  ) dependsOn(protocol, network)
 
   lazy val httpGateway = Project(
     id = "pokerno-gateway-http",
@@ -120,7 +130,7 @@ object PokernoBuild extends Build {
         "io.netty" % "netty-all" % nettyVersion
       )
     ) ++ assemblySettings
-  )
+  ) dependsOn(network)
 
   lazy val stompGateway = Project(
     id = "pokerno-gateway-stomp",
@@ -134,7 +144,7 @@ object PokernoBuild extends Build {
         "io.netty" % "netty-all" % nettyVersion
       )
     ) ++ assemblySettings
-  )
+  ) dependsOn(network)
 
   lazy val data = Project(
     id = "pokerno-data",

@@ -10,34 +10,6 @@ import de.pokerno.backend.Gateway
 import de.pokerno.protocol.{GameEvent, PlayerEvent}
 
 object Http {
-  trait Broadcast {
-    def broadcast(msg: Any)(implicit connections: Iterable[http.Connection]) {
-      val data = GameEvent.encode(msg)
-      connections.map { _.send(data) }
-    }
-    
-    def broadcast(msg: Any, to: String)(implicit connections: Iterable[http.Connection]) {
-      val data = GameEvent.encode(msg)
-      connections.find { _.sessionId == to } map { _.send(data) }
-    }
-    
-    def broadcast(msg: Any, to: Route)(implicit connections: Iterable[http.Connection]) {
-      val data = GameEvent.encode(msg)
-      connections.map { conn ⇒
-        if (to match {
-          case Route.All ⇒ true // broadcast
-
-          case Route.Except(ids) ⇒ // skip
-            conn.hasPlayer && !ids.contains(conn.player.get)
-
-          case Route.One(id) ⇒ // notify one
-            conn.hasPlayer && conn.player.get == id
-
-          case _ ⇒ false
-        }) conn.send(data)
-      }
-    }
-  }
   
   object Event {
     abstract class Connect
@@ -52,7 +24,7 @@ object Http {
   }
   
   class Gateway(ref: ActorRef, events: Events)
-      extends Actor with ActorLogging with Broadcast {
+      extends Actor with ActorLogging {
     
     import concurrent.duration._
     import context._
@@ -98,8 +70,8 @@ object Http {
         }
 
       // TODO: moved to watchers?
-      case Notification(msg, _, to) ⇒
-        broadcast(msg, to)(channelConnections.values)
+      // case Notification(msg, _, to) ⇒
+      //   broadcast(msg, to)(channelConnections.values)
 
       case x ⇒
         log.warning("unhandled: {}", x)

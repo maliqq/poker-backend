@@ -6,25 +6,6 @@ import io.netty.buffer.Unpooled
 import io.netty.channel.{ Channel, ChannelFutureListener }
 import io.netty.handler.codec.http
 
-trait Connection {
-
-  def remoteAddr: String
-
-  def send(msg: Any)
-  def close()
-  
-  def sessionId: String
-  // which room to connect
-  def room: Option[String]
-  // auth key from cookie/header/path/query param
-  def auth: Option[String]
-  // player identified by auth string
-  def player: Option[String]
-  
-  def hasPlayer = player.isDefined
-
-}
-
 class HttpConnection(
     channel: Channel,
     req: http.FullHttpRequest) extends Connection {

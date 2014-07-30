@@ -43,6 +43,20 @@ class Service extends thrift.Payment.FutureIface {
     balance.amount
   }
   
+  def availableWithBonus(player: String, required: Double) = Future {
+    val playerId: UUID = player
+    val balance = Balance.getOrCreate(playerId)
+    if (balance.amount < required && balance.isPlayMoney) {
+      try {
+        Cash.Refill.refill(balance)
+      } catch {
+        case err: thrift.Error =>
+          // skip error, keep same amount
+      }
+    }
+    balance.amount
+  }
+  
   def inPlay(player: String): Future[Double] = Future {
     val playerId: UUID = player
     val balance = Balance.getOrCreate(playerId)

@@ -50,8 +50,9 @@ trait JoinLeave extends de.pokerno.form.room.JoinLeave { room: CashRoom =>
   protected def askBuyIn(seat: Sitting) {
     val player = seat.player
     // ask buy in
-    balance.available(player).onSuccess { amount =>
-      if (amount < stake.buyInAmount._1) {
+    val (requiredMin, requiredMax) = stake.buyInAmount
+    balance.availableWithBonus(player, requiredMax.toDouble).onSuccess { amount =>
+      if (amount < requiredMin) {
         table.clear(seat.pos)
       }
       events.publish(gameplay.Events.requireBuyIn(seat, stake, amount)) { _.one(player) }

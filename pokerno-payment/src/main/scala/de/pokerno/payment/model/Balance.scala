@@ -45,6 +45,8 @@ sealed class Balance(
   
   import de.pokerno.payment.PaymentDB._
   
+  def isPlayMoney = currencyId.isEmpty
+  
   def charge(diff: Double) {
     val n = update(balances)((balance) =>
       where(balance.id === this.id)

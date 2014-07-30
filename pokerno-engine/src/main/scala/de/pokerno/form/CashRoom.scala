@@ -52,13 +52,12 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
       toWaiting() using (NoneRunning)
 
     // current deal stopped
-    case Event(gameplay.Deal.Done, Running(ctx, deal)) ⇒
+    case Event(gameplay.Deal.Done(after), Running(ctx, deal)) ⇒
       log.info("deal complete")
       
       history.map { _ ! (id, ctx.game, ctx.stake, ctx.play) }
       
-      val after = nextDealAfter
-      self ! gameplay.Deal.Next(after)
+      self ! gameplay.Deal.Next(after + nextDealAfter) // FIXME
       
       stay() using (NoneRunning)
 

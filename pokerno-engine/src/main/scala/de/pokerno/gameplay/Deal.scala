@@ -13,7 +13,7 @@ object Deal {
   case object Cancel
   case object Stop
   case class Next(after: FiniteDuration = 5 seconds)
-  case object Done
+  case class Done(after: FiniteDuration)
 
 }
 
@@ -129,7 +129,8 @@ class Deal(val gameplay: Context) extends Actor
   }
 
   private def done() {
-    parent ! Deal.Done
+    val showdownHandsNum = gameplay.play.knownCards.size
+    parent ! Deal.Done(4.seconds * showdownHandsNum)
     context stop self
   }
 

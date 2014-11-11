@@ -65,7 +65,7 @@ object Node extends Initialize {
       boot.withRpc(c.host, c.port)
     }
     
-    val authService: Option[AuthService] = if (config.authEnabled) RedisAuthService(config.redis) else None
+    val authService: Option[http.AuthService] = if (config.authEnabled) Some(RedisAuthService(config.redis)) else None
     config.http.map { c ⇒
       boot.withHttp(c, authService)
     }

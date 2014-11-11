@@ -28,6 +28,10 @@ object Config {
     var port: Int = Rpc.defaultPort) {
     override def toString = f"$host:$port" 
   }
+  
+  object Redis {
+    final val defaultAddr = "localhost:6379"
+  }
 
   import com.fasterxml.jackson.databind.ObjectMapper
 
@@ -38,6 +42,8 @@ object Config {
 case class Config(
     var id: java.util.UUID = java.util.UUID.randomUUID(),
     var host: String = "localhost",
+    var redis: String = Config.Redis.defaultAddr,
+    var authEnabled: Boolean = false,
     var http: Option[gw.http.Config] = None,
     var api: Option[Config.Http.Api] = None,
     var rpc: Option[Config.Rpc] = None,

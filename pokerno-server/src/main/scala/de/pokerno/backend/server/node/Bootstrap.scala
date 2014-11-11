@@ -1,5 +1,6 @@
 package de.pokerno.backend.server.node
 
+import de.pokerno.backend.gateway.http.AuthService
 import akka.actor.{ActorRef, ActorSystem, Props}
 
 class Bootstrap(node: ActorRef)(implicit val system: ActorSystem) {
@@ -14,12 +15,12 @@ class Bootstrap(node: ActorRef)(implicit val system: ActorSystem) {
   import de.pokerno.backend.{gateway => gw}
   import de.pokerno.backend.Gateway
   
-  def withHttp(httpConfig: gw.http.Config) {
+  def withHttp(httpConfig: gw.http.Config, authService: Option[AuthService]) {
     
     val httpGateway = system.actorOf(Props(classOf[gw.Http.Gateway], node, Gateway), name = "http-gateway")
 
     log("starting HTTP server with config: %s\n", httpConfig)
-    val server = new gw.http.Server(httpGateway, httpConfig)
+    val server = new gw.http.Server(httpGateway, authService, httpConfig)
     server.start
   }
   

@@ -103,6 +103,20 @@ object Main {
       ))
     }
     
+    // --redis
+    opt[String]("redis") text "Redis address to connect for token exchange" action { (value, c) ⇒
+      c.copy(config = c.config.copy(
+        redis = value
+      ))
+    }
+    
+    // --enable-auth
+    opt[Boolean]("enable-auth") text "Enable token based authentication" action { (value, c) ⇒
+      c.copy(config = c.config.copy(
+        authEnabled = value
+      ))
+    }
+    
     opt[String]("db-props") text("Database props file") action { (value, c) =>
       c.copy(config = c.config.copy(dbProps = Some(value)))
     }

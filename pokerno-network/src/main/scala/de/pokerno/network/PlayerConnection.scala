@@ -6,7 +6,7 @@ trait PlayerConnection extends NetworkConnection {
   // which room to connect
   def room: Option[String]
   // auth key from cookie/header/path/query param
-  def auth: Option[String]
+  def token: Option[String]
   // player identified by auth string
   def player: Option[String]
   

@@ -54,6 +54,26 @@ class PathHandler(path: String, handler: ChannelInboundHandlerAdapter) extends C
   }
 }
 
+abstract class AuthenticationFilter(param: String, header: String) extends ChannelInboundHandlerAdapter {
+  override def channelRead(ctx: ChannelHandlerContext, msg: Object) {
+    msg match {
+      case req: http.FullHttpRequest =>
+        val params = new http.QueryStringDecoder(req.getUri())
+        val authParam: Option[String] = params.parameters().get(param) match {
+          case null => None
+          case v if v.size == 1 => Some(v.get(0))
+          case _ => None
+        }
+        val authResult = handleAuthParam(authParam)
+        req.headers().add(header, authResult)
+    }
+    // pass to next handler
+    ctx.fireChannelRead(msg)
+  }
+  
+  protected def handleAuthParam(value: Option[String]): String
+} 
+
 trait HttpResponder {
   def sendHttpResponse(req: http.FullHttpRequest, resp: http.FullHttpResponse)
 }

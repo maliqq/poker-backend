@@ -34,7 +34,7 @@ object Server {
   final val defaultPort = 8081
 }
 
-case class Server(gw: ActorRef, config: Config) {
+case class Server(gw: ActorRef, authService: Option[AuthService], config: Config) {
   private var channel: Channel = null
 
   def isActive = channel != null && channel.isActive
@@ -51,6 +51,10 @@ case class Server(gw: ActorRef, config: Config) {
       p.addLast("http-request-decoder", new HttpRequestDecoder)
       p.addLast("http-object-aggregator", new HttpObjectAggregator(65536))
       p.addLast("http-response-encoder", new HttpResponseEncoder)
+      
+      authService.map { s =>
+        p.addLast("token-auth-service", new TokenBasedAuthentication(s))
+      }
 
       config.webSocketConfig.foreach { ws ⇒
         p.addLast(WebSocket.Handler.Name, new WebSocket.Handler(ws.path, gw))

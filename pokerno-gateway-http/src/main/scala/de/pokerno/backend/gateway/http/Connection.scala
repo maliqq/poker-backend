@@ -24,15 +24,18 @@ class HttpConnection(
   private val _sessionId = java.util.UUID.randomUUID()
   def sessionId: String = _sessionId.toString()
   
-  final val authKey = "auth"
-  def auth = param(authKey)
+  final val tokenKey = "token"
+  def token = param(tokenKey)
   
   final val roomKey = "room"
   def room = param(roomKey)
-
-  // FIXME
-  def player = auth
-
+  
+  def player: Option[String] = {
+    val h = req.headers().get(TokenBasedAuthentication.TOKEN_HEADER)
+    if (h == "") None
+    else Option(h)
+  }
+  
   def write(msg: Any) = {
     if (channel.isActive)
       channel.writeAndFlush(msg).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE)

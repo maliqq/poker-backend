@@ -66,6 +66,7 @@ abstract class AuthenticationFilter(param: String, header: String) extends Chann
         }
         val authResult = handleAuthParam(authParam)
         req.headers().add(header, authResult)
+      case _ => // skip
     }
     // pass to next handler
     ctx.fireChannelRead(msg)

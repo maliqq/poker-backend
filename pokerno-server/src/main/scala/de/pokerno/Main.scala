@@ -111,9 +111,9 @@ object Main {
     }
     
     // --enable-auth
-    opt[Boolean]("enable-auth") text "Enable token based authentication" action { (value, c) ⇒
+    opt[Unit]("enable-auth") text "Enable token based authentication" action { (value, c) ⇒
       c.copy(config = c.config.copy(
-        authEnabled = value
+        authEnabled = true
       ))
     }
     

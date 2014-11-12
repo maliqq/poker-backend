@@ -22,7 +22,7 @@ class RedisAuthService(host: String, port: Int) extends AuthService {
   val client = new Jedis(host, port)
   
   def authorize(secret: String): Option[String] = {
-    val result = client.get(secret)
+    val result = client.get(secret + ":player")
     if (result == "") None else Some(result)
   }
   

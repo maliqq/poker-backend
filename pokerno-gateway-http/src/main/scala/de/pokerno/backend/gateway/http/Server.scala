@@ -11,29 +11,6 @@ import io.netty.channel.socket.nio.NioServerSocketChannel
 import java.util.concurrent.{ FutureTask, Callable }
 import io.netty.util.CharsetUtil
 
-case class Config(
-    port: Int = Server.defaultPort,
-    eventSource: Either[EventSource.Config, Boolean] = Right(false),
-    webSocket: Either[WebSocket.Config, Boolean] = Right(false),
-    handlers: List[Tuple2[String, () ⇒ ChannelHandlerAdapter]] = List.empty) {
-
-  def eventSourceConfig: Option[EventSource.Config] = eventSource match {
-    case Right(true) ⇒ Some(EventSource.Config())
-    case Left(c)     ⇒ Some(c)
-    case _           ⇒ None
-  }
-
-  def webSocketConfig: Option[WebSocket.Config] = webSocket match {
-    case Right(true) ⇒ Some(WebSocket.Config())
-    case Left(c)     ⇒ Some(c)
-    case _           ⇒ None
-  }
-}
-
-object Server {
-  final val defaultPort = 8081
-}
-
 case class Server(gw: ActorRef, authService: Option[AuthService], config: Config) {
   private var channel: Channel = null
 

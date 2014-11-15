@@ -11,8 +11,10 @@ object EventSource {
   import http.HttpHeaders.{ Names, Values }
 
   final val defaultPath = "/_events"
-
-  case class Config(var path: String = defaultPath)
+  object Config {
+    def default: Config = Config(defaultPath)
+  }
+  case class Config(path: String)
 
   class Connection(
       channel: Channel,

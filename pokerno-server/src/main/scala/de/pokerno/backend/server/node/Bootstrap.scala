@@ -2,14 +2,15 @@ package de.pokerno.backend.server.node
 
 import de.pokerno.backend.gateway.http.AuthService
 import akka.actor.{ActorRef, ActorSystem, Props}
+import java.net.InetSocketAddress
 
 class Bootstrap(node: ActorRef)(implicit val system: ActorSystem) {
   
   import Console.{printf => log}
   
-  def withRpc(host: String, port: Int) {
-    log("starting rpc at %s:%d\n", host, port)
-    Service(node, new java.net.InetSocketAddress(host, port))
+  def withRpc(addr: InetSocketAddress) {
+    log("starting rpc at %s:%d\n", addr)
+    Service(node, addr)
   }
   
   import de.pokerno.backend.{gateway => gw}

@@ -9,6 +9,13 @@ import io.netty.handler.codec.http
 import io.netty.channel.{ Channel, ChannelFuture, ChannelFutureListener }
 
 object WebSocket {
+  
+  final val defaultPath = "/_ws"
+  object Config {
+    def default: Config = Config(defaultPath)
+  }
+  case class Config(path: String)
+
   class Connection(
       channel: Channel,
       request: http.FullHttpRequest) extends HttpConnection(channel, request) {
@@ -37,10 +44,6 @@ object WebSocket {
     }
 
   }
-
-  final val defaultPath = "/_ws"
-
-  case class Config(var path: String = defaultPath)
 
   object Handler {
     final val Name = "http-websocket-handler"

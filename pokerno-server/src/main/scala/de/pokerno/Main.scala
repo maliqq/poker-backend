@@ -82,14 +82,14 @@ object Main {
     // --rpc
     opt[Unit]("rpc") text "RPC with default options" action { (value, c) ⇒
       c.copy(config = c.config.copy(
-        rpc = Some(c.config.rpcConfig)
+        rpc = Some(Config.Rpc.default)
       ))
     }
 
-    // --rpc-port 8081
-    opt[Int]("rpc-port") text "RPC Port" action { (value, c) ⇒
+    // --rpc-addr 192.168.1.1:8081
+    opt[String]("rpc-addr") text "RPC Address" action { (value, c) ⇒
       c.copy(config = c.config.copy(
-        rpc = Some(c.config.rpcConfig.copy(port = value))
+        rpc = Some(Config.Rpc(value))
       ))
     }
     
@@ -106,7 +106,7 @@ object Main {
     // --redis
     opt[String]("redis") text "Redis address to connect for token exchange" action { (value, c) ⇒
       c.copy(config = c.config.copy(
-        redis = value
+        redis = Some(Config.Redis(value))
       ))
     }
     

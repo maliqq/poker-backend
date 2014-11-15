@@ -62,10 +62,14 @@ object Node extends Initialize {
     
     val boot = new Bootstrap(node)
     config.rpc.map { c ⇒
-      boot.withRpc(c.host, c.port)
+      boot.withRpc(c.addr)
     }
     
-    val authService: Option[http.AuthService] = if (config.authEnabled) Some(RedisAuthService(config.redis)) else None
+    val authService: Option[http.AuthService] = if (config.authEnabled && config.redis.isDefined) {
+      val c = config.redis.get
+      Some(new RedisAuthService(c.addr))
+    } else None
+    
     config.http.map { c ⇒
       boot.withHttp(c, authService)
     }

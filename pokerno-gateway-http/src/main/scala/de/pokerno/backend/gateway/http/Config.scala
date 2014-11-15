@@ -25,4 +25,20 @@ case class Config(
     case Left(c)     ⇒ Some(c)
     case _           ⇒ None
   }
+  
+  override def toString = {
+    val s = new StringBuffer
+    s.append(f"port=$port")
+    webSocket match {
+      case Right(true) => s.append(" ✓websocket")
+      case Left(c) => s.append(" websocket=%s".format(c))
+      case _ =>
+    }
+    eventSource match {
+      case Right(true) => s.append(" ✓eventsource")
+      case Left(c) => s.append(" eventsource=%s".format(c))
+      case _ =>
+    }
+    s.toString
+  }
 }

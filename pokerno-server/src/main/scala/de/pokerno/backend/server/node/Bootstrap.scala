@@ -9,7 +9,7 @@ class Bootstrap(node: ActorRef)(implicit val system: ActorSystem) {
   import Console.{printf => log}
   
   def withRpc(addr: InetSocketAddress) {
-    log("starting rpc at %s:%d\n", addr)
+    log("starting rpc at %s\n", addr)
     Service(node, addr)
   }
   
@@ -20,16 +20,16 @@ class Bootstrap(node: ActorRef)(implicit val system: ActorSystem) {
     
     val httpGateway = system.actorOf(Props(classOf[gw.Http.Gateway], node, Gateway), name = "http-gateway")
 
-    log("starting HTTP server with config: %s\n", httpConfig)
+    log("starting http gateway with config: %s\n", httpConfig)
     val server = new gw.http.Server(httpGateway, authService, httpConfig)
     server.start
   }
   
-  def withApi(host: String, port: Int) {
+  def withApi(addr: InetSocketAddress) {
     import spray.can.Http
-    log("starting http api at %s:%d\n", host, port)
+    log("starting http api at %s\n", addr)
     val httpApi = system.actorOf(Props(classOf[Api], node), name = "http-api")
-    akka.io.IO(Http) ! Http.Bind(httpApi, host, port = port)
+    akka.io.IO(Http) ! Http.Bind(httpApi, addr.getHostString(), port = addr.getPort())
   }
   
 }

@@ -57,7 +57,6 @@ object Node extends Initialize {
     
     val env = config.dbProps.map { initDb(_) }.getOrElse(NodeEnv())
     
-    log.info("starting node at {}", config.host)
     val node = system.actorOf(Props(classOf[Node], id, env), name = "node-main")
     
     val boot = new Bootstrap(node)
@@ -73,8 +72,9 @@ object Node extends Initialize {
     config.http.map { c ⇒
       boot.withHttp(c, authService)
     }
-    config.api.map { c =>
-      boot.withApi(config.host, c.port)
+    
+    config.apiAddress.map { addr =>
+      boot.withApi(addr)
     }
 
     node

@@ -1,5 +1,5 @@
 start:
-	./sbt "project pokerno-server" "run --enable-auth --redis localhost:6379 --rpc --http-api --websocket --restore ./restore.json --db-props ./etc/database.properties --id 02b82428-fc15-4d66-ba53-bc0b85c1330f"
+	./sbt "project pokerno-server" "run -c ./etc/config.json --restore ./restore.json"
 start-replayer:
 	./sbt "project pokerno-replay" "run --http"
 start-bots:

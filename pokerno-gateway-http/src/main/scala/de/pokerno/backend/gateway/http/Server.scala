@@ -56,8 +56,6 @@ case class Server(gw: ActorRef, authService: Option[AuthService], config: Config
   def run() {
     if (isActive) throw new IllegalStateException("Server already running!")
 
-    Console printf ("starting at :%d...\n", config.port)
-
     channel = bootstrap.bind(config.port).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE).sync.channel
     channel.closeFuture.sync
   }

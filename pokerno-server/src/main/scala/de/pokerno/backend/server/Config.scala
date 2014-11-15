@@ -3,6 +3,8 @@ package de.pokerno.backend.server
 import de.pokerno.backend.{ gateway ⇒ gw }
 import java.net.InetSocketAddress
 
+import com.fasterxml.jackson.annotation.{JsonCreator, JsonProperty}
+
 object Config {
   final val defaultHost = "0.0.0.0"
   
@@ -52,20 +54,58 @@ object Config {
 
   def from(f: java.io.InputStream): Config =
     (new ObjectMapper).readValue(f, classOf[Config])
+
+  @JsonCreator def fromJson(
+    @JsonProperty("id") id: String,
+    @JsonProperty("host") host: String,
+    @JsonProperty("dbProps") dbProps: String,
+    @JsonProperty("redis") redis: String,
+    @JsonProperty("rpc") _rpc: String,
+    @JsonProperty("authEnabled") authEnabled: Boolean = false,
+    @JsonProperty("apiEnabled") apiEnabled: Boolean = false,
+    @JsonProperty("rpcEnabled") rpcEnabled: Boolean = false,
+    @JsonProperty("websocketEnabled") websocketEnabled: Boolean = false
+  ) = {
+    val rpc = Option(_rpc)
+    var c = new Config(java.util.UUID.fromString(id), host,
+        dbProps = Option(dbProps),
+        authEnabled = authEnabled,
+        redis = Option(redis).map { addr => Redis(addr) },
+        api = if (apiEnabled) Some(
+            Config.Http.Api.default
+          ) else None,
+        rpc = if (rpc.isDefined) Some(
+            Config.Rpc(rpc.get)
+          ) else if (rpcEnabled) Some(
+            Config.Rpc.default
+          ) else None
+      )
+    if (websocketEnabled)
+      c = c.copy(
+          http = Some(c.httpConfig.copy(
+              webSocket = Right(true)
+              ))
+          )
+    c
+  }
 }
 
 case class Config(
-    var id: java.util.UUID = java.util.UUID.randomUUID(),
-    var host: String = "localhost",
-    var authEnabled: Boolean = false,
-    var redis: Option[Config.Redis] = None,
-    var http: Option[gw.http.Config] = None,
-    var api: Option[Config.Http.Api] = None,
-    var rpc: Option[Config.Rpc] = None,
-    var dbProps: Option[String] = None) {
-
+    id: java.util.UUID = null,
+    host: String = "localhost",
+    authEnabled: Boolean = false,
+    redis: Option[Config.Redis] = None,
+    http: Option[gw.http.Config] = None,
+    api: Option[Config.Http.Api] = None,
+    rpc: Option[Config.Rpc] = None,
+    dbProps: Option[String] = None) {
+  
   def apiConfig =
     api.getOrElse(Config.Http.Api.default)
+  
+  def apiAddress: Option[InetSocketAddress] = api.map { c =>
+    new InetSocketAddress(host, c.port)
+  }
   
   def httpConfig =
     http.getOrElse(gw.http.Config.default)

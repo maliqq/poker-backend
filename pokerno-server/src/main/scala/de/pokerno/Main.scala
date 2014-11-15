@@ -1,6 +1,10 @@
 package de.pokerno
 
 import org.slf4j.LoggerFactory
+
+import java.net.URL
+import java.io.{FileInputStream, BufferedReader, InputStreamReader}
+
 import de.pokerno.gameplay._
 import de.pokerno.backend.{ gateway ⇒ gw }
 import akka.actor.{ ActorSystem, Props }
@@ -10,6 +14,7 @@ import de.pokerno.protocol.Codec.{Json => codec}
 private[pokerno] case class Options(
   val configFile: Option[String] = None,
   val restoreFile: Option[String] = None,
+  val restoreUrl: Option[String] = None,
   val config: Config = Config())
 
 object Main {
@@ -25,6 +30,11 @@ object Main {
     // -r /tmp/restore.json
     opt[String]('r', "restore") text "restore node from json" action { (value, c) =>
       c.copy(restoreFile = Some(value))
+    }
+    
+    // -r /tmp/restore.json
+    opt[String]('u', "restore-url") text "restore node from json" action { (value, c) =>
+      c.copy(restoreUrl = Some(value))
     }
 
     // --host node1.localhost
@@ -200,9 +210,16 @@ object Main {
       val node = Node.start(config)
 
       // restore state from file
-      opts.restoreFile map { path =>
+      val in: Option[java.io.InputStream] = opts.restoreFile.map { path =>
+        log.info(f"restoring from file $path")
+        new FileInputStream(path)
+      } orElse opts.restoreUrl.map { url =>
+        log.info(f"restoring from url $url")
+        new URL(url).openStream()
+      }
+      
+      in.map { f =>
         //try {
-          val f = new java.io.FileInputStream(path)
           val msgs = codec.decodeValuesFromStream[Node.CreateRoom](f)
           msgs.foreach { node ! _ }
 //        } catch { case err: Throwable =>

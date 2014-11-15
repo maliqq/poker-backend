@@ -64,9 +64,8 @@ abstract class AuthenticationFilter(param: String, header: String) extends Chann
           case v if v.size == 1 => Some(v.get(0))
           case _ => None
         }
-        handleAuthParam(authParam).map { playerId =>
-          req.headers().add(header, playerId)
-        }
+        val playerId = handleAuthParam(authParam)
+        req.headers().add(header, playerId)
       case _ => // skip
     }
     // pass to next handler

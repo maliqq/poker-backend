@@ -9,6 +9,6 @@ class RedisAuthService(addr: InetSocketAddress) extends AuthService {
   
   def authorize(secret: String): Option[String] = {
     val result = client.get(secret + ":player")
-    if (result == "") None else Some(result)
+    if (result == null) None else Some(result)
   }
 }

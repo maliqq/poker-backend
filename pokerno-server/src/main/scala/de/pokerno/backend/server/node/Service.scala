@@ -6,6 +6,7 @@ import de.pokerno.protocol.{thrift, cmd}
 import java.nio.ByteBuffer
 import de.pokerno.backend.server.{Node, Room}
 import de.pokerno.backend.Thrift
+import de.pokerno.model._
 
 object Service {
   def apply(node: ActorRef, addr: java.net.InetSocketAddress) = {
@@ -15,11 +16,14 @@ object Service {
 
 class Service(node: ActorRef) extends thrift.rpc.Node.FutureIface {
   import java.nio.ByteBuffer
+  import de.pokerno.model.ThriftConversions._
   
   def createRoom(id: String,
       variation: thrift.Variation,
       stake: thrift.Stake,
-      table: thrift.Table): Future[Unit] = Future{}
+      table: thrift.Table): Future[Unit] = Future{
+    node ! Node.CreateRoom(id, variation, stake)
+  }
   
   def maintenance: Future[Unit] = Future{}
   

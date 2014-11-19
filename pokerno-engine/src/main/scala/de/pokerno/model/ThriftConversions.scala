@@ -20,18 +20,18 @@ object ThriftConversions {
     }
   }
   
-  implicit def limitTypeFromThrift(v: thrift.MixType): MixType = {
+  implicit def mixTypeFromThrift(v: thrift.MixType): MixType = {
     v match {
-      case thrift.MixType.EightGame => MixType.Eight
+      case thrift.MixType.Eight => MixType.Eight
       case thrift.MixType.Horse => MixType.Horse
     }
   }
   
   implicit def gameLimitFromThrift(v: thrift.GameLimit): GameLimit = {
     v match {
-      case thrift.GameLimit.Fl => GameLimit.Fixed
-      case thrift.GameLimit.Nl => GameLimit.None
-      case thrift.GameLimit.Pl => GameLimit.Pot
+      case thrift.GameLimit.FixedLimit => GameLimit.Fixed
+      case thrift.GameLimit.NoLimit => GameLimit.None
+      case thrift.GameLimit.PotLimit => GameLimit.Pot
     }
   }
   
@@ -45,19 +45,19 @@ object ThriftConversions {
     return Mix(mix.`type`, mix.tableSize)
   }
   
+  private implicit def option2option(o: Option[Double]): Option[Decimal] = o map { x => x: Decimal }
+  
+  private implicit def option2either(o: Option[Double]): Either[Decimal, Boolean] = o match {
+    case Some(v) => Left(v: Decimal)
+    case None => Right(false)
+  }
+  
   implicit def stakeFromThrift(v: thrift.Stake): Stake = {
-    Stake(
-        v.bigBlind: Decimal,
-        v.smallBlind.map { x => x: Decimal },
-        v.buyIn,
-        (v.ante match {
-          case Some(v) => Left(v)
-          case None => Right(false)
-        }): Either[Decimal, Boolean],
-        (v.bringIn match {
-          case Some(v) => Left(v)
-          case None => Right(false)
-        }): Either[Decimal, Boolean]
+    Stake.apply(
+        v.bigBlind,
+        v.smallBlind,
+        (v.buyInMax, v.buyInMax),
+        v.ante, v.bringIn
       )
   }
   

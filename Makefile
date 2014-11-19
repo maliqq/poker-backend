@@ -1,5 +1,5 @@
 start:
-	./sbt "project pokerno-server" "run -c ./etc/config.json --restore ./restore.json"
+	./sbt "project pokerno-server" "run -c ./etc/config.json --restore-url http://localhost:3000/api/v1/poker/rooms.json"
 start-replayer:
 	./sbt "project pokerno-replay" "run --http"
 start-bots:

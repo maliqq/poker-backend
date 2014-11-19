@@ -21,7 +21,9 @@ trait Initialize {
     
     system.actorOf(Props(new Actor with ActorLogging {
       val session = de.pokerno.data.db.Connection.connect(props)
-      //session.setLogger(println(_))
+      if (java.lang.Boolean.parseBoolean(props.getProperty("debug"))) {
+        session.setLogger(println(_))
+      }
       // FIXME
       org.squeryl.SessionFactory.externalTransactionManagementAdapter = Some(() => {
         Some(session)

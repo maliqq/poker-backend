@@ -105,7 +105,7 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
       // send start message
       val startMsg: de.pokerno.protocol.GameEvent = current match {
         case NoneRunning ⇒
-          gameplay.Events.start(roomId, table, variation, stake) // TODO: empty play
+          gameplay.Events.start(roomId, table, variation, stake, conn.player) // TODO: empty play
         case Running(ctx, deal) ⇒
           gameplay.Events.start(ctx, conn.player)
       }

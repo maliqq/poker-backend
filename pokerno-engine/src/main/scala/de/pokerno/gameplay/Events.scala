@@ -75,7 +75,8 @@ object Events {
     start
   }
   
-  def error(err: Throwable) = msg.Error(err.getMessage)
+  def error(err: String)      = msg.Error(err)
+  def error(err: Throwable)   = msg.Error(err.getMessage)
 
   def dealPocket(seat: Sitting, _type: DealType.Value, cards: Cards) = _type match {
     case DealType.Hole => msg.DealHole(seat.asPosition, Left(cards))

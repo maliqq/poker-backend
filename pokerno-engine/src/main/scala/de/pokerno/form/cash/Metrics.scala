@@ -8,7 +8,7 @@ import de.pokerno.data.pokerdb.thrift
 
 import de.pokerno.protocol.{msg => message}
 import de.pokerno.model.{Bet, Street}
-import de.pokerno.gameplay.Event
+import de.pokerno.gameplay.Notification
 
 object Metrics {
 }
@@ -51,7 +51,7 @@ class Metrics(val roomId: String, val pokerdb: Option[thrift.PokerDB.FutureIface
   }
 
   def receive = {
-    case Event(msg, _, _, _) ⇒ handleMessage(msg)
+    case Notification(msg, _, _, _) ⇒ handleMessage(msg)
     case _                       ⇒
   }
 

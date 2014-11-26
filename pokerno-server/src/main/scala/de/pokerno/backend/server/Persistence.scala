@@ -3,7 +3,7 @@ package de.pokerno.backend.server
 import akka.actor.{Actor, ActorLogging}
 
 import de.pokerno.protocol.msg
-import de.pokerno.gameplay.Event
+import de.pokerno.gameplay.Notification
 import de.pokerno.data.pokerdb
 
 // TODO database pooling
@@ -22,7 +22,7 @@ class Persistence(service: Option[pokerdb.thrift.PokerDB.FutureIface]) extends A
   }
   
   def handleAndStore: Receive = {
-    case Notification(payload, Route.One(roomId), _) =>
+    case Notification(payload, roomId, _, _) =>
       payload match {
         case msg.PlayerJoin(pos, amount) =>
           getService.startSession(roomId, pos.player, pos.pos, amount.toDouble)

@@ -2,6 +2,7 @@ import sbt._
 import Keys._
 import Process._
 // sbt-assembly
+import sbtassembly.Plugin._
 import AssemblyKeys._
 //import com.twitter.scrooge.ScroogeSBT
 
@@ -137,7 +138,7 @@ object PokernoBuild extends Build {
   lazy val server = Project(
     id = "pokerno-server",
     base = file("pokerno-server"),
-    settings = Project.defaultSettings ++ gitVersion ++ Seq(
+    settings = Project.defaultSettings ++ Seq(
       name := "pokerno-server",
       //version := "0.0.1",
       libraryDependencies ++= testDeps ++ Seq(
@@ -184,7 +185,7 @@ object PokernoBuild extends Build {
   lazy val replay = Project(
     id = "pokerno-replay",
     base = file("pokerno-replay"),
-    settings = Project.defaultSettings ++ gitVersion ++ Seq(
+    settings = Project.defaultSettings ++ Seq(
       name := "pokerno-replay",
       libraryDependencies ++= Seq(
         "jline" % "jline" % "2.11",

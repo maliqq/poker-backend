@@ -60,7 +60,7 @@ import de.pokerno.gameplay.Notification
 class Broadcasting(id: String, endpoints: Seq[Broadcast]) extends Actor {
   
   def receive = {
-    case Notification(msg, from, to) =>
+    case Notification(msg, from, to, _) =>
       endpoints.foreach { _.broadcast(id, msg) }
   }
   

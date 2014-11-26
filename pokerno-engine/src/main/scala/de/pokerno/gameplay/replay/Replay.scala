@@ -5,7 +5,7 @@ import de.pokerno.model._
 import de.pokerno.payment.thrift.Payment.{FutureIface => Balance}
 import de.pokerno.protocol
 import de.pokerno.protocol.cmd
-import de.pokerno.gameplay.{Events, Context => Gameplay, stg}
+import de.pokerno.gameplay.{Notification, Publisher, Events, Context => Gameplay, stg}
 import akka.actor.{ Actor, Props, ActorRef, ActorLogging }
 
 object Replay {
@@ -31,8 +31,11 @@ class Replay(
   val dealer: Dealer = deck.map { cards =>
       new Dealer(new Deck(cards)) 
     } getOrElse new Dealer
-  
-  val gameplay = new Gameplay(id, table, variation, stake, balance, new Events(id), dealer)
+
+  private val _exchange = new de.pokerno.hub.impl.Exchange[Notification]()
+  private def newEventsPublisher = new Publisher(id, _exchange)
+
+  val gameplay = new Gameplay(id, table, variation, stake, balance, newEventsPublisher, dealer)
 
   val ctx = new Context(gameplay, self)
   import ctx._
@@ -49,7 +52,7 @@ class Replay(
 
   override def receive = {
     case Replay.Observe(out) ⇒
-      events.broker.subscribe(out, "replay-out")
+      _exchange.subscribe(new de.pokerno.hub.impl.ActorConsumer(out))
       events broadcast Events.start(id, table, variation, stake)
 
     // case join @ cmd.JoinPlayer(pos, player, amount) ⇒

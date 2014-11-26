@@ -10,6 +10,4 @@ trait PlayerConnection extends NetworkConnection {
   // player identified by auth string
   def player: Option[String]
   
-  def hasPlayer = player.isDefined
-
 }

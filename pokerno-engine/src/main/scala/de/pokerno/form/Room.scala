@@ -2,7 +2,7 @@ package de.pokerno.form
 
 import akka.actor.{Actor, ActorRef, FSM, ActorLogging}
 import de.pokerno.model._
-import de.pokerno.gameplay.{Event, Publisher}
+import de.pokerno.gameplay.{Notification, Publisher}
 import de.pokerno.hub
 
 object Room {
@@ -35,14 +35,35 @@ object Room {
   sealed trait Data
   case object NoneRunning extends Data
   case class Running(ctx: de.pokerno.gameplay.Context, ref: ActorRef) extends Data
+
+  object Topics {
+    final val Deals = "room.deals"
+    final val State = "room.state"
+  }
+}
+
+class RoomEvents extends hub.TopicExchange[Any] {
+  private val _exchange = newExchange
+  def exchange = _exchange
+  
+  private val _topics = collection.mutable.Map[String, hub.impl.Exchange[Any]]()
+  def topics = _topics
+
+  def register(name: String) {
+    _topics(name) = newExchange
+  }
+
+  private def newExchange = new hub.impl.Exchange[Any]()
 }
 
 abstract class Room extends Actor
     with ActorLogging
     with FSM[Room.State.Value, Room.Data]
-    with room.JoinLeave
-    with hub.Producer[Event, _] {
-  
+    with room.JoinLeave  {
+
+  protected val roomEvents = new RoomEvents()
+
+  // room attrs
   import Room._
   
   val id: java.util.UUID
@@ -50,10 +71,13 @@ abstract class Room extends Actor
   val variation: Variation
   val stake: Stake
   
-  val gameplayEventsTopic: hub.Topic[Event] = new hub.Topic[Event]("room.gameplay.events")
-  val events = new Publisher(roomId, gameplayEventsTopic) 
-  def exchange = events
-  
+  // gameplay events
+  protected val gameplayEvents = new hub.impl.Topic[Notification]("room.gameplay.events")
+  val events = new Publisher(roomId, gameplayEvents)
+
+  val watchers = new room.Watchers()
+  gameplayEvents.subscribe(watchers)
+
   def roomId: String = id.toString
   protected def canStart: Boolean
   

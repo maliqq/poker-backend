@@ -5,7 +5,7 @@ import io.netty.channel.Channel
 import io.netty.buffer.Unpooled
 import io.netty.util.CharsetUtil
 
-import de.pokerno.gameplay.{ Notification, Route }
+import de.pokerno.gameplay.{ Notification }
 import de.pokerno.backend.Gateway
 import de.pokerno.protocol.{GameEvent, PlayerEvent}
 

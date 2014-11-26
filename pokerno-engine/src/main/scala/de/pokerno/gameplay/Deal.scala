@@ -15,6 +15,14 @@ object Deal {
   case class Next(after: FiniteDuration = 5 seconds)
   case class Done(after: FiniteDuration)
 
+  // for archiver
+  case class Dump(
+    id:     java.util.UUID,
+    game:   Game,
+    stake:  Stake,
+    play:   Play
+  )
+  def dump(id: java.util.UUID, ctx: Context) = Dump(id, ctx.game, ctx.stake, ctx.play)
 }
 
 class Deal(val gameplay: Context) extends Actor

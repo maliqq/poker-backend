@@ -116,6 +116,7 @@ class Node(
   
   val pokerdb = env.db
   val balance = new de.pokerno.payment.Service()
+
   val persist = actorOf(Props(classOf[Persistence], pokerdb), name = "node-persist")
   val history = env.storage.map { storage =>
     actorOf(Props(classOf[de.pokerno.backend.PlayHistoryWriter], storage), name = "play-history-writer")
@@ -131,7 +132,7 @@ class Node(
   def receive = {
     // new connection
     case msg @ Gateway.Connect(conn) if conn.room.isDefined ⇒
-      metrics.connected(conn.hasPlayer)
+      metrics.connected(conn.player.isDefined)
       
       val id = conn.room.get
 
@@ -145,7 +146,7 @@ class Node(
       }
 
     case msg @ Gateway.Disconnect(conn) if conn.room.isDefined ⇒
-      metrics.disconnected(conn.hasPlayer)
+      metrics.disconnected(conn.player.isDefined)
       
       val id = conn.room.get
 

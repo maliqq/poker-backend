@@ -12,7 +12,11 @@ object Destination {
   case class Only(players: List[Player]) extends Destination
 }
 
-class Publisher[T <: hub.Exchange[Event]](roomId: String, val exchange: T) extends de.pokerno.hub.Producer[Event, T] {
+class Publisher[T <: hub.Exchange[Notification]](roomId: String, _exchange: T)
+    extends de.pokerno.hub.Producer[Notification, T] {
+  
+  def exchange = _exchange
+
   case class RoutePublisher(publisher: Publisher[T], to: Destination) {
     def publish(evt: GameEvent) {
       publisher.publish(evt, to)
@@ -25,10 +29,10 @@ class Publisher[T <: hub.Exchange[Event]](roomId: String, val exchange: T) exten
   def only(id: Player)    = route(Destination.One(id))
   
   def publish(evt: GameEvent, to: Destination) {
-    publish(Event(evt, roomId, to))
+    publish(Notification(evt, roomId, to))
   }
 
   def broadcast(evt: GameEvent) {
-    publish(Event(evt, roomId, Destination.All))
+    publish(Notification(evt, roomId, Destination.All))
   }
 }

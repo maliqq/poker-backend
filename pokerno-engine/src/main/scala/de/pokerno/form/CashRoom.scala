@@ -8,10 +8,11 @@ import de.pokerno.gameplay
 abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with cash.Presence {
   import context._
   import Room._
+
+  roomEvents.register(Topics.Deals)
+  roomEvents.register(Topics.State)
   
   val balance: de.pokerno.payment.thrift.Payment.FutureIface
-  val history: Option[ActorRef]
-  val persist: Option[ActorRef]
   
   startWith(State.Waiting, NoneRunning)
   
@@ -53,7 +54,7 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
     case Event(gameplay.Deal.Done(after), Running(ctx, deal)) ⇒
       log.info("deal complete")
       
-      history.map { _ ! (id, ctx.game, ctx.stake, ctx.play) }
+      roomEvents.publish(gameplay.Deal.dump(id, ctx), to = Topics.Deals)
       
       self ! gameplay.Deal.Next(after + nextDealAfter) // FIXME
       
@@ -62,7 +63,7 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
     // schedule next deal in *after* seconds
     case Event(gameplay.Deal.Next(after), NoneRunning) ⇒
       log.info("next deal will start in {}", after)
-      publish(gameplay.Events.announceStart(after))
+      events.broadcast(gameplay.Events.announceStart(after))
       system.scheduler.scheduleOnce(after, self, gameplay.Deal.Start)
       stay()
 
@@ -99,7 +100,7 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
 
     case Event(Connect(conn), current) ⇒
       // notify seat state change
-      exchange.subscribe(conn)
+      watchers.subscribe(conn)
       conn.player map (playerOnline(_))
       
       // send start message
@@ -117,7 +118,7 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
       tryResume()
 
     case Event(Disconnect(conn), _) ⇒
-      exchange.unsubscribe(conn)
+      watchers.unsubscribe(conn)
       //events.broker.unsubscribe(observer, conn.player.getOrElse(conn.sessionId))
       conn.player map (playerOffline(_))
       stay()
@@ -180,9 +181,10 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
   onTransition {
     case State.Waiting -> State.Active ⇒
       self ! gameplay.Deal.Next(firstDealAfter)
-      persist.map { _ ! Room.ChangedState(roomId, State.Active) }
+      roomEvents.publish(Room.ChangedState(roomId, State.Active), to = Topics.State)
+    
     case State.Active -> State.Waiting =>
-      persist.map { _ ! Room.ChangedState(roomId, State.Waiting) }
+      roomEvents.publish(Room.ChangedState(roomId, State.Waiting), to = Topics.State)
   }
   
 }

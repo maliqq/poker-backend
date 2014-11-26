@@ -26,7 +26,7 @@ trait Exchange[T] extends Consumer[T] {
 
 trait TopicExchange[T] extends Exchange[T] {
 
-  def topics: Map[String, Topic[T]]
+  def topics: collection.mutable.Map[String, _ <: Exchange[T]]
   
   // register
   def subscribe(consumer: Consumer[T], to: String) {
@@ -54,5 +54,6 @@ trait TopicExchange[T] extends Exchange[T] {
     consume(msg)
     topics.values.map(_.consume(msg))
   }
+  final def publish(msg: T, to: String) = consume(msg, to)
 
 }

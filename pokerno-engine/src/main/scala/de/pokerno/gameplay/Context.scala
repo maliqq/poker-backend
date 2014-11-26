@@ -1,11 +1,12 @@
 package de.pokerno.gameplay
 
 import de.pokerno.model._
+import de.pokerno.hub.Exchange
 import de.pokerno.payment.thrift.Payment.{FutureIface => Balance}
 
 trait ContextLike extends context.Button {
   //
-  val events: Publisher
+  val events: Publisher[_]
   // game or mix
   val variation: Variation
   // current game
@@ -43,7 +44,7 @@ class Context(
     val variation: Variation,
     val stake: Stake,
     val balance: Balance,
-    val events: Publisher,
+    val events: Publisher[_],
     val dealer: Dealer = new Dealer,
     val play: Play = new Play,
     val mode: Mode.Value = Mode.Cash

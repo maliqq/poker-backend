@@ -1,41 +1,57 @@
 package de.pokerno.form.room
 
-import de.pokerno.gameplay.{Event, Destination}
-import akka.actor.{ Actor, ActorLogging }
+import de.pokerno.gameplay.{Notification, Destination}
 import de.pokerno.protocol.GameEvent
 import de.pokerno.hub._
 
-class Watcher extends de.pokerno.network.PlayerConnection with de.pokerno.hub.Consumer[GameEvent] {
-  implicit val codec: GameEvent.type = GameEvent
-  
-  def consume(msg: GameEvent) {
-    send(codec.encode(msg))
+case class Watcher(conn: de.pokerno.network.PlayerConnection) extends impl.NetworkConsumer[GameEvent](conn) {
+  def routeKey = conn.player
+  override def consume(msg: GameEvent) {
+    conn.send(GameEvent.encode(msg))
   }
 }
 
-trait WatcherToRouteKey {
-  def consumer2routeKey(watcher: Watcher): Option[String] = {
-    watcher.player
+private trait watcherToRouteKey {
+  def consumer2routeKey(watcher: Consumer[GameEvent]): Option[String] = {
+    watcher.asInstanceOf[Watcher].routeKey
   }
 }
 
 // TODO use Netty ChannelGroups
-trait Broadcast extends de.pokerno.network.Broadcast[GameEvent.type, Watcher] with de.pokerno.hub.RouteDispatcher[GameEvent] {
+trait Broadcast[T <: Exchange[GameEvent]]
+    extends de.pokerno.network.Broadcast[GameEvent.type, GameEvent]
+    with RouteDispatcher[GameEvent, T]
+    with Consumer[Notification] {
+  
   implicit val codec: GameEvent.type = GameEvent
   implicit def connections: Iterable[Watcher] = exchange.consumers.map { consumer => consumer.asInstanceOf[Watcher] }
   
-  def broadcast(e: Event) {
+  def consume(e: Notification) {
     val route = e.to match {
       case Destination.All =>
         Route.All
+        // TODO: fanout()
+      
       case Destination.Except(ids) =>
-        new Route.Except[Watcher, String](ids) with WatcherToRouteKey
+        new Route.Except[GameEvent, String](ids) with watcherToRouteKey
+      
       case Destination.One(id) =>
-        new Route.One[Watcher, String](id) with WatcherToRouteKey
+        new Route.One[GameEvent, String](id) with watcherToRouteKey
+        // TODO: direct()
     }
     publish(e.payload, route)
   }
   
 }
 
-class Watchers extends Broadcast
+class Watchers extends Broadcast[impl.Exchange[GameEvent]] {
+  val exchange = new impl.Exchange[GameEvent]()
+
+  def subscribe(conn: de.pokerno.network.PlayerConnection) {
+    exchange.subscribe(Watcher(conn))
+  }
+
+  def unsubscribe(conn: de.pokerno.network.PlayerConnection) {
+    exchange.unsubscribe(Watcher(conn))
+  }
+}

@@ -23,22 +23,31 @@ class Room(val id: java.util.UUID,
     val variation: model.Variation,
     val stake: model.Stake,
     env: RoomEnv)
-    extends de.pokerno.form.CashRoom with Observers {
+    extends de.pokerno.form.CashRoom {
+
+  import context._
 
   val balance = env.balance
-  
   val table = new model.Table(variation.tableSize)
-  val events = new gameplay.Events(roomId)
-  
-  val persist = env.persist
-  val history = env.history
 
-  val watchers      = observe(classOf[de.pokerno.form.room.Watchers], f"room-$roomId-watchers")
-  val journal       = observe(classOf[de.pokerno.form.room.Journal], f"room-$roomId-journal", "/tmp", roomId)
-  val metrics       = observe(classOf[de.pokerno.form.cash.Metrics], f"room-$roomId-metrics", roomId, env.pokerdb)
-  val broadcasting  = observe(classOf[Broadcasting], f"room-$roomId-broadcasts", roomId, env.broadcasts)
+  env.persist.map { ref =>
+    gameplayEvents.subscribe(new de.pokerno.hub.impl.ActorConsumer(ref))
+  }
+  env.history.map { ref =>
+    gameplayEvents.subscribe(new de.pokerno.hub.impl.ActorConsumer(ref))
+  }
+
+  private val journal       = actorOf(
+      Props(classOf[de.pokerno.form.room.Journal], "/tmp", roomId),
+      name = f"room-$roomId-journal")
   
-  persist.map { notify(_, f"room-$roomId-persist") }
+  private val metrics       = actorOf(
+      Props(classOf[de.pokerno.form.cash.Metrics], roomId, env.pokerdb),
+      name = f"room-$roomId-metrics")
+  
+  private val broadcasting  = actorOf(
+      Props(classOf[Broadcasting], roomId, env.broadcasts),
+      name = f"room-$roomId-broadcasts")
   
   log.info("starting room {}", roomId)
   

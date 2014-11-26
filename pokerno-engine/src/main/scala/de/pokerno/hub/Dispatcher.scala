@@ -8,8 +8,8 @@ trait Dispatcher[T, E <: Exchange[T], R] {
   protected def dispatch(msg: T, to: R)
 }
 
-trait RouteDispatcher[T] extends Dispatcher[T, Route] {
-  override def consume(msg: T) = dispatch(msg, Route.All)
+trait RouteDispatcher[T, E <: Exchange[T]] extends Dispatcher[T, E, Route] {
+  //def consume(msg: T) = dispatch(msg, Route.All)
   
   protected def dispatch(msg: T, to: Route) {
     to match {

@@ -1,9 +1,9 @@
 package de.pokerno.hub
 
-trait Producer {
-  def exchange: Exchange
+trait Producer[T] {
+  def exchange: Exchange[T]
   
-  def publish(msg: Message) {
+  def publish(msg: T) {
     exchange.publish(msg)
   }
 }

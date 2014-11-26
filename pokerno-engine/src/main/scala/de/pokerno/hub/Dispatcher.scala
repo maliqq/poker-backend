@@ -1,26 +1,27 @@
 package de.pokerno.hub
 
-trait Dispatcher[T] extends Exchange {
-  final def publish(msg: Message, to: T) = dispatch(msg, to)
+trait Dispatcher[T, R] extends Exchange[T] {
+  final def publish(msg: T, to: R) = dispatch(msg, to)
   
-  protected def dispatch(msg: Message, to: T)
+  protected def dispatch(msg: T, to: R)
 }
 
-trait RouteDispatcher extends Dispatcher[Route] {
-  override def consume(msg: Message) = dispatch(msg, Route.All)
+trait RouteDispatcher[T] extends Dispatcher[T, Route] {
+  override def consume(msg: T) = dispatch(msg, Route.All)
   
-  protected def dispatch(msg: Message, to: Route) {
-    if (to == Route.NoOne) {
-      return
-    }
-    if (to == Route.All) {
-      consume(msg)
-      return
-    }
-    consumers.map { consumer =>
-      if (to.matches(consumer)) {
-        consumer.consume(msg)
-      }
+  protected def dispatch(msg: T, to: Route) {
+    to match {
+      case Route.NoOne =>
+      
+      case Route.All =>
+        consume(msg)
+      
+      case m: RouteMatch[T] =>
+        consumers.map { consumer =>
+          if (m.matches(consumer)) {
+            consumer.consume(msg)
+          }
+        }
     }
   }
 }

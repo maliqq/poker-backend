@@ -2,7 +2,7 @@ package de.pokerno.form.room
 
 import akka.actor.{ Actor, ActorLogging }
 import de.pokerno.model.Bet
-import de.pokerno.gameplay.Notification
+import de.pokerno.gameplay.Event
 import de.pokerno.protocol.msg
 
 class Journal(storageDir: String, room: String) extends Actor with ActorLogging {
@@ -18,7 +18,7 @@ class Journal(storageDir: String, room: String) extends Actor with ActorLogging 
   }
 
   def receive = {
-    case Notification(e, from, to) ⇒ e match {
+    case Event(e, to, _, _) ⇒ e match {
       case msg.DeclarePlayStart(playState) ⇒
         val id = playState.play.id
         writer = new java.io.OutputStreamWriter(new java.io.FileOutputStream(new java.io.File(dir.getPath, id + ext), true))

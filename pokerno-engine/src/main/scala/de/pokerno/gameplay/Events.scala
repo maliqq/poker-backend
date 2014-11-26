@@ -8,29 +8,6 @@ import de.pokerno.model.table.seat.Sitting
 import de.pokerno.poker.{ Hand, Card, Cards }
 import de.pokerno.protocol.msg
 
-class Events(id: String) {
-  
-  lazy val broker = new Broker(id)
-  
-  trait RouteBuilder {
-    def all()               = Route.All
-    def one(id: String)     = Route.One(id)
-    def except(id: String)  = Route.Except(List(id))
-    def only(id: String)    = Route.One(id)
-  }
-  
-  object RouteBuilder extends RouteBuilder
-  
-  def publish(evt: GameEvent)(f: RouteBuilder => Route) {
-    broker.publish(Notification(evt, from = Route.One(id), to = f(RouteBuilder)))
-  }
-
-  def broadcast(evt: GameEvent) {
-    broker.publish(Notification(evt, from = Route.One(id), to = Route.All))
-  }
-  
-}
-
 object Events {
   
   def announceStart(after: concurrent.duration.FiniteDuration) = msg.AnnounceStart(after.toSeconds) 

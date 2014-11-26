@@ -3,39 +3,31 @@ package de.pokerno.gameplay
 import de.pokerno.model._
 import de.pokerno.protocol.GameEvent
 
-import akka.event.{ ActorEventBus, EventBus, ScanningClassification }
-//import akka.util.Index
-//import java.util.concurrent.ConcurrentSkipListSet
-//import java.util.Comparator
-
-trait Route {}
-
-object Route {
-  case object NoOne extends Route
-  case object All extends Route
-
-  case class One(endpoint: String) extends Route
-
-  case class Where(f: (String) ⇒ Boolean) extends Route
-  case class Only(endpoints: List[String]) extends Route
-  case class Except(endpoints: List[String]) extends Route
+trait Destination
+object Destination {
+  case object All extends Destination
+  case class One(player: Player) extends Destination
+  case class Except(players: List[Player]) extends Destination
+  case class Only(players: List[Player]) extends Destination
 }
 
-case class Notification(message: GameEvent, from: Route = Route.NoOne, to: Route = Route.All) // from: Route = Route.NoOne, 
-
-class Broker(id: String) extends ActorEventBus
-    with ScanningClassification {
-
-  type Classifier = String
-  type Event = Notification
-
-  def compareClassifiers(a: Classifier, b: Classifier): Int = a compare b
-
-  import Route._
-  def matches(classifier: Classifier, event: Event) = true
-
-  def publish(event: Event, subscriber: Subscriber) = {
-    subscriber ! event.copy(from = One(id))
+class Publisher(roomId: String, val exchange: de.pokerno.hub.Exchange[Event]) extends de.pokerno.hub.Producer[Event] {
+  case class RoutePublisher(publisher: Publisher, to: Destination) {
+    def publish(evt: GameEvent) {
+      publisher.publish(evt, to)
+    }
+  }
+  
+  def route(to: Destination)    = RoutePublisher(this, to)
+  def one(id: Player)     = route(Destination.One(id))
+  def except(id: Player)  = route(Destination.Except(List(id)))
+  def only(id: Player)    = route(Destination.One(id))
+  
+  def publish(evt: GameEvent, to: Destination) {
+    publish(Event(evt, roomId, to))
   }
 
+  def broadcast(evt: GameEvent) {
+    publish(Event(evt, roomId, Destination.All))
+  }
 }

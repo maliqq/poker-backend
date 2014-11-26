@@ -18,8 +18,7 @@ abstract class Context {
   val variation: Variation
   val balance: de.pokerno.payment.thrift.Payment.FutureIface
   val metrics: Metrics
-  val events: Events
-  val broker: Broker
+  val events: Exchange
   val buyIn: BuyIn
   val payment: de.pokerno.payment.thrift.Payment.FutureIface
   val entries = collection.mutable.Map.empty[Player, Entry]

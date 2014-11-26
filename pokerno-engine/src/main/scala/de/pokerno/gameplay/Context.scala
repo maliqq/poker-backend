@@ -5,7 +5,7 @@ import de.pokerno.payment.thrift.Payment.{FutureIface => Balance}
 
 trait ContextLike extends context.Button {
   //
-  val events: Events
+  val events: Publisher
   // game or mix
   val variation: Variation
   // current game
@@ -43,20 +43,11 @@ class Context(
     val variation: Variation,
     val stake: Stake,
     val balance: Balance,
-    val events: Events,
+    val events: Publisher,
     val dealer: Dealer = new Dealer,
     val play: Play = new Play,
     val mode: Mode.Value = Mode.Cash
   ) extends ContextLike {
-  
-  def this(id: String, table: Table, variation: Variation, stake: Stake, balance: Balance) = this(
-      id,
-      table,
-      variation,
-      stake,
-      balance,
-      new Events(id)
-      )
   
   lazy val bettingRound: betting.Round = new betting.Round(table, game, stake, play)
   lazy val discardingRound: discarding.Round = new discarding.Round(table, game, dealer)

@@ -1,61 +1,41 @@
 package de.pokerno.form.room
 
-import de.pokerno.gameplay.{Notification, Route}
+import de.pokerno.gameplay.{Event, Destination}
 import akka.actor.{ Actor, ActorLogging }
 import de.pokerno.protocol.GameEvent
+import de.pokerno.hub._
 
-object Watchers {
-  case class Watch(watcher: de.pokerno.network.PlayerConnection)
-  case class Unwatch(watcher: de.pokerno.network.PlayerConnection)
-
-  case class Broadcast(msg: GameEvent)
-  case class Send(msg: GameEvent, to: String)
+class Watcher extends de.pokerno.network.PlayerConnection with de.pokerno.hub.Consumer[GameEvent] {
+  implicit val codec: GameEvent.type = GameEvent
+  
+  def consume(msg: GameEvent) {
+    send(codec.encode(msg))
+  }
 }
 
-trait Broadcast[T <: de.pokerno.network.Codec] extends de.pokerno.network.Broadcast[T] {
-  
-  def broadcast(msg: Any, to: Route)(implicit connections: Iterable[de.pokerno.network.PlayerConnection]) {
-    val data = GameEvent.encode(msg)
-    connections.map { conn ⇒
-      if (to match {
-        case Route.All ⇒ true // broadcast
-
-        case Route.Except(ids) ⇒ // skip
-          conn.hasPlayer && !ids.contains(conn.player.get)
-
-        case Route.One(id) ⇒ // notify one
-          conn.hasPlayer && conn.player.get == id
-
-        case _ ⇒ false
-      }) conn.send(data)
-    }
+trait WatcherToRouteKey {
+  def consumer2routeKey(watcher: Watcher): Option[String] = {
+    watcher.player
   }
-  
 }
 
 // TODO use Netty ChannelGroups
-
-class Watchers extends Actor with ActorLogging with Broadcast[GameEvent.type] {
-  import Watchers._
-  
-  val watchers = collection.mutable.ListBuffer[de.pokerno.network.PlayerConnection]()
-  implicit def connections: Iterable[de.pokerno.network.PlayerConnection] = watchers
+trait Broadcast extends de.pokerno.network.Broadcast[GameEvent.type] with de.pokerno.hub.RouteDispatcher[GameEvent] {
   implicit val codec: GameEvent.type = GameEvent
-
-  def receive = {
-    case Watch(conn) ⇒
-      watchers += conn
-
-    case Unwatch(conn) ⇒
-      watchers -= conn
-
-    case Broadcast(msg) ⇒
-      broadcast(msg)
-
-    case Send(msg, to) ⇒
-      broadcast(msg, to)
-
-    case Notification(msg, _, to) ⇒
-      broadcast(msg, to)
+  implicit def connections: Iterable[Watcher] = exchange.consumers
+  
+  def broadcast(e: Event) {
+    val route = e.to match {
+      case Destination.All =>
+        Route.All
+      case Destination.Except(ids) =>
+        new Route.Except[Watcher, String](ids) with WatcherToRouteKey
+      case Destination.One(id) =>
+        new Route.One[Watcher, String](id) with WatcherToRouteKey
+    }
+    publish(e.payload, route)
   }
+  
 }
+
+class Watchers extends Broadcast

@@ -3,7 +3,7 @@ package de.pokerno.backend.server
 import akka.actor.{Actor, ActorLogging}
 
 import de.pokerno.protocol.msg
-import de.pokerno.gameplay.{Notification, Route}
+import de.pokerno.gameplay.Event
 import de.pokerno.data.pokerdb
 
 // TODO database pooling

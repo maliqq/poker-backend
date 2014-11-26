@@ -4,7 +4,6 @@ import akka.actor.ActorRef
 
 import de.pokerno.protocol.{cmd, api}
 import de.pokerno.gameplay
-import room.Watchers
 
 abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with cash.Presence {
   import context._
@@ -13,7 +12,7 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
   val balance: de.pokerno.payment.thrift.Payment.FutureIface
   val history: Option[ActorRef]
   val persist: Option[ActorRef]
-  val watchers: ActorRef
+  val watchers: room.Watchers
   
   startWith(State.Waiting, NoneRunning)
   
@@ -88,20 +87,22 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
   }
 
   whenUnhandled {
-    case Event(Room.Observe(observer, name), _) ⇒
-      events.broker.subscribe(observer, name)
-      // TODO !!!!!
-      //events.start(table, variation, stake, )
-      stay()
-    
-    case Event(Room.Subscribe(name), _) =>
-      events.broker.subscribe(sender, name)
-      stay()
+    // used in pokerno-ai:
+//    case Event(Room.Observe(observer, name), _) ⇒
+//      events.broker.subscribe(observer, name)
+//      // TODO !!!!!
+//      //events.start(table, variation, stake, )
+//      stay()
+    // used in pokerno-ai:
+//    case Event(Room.Subscribe(name), _) =>
+//      events.broker.subscribe(sender, name)
+//      stay()
 
     case Event(Connect(conn), current) ⇒
       // notify seat state change
+      watchers.subscribe(conn)
       conn.player map (playerOnline(_))
-
+      
       // send start message
       val startMsg: de.pokerno.protocol.GameEvent = current match {
         case NoneRunning ⇒
@@ -112,7 +113,6 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
     
       conn.send(de.pokerno.protocol.GameEvent.encode(startMsg))
 
-      watchers ! Watchers.Watch(conn)
 
       // start new deal if needed
       tryResume()

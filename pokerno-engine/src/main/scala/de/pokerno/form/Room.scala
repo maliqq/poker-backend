@@ -42,7 +42,7 @@ abstract class Room extends Actor with ActorLogging with FSM[Room.State.Value, R
   val table: Table
   val variation: Variation
   val stake: Stake
-  val events: de.pokerno.gameplay.Events
+  val events: de.pokerno.gameplay.Publisher
   
   def roomId: String = id.toString
   protected def canStart: Boolean

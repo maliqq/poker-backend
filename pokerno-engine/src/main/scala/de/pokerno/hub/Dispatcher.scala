@@ -1,6 +1,8 @@
 package de.pokerno.hub
 
-trait Dispatcher[T, R] extends Exchange[T] {
+trait Dispatcher[T, R] {
+  def exchange: Exchange[T]
+  
   final def publish(msg: T, to: R) = dispatch(msg, to)
   
   protected def dispatch(msg: T, to: R)
@@ -14,13 +16,11 @@ trait RouteDispatcher[T] extends Dispatcher[T, Route] {
       case Route.NoOne =>
       
       case Route.All =>
-        consume(msg)
+        exchange.consume(msg)
       
       case m: RouteMatch[T] =>
-        consumers.map { consumer =>
-          if (m.matches(consumer)) {
-            consumer.consume(msg)
-          }
+        exchange.consumers.foreach {consumer =>
+          if (m.matches(consumer)) consumer.consume(msg)
         }
     }
   }

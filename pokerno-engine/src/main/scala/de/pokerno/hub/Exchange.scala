@@ -2,33 +2,32 @@ package de.pokerno.hub
 
 trait Exchange[T] extends Consumer[T] {
 
-  val consumers = collection.mutable.ListBuffer[Consumer[T]]()
+  private val _consumers = collection.mutable.ListBuffer[Consumer[T]]()
+  def consumers = _consumers
 
   private def register(consumer: Consumer[T]) {
-    consumers += consumer
+    _consumers += consumer
   }
   
   final def subscribe(consumer: Consumer[T]) = register(consumer)
 
   private def unregister(consumer: Consumer[T]) {
-    consumers -= consumer
+    _consumers -= consumer
   }
   final def unsubscribe(consumer: Consumer[T]) = unregister(consumer)
 
   override def consume(msg: T) {
-    consumers.map(_.consume(msg))
+    _consumers.map(_.consume(msg))
   }
   
   final def publish(msg: T) = consume(msg)
 
 }
 
-sealed class SimpleEchange extends Exchange[Message]
-
 trait TopicExchange[T] extends Exchange[T] {
 
   def topics: Map[String, Topic[T]]
-
+  
   // register
   def subscribe(consumer: Consumer[T], to: String) {
     topics.get(to).map { _.subscribe(consumer) }

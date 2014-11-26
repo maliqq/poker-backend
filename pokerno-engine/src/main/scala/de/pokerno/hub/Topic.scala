@@ -1,7 +1,3 @@
 package de.pokerno.hub
 
-trait Topic[T] extends Exchange[T] {
-
-  def name: String
-
-}
+class Topic[T](val name: String) extends Exchange[T]

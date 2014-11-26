@@ -20,9 +20,9 @@ trait WatcherToRouteKey {
 }
 
 // TODO use Netty ChannelGroups
-trait Broadcast extends de.pokerno.network.Broadcast[GameEvent.type] with de.pokerno.hub.RouteDispatcher[GameEvent] {
+trait Broadcast extends de.pokerno.network.Broadcast[GameEvent.type, Watcher] with de.pokerno.hub.RouteDispatcher[GameEvent] {
   implicit val codec: GameEvent.type = GameEvent
-  implicit def connections: Iterable[Watcher] = exchange.consumers
+  implicit def connections: Iterable[Watcher] = exchange.consumers.map { consumer => consumer.asInstanceOf[Watcher] }
   
   def broadcast(e: Event) {
     val route = e.to match {

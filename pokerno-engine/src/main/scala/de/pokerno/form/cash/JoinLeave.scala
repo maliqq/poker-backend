@@ -38,11 +38,11 @@ trait JoinLeave extends de.pokerno.form.room.JoinLeave { room: CashRoom =>
       case err: Seat.IsTaken ⇒
         val seat = table.seats(pos) 
         log.warning("Can't join player {} at {}: seat is taken ({})", player, pos, seat)
-        events.publish(gameplay.Events.error(err)) { _.one(player) }
+        events.one(player).publish(gameplay.Events.error(err))
       
       case err: Table.AlreadyJoined ⇒
         log.warning("Can't join player {} at {}: already joined", player, pos)
-        events.publish(gameplay.Events.error(err)) { _.one(player) }
+        events.one(player).publish(gameplay.Events.error(err))
     }
     None
   }
@@ -55,9 +55,9 @@ trait JoinLeave extends de.pokerno.form.room.JoinLeave { room: CashRoom =>
     f.onSuccess { amount =>
       if (amount < requiredMin) {
         table.clear(seat.pos)
-        events.publish(gameplay.Events.error(f"Minimum required amount is: $requiredMin; you have: $amount")) { _.one(player) }
+        events.one(player).publish(gameplay.Events.error(f"Minimum required amount is: $requiredMin; you have: $amount"))
       } else {
-        events.publish(gameplay.Events.requireBuyIn(seat, stake, amount)) { _.one(player) }
+        events.one(player).publish(gameplay.Events.requireBuyIn(seat, stake, amount))
       }
     }
   }
@@ -74,11 +74,11 @@ trait JoinLeave extends de.pokerno.form.room.JoinLeave { room: CashRoom =>
     f.onFailure {
       case err: de.pokerno.payment.thrift.NotEnoughMoney =>
         log.error("balance error: {}", err.message)
-        events.publish(gameplay.Events.error(err)) { _.one(player) }
+        events.one(player).publish(gameplay.Events.error(err))
       
       case err: de.pokerno.payment.thrift.BuyInRequired =>
         log.error("balance error: {}", err.message)
-        events.publish(gameplay.Events.error(err)) { _.one(player) }
+        events.one(player).publish(gameplay.Events.error(err))
     }
   }
   

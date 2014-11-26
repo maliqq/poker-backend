@@ -1,7 +1,7 @@
 package de.pokerno.hub
 
-trait Dispatcher[T, R] {
-  def exchange: Exchange[T]
+trait Dispatcher[T, E <: Exchange[T], R] {
+  def exchange: E
   
   final def publish(msg: T, to: R) = dispatch(msg, to)
   

@@ -24,8 +24,8 @@ private[gameplay] case class Dealing(ctx: stg.Context, _type: DealType.Value, ca
 
         if (_type == DealType.Hole) {
           seat.hole(cards)
-          events.publish(Events.dealPocket(seat, _type, cards)) { _.only(player) }
-          events.publish(Events.dealPocketNum(seat, _type, cards.size)) { _.except(player) }
+          events.one(player).publish(Events.dealPocket(seat, _type, cards))
+          events.except(player).publish(Events.dealPocketNum(seat, _type, cards.size))
         } else {
           seat.door(cards)
           events broadcast Events.dealPocket(seat, _type, cards)

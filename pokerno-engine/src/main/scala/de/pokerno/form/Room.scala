@@ -2,6 +2,8 @@ package de.pokerno.form
 
 import akka.actor.{Actor, ActorRef, FSM, ActorLogging}
 import de.pokerno.model._
+import de.pokerno.gameplay.{Event, Publisher}
+import de.pokerno.hub
 
 object Room {
   object State extends Enumeration {
@@ -25,8 +27,8 @@ object Room {
   
   case class ChangedState(id: String, newState: State.Value)
 
-  case class Subscribe(name: String)
-  case class Observe(observer: ActorRef, name: String)
+  // case class Subscribe(name: String)
+  // case class Observe(observer: ActorRef, name: String)
   
   case object PlayState
 
@@ -35,14 +37,22 @@ object Room {
   case class Running(ctx: de.pokerno.gameplay.Context, ref: ActorRef) extends Data
 }
 
-abstract class Room extends Actor with ActorLogging with FSM[Room.State.Value, Room.Data] with room.JoinLeave {
+abstract class Room extends Actor
+    with ActorLogging
+    with FSM[Room.State.Value, Room.Data]
+    with room.JoinLeave
+    with hub.Producer[Event, _] {
+  
   import Room._
   
   val id: java.util.UUID
   val table: Table
   val variation: Variation
   val stake: Stake
-  val events: de.pokerno.gameplay.Publisher
+  
+  val gameplayEventsTopic: hub.Topic[Event] = new hub.Topic[Event]("room.gameplay.events")
+  val events = new Publisher(roomId, gameplayEventsTopic) 
+  def exchange = events
   
   def roomId: String = id.toString
   protected def canStart: Boolean

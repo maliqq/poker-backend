@@ -2,6 +2,7 @@ package de.pokerno.gameplay
 
 import de.pokerno.model._
 import de.pokerno.protocol.GameEvent
+import de.pokerno.hub
 
 trait Destination
 object Destination {
@@ -11,8 +12,8 @@ object Destination {
   case class Only(players: List[Player]) extends Destination
 }
 
-class Publisher(roomId: String, val exchange: de.pokerno.hub.Exchange[Event]) extends de.pokerno.hub.Producer[Event] {
-  case class RoutePublisher(publisher: Publisher, to: Destination) {
+class Publisher[T <: hub.Exchange[Event]](roomId: String, val exchange: T) extends de.pokerno.hub.Producer[Event, T] {
+  case class RoutePublisher(publisher: Publisher[T], to: Destination) {
     def publish(evt: GameEvent) {
       publisher.publish(evt, to)
     }

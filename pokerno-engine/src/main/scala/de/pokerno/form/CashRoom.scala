@@ -12,7 +12,6 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
   val balance: de.pokerno.payment.thrift.Payment.FutureIface
   val history: Option[ActorRef]
   val persist: Option[ActorRef]
-  val watchers: room.Watchers
   
   startWith(State.Waiting, NoneRunning)
   
@@ -63,7 +62,7 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
     // schedule next deal in *after* seconds
     case Event(gameplay.Deal.Next(after), NoneRunning) ⇒
       log.info("next deal will start in {}", after)
-      events.broadcast(gameplay.Events.announceStart(after))
+      publish(gameplay.Events.announceStart(after))
       system.scheduler.scheduleOnce(after, self, gameplay.Deal.Start)
       stay()
 
@@ -100,7 +99,7 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
 
     case Event(Connect(conn), current) ⇒
       // notify seat state change
-      watchers.subscribe(conn)
+      exchange.subscribe(conn)
       conn.player map (playerOnline(_))
       
       // send start message
@@ -118,7 +117,7 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
       tryResume()
 
     case Event(Disconnect(conn), _) ⇒
-      watchers ! Watchers.Unwatch(conn)
+      exchange.unsubscribe(conn)
       //events.broker.unsubscribe(observer, conn.player.getOrElse(conn.sessionId))
       conn.player map (playerOffline(_))
       stay()

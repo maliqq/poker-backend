@@ -2,47 +2,8 @@ import sbt._
 import Keys._
 import Process._
 // sbt-assembly
-import sbtassembly.Plugin._ 
 import AssemblyKeys._
-import com.typesafe.sbt.SbtGit._
 //import com.twitter.scrooge.ScroogeSBT
-
-object GitVersionStrategy extends Plugin {
-
-  def gitVersion: Seq[Setting[_]] = Seq(
-    version in ThisBuild <<= (Default.gitCurrentBranch, Default.gitHeadCommit) apply Default.makeVersion
-  )
-
-  object Default {
-    val gitHeadCommit = GitKeys.gitHeadCommit in ThisBuild
-    val gitCurrentTags = GitKeys.gitCurrentTags in ThisBuild
-    val gitCurrentBranch = GitKeys.gitCurrentBranch in ThisBuild
-
-    def makeVersion(currentBranch: String, headCommit: Option[String]) = {
-      def rcVersion: Option[String] = {
-        val releasePattern = "release-((?:\\d+\\.)+(?:\\d+))".r
-        currentBranch match {
-          case releasePattern(rcVersion) =>
-            Some(rcVersion + "-" + dateVersionPart + "-" + headCommitPart.get)
-          case _ =>
-            Some("SNAPSHOT")
-        }
-      }
-
-      def headCommitPart: Option[String] = headCommit map (sha => sha take 7)
-
-      def dateVersionPart = {
-        val df = new java.text.SimpleDateFormat("yyyyMMdd-HHmmss")
-        df setTimeZone java.util.TimeZone.getTimeZone("GMT")
-        df format (new java.util.Date)
-      }
-      
-      rcVersion.get
-    }
-  }
-}
-
-import GitVersionStrategy._
 
 object PokernoBuild extends Build {
   val pokernoVersion  = "0.0.1"
@@ -250,7 +211,7 @@ object PokernoBuild extends Build {
       name := "pokerno-cli",
       version := "0.0.1",
       libraryDependencies ++= Seq(
-        "org.scala-sbt" % "command" % "0.12.4"
+        //"org.scala-sbt" % "command" % "0.12.4"
       )
     ) ++ assemblySettings
   ) dependsOn(engine)

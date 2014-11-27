@@ -117,13 +117,19 @@ class Node(
   val pokerdb = env.db
   val balance = new de.pokerno.payment.Service()
 
-  val persist = actorOf(Props(classOf[Persistence], pokerdb), name = "node-persist")
-  val history = env.storage.map { storage =>
-    actorOf(Props(classOf[de.pokerno.backend.PlayHistoryWriter], storage), name = "play-history-writer")
+  private val notificationConsumers = collection.mutable.ListBuffer[ActorRef]()
+  ;{
+    val persist = actorOf(Props(classOf[Persistence], pokerdb), name = "node-persist")
+    notificationConsumers += persist
+    env.storage.map { storage =>
+      val history = actorOf(Props(classOf[de.pokerno.backend.PlayHistoryWriter], storage), name = "play-history-writer")
+      notificationConsumers += history
+    }
   }
-  val broadcasts = Seq[Broadcast](
+
+  //val broadcasts = Seq[Broadcast](
       //new Broadcast.Zeromq("tcp://127.0.0.1:5555")
-  )
+  //)
   
   override def preStart {
     startReporting()
@@ -210,7 +216,9 @@ class Node(
     actorSelection(id).resolveOne(1 second).onComplete(f)
   }
   
-  private def newRoomEnv = RoomEnv(balance, history, Some(persist), pokerdb, broadcasts)
+  private def newRoomEnv = {
+    RoomEnv(balance, pokerdb, notificationConsumers = notificationConsumers)
+  }
 
   override def postStop {
   }

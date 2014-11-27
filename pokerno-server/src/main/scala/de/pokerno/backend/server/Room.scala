@@ -13,10 +13,9 @@ import scala.concurrent.{ Promise, Future }
 
 case class RoomEnv(
     balance: de.pokerno.payment.Service,
-    history: Option[ActorRef] = None,
-    persist: Option[ActorRef] = None,
     pokerdb: Option[de.pokerno.data.pokerdb.thrift.PokerDB.FutureIface] = None,
-    broadcasts: Seq[Broadcast] = Seq()
+    notificationConsumers: Seq[ActorRef] = Seq(),
+    topicConsumers: Map[String, ActorRef] = Map.empty()
   )
 
 class Room(val id: java.util.UUID,
@@ -30,25 +29,29 @@ class Room(val id: java.util.UUID,
   val balance = env.balance
   val table = new model.Table(variation.tableSize)
 
-  env.persist.map { ref =>
-    gameplayEvents.subscribe(new de.pokerno.hub.impl.ActorConsumer(ref))
-  }
-  env.history.map { ref =>
-    gameplayEvents.subscribe(new de.pokerno.hub.impl.ActorConsumer(ref))
+  implicit protected def actor2consumer(ref: ActorRef): de.pokerno.hub.Consumer[gameplay.Notification] = {
+    new de.pokerno.hub.impl.ActorConsumer[gameplay.Notification](ref)
   }
 
+  private val _consumers = collection.mutable.ListBuffer[de.pokerno.hub.Consumer[gameplay.Notification]]()
   private val journal       = actorOf(
       Props(classOf[de.pokerno.form.room.Journal], "/tmp", roomId),
       name = f"room-$roomId-journal")
+  _consumers += journal
   
   private val metrics       = actorOf(
       Props(classOf[de.pokerno.form.cash.Metrics], roomId, env.pokerdb),
       name = f"room-$roomId-metrics")
-  
-  private val broadcasting  = actorOf(
-      Props(classOf[Broadcasting], roomId, env.broadcasts),
-      name = f"room-$roomId-broadcasts")
-  
+  _consumers += metrics
+
+  env.notificationConsumers.map { ref =>
+    _consumers += ref
+  }
+
+  _consumers.map { consumer =>
+    gameplayEvents.subscribe(consumer)
+  }
+
   log.info("starting room {}", roomId)
   
   initialize()

@@ -1,4 +1,4 @@
-package de.pokerno.gameplay.stg
+package de.pokerno.gameplay.stage
 
 import de.pokerno.gameplay.Stage
 import de.pokerno.util.Colored._

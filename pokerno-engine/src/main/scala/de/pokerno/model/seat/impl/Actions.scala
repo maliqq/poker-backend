@@ -1,9 +1,9 @@
-package de.pokerno.model.table.seat
+package de.pokerno.model.seat.impl
 
 import de.pokerno.model.Bet
 
 trait Actions { s: Sitting =>
-  import de.pokerno.model.table.Seat.State
+  import de.pokerno.model.Seat.State
   
   def check(): Decimal = {
     _state = State.Bet

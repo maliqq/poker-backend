@@ -8,15 +8,15 @@ private[gameplay] object Stages {
   
   trait Default {
     import Stages._
-    import de.pokerno.gameplay.stages.{ PostBlinds,  RotateGame, PostAntes, Showdown, PlayStart, PlayStop }
+    import de.pokerno.gameplay.stage.impl.{ PostBlinds,  RotateGame, PostAntes, Showdown, PlayStart, PlayStop }
     
     // TODO for {} yield
-    lazy val beforeStreets = new stg.Builder[stg.Context] {
+    lazy val beforeStreets = new stage.Builder[Stage.Context] {
       stage[PlayStart]    ("play-start")
       stage[RotateGame]   ("rotate-game")
     }.build()
 
-    lazy val afterStreets = new stg.Builder[stg.Context] {
+    lazy val afterStreets = new stage.Builder[Stage.Context] {
       stage[Showdown]     ("showdown")
       stage[PlayStop]     ("play-stop")
     }.build()

@@ -1,7 +1,7 @@
 package de.pokerno.gameplay.betting
 
 import de.pokerno.model._
-import de.pokerno.model.table.seat.Sitting
+import de.pokerno.model.seat.impl.Sitting
 import de.pokerno.gameplay.{Context => Gameplay, Round => GameplayRound}
 import de.pokerno.util.Colored._
 import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnore, JsonInclude, JsonGetter}

@@ -1,7 +1,7 @@
 package de.pokerno.gameplay.betting
 
 import de.pokerno.model.{Player, Bet}
-import de.pokerno.model.table.Seat
+import de.pokerno.model.seat.impl
 import de.pokerno.gameplay.round.{Context => RoundContext}
 import de.pokerno.gameplay.{Events, Betting, Context => Gameplay}
 import de.pokerno.util.Colored._ 

@@ -1,6 +1,6 @@
 package de.pokerno.model.autoplay
 
-import de.pokerno.model.table.seat.States
+import de.pokerno.model.Seat.States
 
 trait SitOut { s: States =>
   

@@ -4,7 +4,7 @@ import de.pokerno.protocol.GameEvent
 
 import de.pokerno.model._
 import de.pokerno.model.tournament._
-import de.pokerno.model.table.seat.Sitting
+import de.pokerno.model.seat.impl.Sitting
 import de.pokerno.poker.{ Hand, Card, Cards }
 import de.pokerno.protocol.msg
 

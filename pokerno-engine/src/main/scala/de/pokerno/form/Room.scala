@@ -25,6 +25,7 @@ object Room {
   case object Pause extends ChangeState
   case object Resume extends ChangeState
   
+  case class Created(id: String)
   case class ChangedState(id: String, newState: State.Value)
 
   // case class Subscribe(name: String)

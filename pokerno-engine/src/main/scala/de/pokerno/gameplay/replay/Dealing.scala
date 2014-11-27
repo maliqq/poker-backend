@@ -1,6 +1,6 @@
 package de.pokerno.gameplay.replay
 
-import de.pokerno.gameplay.{ Events, Stage, stg }
+import de.pokerno.gameplay.{ Events, Stage }
 import de.pokerno.model.{Player, DealType}
 import de.pokerno.poker.{Cards, Deck}
 import de.pokerno.protocol.cmd

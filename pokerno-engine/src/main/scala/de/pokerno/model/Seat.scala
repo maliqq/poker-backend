@@ -1,4 +1,4 @@
-package de.pokerno.model.table
+package de.pokerno.model
 
 import org.slf4j.LoggerFactory
 import com.fasterxml.jackson.annotation.{JsonIgnore, JsonProperty, JsonInclude, JsonAutoDetect, JsonPropertyOrder}
@@ -49,6 +49,8 @@ object Seat {
   }
 
   case class IsTaken() extends Exception("seat is taken")
+
+  type States = seat.impl.States
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)

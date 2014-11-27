@@ -5,7 +5,7 @@ import de.pokerno.model._
 import de.pokerno.payment.thrift.Payment.{FutureIface => Balance}
 import de.pokerno.protocol
 import de.pokerno.protocol.cmd
-import de.pokerno.gameplay.{Notification, Publisher, Events, Context => Gameplay, stg}
+import de.pokerno.gameplay.{Notification, Publisher, Events, Context => Gameplay}
 import akka.actor.{ Actor, Props, ActorRef, ActorLogging }
 
 object Replay {
@@ -42,7 +42,7 @@ class Replay(
   import ctx.gameplay._
 
   import concurrent.duration._
-  import de.pokerno.gameplay.stages.{PlayStart, BringIn, Showdown, PlayStop}
+  import de.pokerno.gameplay.stage.impl.{PlayStart, BringIn, Showdown, PlayStop}
 
   override def preStart {
     log.info("starting replay {}", id)

@@ -4,20 +4,20 @@ import de.pokerno.model._
 import de.pokerno.util.Colored._
 import akka.actor.{ Actor, Props, ActorLogging, ActorRef }
 
-private[gameplay] class StreetStages[T <: stg.Context](val street: Street.Value, val stages: stg.Chain[T]) {
+private[gameplay] class StreetStages[T <: Stage.Context](val street: Street.Value, val stages: Stage.Chain[T]) {
   def apply(ctx: T) = stages(ctx)
   override def toString = f"street:${street}"
 }
 
-private[gameplay] case class Streets(ctx: stg.Context, stages: Seq[StreetStages[stg.Context]]) {
+private[gameplay] case class Streets(ctx: Stage.Context, stages: Seq[StreetStages[Stage.Context]]) {
   
   import ctx.gameplay._
   
   private val iterator = stages.iterator
-  private var _stage: StreetStages[stg.Context] = null
+  private var _stage: StreetStages[Stage.Context] = null
   
   private def stage = _stage
-  private def stage_=(stage: StreetStages[stg.Context]) {
+  private def stage_=(stage: StreetStages[Stage.Context]) {
     _stage = stage
     info("=== %s ===", _stage.street)
     play.street = _stage.street
@@ -48,7 +48,7 @@ private[gameplay] object Streets {
   case object Continue
   case object Done
   
-  def apply(ctx: stg.Context): Streets = {
+  def apply(ctx: Stage.Context): Streets = {
     import ctx.gameplay.gameOptions
 
     val stages = Street.byGameGroup(gameOptions.group).map(buildStages(_))
@@ -67,10 +67,10 @@ private[gameplay] object Streets {
   )
 
   private def buildStages(street: Street.Value) = {
-    def build(): StreetStages[stg.Context] = {
-      import stages.{Dealing, PostAntes, PostBlinds}
+    def build(): StreetStages[Stage.Context] = {
+      import stage.impl.{Dealing, PostAntes, PostBlinds}
 
-      val builder = new stg.Builder[stg.Context]()
+      val builder = new Stage.Builder[Stage.Context]()
 
       val options = streetOptions(street)
       

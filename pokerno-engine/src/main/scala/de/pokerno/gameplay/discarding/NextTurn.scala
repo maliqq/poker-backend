@@ -1,6 +1,6 @@
 package de.pokerno.gameplay.discarding
 
-import de.pokerno.model.table.seat.Sitting
+import de.pokerno.model.seat.impl.Sitting
 import de.pokerno.gameplay.{Round => GameplayRound}
 
 private[gameplay] object NextTurn {

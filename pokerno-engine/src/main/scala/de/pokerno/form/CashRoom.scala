@@ -15,6 +15,8 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
   val balance: de.pokerno.payment.thrift.Payment.FutureIface
   
   startWith(State.Waiting, NoneRunning)
+
+  roomEvents.publish(Room.Created(roomId), to = Topics.State)
   
   paused {
     case Event(Resume, _) ⇒ toActive()

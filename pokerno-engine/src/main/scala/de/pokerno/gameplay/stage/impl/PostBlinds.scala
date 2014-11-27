@@ -1,13 +1,13 @@
-package de.pokerno.gameplay.stages
+package de.pokerno.gameplay.stage.impl
 
 import de.pokerno.model._
-import de.pokerno.gameplay.{Betting, Stage, stg}
+import de.pokerno.gameplay.{Betting, Stage}
 import de.pokerno.util.Colored._
 
 /*
  * Стадия принудительных ставок-блайндов
  */
-private[gameplay] case class PostBlinds(ctx: stg.Context) extends Stage with Betting {
+private[gameplay] case class PostBlinds(ctx: Stage.Context) extends Stage with Betting {
   
   val gameplay = ctx.gameplay
   import ctx.gameplay._

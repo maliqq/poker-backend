@@ -1,8 +1,7 @@
 package de.pokerno.gameplay.replay
 
 import de.pokerno.model.Street
-import de.pokerno.gameplay.stg
-import de.pokerno.gameplay.{Context => Gameplay}
+import de.pokerno.gameplay.{Context => Gameplay, Stage}
 
 import akka.actor.ActorRef
 
@@ -12,7 +11,7 @@ import concurrent.duration.Duration
 private[replay] class Context(
     _gameplay: Gameplay,
     _ref: ActorRef
-) extends stg.Context(_gameplay, _ref) {
+) extends Stage.Context(_gameplay, _ref) {
   
   import gameplay._
   

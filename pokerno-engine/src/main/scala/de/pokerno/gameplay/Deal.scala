@@ -31,11 +31,11 @@ class Deal(val gameplay: Context) extends Actor
   
   import context._
   
-  val gameplayContext = new stg.Context(gameplay, self)
+  val gameplayContext = new Stage.Context(gameplay, self)
   
   var roundContext: round.Context = null
-  val bettingContext = new betting.Context(gameplay, self)
-  val discardingContext = new discarding.Context(gameplay, self)
+  val bettingContext = new Betting.Context(gameplay, self)
+  val discardingContext = new Discarding.Context(gameplay, self)
   
   lazy private val onStreets = Streets(gameplayContext)
   

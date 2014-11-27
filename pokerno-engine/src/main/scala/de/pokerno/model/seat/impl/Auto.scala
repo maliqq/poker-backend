@@ -1,4 +1,4 @@
-package de.pokerno.model.table.seat
+package de.pokerno.model.seat.impl
 
 import com.fasterxml.jackson.annotation.{JsonAutoDetect, JsonGetter, JsonInclude}
 

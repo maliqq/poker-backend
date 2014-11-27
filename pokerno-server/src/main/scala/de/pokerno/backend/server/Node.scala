@@ -129,15 +129,19 @@ class Node(
 
   private val topicConsumers = collection.mutable.Map[String, List[ActorRef]]()
   ;{
-    import de.pokerno.form.Room.Topics
-    
+    import de.pokerno.form.Room
+    import de.pokerno.form.Room
+    import Room.Topics
+
     topicConsumers(Topics.State) = List(
       actorOf(Props(
         new Actor {
           val redis = Broadcast.Redis("127.0.0.1", 6379)
           def receive = {
-            case _ =>
-              redis.broadcast(Topics.State, "hello!")
+            case Room.Created(id) =>
+              redis.broadcast(Topics.State, f"{\"event\":\"created\",\"id\":\"$id\"}")
+            case Room.ChangedState(id, state) =>
+              // TODO
           }
         }
       ))

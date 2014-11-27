@@ -1,8 +1,8 @@
 package de.pokerno.protocol.msg
 
 import com.fasterxml.jackson.annotation.{JsonProperty, JsonUnwrapped}
-import de.pokerno.model.table.Seat
-import de.pokerno.model.table.seat.{Sitting, Position}
+import de.pokerno.model.seat.impl
+import de.pokerno.model.seat.impl.{Sitting, Position}
 
 abstract class PlayerStateEvent extends GameEvent {
   val position: Position

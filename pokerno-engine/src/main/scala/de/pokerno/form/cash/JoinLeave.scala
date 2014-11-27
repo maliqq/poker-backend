@@ -1,8 +1,8 @@
 package de.pokerno.form.cash
 
 import de.pokerno.model.{Player, Stake, Table}
-import de.pokerno.model.table.seat.Sitting
-import de.pokerno.model.table.Seat
+import de.pokerno.model.seat.impl.Sitting
+import de.pokerno.model.Seat
 import de.pokerno.gameplay
 import de.pokerno.protocol.cmd
 import de.pokerno.form.{Room, CashRoom}

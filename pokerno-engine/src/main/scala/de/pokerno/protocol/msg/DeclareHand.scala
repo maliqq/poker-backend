@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.{JsonProperty, JsonInclude, JsonUnwrappe
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 
 import de.pokerno.poker.Hand
-import de.pokerno.model.table.seat.Position
+import de.pokerno.model.seat.impl.Position
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 sealed case class DeclareHand(

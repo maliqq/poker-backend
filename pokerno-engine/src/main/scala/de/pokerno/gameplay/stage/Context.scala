@@ -1,4 +1,4 @@
-package de.pokerno.gameplay.stg
+package de.pokerno.gameplay.stage
 
 import akka.actor.ActorRef
 import de.pokerno.protocol.GameEvent

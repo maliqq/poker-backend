@@ -4,11 +4,10 @@ import org.slf4j.LoggerFactory
 import de.pokerno.gameplay
 import de.pokerno.gameplay.Round
 import gameplay.betting.NextTurn
-import de.pokerno.gameplay.stg
 import de.pokerno.protocol.cmd
 import de.pokerno.model.{Bet, BetType, Player}
-import de.pokerno.model.table.Seat
-import de.pokerno.model.table.seat.Sitting
+import de.pokerno.model.seat.impl
+import de.pokerno.model.seat.impl.Sitting
 import concurrent.duration.Duration
 
 private[replay] case class Betting(

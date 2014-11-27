@@ -1,9 +1,9 @@
-package de.pokerno.model.table.seat
+package de.pokerno.model.seat.impl
 
 import com.fasterxml.jackson.annotation.{JsonAutoDetect, JsonIgnore, JsonInclude, JsonProperty, JsonPropertyOrder, JsonGetter}
 import com.fasterxml.jackson.module.scala.JsonScalaEnumeration
-import de.pokerno.model.table.Seat.State
-import de.pokerno.model.table.SeatStateRef
+import de.pokerno.model.Seat.State
+import de.pokerno.model.SeatStateRef
 
 trait Transitions {
   class States[T](initial: T) {

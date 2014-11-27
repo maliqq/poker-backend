@@ -2,7 +2,7 @@ package de.pokerno.gameplay
 
 import akka.actor.{ Actor, ActorRef, Cancellable }
 import de.pokerno.model._
-import de.pokerno.model.table.seat.Sitting
+import de.pokerno.model.seat.impl.Sitting
 import concurrent.duration._
 import de.pokerno.gameplay.betting.NextTurn
 
@@ -92,5 +92,7 @@ object Betting {
 
   // turn on big bet mode
   case object BigBets
+
+  type Context = betting.Context
 
 }

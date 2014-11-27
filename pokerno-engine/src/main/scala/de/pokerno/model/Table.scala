@@ -10,9 +10,9 @@ object Table {
 @JsonPropertyOrder(Array("button","seats"))
 class Table(@JsonIgnore val size: Int) {
   import Table._
-  import table.seat._
+  import seat.impl._
   
-  private val _seats: collection.mutable.MutableList[table.Seat] =
+  private val _seats: collection.mutable.MutableList[Seat] =
     collection.mutable.MutableList.tabulate(size) { i => Empty(i) }
 
   // BUTTON
@@ -22,7 +22,7 @@ class Table(@JsonIgnore val size: Int) {
   
   // SEATS
   @JsonProperty def seats = _seats
-  def seatsFrom(from: Int): Seq[table.Seat] = {
+  def seatsFrom(from: Int): Seq[Seat] = {
     val (before, after) = seats.zipWithIndex span (_._2 <= from)
     after.map(_._1) ++ before.map(_._1)
   }

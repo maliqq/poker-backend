@@ -1,8 +1,11 @@
 package de.pokerno.model
 
-import de.pokerno.poker.{Card, Cards}
 import collection.mutable.ListBuffer
+
+import de.pokerno.poker.{Card, Cards}
+import de.pokerno.model.seat.impl.Sitting
 import de.pokerno.protocol.Serializers.Cards2Binary
+
 import com.fasterxml.jackson.annotation.{JsonGetter, JsonProperty, JsonInclude, JsonIgnore}
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.module.scala.JsonScalaEnumeration
@@ -44,7 +47,7 @@ case class Play(val id: java.util.UUID = java.util.UUID.randomUUID()) {
   private val _stacks = collection.mutable.Map[Player, Decimal]().withDefaultValue(0)
   def stacks = _stacks
   
-  def sit(seat: table.seat.Sitting) {
+  def sit(seat: Sitting) {
     _seating.put(seat.player, seat.pos)
     _stacks.put(seat.player, seat.stackAmount)
   }

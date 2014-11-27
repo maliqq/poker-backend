@@ -2,7 +2,7 @@ package de.pokerno.gameplay
 
 import de.pokerno.poker.Cards
 import de.pokerno.model.Player
-import de.pokerno.model.table.seat.Sitting
+import de.pokerno.model.seat.impl.Sitting
 
 private[gameplay] trait Discarding {
 
@@ -41,5 +41,7 @@ object Discarding {
   case object Start
   
   case class Discard(player: Player, cards: Cards)
+
+  type Context = discarding.Context
   
 }

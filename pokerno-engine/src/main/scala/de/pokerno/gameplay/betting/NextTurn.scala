@@ -1,8 +1,8 @@
 package de.pokerno.gameplay.betting
 
 import concurrent.duration._
-import de.pokerno.model.table.seat.Sitting
-import de.pokerno.gameplay.{Betting, stg, Context => Gameplay, Round => GameplayRound}
+import de.pokerno.model.seat.impl.Sitting
+import de.pokerno.gameplay.{Betting, Context => Gameplay, Round => GameplayRound}
 import de.pokerno.util.Colored._
 
 private[gameplay] object NextTurn {

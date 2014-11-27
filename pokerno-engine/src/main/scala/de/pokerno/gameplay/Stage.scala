@@ -1,7 +1,7 @@
 package de.pokerno.gameplay
 
 private[gameplay] abstract class Stage {
-  val ctx: stg.Context
+  val ctx: stage.Context
   def apply(): Unit
 }
 
@@ -20,5 +20,9 @@ private[gameplay] object Stage {
   case object Exit extends Throwable with Control {
     override def toString = "exit"
   }
+
+  type Builder[T <: stage.Context] = stage.Builder[T]
+  type Chain[T <: stage.Context] = stage.Chain[T]
+  type Context = stage.Context
 
 }

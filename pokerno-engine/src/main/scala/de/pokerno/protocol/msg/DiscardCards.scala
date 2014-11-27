@@ -3,7 +3,7 @@ package de.pokerno.protocol.msg
 import com.fasterxml.jackson.annotation.{JsonProperty, JsonInclude, JsonUnwrapped}
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 
-import de.pokerno.model.table.seat.Position
+import de.pokerno.model.seat.impl.Position
 
 object DiscardCards {
   def apply(position: Position, cardsOrNum: Either[Cards, Int]): DiscardCards = {

@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize
 
 import de.pokerno.poker.Cards
 import de.pokerno.model.{Table, Game, Player, Dealer}
-import de.pokerno.model.table.seat.{Sitting, Acting}
+import de.pokerno.model.seat.impl.{Sitting, Acting}
 
 private[gameplay] class Sitting2Acting extends com.fasterxml.jackson.databind.util.StdConverter[Option[Sitting], Option[Acting]] {
   override def convert(seat: Option[Sitting]): Option[Acting] = seat.map(_.asActing)

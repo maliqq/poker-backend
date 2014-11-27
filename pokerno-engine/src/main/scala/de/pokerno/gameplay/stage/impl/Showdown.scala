@@ -1,9 +1,9 @@
-package de.pokerno.gameplay.stages
+package de.pokerno.gameplay.stage.impl
 
 import de.pokerno.model._
-import de.pokerno.model.table.seat._
+import de.pokerno.model.seat.impl._
 import de.pokerno.poker._
-import de.pokerno.gameplay.{Events, Stage, stg}
+import de.pokerno.gameplay.{Events, Stage}
 import scala.math.{BigDecimal => Decimal}
 
 /*
@@ -42,7 +42,7 @@ private[gameplay] trait ShowdownStrategy {
   
 }
 
-private[gameplay] case class Showdown(ctx: stg.Context) extends Stage with ShowdownStrategy {
+private[gameplay] case class Showdown(ctx: Stage.Context) extends Stage with ShowdownStrategy {
   
   import ctx.gameplay._
   

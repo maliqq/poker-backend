@@ -1,7 +1,7 @@
 package de.pokerno.form.room
 
 import de.pokerno.model.Player
-import de.pokerno.model.table.seat.Sitting
+import de.pokerno.model.seat.impl.Sitting
 import math.{BigDecimal => Decimal}
 
 trait JoinLeave {

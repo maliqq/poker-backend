@@ -15,7 +15,7 @@ case class RoomEnv(
     balance: de.pokerno.payment.Service,
     pokerdb: Option[de.pokerno.data.pokerdb.thrift.PokerDB.FutureIface] = None,
     notificationConsumers: Seq[ActorRef] = Seq(),
-    topicConsumers: Map[String, ActorRef] = Map.empty()
+    topicConsumers: Map[String, Seq[ActorRef]] = Map.empty()
   )
 
 class Room(val id: java.util.UUID,
@@ -29,8 +29,8 @@ class Room(val id: java.util.UUID,
   val balance = env.balance
   val table = new model.Table(variation.tableSize)
 
-  implicit protected def actor2consumer(ref: ActorRef): de.pokerno.hub.Consumer[gameplay.Notification] = {
-    new de.pokerno.hub.impl.ActorConsumer[gameplay.Notification](ref)
+  implicit protected def actor2consumer[T](ref: ActorRef): de.pokerno.hub.Consumer[T] = {
+    new de.pokerno.hub.impl.ActorConsumer[T](ref)
   }
 
   private val _consumers = collection.mutable.ListBuffer[de.pokerno.hub.Consumer[gameplay.Notification]]()
@@ -44,16 +44,22 @@ class Room(val id: java.util.UUID,
       name = f"room-$roomId-metrics")
   _consumers += metrics
 
-  env.notificationConsumers.map { ref =>
+  env.notificationConsumers.foreach { ref =>
     _consumers += ref
   }
 
-  _consumers.map { consumer =>
+  _consumers.foreach { consumer =>
     gameplayEvents.subscribe(consumer)
   }
 
+  env.topicConsumers.foreach { case (topic, consumers) =>
+    consumers.foreach { consumer =>
+      roomEvents.subscribe(consumer, topic)
+    }
+  }
+
   log.info("starting room {}", roomId)
-  
+
   initialize()
   
 }

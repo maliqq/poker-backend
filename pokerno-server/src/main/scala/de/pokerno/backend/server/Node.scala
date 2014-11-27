@@ -127,6 +127,23 @@ class Node(
     }
   }
 
+  private val topicConsumers = collection.mutable.Map[String, List[ActorRef]]()
+  ;{
+    import de.pokerno.form.Room.Topics
+    
+    topicConsumers(Topics.State) = List(
+      actorOf(Props(
+        new Actor {
+          val redis = Broadcast.Redis("127.0.0.1", 6379)
+          def receive = {
+            case _ =>
+              redis.broadcast(Topics.State, "hello!")
+          }
+        }
+      ))
+    )
+  }
+
   //val broadcasts = Seq[Broadcast](
       //new Broadcast.Zeromq("tcp://127.0.0.1:5555")
   //)
@@ -217,7 +234,9 @@ class Node(
   }
   
   private def newRoomEnv = {
-    RoomEnv(balance, pokerdb, notificationConsumers = notificationConsumers)
+    RoomEnv(balance, pokerdb,
+      notificationConsumers = notificationConsumers,
+      topicConsumers = topicConsumers.toMap)
   }
 
   override def postStop {

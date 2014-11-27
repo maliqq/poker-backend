@@ -2,7 +2,9 @@ package de.pokerno.backend.server
 
 object Broadcast {
   import de.pokerno.protocol.{GameEvent => Codec}
-  type Message = de.pokerno.protocol.GameEvent
+  import de.pokerno.util.HostPort._
+
+  type Message = String
 
   case class Redis(host: String, port: Int) extends Broadcast {
     val client = new redis.clients.jedis.Jedis(host, port)
@@ -10,9 +12,9 @@ object Broadcast {
     def this(addr: java.net.InetSocketAddress) = this(addr.getHostName, addr.getPort)
     
     def broadcast(topic: String, msg: Message) =
-      client.publish(topic, Codec.encodeAsString(msg))
+      client.publish(topic, msg)
   }
-  
+
   case class Kafka(addrs: Seq[String]) extends Broadcast {
     import kafka.producer.Producer
     import kafka.producer.KeyedMessage
@@ -32,7 +34,7 @@ object Broadcast {
       producer.send(data)
     } 
   }
-  
+
   case class Zeromq(bind: String) extends Broadcast {
     import org.zeromq.ZMQ
     
@@ -43,9 +45,9 @@ object Broadcast {
     val socket = context.socket(ZMQ.PUB)
     socket.bind(bind)
     
-    def broadcast(topic: String, msg: Broadcast.Message) = {
+    def broadcast(topic: String, msg: Message) = {
       socket.sendMore(topic)
-      socket.send(Codec.encodeAsString(msg))
+      socket.send(msg)
     }
   }
 }
@@ -54,14 +56,14 @@ abstract class Broadcast {
   def broadcast(topic: String, msg: Broadcast.Message): Unit
 }
 
-import akka.actor.Actor
-import de.pokerno.gameplay.Notification
+// import akka.actor.Actor
+// import de.pokerno.gameplay.Notification
 
-class Broadcasting(id: String, endpoints: Seq[Broadcast]) extends Actor {
+// class Broadcasting(id: String, endpoints: Seq[Broadcast]) extends Actor {
   
-  def receive = {
-    case Notification(msg, from, to, _) =>
-      endpoints.foreach { _.broadcast(id, msg) }
-  }
+//   def receive = {
+//     case Notification(msg, from, to, _) =>
+//       endpoints.foreach { _.broadcast(id, msg) }
+//   }
   
-}
+// }

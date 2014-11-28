@@ -139,7 +139,7 @@ class Node(
           val redis = Broadcast.Redis("127.0.0.1", 6379)
           def receive = {
             case Room.Created(id) =>
-              redis.broadcast(Topics.State, "{\"event\":\"created\",\"id\":\"{}\"}".format(id))
+              redis.broadcast(Topics.State, "{\"type\":\"created\",\"id\":\"{}\"}".format(id))
             case Room.ChangedState(id, state) =>
               // TODO
           }

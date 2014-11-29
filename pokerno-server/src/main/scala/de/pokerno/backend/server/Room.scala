@@ -16,7 +16,6 @@ import de.pokerno.form.Room.{Metrics => RoomMetrics}
 
 case class RoomEnv(
     balance: de.pokerno.payment.Service,
-    pokerdb: Option[de.pokerno.data.pokerdb.thrift.PokerDB.FutureIface] = None,
     notificationConsumers: Seq[ActorRef] = Seq(),
     topicConsumers: Map[String, Seq[ActorRef]] = Map.empty()
   )
@@ -37,12 +36,12 @@ class Room(val id: java.util.UUID,
   }
 
   private val _consumers = collection.mutable.ListBuffer[de.pokerno.hub.Consumer[gameplay.Notification]]()
-  private val journal       = actorOf(
+  private val journal = actorOf(
       Props(classOf[de.pokerno.form.room.Journal], "/tmp", roomId),
       name = f"room-$roomId-journal")
   _consumers += journal
   
-  private val metrics       = actorOf(
+  private val metrics = actorOf(
       Props(new de.pokerno.form.cash.MetricsCollector{
         def report() {
           roomEvents.publish(RoomMetrics(roomId, metrics), to = RoomTopics.Metrics)

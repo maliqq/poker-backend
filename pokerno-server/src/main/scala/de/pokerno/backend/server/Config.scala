@@ -103,4 +103,17 @@ case class Config(
 
   def rpcConfig =
     rpc.getOrElse(Config.Rpc.default)
+  
+  def loadedDbProps: Option[java.util.Properties] = dbProps.map { path =>
+    val f = new java.io.FileInputStream(path)
+    val props = new java.util.Properties
+    props.load(f)
+    props
+  }
+  
+  def authService: Option[gw.http.AuthService] = {
+    if (!authEnabled || !redis.isDefined) return None
+    Some(new RedisAuthService(redis.get.addr))
+  }
+
 }

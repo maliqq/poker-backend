@@ -9,12 +9,12 @@ object Main {
     val props = new java.util.Properties
     props.load(new java.io.FileInputStream("./etc/database.properties"))
     
-    val session = db.Connection.connect(
+    val session = db.Connection.connector(
         "org.postgresql.Driver",
         props.getProperty("database.url"),
         props.getProperty("database.username"),
         props.getProperty("database.password")
-        )
+        )()
     
     session.setLogger(println(_))
     session.bindToCurrentThread

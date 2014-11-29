@@ -6,73 +6,33 @@ import akka.actor.{ Actor, ActorLogging, ActorRef, Props, ActorSystem }
 import de.pokerno.model.{Variation, Stake}
 import de.pokerno.backend.{ gateway ⇒ gw }
 import de.pokerno.backend.Gateway
-import de.pokerno.backend.gateway.http
-import de.pokerno.protocol._
 import de.pokerno.backend.server.node.Bootstrap
+import de.pokerno.protocol._
 import de.pokerno.data.pokerdb
+import de.pokerno.data.db
 
-trait Initialize {
-  type Storage = de.pokerno.backend.storage.PostgreSQL.Storage
-  
-  def initDb(file: String)(implicit system: ActorSystem): NodeEnv = {
-    val f = new java.io.FileInputStream(file)
-    val props = new java.util.Properties
-    props.load(f)
-    
-    system.actorOf(Props(new Actor with ActorLogging {
-      val session = de.pokerno.data.db.Connection.connect(props)
-      if (java.lang.Boolean.parseBoolean(props.getProperty("debug"))) {
-        session.setLogger(println(_))
-      }
-      // FIXME
-      org.squeryl.SessionFactory.externalTransactionManagementAdapter = Some(() => {
-        Some(session)
-      })
-      
-      override def preStart = {
-        log.info("connection context started")
-      }
-      
-      def receive = { case _ => }
-    }))
-    
-    NodeEnv(
-      Some(new Storage),
-      Some(new pokerdb.Service())
-    )
-  }
-}
-
-case class NodeEnv(
-    storage: Option[de.pokerno.backend.Storage] = None,
-    db: Option[pokerdb.Service] = None
-)
-
-object Node extends Initialize {
-  
+object Node {
   val log = LoggerFactory.getLogger(getClass)
+
   implicit val system = ActorSystem("node")
   
   def start(config: Config): ActorRef = {
     val id = config.id
     log.info(f"starting node $id (${config.host})")
     
-    val env = config.dbProps.map { initDb(_) }.getOrElse(NodeEnv())
+    val connector = config.loadedDbProps.map { props =>
+      db.Connection.connector(props)
+    }
     
-    val node = system.actorOf(Props(classOf[Node], id, env), name = "node-main")
+    val node = system.actorOf(Props(classOf[Node], id, connector), name = "node-main")
     
     val boot = new Bootstrap(node)
     config.rpc.map { c ⇒
       boot.withRpc(c.addr)
     }
     
-    val authService: Option[http.AuthService] = if (config.authEnabled && config.redis.isDefined) {
-      val c = config.redis.get
-      Some(new RedisAuthService(c.addr))
-    } else None
-    
     config.http.map { c ⇒
-      boot.withHttp(c, authService)
+      boot.withHttp(c, config.authService)
     }
     
     config.apiAddress.map { addr =>
@@ -107,77 +67,15 @@ object Node extends Initialize {
 
 class Node(
     val nodeId: java.util.UUID,
-    env: NodeEnv
-  ) extends Actor with ActorLogging {
+    sessionConnector: Option[()=>org.squeryl.Session] 
+  ) extends Actor with ActorLogging with node.Initialize {
+  
   import context._
   import concurrent.duration._
   import util.{ Success, Failure }
   import CommandConversions._
   
-  val pokerdb = env.db
   val balance = new de.pokerno.payment.Service()
-
-  private val notificationConsumers = collection.mutable.ListBuffer[ActorRef]()
-  ;{
-    val persist = actorOf(Props(classOf[Persistence], pokerdb), name = "node-persist")
-    notificationConsumers += persist
-    env.storage.map { storage =>
-      val history = actorOf(Props(classOf[de.pokerno.backend.PlayHistoryWriter], storage), name = "play-history-writer")
-      notificationConsumers += history
-    }
-  }
-
-  private val topicConsumers = collection.mutable.Map[String, List[ActorRef]]()
-  ;{
-    import de.pokerno.form.Room
-    import de.pokerno.form.Room
-    import Room.Topics
-
-    val redisConsumer = actorOf(Props(
-      new Actor {
-        val redis = Broadcast.Redis("127.0.0.1", 6379)
-        def receive = {
-          case Room.Created(id) =>
-            redis.broadcast(Topics.State, "{\"type\":\"created\",\"id\":\"{}\"}".format(id))
-          case Room.ChangedState(id, state) =>
-            // TODO
-        }
-      }
-    ))
-
-    topicConsumers(Topics.State) = List(
-      redisConsumer
-    )
-
-    topicConsumers(Topics.Metrics) = List(
-      redisConsumer,
-      actorOf(Props(
-        new Actor {
-          def receive = {
-            case Room.Metrics(id, metrics) =>
-              pokerdb.map { service =>
-                service.reportRoomMetrics(id, metrics)
-              }
-          }
-        }
-      ))
-    )
-  }
-
-  //val broadcasts = Seq[Broadcast](
-      //new Broadcast.Zeromq("tcp://127.0.0.1:5555")
-  //)
-
-  val metrics = new node.MetricsHandler {
-    def report() {
-      pokerdb match {
-        case Some(service) =>
-          service.reportNodeMetrics(nodeId.toString(), this.metrics)
-        
-        case _ => println(this.metrics)
-      }
-    }
-  }
   
   override def preStart {
     system.scheduler.schedule(1.minute, 1.minute) {
@@ -267,7 +165,7 @@ class Node(
   }
   
   private def newRoomEnv = {
-    RoomEnv(balance, pokerdb,
+    RoomEnv(balance,
       notificationConsumers = notificationConsumers,
       topicConsumers = topicConsumers.toMap)
   }

@@ -49,7 +49,7 @@ sealed class Metrics {
 }
 
 trait MetricsReporter {
-  def report
+  def report()
 }
 
 abstract class MetricsHandler extends MetricsReporter {

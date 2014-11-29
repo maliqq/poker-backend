@@ -42,6 +42,8 @@ object Room {
     final val State = "room.state"
     final val Metrics = "room.metrics"
   }
+
+  case class Metrics(id: String, metrics: cash.Metrics)
 }
 
 class RoomEvents extends hub.TopicExchange[Any] {

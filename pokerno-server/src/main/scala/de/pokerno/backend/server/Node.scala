@@ -133,15 +133,31 @@ class Node(
     import de.pokerno.form.Room
     import Room.Topics
 
+    val redisConsumer = actorOf(Props(
+      new Actor {
+        val redis = Broadcast.Redis("127.0.0.1", 6379)
+        def receive = {
+          case Room.Created(id) =>
+            redis.broadcast(Topics.State, "{\"type\":\"created\",\"id\":\"{}\"}".format(id))
+          case Room.ChangedState(id, state) =>
+            // TODO
+        }
+      }
+    ))
+
     topicConsumers(Topics.State) = List(
+      redisConsumer
+    )
+
+    topicConsumers(Topics.Metrics) = List(
+      redisConsumer,
       actorOf(Props(
         new Actor {
-          val redis = Broadcast.Redis("127.0.0.1", 6379)
           def receive = {
-            case Room.Created(id) =>
-              redis.broadcast(Topics.State, "{\"type\":\"created\",\"id\":\"{}\"}".format(id))
-            case Room.ChangedState(id, state) =>
-              // TODO
+            case Room.Metrics(id, metrics) =>
+              pokerdb.map { service =>
+                service.reportRoomMetrics(id, metrics)
+              }
           }
         }
       ))

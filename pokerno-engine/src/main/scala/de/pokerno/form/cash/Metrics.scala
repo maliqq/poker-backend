@@ -36,8 +36,12 @@ sealed class Metrics {
   val playersPerFlop  = metrics.meter("players-per-flop")
 }
 
+trait Reporting {
+  def report()
+}
+
 // TODO reporters
-class MetricsCollector(val roomId: String, val topic: String, val exchange: de.pokerno.hub.Exchange[Any]) extends Actor with ActorLogging {
+abstract class MetricsCollector extends Actor with ActorLogging with Reporting {
   import context._
 
   //val reporter = ConsoleReporter.forRegistry(metrics).build()
@@ -91,10 +95,6 @@ class MetricsCollector(val roomId: String, val topic: String, val exchange: de.p
       report()
 
     case _ ⇒
-  }
-
-  private def report() {
-    exchange.publish(topic, metrics)
   }
 
   private def handleBet(bet: message.DeclareBet) = bet.action match {

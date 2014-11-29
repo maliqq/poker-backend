@@ -40,6 +40,7 @@ object Room {
   object Topics {
     final val Deals = "room.deals"
     final val State = "room.state"
+    final val Metrics = "room.metrics"
   }
 }
 

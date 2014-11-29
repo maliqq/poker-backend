@@ -11,51 +11,42 @@ import de.pokerno.model.{Bet, Street}
 import de.pokerno.gameplay.Notification
 
 object Metrics {
-}
-
-trait Reporting { m: Metrics =>
-  def report() {
-    val m = thrift.metrics.Room(
-        players.getCount(),
-        waiting.getCount(),
-        watching.getCount(),
-        thrift.metrics.Histogram(mean = pots.getSnapshot().getMean() / 100.0), // 100 - for floats
-        thrift.metrics.Meter(mean = plays.getMeanRate(), rate15 = Some(plays.getFifteenMinuteRate())),
-        thrift.metrics.Meter(mean = playersPerFlop.getMeanRate(), rate15 = Some(playersPerFlop.getFifteenMinuteRate()))
+  implicit def metrics2thrift(m: Metrics): thrift.metrics.Room =
+    thrift.metrics.Room(
+      m.players.getCount(),
+      m.waiting.getCount(),
+      m.watching.getCount(),
+      thrift.metrics.Histogram(mean = m.pots.getSnapshot().getMean() / 100.0), // 100 - for floats
+      thrift.metrics.Meter(mean = m.plays.getMeanRate(), rate15 = Some(m.plays.getFifteenMinuteRate())),
+      thrift.metrics.Meter(mean = m.playersPerFlop.getMeanRate(), rate15 = Some(m.playersPerFlop.getFifteenMinuteRate()))
     )
-    pokerdb match {
-      case Some(service) => service.reportRoomMetrics(roomId, m)
-      case _ => println(m)
-    }
-  }
 }
 
-// TODO reporters
-class Metrics(val roomId: String, val pokerdb: Option[thrift.PokerDB.FutureIface]) extends Actor with ActorLogging with Reporting {
-  import context._
-
-  final val metrics = new MetricRegistry
-  //val reporter = ConsoleReporter.forRegistry(metrics).build()
+sealed class Metrics {
+  private final val metrics = new MetricRegistry
 
   val players         = metrics.counter("players")
-
   val waiting         = metrics.counter("waiting")
   val watching        = metrics.counter("watchers")
 
-  private val _folds  = metrics.counter("folds")
+  val folds           = metrics.counter("folds")
+
   val pots            = metrics.histogram("pots")
   val plays           = metrics.meter("plays")
   val playersPerFlop  = metrics.meter("players-per-flop")
+}
 
-  override def preStart() {
-  }
+// TODO reporters
+class MetricsCollector(val roomId: String, val topic: String, val exchange: de.pokerno.hub.Exchange[Any]) extends Actor with ActorLogging {
+  import context._
+
+  //val reporter = ConsoleReporter.forRegistry(metrics).build()
+
+  val metrics = new Metrics()
 
   def receive = {
     case Notification(msg, _, _, _) ⇒ handleMessage(msg)
     case _                       ⇒
-  }
-
-  override def postStop() {
   }
 
   var playersPreflop: Long = 0
@@ -63,10 +54,10 @@ class Metrics(val roomId: String, val pokerdb: Option[thrift.PokerDB.FutureIface
 
   private def handleMessage(msg: message.GameEvent) = msg match {
     case _: message.PlayerJoin ⇒
-      players.inc()
+      metrics.players.inc()
 
     case _: message.PlayerLeave ⇒
-      players.dec()
+      metrics.players.dec()
 
     case bet: message.DeclareBet ⇒
       handleBet(bet)
@@ -74,34 +65,26 @@ class Metrics(val roomId: String, val pokerdb: Option[thrift.PokerDB.FutureIface
     case message.DeclarePot(pot, _) ⇒
       lastPot = pot.total.toDouble
 
-    case message.DeclareStreet(street) ⇒
+    case message.DeclareStreet(Street.Preflop) ⇒
+      playersPreflop = metrics.players.getCount()
 
-      street match {
-        case Street.Preflop ⇒
-
-          playersPreflop = players.getCount()
-
-        case Street.Flop ⇒
-
-          val playersCount = playersPreflop
-          val foldsCount = _folds.getCount()
-          if (playersCount > 0) {
-            val rate = (playersCount - foldsCount).toDouble / playersCount
-            playersPerFlop.mark((rate * 100).floor.intValue)
-          }
-
-        case _ ⇒
+    case message.DeclareStreet(Street.Flop) ⇒
+      val playersCount = playersPreflop
+      val foldsCount = metrics.folds.getCount()
+      if (playersCount > 0) {
+        val rate = (playersCount - foldsCount).toDouble / playersCount
+        metrics.playersPerFlop.mark((rate * 100).floor.intValue)
       }
 
     case _: message.DeclarePlayStart ⇒
-      plays.mark()
+      metrics.plays.mark()
 
     case _: message.DeclarePlayStop ⇒
       // reset folds
-      _folds.dec(_folds.getCount())
+      metrics.folds.dec(metrics.folds.getCount())
 
       // mark pot
-      pots.update((lastPot * 100).intValue())
+      metrics.pots.update((lastPot * 100).intValue())
       lastPot = .0
 
       // report
@@ -110,9 +93,13 @@ class Metrics(val roomId: String, val pokerdb: Option[thrift.PokerDB.FutureIface
     case _ ⇒
   }
 
+  private def report() {
+    exchange.publish(topic, metrics)
+  }
+
   private def handleBet(bet: message.DeclareBet) = bet.action match {
     case Bet.Fold ⇒
-      _folds.inc()
+      metrics.folds.inc()
 
     case _ ⇒
   }

@@ -10,6 +10,7 @@ import de.pokerno.protocol.{ cmd, api, msg => message}
 import de.pokerno.protocol.thrift
 import util.{ Success, Failure }
 import scala.concurrent.{ Promise, Future }
+import de.pokerno.form.{Room.Topics => RoomTopics}
 
 case class RoomEnv(
     balance: de.pokerno.payment.Service,
@@ -40,7 +41,7 @@ class Room(val id: java.util.UUID,
   _consumers += journal
   
   private val metrics       = actorOf(
-      Props(classOf[de.pokerno.form.cash.Metrics], roomId, env.pokerdb),
+      Props(classOf[de.pokerno.form.cash.Metrics], RoomTopics.Metrics, roomId, roomEvents),
       name = f"room-$roomId-metrics")
   _consumers += metrics
 

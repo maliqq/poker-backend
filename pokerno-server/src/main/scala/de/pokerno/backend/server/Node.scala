@@ -108,7 +108,7 @@ object Node extends Initialize {
 class Node(
     val nodeId: java.util.UUID,
     env: NodeEnv
-  ) extends Actor with ActorLogging with node.Metrics {
+  ) extends Actor with ActorLogging {
   import context._
   import concurrent.duration._
   import util.{ Success, Failure }
@@ -151,9 +151,22 @@ class Node(
   //val broadcasts = Seq[Broadcast](
       //new Broadcast.Zeromq("tcp://127.0.0.1:5555")
   //)
+
+  val metrics = new node.MetricsHandler {
+    def report() {
+      pokerdb match {
+        case Some(service) =>
+          service.reportNodeMetrics(nodeId.toString(), this.metrics)
+        
+        case _ => println(this.metrics)
+      }
+    }
+  }
   
   override def preStart {
-    startReporting()
+    system.scheduler.schedule(1.minute, 1.minute) {
+      metrics.report()
+    }
   }
 
   def receive = {

@@ -3,12 +3,6 @@ package de.pokerno.backend
 import math.{BigDecimal => Decimal}
 import de.pokerno.{model, poker}
 
-import akka.actor.Actor
-
-class PlayHistoryWriter(storage: Storage) extends Actor {
-  
-}
-
 abstract class PlayHistoryBatch {
   def writeEntry(
     roomId: java.util.UUID,

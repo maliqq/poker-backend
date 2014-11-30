@@ -55,7 +55,8 @@ object Config {
     @JsonProperty("authEnabled") authEnabled: Boolean = false,
     @JsonProperty("apiEnabled") apiEnabled: Boolean = false,
     @JsonProperty("rpcEnabled") rpcEnabled: Boolean = false,
-    @JsonProperty("websocketEnabled") websocketEnabled: Boolean = false
+    @JsonProperty("websocketEnabled") websocketEnabled: Boolean = false,
+    @JsonProperty("broadcast") broadcast: Option[Broadcast] = None
   ) = {
     val rpc = Option(_rpc)
     var c = new Config(java.util.UUID.fromString(id), host,
@@ -79,12 +80,17 @@ object Config {
           )
     c
   }
+
+  case class Broadcast(
+    redis: Option[String] = None
+  )
 }
 
 case class Config(
     id: java.util.UUID = null,
     host: String = "localhost",
     authEnabled: Boolean = false,
+    broadcast: Option[Config.Broadcast] = None,
     redis: Option[Config.Redis] = None,
     http: Option[gw.http.Config] = None,
     api: Option[Config.Http.Api] = None,

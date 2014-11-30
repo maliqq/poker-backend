@@ -4,6 +4,7 @@ import org.slf4j.{ Logger, LoggerFactory }
 import akka.actor.{ Actor, ActorLogging, ActorRef, Props, ActorSystem }
 
 import de.pokerno.model.{Variation, Stake}
+import de.pokerno.form.Room.{Topics => RoomTopics}
 import de.pokerno.backend.{ gateway ⇒ gw }
 import de.pokerno.backend.Gateway
 import de.pokerno.backend.server.node.Bootstrap
@@ -23,8 +24,16 @@ object Node {
     val connector = config.loadedDbProps.map { props =>
       db.Connection.connector(props)
     }
+    val broadcasts = collection.mutable.Map[String, List[Broadcast]]()
+    config.broadcast.map { bcast =>
+      bcast.redis.map { addr =>
+        broadcasts(RoomTopics.State) = List(
+          Broadcast.Redis(addr)
+        )
+      }
+    }
     
-    val node = system.actorOf(Props(classOf[Node], id, connector), name = "node-main")
+    val node = system.actorOf(Props(classOf[Node], id, broadcasts, connector), name = "node-main")
     
     val boot = new Bootstrap(node)
     config.rpc.map { c ⇒
@@ -67,7 +76,8 @@ object Node {
 
 class Node(
     val nodeId: java.util.UUID,
-    sessionConnector: Option[()=>org.squeryl.Session] 
+    val topicBroadcasts: Map[String, List[Broadcast]] = Map(),
+    val sessionConnector: Option[()=>org.squeryl.Session] 
   ) extends Actor with ActorLogging with node.Initialize {
   
   import context._

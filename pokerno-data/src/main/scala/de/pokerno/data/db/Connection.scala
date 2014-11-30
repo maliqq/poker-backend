@@ -10,7 +10,7 @@ object Connection {
   def connector(): Connector = {
     connector(System.getProperties())
   }
-  
+
   def connector(props: java.util.Properties): Connector = {
     val driver            = props.getProperty("database.driver")
     val url               = props.getProperty("database.url")
@@ -19,6 +19,10 @@ object Connection {
     val isDebug           = java.lang.Boolean.parseBoolean(props.getProperty("debug"))
     
     connector(driver, url, user, password, isDebug)
+  }
+
+  def connect(props: java.util.Properties = System.getProperties()) = {
+    connector(props).apply()
   }
   
   def connector(driver: String, url: String, user: String, password: String, isDebug: Boolean = false): Connector = {

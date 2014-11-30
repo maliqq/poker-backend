@@ -2,7 +2,7 @@ package de.pokerno.util
 
 object HostPort {
   import java.net.InetSocketAddress
-  
+
   implicit def string2inetSocketAddress(s: String)(implicit defaultHost: String, defaultPort: Int): InetSocketAddress = {
     if (s.indexOf(":") != -1) {
       val parts = s.split(":", 2)

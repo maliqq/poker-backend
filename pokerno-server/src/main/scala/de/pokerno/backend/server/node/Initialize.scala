@@ -8,10 +8,10 @@ trait Initialize extends init.Database { a: Actor =>
   import Room.Topics
   
   def sessionConnector: Option[()=>org.squeryl.Session]
-  def nodeId: String
-  def broadcasts: Map[String, de.pokerno.backend.server.Broadcast]
+  def nodeId: java.util.UUID
+  def topicBroadcasts: Map[String, List[de.pokerno.backend.server.Broadcast]]
   
-  protected var _metrics: MetricsHandler
+  private var _metrics: MetricsHandler = _
   lazy val metrics: MetricsHandler = _metrics
   
   protected val notificationConsumers = collection.mutable.ListBuffer[ActorRef]()
@@ -41,7 +41,7 @@ trait Initialize extends init.Database { a: Actor =>
                 case _ => // ignore
               }
             
-            case de.pokerno.form.Room.ChangedState(id, newState) =>
+            case Room.ChangedState(id, newState) =>
               pokerdb.changeRoomState(id, ThriftState.valueOf(newState.toString().toLowerCase).get)
           }
         }
@@ -82,20 +82,22 @@ trait Initialize extends init.Database { a: Actor =>
     }
   }
   
-  for ((topic, broadcast) <- broadcasts) {
-    val consumer = actorOf(Props(
-      new Actor {
-        def receive = {
-          case Room.Created(id) =>
-            broadcast.broadcast(topic, "{\"type\":\"created\",\"id\":\"{}\"}".format(id))
-          case Room.ChangedState(id, state) =>
-            // TODO
-          case Room.Metrics(id, metrics) =>
-            // TODO
+  for ((topic, broadcasts) <- topicBroadcasts) {
+    for (broadcast <- broadcasts) {
+      val consumer = actorOf(Props(
+        new Actor {
+          def receive = {
+            case Room.Created(id) =>
+              broadcast.broadcast(topic, "{\"type\":\"created\",\"id\":\"{}\"}".format(id))
+            case Room.ChangedState(id, state) =>
+              // TODO
+            case Room.Metrics(id, metrics) =>
+              // TODO
+          }
         }
-      }
-    ))
+      ))
 
-    topicConsumers(topic) :+= consumer
+      topicConsumers(topic) :+= consumer
+    }
   }
 }

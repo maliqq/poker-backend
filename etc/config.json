@@ -8,5 +8,9 @@
   "rpc": "127.0.0.1:9091",
 
   "apiEnabled": true,
-  "websocketEnabled": true
+  "websocketEnabled": true,
+
+  "broadcast": {
+    "redis": "127.0.0.1:6379"
+  }
 }

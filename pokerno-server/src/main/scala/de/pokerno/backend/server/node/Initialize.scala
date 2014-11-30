@@ -105,7 +105,7 @@ trait Initialize extends init.Database { a: Actor =>
           
           case Room.Metrics(id, metrics) => 
             bcast.broadcast("room.state",
-              """{"type":"updated","id":"%s","metrics":%s""".format(id, mapper.writeValueAsString(metrics)))
+              """{"type":"updated","id":"%s","payload":%s""".format(id, mapper.writeValueAsString(metrics)))
         }
       }
     ))

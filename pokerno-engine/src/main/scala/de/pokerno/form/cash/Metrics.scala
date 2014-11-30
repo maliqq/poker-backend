@@ -34,6 +34,14 @@ sealed class Metrics {
   val pots            = registry.histogram("pots")
   val plays           = registry.meter("plays")
   val playersPerFlop  = registry.meter("players-per-flop")
+
+  import com.fasterxml.jackson.annotation.JsonGetter
+  @JsonGetter("players_count")    def playersCount = players.getCount()
+  @JsonGetter("waiting_count")    def waitingCount = waiting.getCount()
+  @JsonGetter("watching_count")   def watchingCount = watching.getCount()
+  @JsonGetter("plays_rate")       def playsRate = plays.getFifteenMinuteRate()
+  @JsonGetter("average_pot")      def averagePot = pots.getSnapshot().getMean() / 100.0
+  @JsonGetter("players_per_flop") def playersPerFlopMean = playersPerFlop.getMeanRate()
 }
 
 trait Reporting {

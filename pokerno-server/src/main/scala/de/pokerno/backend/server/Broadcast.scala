@@ -20,7 +20,6 @@ object Broadcast {
     val client = new redis.clients.jedis.Jedis(host, port)
     
     def broadcast(topic: String, msg: Message) = {
-      Console printf("[redis] broadcast %s: %s\n", topic, msg)
       client.publish(topic, msg)
     }
   }

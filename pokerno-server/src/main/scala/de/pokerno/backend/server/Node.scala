@@ -24,16 +24,14 @@ object Node {
     val connector = config.loadedDbProps.map { props =>
       db.Connection.connector(props)
     }
-    val broadcasts = collection.mutable.Map[String, List[Broadcast]]()
+    val broadcasts = collection.mutable.ListBuffer[Tuple2[Broadcast, List[String]]]()
     config.broadcast.map { bcast =>
       bcast.redis.map { addr =>
-        broadcasts(RoomTopics.State) = List(
-          Broadcast.Redis(addr)
-        )
+        broadcasts += Tuple2(Broadcast.Redis(addr), List(RoomTopics.State, RoomTopics.Metrics))
       }
     }
     
-    val node = system.actorOf(Props(classOf[Node], id, broadcasts, connector), name = "node-main")
+    val node = system.actorOf(Props(classOf[Node], id, broadcasts.toList, connector), name = "node-main")
     
     val boot = new Bootstrap(node)
     config.rpc.map { c ⇒
@@ -76,7 +74,7 @@ object Node {
 
 class Node(
     val nodeId: java.util.UUID,
-    val topicBroadcasts: Map[String, List[Broadcast]] = Map(),
+    val broadcastTopics: List[Tuple2[Broadcast, List[String]]] = List(),
     val sessionConnector: Option[()=>org.squeryl.Session] 
   ) extends Actor with ActorLogging with node.Initialize {
   

@@ -23,17 +23,17 @@ object Metrics {
 }
 
 sealed class Metrics {
-  private final val metrics = new MetricRegistry
+  final val registry = new MetricRegistry
 
-  val players         = metrics.counter("players")
-  val waiting         = metrics.counter("waiting")
-  val watching        = metrics.counter("watchers")
+  val players         = registry.counter("players")
+  val waiting         = registry.counter("waiting")
+  val watching        = registry.counter("watchers")
 
-  val folds           = metrics.counter("folds")
+  val folds           = registry.counter("folds")
 
-  val pots            = metrics.histogram("pots")
-  val plays           = metrics.meter("plays")
-  val playersPerFlop  = metrics.meter("players-per-flop")
+  val pots            = registry.histogram("pots")
+  val plays           = registry.meter("plays")
+  val playersPerFlop  = registry.meter("players-per-flop")
 }
 
 trait Reporting {

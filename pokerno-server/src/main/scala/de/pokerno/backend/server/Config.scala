@@ -3,7 +3,10 @@ package de.pokerno.backend.server
 import de.pokerno.backend.{ gateway ⇒ gw }
 import java.net.InetSocketAddress
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.fasterxml.jackson.annotation.{JsonCreator, JsonProperty}
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 
 object Config {
   final val defaultHost = "0.0.0.0"
@@ -23,66 +26,51 @@ object Config {
     )
   }
 
-  object Rpc {
+  private abstract class HostPortConverter[T] extends com.fasterxml.jackson.databind.util.StdConverter[String, T] {
+    def convert(hostport: String): T
+  }
+
+  // RPC
+  trait DefaultRpcHostPort {
     final implicit val defaultHost = "localhost"
     final implicit val defaultPort = 9091
+  }
+  object Rpc extends DefaultRpcHostPort {
     def default = Rpc(defaultHost, defaultPort)
     def apply(host: String, port: Int): Rpc = Rpc(new InetSocketAddress(host, port))
     def apply(s: String): Rpc = Rpc(s: InetSocketAddress)
   }
+  private class RpcHostPortConverter extends HostPortConverter[Rpc] with DefaultRpcHostPort {
+    def convert(s: String) = Rpc(s: InetSocketAddress)
+  }
+  @JsonDeserialize(converter = classOf[RpcHostPortConverter])
   case class Rpc(addr: InetSocketAddress)
   
-  object Redis {
+  // redis
+  trait DefaultRedisHostPort {
     final implicit val defaultHost = "localhost"
     final implicit val defaultPort = 6379
+  }
+  object Redis extends DefaultRedisHostPort {
     def default: Redis = Redis(defaultHost, defaultPort)
     def apply(host: String, port: Int): Redis = Redis(new InetSocketAddress(host, port))
     def apply(s: String): Redis = Redis(s: InetSocketAddress)
   }
+  private class RedisHostPortConverter extends HostPortConverter[Redis] with DefaultRedisHostPort {
+    def convert(s: String) = Redis(s: InetSocketAddress)
+  }
+  @JsonDeserialize(converter = classOf[RedisHostPortConverter])
   case class Redis(addr: InetSocketAddress)
   
-  import com.fasterxml.jackson.databind.ObjectMapper
+  final val mapper = new com.fasterxml.jackson.databind.ObjectMapper()
+  mapper.registerModule(DefaultScalaModule)
 
   def from(f: java.io.InputStream): Config =
-    (new ObjectMapper).readValue(f, classOf[Config])
+    mapper.readValue(f, classOf[Config])
 
-  @JsonCreator def fromJson(
-    @JsonProperty("id") id: String,
-    @JsonProperty("host") host: String,
-    @JsonProperty("dbProps") dbProps: String,
-    @JsonProperty("redis") redis: String,
-    @JsonProperty("rpc") _rpc: String,
-    @JsonProperty("authEnabled") authEnabled: Boolean = false,
-    @JsonProperty("apiEnabled") apiEnabled: Boolean = false,
-    @JsonProperty("rpcEnabled") rpcEnabled: Boolean = false,
-    @JsonProperty("websocketEnabled") websocketEnabled: Boolean = false,
-    @JsonProperty("broadcast") broadcast: Option[Broadcast] = None
-  ) = {
-    val rpc = Option(_rpc)
-    var c = new Config(java.util.UUID.fromString(id), host,
-        dbProps = Option(dbProps),
-        authEnabled = authEnabled,
-        redis = Option(redis).map { addr => Redis(addr) },
-        api = if (apiEnabled) Some(
-            Config.Http.Api.default
-          ) else None,
-        rpc = if (rpc.isDefined) Some(
-            Config.Rpc(rpc.get)
-          ) else if (rpcEnabled) Some(
-            Config.Rpc.default
-          ) else None
-      )
-    if (websocketEnabled)
-      c = c.copy(
-          http = Some(c.httpConfig.copy(
-              webSocket = Right(true)
-              ))
-          )
-    c
-  }
-
+  @JsonCreator
   case class Broadcast(
-    redis: Option[String] = None
+    @JsonProperty("redis") redis: Option[String] = None
   )
 }
 
@@ -92,11 +80,30 @@ case class Config(
     authEnabled: Boolean = false,
     broadcast: Option[Config.Broadcast] = None,
     redis: Option[Config.Redis] = None,
-    http: Option[gw.http.Config] = None,
-    api: Option[Config.Http.Api] = None,
-    rpc: Option[Config.Rpc] = None,
+
+    websocketEnabled: Boolean = false,
+    var http: Option[gw.http.Config] = None,
+
+    apiEnabled: Boolean = false,
+    var api: Option[Config.Http.Api] = None,
+    
+    rpcEnabled: Boolean = false,
+    var rpc: Option[Config.Rpc] = None,
+
     dbProps: Option[String] = None) {
+
+  if (apiEnabled) api = Some(
+    Config.Http.Api.default
+  )
+
+  if (rpcEnabled) rpc = Some(
+    Config.Rpc.default
+  )
   
+  if (websocketEnabled) http = Some(httpConfig.copy(
+    webSocket = Right(true)
+  ))
+
   def apiConfig =
     api.getOrElse(Config.Http.Api.default)
   

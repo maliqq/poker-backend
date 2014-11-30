@@ -60,7 +60,7 @@ class Room(val id: java.util.UUID,
 
   env.topicConsumers.foreach { case (topic, consumers) =>
     consumers.foreach { consumer =>
-      roomEvents.subscribe(consumer, topic)
+      roomEvents.subscribe(consumer, to = topic)
     }
   }
 

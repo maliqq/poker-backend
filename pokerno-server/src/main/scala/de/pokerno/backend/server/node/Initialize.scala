@@ -9,7 +9,7 @@ trait Initialize extends init.Database { a: Actor =>
   
   def sessionConnector: Option[()=>org.squeryl.Session]
   def nodeId: java.util.UUID
-  def topicBroadcasts: Map[String, List[de.pokerno.backend.server.Broadcast]]
+  def broadcastTopics: List[Tuple2[de.pokerno.backend.server.Broadcast, List[String]]]
   
   private var _metrics: MetricsHandler = _
   lazy val metrics: MetricsHandler = _metrics
@@ -41,24 +41,28 @@ trait Initialize extends init.Database { a: Actor =>
                 case _ => // ignore
               }
             
+            // FIXME dead code
             case Room.ChangedState(id, newState) =>
               pokerdb.changeRoomState(id, ThriftState.valueOf(newState.toString().toLowerCase).get)
           }
         }
       ))
 
-    notificationConsumers += actorOf(Props(
+    // room history
+    val roomHistory = actorOf(Props(
         new Actor {
-          import de.pokerno.model
+          import de.pokerno.gameplay
           
           def receive = {
-            case (id: java.util.UUID, game: model.Game, stake: model.Stake, play: model.Play) =>
+            case gameplay.Deal.Dump(id, game, stake, play) =>
               //log.info("writing {} {}", id, play)
               storage.write(id, game, stake, play)
           }
         }
       ))
+    topicConsumers(Topics.Deals) :+= roomHistory
     
+    // room metrics reporter
     val roomMetrics = actorOf(Props(
         new Actor {
           def receive = {
@@ -69,12 +73,14 @@ trait Initialize extends init.Database { a: Actor =>
       ))
     topicConsumers(Topics.Metrics) :+= roomMetrics
     
+    // node metrics
     _metrics = new MetricsHandler {
       def report() {
         pokerdb.reportNodeMetrics(nodeId.toString(), this.metrics)
       }
     }
   } else {
+    // node metrics
     _metrics = new MetricsHandler {
       def report() {
         Console printf("metrics: %s\n", this.metrics)
@@ -82,21 +88,29 @@ trait Initialize extends init.Database { a: Actor =>
     }
   }
   
-  for ((topic, broadcasts) <- topicBroadcasts) {
-    for (broadcast <- broadcasts) {
-      val consumer = actorOf(Props(
-        new Actor {
-          def receive = {
-            case Room.Created(id) =>
-              broadcast.broadcast(topic, "{\"type\":\"created\",\"id\":\"{}\"}".format(id))
-            case Room.ChangedState(id, state) =>
-              // TODO
-            case Room.Metrics(id, metrics) =>
-              // TODO
-          }
-        }
-      ))
+  for (broadcastTopic <- broadcastTopics) {
+    val Tuple2(bcast, topics) = broadcastTopic
+    
+    val consumer = actorOf(Props(
+      new Actor {
+        final val mapper = new com.fasterxml.jackson.databind.ObjectMapper()
 
+        def receive = {
+          case Room.Created(id) =>
+            bcast.broadcast("room.state",
+              """{"type":"created","id":"{}"}""".format(id))
+          
+          case Room.ChangedState(id, state) =>
+            // TODO
+          
+          case Room.Metrics(id, metrics) => 
+            bcast.broadcast("room.state",
+              """{"type":"updated","id":"%s","metrics":%s""".format(id, mapper.writeValueAsString(metrics.registry)))
+        }
+      }
+    ))
+
+    for (topic <- topics) {
       topicConsumers(topic) :+= consumer
     }
   }

@@ -11,6 +11,7 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
 
   roomEvents.register(Topics.Deals)
   roomEvents.register(Topics.State)
+  roomEvents.register(Topics.Metrics)
   
   val balance: de.pokerno.payment.thrift.Payment.FutureIface
   

@@ -9,15 +9,11 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
   import context._
   import Room._
 
-  roomEvents.register(Topics.Deals)
-  roomEvents.register(Topics.State)
-  roomEvents.register(Topics.Metrics)
+  override def buildRoomEvents() = new RoomEvents(List(Topics.Deals, Topics.State, Topics.Metrics))
   
   val balance: de.pokerno.payment.thrift.Payment.FutureIface
   
   startWith(State.Waiting, NoneRunning)
-
-  roomEvents.publish(Room.Created(roomId), to = Topics.State)
   
   paused {
     case Event(Resume, _) ⇒ toActive()

@@ -13,6 +13,7 @@ import scala.concurrent.{ Promise, Future }
 
 import de.pokerno.form.Room.{Topics => RoomTopics}
 import de.pokerno.form.Room.{Metrics => RoomMetrics}
+import de.pokerno.form.Room.{Created => RoomCreated}
 
 case class RoomEnv(
     balance: de.pokerno.payment.Service,
@@ -67,5 +68,7 @@ class Room(val id: java.util.UUID,
   log.info("starting room {}", roomId)
 
   initialize()
+
+  roomEvents.publish(RoomCreated(roomId), to = RoomTopics.State)
   
 }

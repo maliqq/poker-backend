@@ -27,7 +27,10 @@ object Node {
     val broadcasts = collection.mutable.ListBuffer[Tuple2[Broadcast, List[String]]]()
     config.broadcast.map { bcast =>
       bcast.redis.map { addr =>
-        broadcasts += Tuple2(Broadcast.Redis(addr), List(RoomTopics.State, RoomTopics.Metrics))
+        broadcasts += Tuple2(Broadcast.Redis(addr), List(
+          //RoomTopics.State,
+          RoomTopics.Metrics
+        ))
       }
     }
     

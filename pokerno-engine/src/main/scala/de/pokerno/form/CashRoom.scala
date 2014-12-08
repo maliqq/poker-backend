@@ -20,7 +20,12 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
   startWith(State.Waiting, NoneRunning)
   
   paused {
-    case Event(Resume, _) ⇒ toActive()
+    case Event(Resume, _) ⇒
+      toActive()
+    case Event(gameplay.Deal.Done, Running(ctx, deal)) ⇒
+      log.info("deal complete in paused mode")
+      roomEvents.publish(gameplay.Deal.dump(id, ctx), to = Topics.Deals)
+      stay() using(NoneRunning)
   }
   
   waiting {
@@ -37,11 +42,11 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
   
   active {
     case Event(Close, Running(_, deal)) ⇒
+      // FIXME
       context.stop(deal)
       toClosed()
 
     case Event(Pause, Running(_, deal)) ⇒
-      context.stop(deal)
       toPaused()
 
     // first deal in active state
@@ -54,12 +59,12 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
       toWaiting() using (NoneRunning)
 
     // current deal stopped
-    case Event(gameplay.Deal.Done(after), Running(ctx, deal)) ⇒
+    case Event(gameplay.Deal.Done, Running(ctx, deal)) ⇒
       log.info("deal complete")
       
       roomEvents.publish(gameplay.Deal.dump(id, ctx), to = Topics.Deals)
       
-      self ! gameplay.Deal.Next(after + nextDealAfter) // FIXME
+      self ! gameplay.Deal.Next(nextDealAfter) // FIXME
       
       stay() using (NoneRunning)
 
@@ -69,6 +74,19 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
       events.broadcast(gameplay.Events.announceStart(after))
       system.scheduler.scheduleOnce(after, self, gameplay.Deal.Start)
       stay()
+  }
+
+  whenUnhandled {
+    // used in pokerno-ai:
+//    case Event(Room.Observe(observer, name), _) ⇒
+//      events.broker.subscribe(observer, name)
+//      // TODO !!!!!
+//      //events.start(table, variation, stake, )
+//      stay()
+    // used in pokerno-ai:
+//    case Event(Room.Subscribe(name), _) =>
+//      events.broker.subscribe(sender, name)
+//      stay()
 
     // add bet
     case Event(addBet: cmd.AddBet, Running(_, deal)) ⇒
@@ -87,19 +105,6 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
     case Event(chat: cmd.Chat, _) ⇒
       // TODO broadcast
       stay()
-  }
-
-  whenUnhandled {
-    // used in pokerno-ai:
-//    case Event(Room.Observe(observer, name), _) ⇒
-//      events.broker.subscribe(observer, name)
-//      // TODO !!!!!
-//      //events.start(table, variation, stake, )
-//      stay()
-    // used in pokerno-ai:
-//    case Event(Room.Subscribe(name), _) =>
-//      events.broker.subscribe(sender, name)
-//      stay()
 
     case Event(Connect(conn), current) ⇒
       // notify seat state change
@@ -161,7 +166,6 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
           case _ =>             seat.toggleSittingOut()
         }
       }
-      
       stay()
     
     case Event(cmd.AdvanceStack(player, amount), _) =>
@@ -189,8 +193,14 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
   }
   
   onTransition {
-    case State.Waiting -> State.Active ⇒
-      self ! gameplay.Deal.Next(firstDealAfter)
+    case State.Active -> State.Paused =>
+      //roomEvents.publish(Room.ChangedState(roomId, State.Paused), to = Topics.State)
+
+    case State.Waiting -> State.Active | State.Paused -> State.Active ⇒
+      if (notRunning) { // resumed while current deal is running
+        log.warning("resuming next")
+        self ! gameplay.Deal.Next(firstDealAfter)
+      }
       roomEvents.publish(Room.ChangedState(roomId, State.Active), to = Topics.State)
     
     case State.Active -> State.Waiting =>

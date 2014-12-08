@@ -97,6 +97,11 @@ abstract class Room extends Actor
   def waiting     = when(State.Waiting)_
   def closed      = when(State.Closed)_
   def active      = when(State.Active)_
+
+  def isPaused    = stateName == State.Paused
+  def isActive    = stateName == State.Active
+  def isWaiting   = stateName == State.Waiting
+  def isClosed    = stateName == State.Closed
   
   def toActive()  = goto(State.Active)
   def toClosed()  = goto(State.Closed)
@@ -112,7 +117,7 @@ abstract class Room extends Actor
   def notRunning = stateData == NoneRunning
   
   def tryResume() = {
-    if (notRunning && canStart) toActive()
+    if (notRunning && isWaiting && canStart) toActive()
     else stay()
   }
   

@@ -20,8 +20,10 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
   startWith(State.Waiting, NoneRunning)
   
   paused {
-    case Event(Resume, _) ⇒
+    case Event(Resume, NoneRunning) ⇒
+      log.info("resuming")
       toActive()
+
     case Event(gameplay.Deal.Done, Running(ctx, deal)) ⇒
       log.info("deal complete in paused mode")
       roomEvents.publish(gameplay.Deal.dump(id, ctx), to = Topics.Deals)
@@ -196,11 +198,11 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
     case State.Active -> State.Paused =>
       //roomEvents.publish(Room.ChangedState(roomId, State.Paused), to = Topics.State)
 
-    case State.Waiting -> State.Active | State.Paused -> State.Active ⇒
-      if (notRunning) { // resumed while current deal is running
-        log.warning("resuming next")
-        self ! gameplay.Deal.Next(firstDealAfter)
-      }
+    case State.Paused -> State.Active =>
+      self ! gameplay.Deal.Next(firstDealAfter)
+
+    case State.Waiting -> State.Active ⇒
+      self ! gameplay.Deal.Next(firstDealAfter)
       roomEvents.publish(Room.ChangedState(roomId, State.Active), to = Topics.State)
     
     case State.Active -> State.Waiting =>

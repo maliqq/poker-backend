@@ -40,10 +40,6 @@ trait Initialize extends init.Database { a: Actor =>
                 
                 case _ => // ignore
               }
-            
-            // FIXME dead code
-            case Room.ChangedState(id, newState) =>
-              pokerdb.changeRoomState(id, ThriftState.valueOf(newState.toString().toLowerCase).get)
           }
         }
       ))
@@ -61,6 +57,21 @@ trait Initialize extends init.Database { a: Actor =>
         }
       ))
     topicConsumers(Topics.Deals) :+= roomHistory
+
+    // update state machine
+    val stateTracker = actorOf(Props(
+        new Actor {
+          import de.pokerno.data.pokerdb.thrift.{State => ThriftState}
+
+          def receive = {
+            case Room.ChangedState(id, newState) =>
+              pokerdb.changeRoomState(id, ThriftState.valueOf(newState.toString().toLowerCase).get)
+
+            case _ =>
+          }
+        }
+      ))
+    topicConsumers(Topics.State) :+= stateTracker
     
     // room metrics reporter
     val roomMetrics = actorOf(Props(
@@ -100,12 +111,11 @@ trait Initialize extends init.Database { a: Actor =>
             bcast.broadcast("room.state",
               """{"type":"created","id":"%s"}""".format(id))
           
-          case Room.ChangedState(id, state) =>
-            // TODO
-          
           case Room.Metrics(id, metrics) => 
             bcast.broadcast("room.state",
               """{"type":"updated","id":"%s","payload":%s}""".format(id, mapper.writeValueAsString(metrics)))
+
+          case _ =>
         }
       }
     ))

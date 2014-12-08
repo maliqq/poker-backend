@@ -11,9 +11,11 @@ import de.pokerno.protocol.thrift
 import util.{ Success, Failure }
 import scala.concurrent.{ Promise, Future }
 
+import de.pokerno.form.Room.{State => RoomState}
 import de.pokerno.form.Room.{Topics => RoomTopics}
 import de.pokerno.form.Room.{Metrics => RoomMetrics}
 import de.pokerno.form.Room.{Created => RoomCreated}
+import de.pokerno.form.Room.{ChangedState => RoomChangedState}
 
 case class RoomEnv(
     balance: de.pokerno.payment.Service,
@@ -70,5 +72,6 @@ class Room(val id: java.util.UUID,
   initialize()
 
   roomEvents.publish(RoomCreated(roomId), to = RoomTopics.State)
+  roomEvents.publish(RoomChangedState(roomId, RoomState.Waiting), to = RoomTopics.State)
   
 }

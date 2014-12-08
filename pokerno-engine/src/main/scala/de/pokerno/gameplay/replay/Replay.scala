@@ -53,7 +53,7 @@ class Replay(
   override def receive = {
     case Replay.Observe(out) ⇒
       _exchange.subscribe(new de.pokerno.hub.impl.ActorConsumer(out))
-      events broadcast Events.start(id, table, variation, stake)
+      events broadcast Events.start(id, "active", table, variation, stake)
 
     // case join @ cmd.JoinPlayer(pos, player, amount) ⇒
     //   table.takeSeat(pos, player, Some(amount))

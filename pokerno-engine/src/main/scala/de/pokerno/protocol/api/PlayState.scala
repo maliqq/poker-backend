@@ -17,17 +17,18 @@ sealed class Play(
 
 object PlayState {
   
-  def apply(id: String, table: Table, variation: Variation, stake: Stake) =
-    new PlayState(id, table, variation, stake)
+  def apply(id: String, state: String, table: Table, variation: Variation, stake: Stake) =
+    new PlayState(id, state, table, variation, stake)
   
-  def apply(ctx: gameplay.Context) =
-    new PlayState(ctx.id, ctx.table, ctx.variation, ctx.stake, new Play(ctx))
+  def apply(ctx: gameplay.Context, state: String) =
+    new PlayState(ctx.id, state, ctx.table, ctx.variation, ctx.stake, new Play(ctx))
   
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 sealed class PlayState(
     @JsonProperty val id: String,
+    @JsonProperty val state: String,
     @JsonProperty val table: Table,
     @JsonProperty val variation: Variation,
     @JsonProperty val stake: Stake,

@@ -27,18 +27,20 @@ object Events {
   def playerSitOut(seat: Sitting)    = msg.PlayerSitOut(seat.asPosition)
   def playerComeBack(seat: Sitting)  = msg.PlayerComeBack(seat.asPosition)
   
-  def start(id: String, table: Table, variation: Variation, stake: Stake, player: Option[Player] = None) =
+  def start(id: String, state: String, table: Table, variation: Variation, stake: Stake, player: Option[Player] = None) =
     msg.DeclareStart(
       id,
+      state,
       table,
       variation,
       stake,
       player)
   
-  def start(ctx: Context, player: Option[Player]) = {
+  def start(ctx: Context, state: String, player: Option[Player]) = {
     // build start message for player or watcher
     val start = msg.DeclareStart(
         ctx.id,
+        state,
         ctx.table,
         ctx.variation,
         ctx.stake,

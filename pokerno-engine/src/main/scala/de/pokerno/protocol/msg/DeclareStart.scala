@@ -6,8 +6,8 @@ import de.pokerno.model
 import de.pokerno.gameplay
 
 object DeclareStart {
-  def apply(ctx: gameplay.Context, player: Option[Player] = None): DeclareStart = {
-    val start = DeclareStart(ctx.id, ctx.table, ctx.variation, ctx.stake, player)
+  def apply(ctx: gameplay.Context, state: String, player: Option[Player] = None): DeclareStart = {
+    val start = DeclareStart(ctx.id, state, ctx.table, ctx.variation, ctx.stake, player)
     start.play = Some(PlayState(ctx))
     start
   }
@@ -15,6 +15,8 @@ object DeclareStart {
 
 sealed case class DeclareStart(
     @JsonProperty id: String,
+
+    @JsonProperty state: String,
     
     @JsonProperty table: model.Table,
 

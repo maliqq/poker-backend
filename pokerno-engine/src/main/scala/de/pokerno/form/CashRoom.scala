@@ -2,14 +2,18 @@ package de.pokerno.form
 
 import akka.actor.ActorRef
 
-import de.pokerno.protocol.{cmd, api}
+import de.pokerno.protocol.{cmd, api, GameEvent}
 import de.pokerno.gameplay
 
 abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with cash.Presence {
   import context._
   import Room._
 
-  override def buildRoomEvents() = new RoomEvents(List(Topics.Deals, Topics.State, Topics.Metrics))
+  override def buildRoomEvents() = new RoomEvents(List(
+    Topics.Deals,
+    Topics.State,
+    Topics.Metrics
+  ))
   
   val balance: de.pokerno.payment.thrift.Payment.FutureIface
   
@@ -99,22 +103,29 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
 
     case Event(Connect(conn), current) ⇒
       // notify seat state change
-      watchers.subscribe(conn)
-      conn.player map (playerOnline(_))
-      
-      // send start message
-      val startMsg: de.pokerno.protocol.GameEvent = current match {
-        case NoneRunning ⇒
-          gameplay.Events.start(roomId, table, variation, stake, conn.player) // TODO: empty play
-        case Running(ctx, deal) ⇒
-          gameplay.Events.start(ctx, conn.player)
-      }
+      stateName match {
+      case State.Closed =>
+        conn.send(gameplay.Events.error("room is closed"))
+        conn.close()
+        stay()
+
+      case _ =>
+        watchers.subscribe(conn)
+        conn.player map (playerOnline(_))
+        
+        // send start message
+        val startMsg: GameEvent = current match {
+          case NoneRunning ⇒
+            gameplay.Events.start(roomId, stateName.toString(), table, variation, stake, conn.player) // TODO: empty play
+          case Running(ctx, deal) ⇒
+            gameplay.Events.start(ctx, stateName.toString(), conn.player)
+        }
     
-      conn.send(de.pokerno.protocol.GameEvent.encode(startMsg))
+        conn.send(GameEvent.encode(startMsg))
 
-
-      // start new deal if needed
-      tryResume()
+        // start new deal if needed
+        tryResume()
+      }
 
     case Event(Disconnect(conn), _) ⇒
       watchers.unsubscribe(conn)
@@ -165,11 +176,11 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
       tryResume()
       
     case Event(PlayState, NoneRunning) =>
-      sender ! api.PlayState(roomId, table, variation, stake)
+      sender ! api.PlayState(roomId, stateName.toString(), table, variation, stake)
       stay()
       
     case Event(PlayState, Running(ctx, _)) =>
-      sender ! api.PlayState(ctx)
+      sender ! api.PlayState(ctx, stateName.toString())
       stay()
       
     case Event(x: Any, _) ⇒

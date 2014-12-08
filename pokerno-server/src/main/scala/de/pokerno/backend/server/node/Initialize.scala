@@ -77,8 +77,11 @@ trait Initialize extends init.Database { a: Actor =>
     val roomMetrics = actorOf(Props(
         new Actor {
           def receive = {
-            case Room.Metrics(id, metrics) =>
+            case Room.Metrics.PlayStatsUpdate(id, metrics) =>
               pokerdb.reportRoomMetrics(id, metrics)
+            // TODO:
+            // case Room.Metrics.PlayersCountUpdate(id, metrics) =>
+            //   pokerdb.reportRoomMetrics(id, metrics)
           }
         }
       ))
@@ -111,9 +114,13 @@ trait Initialize extends init.Database { a: Actor =>
             bcast.broadcast("room.state",
               """{"type":"created","id":"%s"}""".format(id))
           
-          case Room.Metrics(id, metrics) => 
+          case Room.Metrics.PlayStatsUpdate(id, metrics) => 
             bcast.broadcast("room.state",
               """{"type":"updated","id":"%s","payload":%s}""".format(id, mapper.writeValueAsString(metrics)))
+
+          case Room.Metrics.PlayersCountUpdate(id, metrics) => 
+            bcast.broadcast("room.state",
+              """{"type":"updated","id":"%s","payload":{"players_count": %d}}""".format(id, metrics.playersCount))
 
           case _ =>
         }

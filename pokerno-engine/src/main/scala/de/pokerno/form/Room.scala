@@ -43,7 +43,10 @@ object Room {
     final val Metrics = "room.metrics"
   }
 
-  case class Metrics(id: String, metrics: cash.Metrics)
+  object Metrics {
+    case class PlayStatsUpdate(id: String, metrics: cash.Metrics)
+    case class PlayersCountUpdate(id: String, metrics: cash.Metrics)
+  }
 }
 
 class RoomEvents(initial: List[String] = List()) extends hub.TopicExchange[Any] {
@@ -67,7 +70,7 @@ class RoomEvents(initial: List[String] = List()) extends hub.TopicExchange[Any] 
 abstract class Room extends Actor
     with ActorLogging
     with FSM[Room.State.Value, Room.Data]
-    with room.JoinLeave  {
+    with room.JoinLeave {
 
   protected val roomEvents = buildRoomEvents()
   protected def buildRoomEvents() = new RoomEvents()

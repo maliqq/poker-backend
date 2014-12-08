@@ -46,8 +46,11 @@ class Room(val id: java.util.UUID,
   
   private val metrics = actorOf(
       Props(new de.pokerno.form.cash.MetricsCollector{
-        def report() {
-          roomEvents.publish(RoomMetrics(roomId, metrics), to = RoomTopics.Metrics)
+        def reportPlayersCountUpdate() {
+          roomEvents.publish(RoomMetrics.PlayersCountUpdate(roomId, metrics), to = RoomTopics.Metrics)
+        }
+        def reportPlayStatsUpdate() {
+          roomEvents.publish(RoomMetrics.PlayStatsUpdate(roomId, metrics), to = RoomTopics.Metrics)
         }
       }),
       name = f"room-$roomId-metrics")

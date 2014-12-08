@@ -24,7 +24,7 @@ trait Cycle { room: CashRoom ⇒
       } else if (seat.isAllIn) {
         seat.taken()
         balance.available(seat.player).onSuccess { amount =>
-          events broadcast Events.requireBuyIn(seat, stake, amount)
+          events.one(seat.player).publish( Events.requireBuyIn(seat, stake, amount) )
         }
       } else if (seat.isSittingOut) {
         //seat.autoplay.folds - for tournament mode

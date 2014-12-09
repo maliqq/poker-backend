@@ -26,9 +26,9 @@ object Metrics {
 trait PlayerMetrics {
   val registry: MetricRegistry
 
-  val players         = registry.counter("players")
-  val waiting         = registry.counter("waiting")
-  val watching        = registry.counter("watchers")
+  lazy val players         = registry.counter("players")
+  lazy val waiting         = registry.counter("waiting")
+  lazy val watching        = registry.counter("watchers")
   
   @JsonGetter("players_count")    def playersCount = players.getCount()
   @JsonGetter("waiting_count")    def waitingCount = waiting.getCount()
@@ -38,10 +38,10 @@ trait PlayerMetrics {
 trait PlayStats {
   val registry: MetricRegistry
 
-  val folds           = registry.counter("folds")
-  val pots            = registry.histogram("pots")
-  val plays           = registry.meter("plays")
-  val playersPerFlop  = registry.meter("players-per-flop")
+  lazy val folds           = registry.counter("folds")
+  lazy val pots            = registry.histogram("pots")
+  lazy val plays           = registry.meter("plays")
+  lazy val playersPerFlop  = registry.meter("players-per-flop")
 
   @JsonGetter("plays_rate")       def playsRate = plays.getFifteenMinuteRate()
   @JsonGetter("average_pot")      def averagePot = pots.getSnapshot().getMean() / 100.0

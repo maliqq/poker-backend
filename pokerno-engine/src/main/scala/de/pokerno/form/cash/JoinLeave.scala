@@ -61,6 +61,26 @@ trait JoinLeave extends de.pokerno.form.room.JoinLeave { room: CashRoom =>
       }
     }
   }
+
+  protected def askRebuy(seat: Sitting) {
+    val player = seat.player
+    
+    val (requiredMin, requiredMax) = stake.buyInAmount
+    val total = seat.total
+
+    if (total >= requiredMax) {
+      events.one(player).publish(gameplay.Events.error("You have enough money to play at this table."))
+    } else {
+      val f = balance.availableWithBonus(player, requiredMin.toDouble)
+      f.onSuccess { amount =>
+        if (amount + total < requiredMin) {
+          events.one(player).publish(gameplay.Events.error(f"You have not enough money to rebuy to minimum required buy in: $requiredMin"))
+        } else {
+          events.one(player).publish(gameplay.Events.requireRebuy(seat, stake, amount))
+        }
+      }
+    }
+  }
   
   protected def buyInSeat(seat: Sitting, amount: Decimal) {
     val player = seat.player

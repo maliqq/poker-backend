@@ -10,6 +10,7 @@ import de.pokerno.protocol.{ cmd, api, msg => message}
 import de.pokerno.protocol.thrift
 import util.{ Success, Failure }
 import scala.concurrent.{ Promise, Future }
+import scala.concurrent.duration._
 
 import de.pokerno.form.Room.{State => RoomState}
 import de.pokerno.form.Room.{Topics => RoomTopics}
@@ -74,7 +75,9 @@ class Room(val id: java.util.UUID,
 
   initialize()
 
-  roomEvents.publish(RoomCreated(roomId), to = RoomTopics.State)
-  roomEvents.publish(RoomChangedState(roomId, RoomState.Waiting), to = RoomTopics.State)
+  system.scheduler.scheduleOnce(400 milliseconds) {
+    roomEvents.publish(RoomCreated(roomId), to = RoomTopics.State)
+    roomEvents.publish(RoomChangedState(roomId, RoomState.Waiting), to = RoomTopics.State)
+  }
   
 }

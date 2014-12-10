@@ -61,6 +61,26 @@ trait JoinLeave extends de.pokerno.form.room.JoinLeave { room: CashRoom =>
       }
     }
   }
+
+  protected def askRebuy(seat: Sitting) {
+    val player = seat.player
+    
+    val (requiredMin, requiredMax) = stake.buyInAmount
+    val stack = seat.stackAmount
+
+    if (stack >= requiredMax) {
+      events.one(player).publish(gameplay.Events.error("You have enough money to play at this table."))
+    } else {
+      val f = balance.availableWithBonus(player, requiredMin.toDouble)
+      f.onSuccess { amount =>
+        if (amount + stack < requiredMin) {
+          events.one(player).publish(gameplay.Events.error(f"You have not enough money to rebuy to minimum required buy in: $requiredMin"))
+        } else {
+          events.one(player).publish(gameplay.Events.requireRebuy(seat, stake, amount))
+        }
+      }
+    }
+  }
   
   protected def buyInSeat(seat: Sitting, amount: Decimal) {
     val player = seat.player
@@ -69,6 +89,35 @@ trait JoinLeave extends de.pokerno.form.room.JoinLeave { room: CashRoom =>
       // TODO: reserve seat first 
       seat.buyIn(amount)
       events broadcast gameplay.Events.playerJoin(seat)
+    }
+    
+    f.onFailure {
+      case err: de.pokerno.payment.thrift.NotEnoughMoney =>
+        log.error("balance error: {}", err.message)
+        events.one(player).publish(gameplay.Events.error(err))
+      
+      case err: de.pokerno.payment.thrift.BuyInRequired =>
+        log.error("balance error: {}", err.message)
+        events.one(player).publish(gameplay.Events.error(err))
+    }
+  }
+
+  protected def rebuySeat(seat: Sitting, amount: Decimal) {
+    val player = seat.player
+
+    if (seat.rebuy.isDefined) {
+      events.one(player).publish(gameplay.Events.notice("You have already made rebuy. Rebuy amount will be affected after current deal finishes."))
+      return
+    }
+
+    val f = balance.buyin(roomId, player, amount.toDouble)
+    f.onSuccess { _ =>
+      seat.rebuy(amount)
+      if (seat.rebuy.isDefined) {
+        events.one(player).publish(gameplay.Events.notice("Rebuy amount will be affected after current deal finishes."))
+      } else {
+        events.broadcast(gameplay.Events.stackChange(seat))
+      }
     }
     
     f.onFailure {

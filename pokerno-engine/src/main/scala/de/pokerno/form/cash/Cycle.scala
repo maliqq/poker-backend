@@ -31,6 +31,10 @@ trait Cycle { room: CashRoom ⇒
         seat.idle()
         seat.toggleSittingOut()
       }
+      if (seat.rebuy.isDefined) {
+        seat.doRebuy()
+        events.broadcast(Events.stackChange(seat))
+      }
       // FIXME: clear cards?
     }
     // TODO to method

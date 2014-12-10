@@ -170,13 +170,18 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
       }
       stay()
     
+    case Event(cmd.Rebuy(player), _) =>
+      table(player).map { seat =>
+        askRebuy(seat)
+      }
+      stay()
+
     case Event(cmd.AdvanceStack(player, amount), _) =>
       table(player).map { seat =>
         if (seat.isTaken) {
           buyInSeat(seat, amount)
         } else {
-          seat.buyIn(amount)
-          // TODO ???
+          rebuySeat(seat, amount)
         }
       }
       tryResume()

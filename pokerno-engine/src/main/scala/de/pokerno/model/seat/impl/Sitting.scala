@@ -11,7 +11,7 @@ import de.pokerno.util.Colored._
 
 @JsonPropertyOrder(Array("state","player","stack","put","action"))
 @JsonIgnoreProperties(Array("pos", "raise", "call"))
-class Sitting(
+sealed class Sitting(
     _pos: Int,
     _player: Player,
     @JsonIgnore protected var _state: State.Value = State.Taken,
@@ -36,7 +36,6 @@ class Sitting(
           if (isEmpty) throw new IllegalStateException("can't change emtpy seat state: %s" format (this))
 
         case State.Away ⇒
-          // FIXME: java.lang.IllegalStateException
           if (isOnline) throw new IllegalStateException("can't change seat state to away: %s (%s)" format (this, _presence))
         
         case _ =>
@@ -94,6 +93,11 @@ class Sitting(
   @JsonGetter def put = _put
   def putAmount: Decimal = _put.getOrElse(.0)
 
+  // REBUY
+  private var _rebuy: Option[Decimal] = None
+  def rebuy = _rebuy
+  def rebuyAmount = _rebuy.getOrElse(.0)
+
   // TOTAL
   def total = stackAmount + putAmount
   def totalAmount = total
@@ -117,7 +121,20 @@ class Sitting(
     net(amt)
     ready()
   }
-  
+
+  def rebuy(amt: Decimal) = {
+    _rebuy = Some(amt)
+    if (!isActive) {
+      doRebuy()
+    }
+  }
+  def doRebuy() {
+    _rebuy.map { amt =>
+      net(amt)
+    }
+    _rebuy = None
+  }
+
   def wins(amt: Decimal) = {
     net(amt)
     playing()
@@ -164,6 +181,8 @@ class Sitting(
     val b = new StringBuilder
     b.append("Seat %d: %s (%s) [".format(pos, player, _state))
     b.append("%.2f - %.2f".format(stackAmount, putAmount))
+    _rebuy.map { v =>
+      b.append(" / rebuy: %.2f".format(v)) }
     _call.map { v =>
       b.append(" / call: %.2f".format(v)) }
     _raise.map { v =>

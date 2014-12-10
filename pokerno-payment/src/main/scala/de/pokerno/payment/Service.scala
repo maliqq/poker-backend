@@ -123,6 +123,10 @@ class Service extends thrift.Payment.FutureIface {
   def leave(roomId: String, playerId: String, amount: Double): Future[Unit] = Future{
     Cash.leave(roomId, playerId, amount)
   }
+
+  def buyin(roomId: String, playerId: String, amount: Double): Future[Unit] = Future{
+    Cash.buyin(roomId, playerId, amount)
+  }
   
   def enroll(tournamentId: String, playerId: String): Future[Unit] = Future{
     Tournament.register(tournamentId, playerId)

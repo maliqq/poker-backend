@@ -23,8 +23,11 @@ object CommandConversions {
   implicit def discardCards(msg: action.DiscardCards)(implicit player: Player) =
     cmd.DiscardCards(player, msg.cards)
   
-  implicit def advanceStack(msg: action.BuyIn)(implicit player: Player) =
+  implicit def buyIn(msg: action.BuyIn)(implicit player: Player) =
     cmd.AdvanceStack(player, msg.amount)
+
+  implicit def rebuy(msg: action.Rebuy)(implicit player: Player) =
+    cmd.Rebuy(player)
   
   implicit def action2command(msg: PlayerEvent)(implicit player: Player): Command = msg match {
     case msg: action.JoinTable => msg
@@ -34,6 +37,7 @@ object CommandConversions {
     case msg: action.AddBet => msg
     case msg: action.DiscardCards => msg
     case msg: action.BuyIn => msg
+    case msg: action.Rebuy => msg
   }
   
 }

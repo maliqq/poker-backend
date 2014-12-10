@@ -16,7 +16,6 @@ object Cash {
   
   def join(roomId: UUID, playerId: UUID, amount: Double) {
     val stake = pokerdb.model.Room.getStake(roomId)
-    val isPlayMoney = stake.currencyId.isEmpty
     val bb = stake.bigBlind
     val (min, max) = (stake.buyInMin * bb, stake.buyInMax * bb)
     // validations
@@ -26,9 +25,19 @@ object Cash {
     if (amount > max) {
       throw new thrift.BuyInRequired("Maximum buy in is: %.2f (%d BB); got: %.2f" format(max, stake.buyInMax, amount))
     }
-    
+
+    buyin(roomId, playerId, stake.currencyId, amount)
+  }
+
+  def buyin(roomId: UUID, playerId: UUID, amount: Double) {
+    val stake = pokerdb.model.Room.getStake(roomId)
+    buyin(roomId, playerId, stake.currencyId, amount)
+  }
+
+  def buyin(roomId: UUID, playerId: UUID, currencyId: Option[Long], amount: Double) {
+    val isPlayMoney = currencyId.isEmpty
     inTransaction {
-      val balance = Balance.getOrCreate(playerId, stake.currencyId)
+      val balance = Balance.getOrCreate(playerId, currencyId)
       if (balance.amount < amount && isPlayMoney) {
         Refill.refill(balance) // TODO side-effects
       }

@@ -112,8 +112,12 @@ trait Initialize extends init.Database { a: Actor =>
         def receive = {
           case Room.Created(id) =>
             bcast.broadcast("room.state",
-              """{"type":"created","id":"%s"}""".format(id))
+              """{"type":"created","id":"%s","payload":{"players_count":0}}""".format(id))
           
+          case Room.ChangedState(id, newState) =>
+            bcast.broadcast("room.state",
+              """{"type":"updated","id":"%s","payload":{"state":"%s"}}""".format(id, newState))
+
           case Room.Metrics.PlayStatsUpdate(id, metrics) => 
             bcast.broadcast("room.state",
               """{"type":"updated","id":"%s","payload":%s}""".format(id, mapper.writeValueAsString(metrics)))

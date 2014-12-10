@@ -28,7 +28,7 @@ object Node {
     config.broadcast.map { bcast =>
       bcast.redis.map { addr =>
         broadcasts += Tuple2(Broadcast.Redis(addr), List(
-          //RoomTopics.State,
+          RoomTopics.State,
           RoomTopics.Metrics
         ))
       }

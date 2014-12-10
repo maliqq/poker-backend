@@ -35,7 +35,8 @@ object GameEvent extends Codec.Json {
   new JsonSubTypes.Type(name = "winner:",           value = classOf[message.DeclareWinner]),
   new JsonSubTypes.Type(name = "timer:tick",        value = classOf[message.TickTimer]),
   
-  new JsonSubTypes.Type(name = "error:",            value = classOf[message.Error]),
+  new JsonSubTypes.Type(name = "message:error",     value = classOf[message.Error]),
+  new JsonSubTypes.Type(name = "message:notice",    value = classOf[message.Notice]),
 
   //new JsonSubTypes.Type(name = "seat:", value = classOf[DeclareSeat]),
 
@@ -47,6 +48,8 @@ object GameEvent extends Codec.Json {
   new JsonSubTypes.Type(name = "play:start",        value = classOf[message.DeclarePlayStart]),
   new JsonSubTypes.Type(name = "play:stop",         value = classOf[message.DeclarePlayStop]),
   new JsonSubTypes.Type(name = "street:",           value = classOf[message.DeclareStreet]),
+
+  new JsonSubTypes.Type(name = "seat:change",       value = classOf[message.SeatChange]),
 
   new JsonSubTypes.Type(name = "player:join",       value = classOf[message.PlayerJoin]),
   new JsonSubTypes.Type(name = "player:online",     value = classOf[message.PlayerOnline]),

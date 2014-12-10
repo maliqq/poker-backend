@@ -5,6 +5,7 @@ import de.pokerno.protocol.GameEvent
 import de.pokerno.model._
 import de.pokerno.model.tournament._
 import de.pokerno.model.seat.impl.Sitting
+import de.pokerno.model.seat.impl.{Change => SeatChange}
 import de.pokerno.poker.{ Hand, Card, Cards }
 import de.pokerno.protocol.msg
 
@@ -56,6 +57,7 @@ object Events {
   
   def error(err: String)      = msg.Error(err)
   def error(err: Throwable)   = msg.Error(err.getMessage)
+  def notice(message: String)     = msg.Notice(message)
 
   def dealPocket(seat: Sitting, _type: DealType.Value, cards: Cards) = _type match {
     case DealType.Hole => msg.DealHole(seat.asPosition, Left(cards))
@@ -77,12 +79,22 @@ object Events {
   def requireBuyIn(seat: Sitting, stake: Stake, available: Decimal) = {
     msg.AskBuyIn(seat.asPosition, stake.buyInAmount, available)
   }
-  
+  def requireRebuy(seat: Sitting, stake: Stake, available: Decimal) = {
+    val (min, max) = stake.buyInAmount
+    msg.AskBuyIn(seat.asPosition, ((min - seat.stackAmount).abs, max - seat.stackAmount), available)
+  }
+
+  def stackChange(seat: Sitting) = {
+    val change = SeatChange.from(seat)
+    change.stack = seat.stack
+    msg.SeatChange(change)
+  }
+
   def addBet(seat: Sitting, bet: Bet, timeout: Option[Boolean] = None) = msg.DeclareBet(seat.asPosition, bet, timeout)
   def declareWinner(seat: Sitting, amount: Decimal, uncalled: Option[Boolean] = None) = msg.DeclareWinner(seat.asPosition, amount, uncalled)
   def declareHand(seat: Sitting, cards: Cards, hand: Hand) = msg.DeclareHand(seat.asPosition, cards, hand)
   def showCards(seat: Sitting, cards: Cards, muck: Boolean = false) = msg.ShowCards(seat.asPosition, cards, muck)
-    
+
   // tournaments
   def levelUp(number: Int, level: Level) = msg.LevelUp(number, level)
 }

@@ -4,7 +4,7 @@ import de.pokerno.model.{Player, Stake, Table}
 import de.pokerno.model.seat.impl.Sitting
 import de.pokerno.model.Seat
 import de.pokerno.gameplay
-import de.pokerno.protocol.cmd
+import de.pokerno.protocol.{cmd, err}
 import de.pokerno.form.{Room, CashRoom}
 import math.{BigDecimal => Decimal}
 
@@ -35,14 +35,16 @@ trait JoinLeave extends de.pokerno.form.room.JoinLeave { room: CashRoom =>
       val seat = table.take(pos, player)
       return Some(seat)
     } catch {
-      case err: Seat.IsTaken ⇒
-        val seat = table.seats(pos) 
-        log.warning("Can't join player {} at {}: seat is taken ({})", player, pos, seat)
-        events.one(player).publish(gameplay.Events.error(err))
+      case _: Seat.IsTaken ⇒
+	val seat = table.seats(pos)
+	val e = new err.Table.Seat.Taken(seat.pos, seat.player)
+	log.warning(e.message)
+	events.one(player).publish(e)
       
       case err: Table.AlreadyJoined ⇒
-        log.warning("Can't join player {} at {}: already joined", player, pos)
-        events.one(player).publish(gameplay.Events.error(err))
+	val e = new err.Table.Player.AlreadyJoined(pos, player)
+	log.warning(e.message)
+	events.one(player).publish(e)
     }
     None
   }
@@ -50,12 +52,13 @@ trait JoinLeave extends de.pokerno.form.room.JoinLeave { room: CashRoom =>
   protected def askBuyIn(seat: Sitting) {
     val player = seat.player
     // ask buy in
-    val (requiredMin, requiredMax) = stake.buyInAmount
-    val f = balance.availableWithBonus(player, requiredMin.toDouble)
+    val (min, max) = stake.buyInAmount
+    val f = balance.availableWithBonus(player, min.toDouble)
     f.onSuccess { amount =>
-      if (amount < requiredMin) {
+      if (amount < min) {
         table.clear(seat.pos)
-        events.one(player).publish(gameplay.Events.error(f"Minimum required amount is: $requiredMin; you have: $amount"))
+	val e = new err.BuyIn.Balance.NotEnoughToBuyIn(player, amount, min)
+	events.one(player).publish(e)
       } else {
         events.one(player).publish(gameplay.Events.requireBuyIn(seat, stake, amount))
       }
@@ -65,25 +68,37 @@ trait JoinLeave extends de.pokerno.form.room.JoinLeave { room: CashRoom =>
   protected def askRebuy(seat: Sitting) {
     val player = seat.player
     
-    val (requiredMin, requiredMax) = stake.buyInAmount
+    val (min, max) = stake.buyInAmount
     val stack = seat.stackAmount
 
-    if (stack >= requiredMax) {
-      events.one(player).publish(gameplay.Events.error("You have enough money to play at this table."))
-    } else {
-      val f = balance.availableWithBonus(player, requiredMin.toDouble)
-      f.onSuccess { amount =>
-        if (amount + stack < requiredMin) {
-          events.one(player).publish(gameplay.Events.error(f"You have not enough money to rebuy to minimum required buy in: $requiredMin"))
-        } else {
-          events.one(player).publish(gameplay.Events.requireRebuy(seat, stake, amount))
-        }
+    if (stack >= max) {
+      val e = new err.BuyIn.Stack.EnoughToPlay(player, stack, max)
+      events.one(player).publish(e)
+      return
+    }
+
+    val f = balance.availableWithBonus(player, min.toDouble)
+    f.onSuccess { amount =>
+      if (amount + stack < min) {
+	val e = new err.BuyIn.Balance.NotEnoughToRebuy(player, amount, stack, min)
+	events.one(player).publish(e)
+      } else {
+	events.one(player).publish(gameplay.Events.requireRebuy(seat, stake, amount))
       }
     }
   }
   
   protected def buyInSeat(seat: Sitting, amount: Decimal) {
     val player = seat.player
+
+    val (min, max) = stake.buyInAmount
+    if (min > amount) {
+
+    }
+    if (min < amount) {
+
+    }
+
     val f = balance.join(roomId, player, amount.toDouble)
     f.onSuccess { _ =>
       // TODO: reserve seat first 
@@ -107,6 +122,14 @@ trait JoinLeave extends de.pokerno.form.room.JoinLeave { room: CashRoom =>
 
     if (seat.rebuy.isDefined) {
       events.one(player).publish(gameplay.Events.notice("You have already made rebuy. Rebuy amount will be affected after current deal finishes."))
+      return
+    }
+
+    val (requiredMin, requiredMax) = stake.buyInAmount
+    val stack = seat.stackAmount
+
+    if (stack >= requiredMax) {
+      events.one(player).publish(gameplay.Events.error("You have enough money to play at this table."))
       return
     }
 
@@ -151,5 +174,7 @@ trait JoinLeave extends de.pokerno.form.room.JoinLeave { room: CashRoom =>
       }
     }
   }
+
+  protected def handleThrift(err: )
 
 }

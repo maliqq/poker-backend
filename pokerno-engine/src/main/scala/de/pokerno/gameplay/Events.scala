@@ -84,7 +84,10 @@ object Events {
   }
   def requireRebuy(seat: Sitting, stake: Stake, available: Decimal) = {
     val (min, max) = stake.buyInAmount
-    msg.AskBuyIn(seat.asPosition, ((min - seat.stackAmount).abs, max - seat.stackAmount), available)
+    var _max = max - seat.stackAmount
+    var _min = min - seat.stackAmount
+    if (_min < stake.bigBlind) _min = List(stake.bigBlind, _max).min
+    msg.AskBuyIn(seat.asPosition, (_min, _max), available)
   }
 
   def stackChange(seat: Sitting) = {

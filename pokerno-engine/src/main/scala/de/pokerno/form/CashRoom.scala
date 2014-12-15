@@ -58,6 +58,7 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
     // current deal cancelled
     case Event(gameplay.Deal.Cancel, Running(_, deal)) ⇒
       log.info("deal cancelled")
+      events.broadcast(gameplay.Events.dealCancelled())
       toWaiting() using (NoneRunning)
 
     // current deal stopped

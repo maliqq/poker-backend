@@ -15,6 +15,7 @@ object Events {
   
   def playStart(ctx: Context)         = msg.DeclarePlayStart(msg.PlayState(ctx))
   def playStop()                      = msg.DeclarePlayStop()
+  def dealCancel()                    = msg.DeclareDealCancel()
   def streetStart(name: Street.Value) = msg.DeclareStreet(name)
   def buttonChange(pos: Int)          = msg.ButtonChange(pos)
   def gameChange(game: Game)          = msg.GameChange(game)

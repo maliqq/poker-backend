@@ -47,7 +47,7 @@ trait Presence extends de.pokerno.form.room.Presence { room: CashRoom ⇒
 
   def playerSitOut(player: model.Player, running: Boolean) {
     table(player).map { seat =>
-      if (running) {
+      if (!running) {
         // do sit out immediately
         sitOut(seat)
       } else {

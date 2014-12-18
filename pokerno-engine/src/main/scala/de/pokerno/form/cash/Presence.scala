@@ -37,6 +37,35 @@ trait Presence extends de.pokerno.form.room.Presence { room: CashRoom ⇒
     }
   }
 
+  def sitOut(seat: model.seat.impl.Sitting) {
+    seat.idle()
+    seat.sitOutTimer.start(new model.AkkaTimers(system.scheduler, system.dispatcher)) {
+      self ! cmd.KickPlayer(seat.player)
+    }
+    events broadcast gameplay.Events.playerSitOut(seat)
+  }
+
+  def playerSitOut(player: model.Player, running: Boolean) {
+    table(player).map { seat =>
+      if (running) {
+        // do sit out immediately
+        sitOut(seat)
+      } else {
+        seat.toggleSittingOut()
+      }
+    }
+  }
+
+  def playerComeBack(player: model.Player) {
+    table(player).map { seat =>
+      if (seat.isSitOut) {
+        seat.ready()
+        seat.sitOutTimer.cancel()
+        events broadcast gameplay.Events.playerComeBack(seat)
+      }
+    }
+  }
+
   def playerOnline(player: model.Player) {
     table(player) map { seat =>
       seat.online()

@@ -14,5 +14,7 @@ trait Timers {
   @JsonIgnore val reconnectTimer    = new Countdown("reconnect", 15.seconds)
   // timer on disconnected
   @JsonIgnore val awayTimer         = new Countdown("away", 10.minutes)
+  // timer on sit out
+  @JsonIgnore val sitOutTimer       = new Countdown("sitOut", 1.minute)
   
 }

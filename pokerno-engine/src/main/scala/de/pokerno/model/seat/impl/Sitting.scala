@@ -96,11 +96,14 @@ sealed class Sitting(
   // REBUY
   private var _rebuy: Option[Decimal] = None
   def rebuy = _rebuy
-  def rebuyAmount = _rebuy.getOrElse(.0)
+  def rebuyAmount: Decimal = _rebuy.getOrElse(.0)
 
   // TOTAL
   def total = stackAmount + putAmount
   def totalAmount = total
+
+  // BUY IN AMOUNT
+  def buyInAmount = stackAmount + rebuyAmount
 
   def net(amt: Decimal) {
     val amount = stackAmount + amt

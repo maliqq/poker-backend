@@ -58,7 +58,7 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
     // current deal cancelled
     case Event(gameplay.Deal.Cancel, Running(_, deal)) ⇒
       log.info("deal cancelled")
-      events.broadcast(gameplay.Events.dealCancelled())
+      events.broadcast(gameplay.Events.dealCancel())
       toWaiting() using (NoneRunning)
 
     // current deal stopped
@@ -150,25 +150,11 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
       stay()
    
     case Event(cmd.ComeBack(player), _) =>
-      table(player).map { seat =>
-        if (seat.isSitOut) {
-          seat.ready()
-          events broadcast gameplay.Events.playerComeBack(seat)
-        }
-      }
+      playerComeBack(player)
       tryResume()
       
     case Event(cmd.SitOut(player), current) =>
-      table(player).map { seat =>
-        current match {
-          case NoneRunning =>
-            // do sit out immediately
-            seat.idle()
-            events broadcast gameplay.Events.playerSitOut(seat)
-            
-          case _ =>             seat.toggleSittingOut()
-        }
-      }
+      playerSitOut(player, isRunning)
       stay()
     
     case Event(cmd.Rebuy(player), _) =>

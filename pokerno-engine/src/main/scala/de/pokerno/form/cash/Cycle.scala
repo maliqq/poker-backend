@@ -19,6 +19,7 @@ trait Cycle { room: CashRoom ⇒
 
   def tryDealStart(): State = {
     table.sitting.foreach { seat =>
+      // do rebuy first
       if (seat.isLeaving) {
         leaveSeat(seat)
       } else if (seat.isAllIn) {
@@ -28,8 +29,8 @@ trait Cycle { room: CashRoom ⇒
         }
       } else if (seat.isSittingOut) {
         //seat.autoplay.folds - for tournament mode
-        seat.idle()
         seat.toggleSittingOut()
+        sitOut(seat)
       }
       if (seat.rebuy.isDefined) {
         seat.doRebuy()
@@ -43,6 +44,7 @@ trait Cycle { room: CashRoom ⇒
       stay() using startDeal()
     } else {
       log.info("deal cancelled")
+      events.broadcast(Events.dealCancel())
       toWaiting() using NoneRunning
     }
   }

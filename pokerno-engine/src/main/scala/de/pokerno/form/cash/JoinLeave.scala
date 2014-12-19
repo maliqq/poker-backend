@@ -131,18 +131,18 @@ trait JoinLeave extends de.pokerno.form.room.JoinLeave { room: CashRoom =>
     }
   }
   
-  def leaveSeat(seat: Sitting) {
+  def leaveSeat(seat: Sitting, kick: Boolean = false) {
     table.clear(seat.pos)
     if (seat.buyInAmount > 0) {
       balance.leave(roomId, seat.player, seat.buyInAmount.toDouble)
     }
-    events broadcast gameplay.Events.playerLeave(seat)
+    events broadcast gameplay.Events.playerLeave(seat, kick)
   }
   
-  def leavePlayer(player: Player) {
+  def leavePlayer(player: Player, kick: Boolean = false) {
     table(player) map { seat =>
       if (seat.notActive || notRunning) {
-        leaveSeat(seat)
+        leaveSeat(seat, kick)
       } else {
         seat.leaving
         running map { case Room.Running(ctx, ref) =>

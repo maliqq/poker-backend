@@ -35,7 +35,7 @@ trait Initialize extends init.Database { a: Actor =>
                 case msg.PlayerJoin(pos, amount) =>
                   pokerdb.startSession(roomId, pos.player, pos.pos, amount.toDouble)
                   
-                case msg.PlayerLeave(pos) => // TODO tell how much money left
+                case msg.PlayerLeave(pos, _) => // TODO tell how much money left
                   pokerdb.endSession(roomId, pos.player, pos.pos, 0) // FIXME amount?
                 
                 case _ => // ignore

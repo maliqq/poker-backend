@@ -14,7 +14,8 @@ sealed case class PlayerJoin(
 ) extends PlayerStateEvent {}
 
 sealed case class PlayerLeave(
-    @JsonUnwrapped override val position: Position
+    @JsonUnwrapped override val position: Position,
+    @JsonProperty kick: Option[Boolean] = None
 ) extends PlayerStateEvent {}
 
 sealed case class PlayerOffline(

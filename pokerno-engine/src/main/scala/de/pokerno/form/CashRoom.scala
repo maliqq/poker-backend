@@ -146,7 +146,7 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
       stay()
 
     case Event(kick: cmd.KickPlayer, _) ⇒
-      leavePlayer(kick.player)
+      leavePlayer(kick.player, kick = true)
       stay()
    
     case Event(cmd.ComeBack(player), _) =>

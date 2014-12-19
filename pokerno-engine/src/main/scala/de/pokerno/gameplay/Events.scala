@@ -22,8 +22,8 @@ object Events {
   def declarePot(pot: Pot)            = msg.DeclarePot(pot)
   def dealBoard(cards: Cards)         = msg.DealBoard(cards)
 
+  def playerLeave(seat: Sitting, kick: Boolean) = msg.PlayerLeave(seat.asPosition, if (kick) Some(true) else None)
   def playerJoin(seat: Sitting)      = msg.PlayerJoin(seat.asPosition, seat.stackAmount)
-  def playerLeave(seat: Sitting)     = msg.PlayerLeave(seat.asPosition)
   def playerOnline(seat: Sitting)    = msg.PlayerOnline(seat.asPosition)
   def playerOffline(seat: Sitting)   = msg.PlayerOffline(seat.asPosition)
   def playerSitOut(seat: Sitting)    = msg.PlayerSitOut(seat.asPosition)

@@ -9,9 +9,9 @@ object CommandConversions {
     cmd.JoinPlayer(msg.pos, player, msg.amount)
   
   implicit def leave(msg: action.LeaveTable)(implicit player: Player) =
-    cmd.KickPlayer(player)
+    cmd.LeavePlayer(player)
   
-  implicit def leave(msg: action.SitOut)(implicit player: Player) =
+  implicit def sitOut(msg: action.SitOut)(implicit player: Player) =
     cmd.SitOut(player)
   
   implicit def comeBack(msg: action.ComeBack)(implicit player: Player) =

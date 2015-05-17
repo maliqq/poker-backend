@@ -10,9 +10,9 @@ import de.pokerno.poker.{ Hand, Card, Cards }
 import de.pokerno.protocol.msg
 
 object Events {
-  
-  def announceStart(after: concurrent.duration.FiniteDuration) = msg.AnnounceStart(after.toSeconds) 
-  
+
+  def announceStart(after: concurrent.duration.FiniteDuration) = msg.AnnounceStart(after.toSeconds)
+
   def playStart(ctx: Context)         = msg.DeclarePlayStart(msg.PlayState(ctx))
   def playStop()                      = msg.DeclarePlayStop()
   def dealCancel()                    = msg.DeclareDealCancel()
@@ -28,7 +28,9 @@ object Events {
   def playerOffline(seat: Sitting)   = msg.PlayerOffline(seat.asPosition)
   def playerSitOut(seat: Sitting)    = msg.PlayerSitOut(seat.asPosition)
   def playerComeBack(seat: Sitting)  = msg.PlayerComeBack(seat.asPosition)
-  
+
+  def chat(player: Player, message: String) = msg.Chat(player, message)
+
   def start(id: String, state: String, table: Table, variation: Variation, stake: Stake, player: Option[Player] = None) =
     msg.DeclareStart(
       id,
@@ -37,7 +39,7 @@ object Events {
       variation,
       stake,
       player)
-  
+
   def start(ctx: Context, state: String, player: Option[Player]) = {
     // build start message for player or watcher
     val start = msg.DeclareStart(
@@ -55,7 +57,7 @@ object Events {
     }
     start
   }
-  
+
   def error(err: String)      = msg.Error(err)
   def error(err: Throwable)   = msg.Error(err.getMessage)
   def notice(message: String)     = msg.Notice(message)
@@ -68,13 +70,13 @@ object Events {
     case DealType.Hole => msg.DealHole(seat.asPosition, Right(n))
     case DealType.Door => msg.DealDoor(seat.asPosition, Right(n))
   }
-  
+
   def discardCards(seat: Sitting, cards: Cards) =
     msg.DiscardCards(seat.asPosition, Left(cards))
-  
+
   def discardCardsNum(seat: Sitting, cardsNum: Int) =
     msg.DiscardCards(seat.asPosition, Right(cardsNum))
-  
+
   def requireBet(seat: Sitting) = msg.AskBet(seat.asActing)
   def requireDiscard(seat: Sitting) = msg.AskDiscard(seat.asPosition)
   def requireBuyIn(seat: Sitting, stake: Stake, available: Decimal) = {

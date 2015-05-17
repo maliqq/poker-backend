@@ -14,11 +14,11 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
     Topics.State,
     Topics.Metrics
   ))
-  
+
   val balance: de.pokerno.payment.thrift.Payment.FutureIface
-  
+
   startWith(State.Waiting, NoneRunning)
-  
+
   paused {
     case Event(Resume, NoneRunning) ⇒
       log.info("resuming")
@@ -29,19 +29,19 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
       roomEvents.publish(gameplay.Deal.dump(id, ctx), to = Topics.Deals)
       stay() using(NoneRunning)
   }
-  
+
   waiting {
     case Event(join: cmd.JoinPlayer, NoneRunning) ⇒
       joinPlayer(join)
       tryResume()
   }
-  
+
   closed {
     case Event(x: Any, _) ⇒
       log.warning("got {} in closed state", x)
       stay()
   }
-  
+
   active {
     case Event(Close, Running(_, deal)) ⇒
       // FIXME
@@ -64,11 +64,11 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
     // current deal stopped
     case Event(gameplay.Deal.Done, Running(ctx, deal)) ⇒
       log.info("deal complete")
-      
+
       roomEvents.publish(gameplay.Deal.dump(id, ctx), to = Topics.Deals)
-      
+
       self ! gameplay.Deal.Next(nextDealAfter) // FIXME
-      
+
       stay() using (NoneRunning)
 
     // schedule next deal in *after* seconds
@@ -107,6 +107,7 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
 
     case Event(chat: cmd.Chat, _) ⇒
       // TODO broadcast
+      events broadcast gameplay.Events.chat(chat.player, chat.message)
       stay()
 
     case Event(Connect(conn), current) ⇒
@@ -120,7 +121,7 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
       case _ =>
         watchers.subscribe(conn)
         conn.player map (playerOnline(_))
-        
+
         // send start message
         val startMsg: GameEvent = current match {
           case NoneRunning ⇒
@@ -128,7 +129,7 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
           case Running(ctx, deal) ⇒
             gameplay.Events.start(ctx, stateName.toString(), conn.player)
         }
-    
+
         conn.send(GameEvent.encode(startMsg))
 
         // start new deal if needed
@@ -152,15 +153,15 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
     case Event(kick: cmd.LeavePlayer, _) ⇒
       leavePlayer(kick.player)
       stay()
-   
+
     case Event(cmd.ComeBack(player), _) =>
       playerComeBack(player)
       tryResume()
-      
+
     case Event(cmd.SitOut(player), current) =>
       playerSitOut(player, isRunning)
       stay()
-    
+
     case Event(cmd.Rebuy(player), _) =>
       table(player).map { seat =>
         askRebuy(seat)
@@ -176,20 +177,20 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
         }
       }
       tryResume()
-      
+
     case Event(PlayState, NoneRunning) =>
       sender ! api.PlayState(roomId, stateName.toString(), table, variation, stake)
       stay()
-      
+
     case Event(PlayState, Running(ctx, _)) =>
       sender ! api.PlayState(ctx, stateName.toString())
       stay()
-      
+
     case Event(x: Any, _) ⇒
       log.warning("unhandled: {}", x)
       stay()
   }
-  
+
   onTransition {
     case State.Active -> State.Paused =>
       //roomEvents.publish(Room.ChangedState(roomId, State.Paused), to = Topics.State)
@@ -200,9 +201,9 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
     case State.Waiting -> State.Active ⇒
       self ! gameplay.Deal.Next(firstDealAfter)
       roomEvents.publish(Room.ChangedState(roomId, State.Active), to = Topics.State)
-    
+
     case State.Active -> State.Waiting =>
       roomEvents.publish(Room.ChangedState(roomId, State.Waiting), to = Topics.State)
   }
-  
+
 }

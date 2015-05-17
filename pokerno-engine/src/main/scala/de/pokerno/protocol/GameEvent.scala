@@ -18,7 +18,7 @@ object GameEvent extends Codec.Json {
   // new JsonSubTypes.Type(name = "bet:bb",        value = classOf[message.DeclareBigBlind]),
   // new JsonSubTypes.Type(name = "bet:gb",        value = classOf[message.DeclareGuestBlind]),
   // new JsonSubTypes.Type(name = "bet:straddle",  value = classOf[message.DeclareStraddle]),
-  
+
   new JsonSubTypes.Type(name = "bet:add",           value = classOf[message.DeclareBet]),
   new JsonSubTypes.Type(name = "cards:show",        value = classOf[message.ShowCards]),
   new JsonSubTypes.Type(name = "cards:discard",     value = classOf[message.DiscardCards]),
@@ -26,7 +26,7 @@ object GameEvent extends Codec.Json {
   new JsonSubTypes.Type(name = "cards:board",       value = classOf[message.DealBoard]),
   new JsonSubTypes.Type(name = "cards:hole",        value = classOf[message.DealHole]),
   new JsonSubTypes.Type(name = "cards:door",        value = classOf[message.DealDoor]),
-  
+
   new JsonSubTypes.Type(name = "bet:ask",           value = classOf[message.AskBet]),
   new JsonSubTypes.Type(name = "discard:ask",       value = classOf[message.AskDiscard]),
   new JsonSubTypes.Type(name = "buyin:ask",         value = classOf[message.AskBuyIn]),
@@ -34,7 +34,8 @@ object GameEvent extends Codec.Json {
   new JsonSubTypes.Type(name = "hand:",             value = classOf[message.DeclareHand]),
   new JsonSubTypes.Type(name = "winner:",           value = classOf[message.DeclareWinner]),
   new JsonSubTypes.Type(name = "timer:tick",        value = classOf[message.TickTimer]),
-  
+
+  new JsonSubTypes.Type(name = "message:chat",      value = classOf[message.Chat]),
   new JsonSubTypes.Type(name = "message:error",     value = classOf[message.Error]),
   new JsonSubTypes.Type(name = "message:notice",    value = classOf[message.Notice]),
 

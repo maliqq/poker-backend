@@ -62,16 +62,6 @@ object PokernoBuild extends Build {
   //   ScroogeSBT.scroogeThriftOutputFolder in Compile <<= (sourceDirectory) { _ / "main/scala" }
   // )
 
-  lazy val network = Project(
-    id = "pokerno-network",
-    base = file("pokerno-network"),
-    settings = Project.defaultSettings ++ Seq(
-      name := "pokerno-network",
-      version := "0.0.1",
-      libraryDependencies ++= deps ++ testDeps
-    ) ++ assemblySettings
-  )
-
   lazy val engine = Project(
     id = "pokerno-engine",
     base = file("pokerno-engine"),
@@ -80,7 +70,7 @@ object PokernoBuild extends Build {
       version := "0.0.1",
       libraryDependencies ++= deps ++ testDeps
     ) ++ assemblySettings
-  ) dependsOn(protocol, network)
+  ) dependsOn(protocol)
 
   lazy val httpGateway = Project(
     id = "pokerno-gateway-http",
@@ -92,21 +82,7 @@ object PokernoBuild extends Build {
         "io.netty" % "netty-all" % nettyVersion
       )
     ) ++ assemblySettings
-  ) dependsOn(network)
-
-  lazy val stompGateway = Project(
-    id = "pokerno-gateway-stomp",
-    base = file("pokerno-gateway-stomp"),
-    settings = Project.defaultSettings ++ Seq(
-      name := "pokerno-gateway-stomp",
-      version := "0.0.1",
-      libraryDependencies ++= deps ++ testDeps ++ Seq(
-        "asia.stampy" % "stampy-core" % "1.0-RELEASE",
-        //"asia.stampy" % "stampy-NETTY-client-server-RI" % "1.0-RELEASE",
-        "io.netty" % "netty-all" % nettyVersion
-      )
-    ) ++ assemblySettings
-  ) dependsOn(network)
+  ) dependsOn(engine)
 
   lazy val data = Project(
     id = "pokerno-data",
@@ -158,7 +134,7 @@ object PokernoBuild extends Build {
     ) ++ assemblySettings ++ Seq(
       assemblyOption in assembly ~= { _.copy(includeScala = false, includeDependency = false) }
     )
-  ) dependsOn(engine, payment, data, protocol, httpGateway, stompGateway)
+  ) dependsOn(engine, payment, data, protocol, httpGateway)
 
   lazy val ai = Project(
     id = "pokerno-ai",
@@ -184,40 +160,6 @@ object PokernoBuild extends Build {
     ) ++ assemblySettings ++ Seq(
       assemblyOption in assembly ~= { _.copy(includeScala = false, includeDependency = false) }
     )
-  ) dependsOn(engine, server)
-
-  lazy val bench = Project(
-    id = "pokerno-bench",
-    base = file("pokerno-bench"),
-    settings = Project.defaultSettings ++ Seq(
-      name := "pokerno-bench",
-      version := "0.0.1"
-    ) ++ assemblySettings
-  ) dependsOn(engine)
-
-  lazy val cli = Project(
-    id = "pokerno-cli",
-    base = file("pokerno-cli"),
-    settings = Project.defaultSettings ++ Seq(
-      name := "pokerno-cli",
-      version := "0.0.1",
-      libraryDependencies ++= Seq(
-        //"org.scala-sbt" % "command" % "0.12.4"
-      )
-    ) ++ assemblySettings
-  ) dependsOn(engine)
-
-  lazy val console = Project(
-    id = "pokerno-console",
-    base = file("pokerno-console"),
-    settings = Project.defaultSettings ++ Seq(
-      name := "pokerno-console",
-      version := "0.0.1",
-      libraryDependencies ++= Seq(
-        "jline" % "jline" % "2.11",
-        "com.github.scopt" %% "scopt" % scoptVersion
-      ) ++ testDeps
-    ) ++ assemblySettings
   ) dependsOn(engine, server)
 
 }

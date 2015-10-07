@@ -23,7 +23,7 @@ object PokernoBuild extends Build {
     resolvers += "spray repo" at "http://repo.spray.io"//,
     //resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
   )
-  
+
   lazy val deps = Seq(
     "org.scalaz" %% "scalaz-core" % "7.0.3",
     "org.slf4j" % "slf4j-simple" % "1.7.5",
@@ -34,7 +34,7 @@ object PokernoBuild extends Build {
     "commons-codec" % "commons-codec" % "1.9",
     "com.codahale.metrics" % "metrics-core" % "3.0.1"
   )
-  
+
   lazy val testDeps = Seq(
     "org.scalatest" %% "scalatest" % "2.2.0" % "test",
     "com.typesafe.akka" %% "akka-testkit" % akkaVersion
@@ -55,7 +55,7 @@ object PokernoBuild extends Build {
         "com.twitter" %% "finagle-core" % finagleVersion,
         "com.twitter" %% "finagle-thrift" % finagleVersion
       )
-    ) ++ assemblySettings 
+    ) ++ assemblySettings
   )
   // .settings(
   //   ScroogeSBT.scroogeBuildOptions in Compile := Seq("--finagle", "-s"),
@@ -71,7 +71,7 @@ object PokernoBuild extends Build {
       libraryDependencies ++= deps ++ testDeps
     ) ++ assemblySettings
   )
-  
+
   lazy val engine = Project(
     id = "pokerno-engine",
     base = file("pokerno-engine"),
@@ -172,16 +172,6 @@ object PokernoBuild extends Build {
     ) ++ assemblySettings
   ) dependsOn(engine, server)
 
-  lazy val util = Project(
-    id = "pokerno-util",
-    base = file("pokerno-util"),
-    settings = Project.defaultSettings ++ Seq(
-      name := "pokerno-util",
-      version := "0.0.1",
-      libraryDependencies ++= testDeps
-    ) ++ assemblySettings
-  ) dependsOn(engine)
-  
   lazy val replay = Project(
     id = "pokerno-replay",
     base = file("pokerno-replay"),
@@ -194,8 +184,8 @@ object PokernoBuild extends Build {
     ) ++ assemblySettings ++ Seq(
       assemblyOption in assembly ~= { _.copy(includeScala = false, includeDependency = false) }
     )
-  ) dependsOn(util, engine, server)
-  
+  ) dependsOn(engine, server)
+
   lazy val bench = Project(
     id = "pokerno-bench",
     base = file("pokerno-bench"),
@@ -204,7 +194,7 @@ object PokernoBuild extends Build {
       version := "0.0.1"
     ) ++ assemblySettings
   ) dependsOn(engine)
-  
+
   lazy val cli = Project(
     id = "pokerno-cli",
     base = file("pokerno-cli"),
@@ -216,7 +206,7 @@ object PokernoBuild extends Build {
       )
     ) ++ assemblySettings
   ) dependsOn(engine)
-  
+
   lazy val console = Project(
     id = "pokerno-console",
     base = file("pokerno-console"),
@@ -229,5 +219,5 @@ object PokernoBuild extends Build {
       ) ++ testDeps
     ) ++ assemblySettings
   ) dependsOn(engine, server)
-  
+
 }

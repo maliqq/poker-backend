@@ -84,33 +84,6 @@ object PokernoBuild extends Build {
     ) ++ assemblySettings
   ) dependsOn(engine)
 
-  lazy val data = Project(
-    id = "pokerno-data",
-    base = file("pokerno-data"),
-    settings = Project.defaultSettings ++ Seq(
-      name := "pokerno-data",
-      libraryDependencies ++= testDeps ++ Seq(
-        //"com.typesafe.slick" %% "slick" % "2.0.2",
-        //"org.slf4j" % "slf4j-nop" % "1.6.4",
-        "postgresql" % "postgresql" % "9.1-901.jdbc4",
-        "org.squeryl" %% "squeryl" % "0.9.5-6",
-        "org.mongodb" %% "casbah" % "2.7.2",
-        "com.datastax.cassandra" % "cassandra-driver-core" % "2.0.2"
-        //"org.apache.cassandra" % "cassandra-thrift" % "2.0.8",
-        //"com.netflix.astyanax" % "astyanax" % "1.56.48",
-      )
-    )
-  ) dependsOn(engine)
-
-  lazy val payment = Project(
-    id = "pokerno-payment",
-    base = file("pokerno-payment"),
-    settings = Project.defaultSettings ++ Seq(
-      name := "pokerno-payment",
-      libraryDependencies ++= testDeps
-    )
-  ) dependsOn(protocol, data)
-
   lazy val server = Project(
     id = "pokerno-server",
     base = file("pokerno-server"),
@@ -134,32 +107,6 @@ object PokernoBuild extends Build {
     ) ++ assemblySettings ++ Seq(
       assemblyOption in assembly ~= { _.copy(includeScala = false, includeDependency = false) }
     )
-  ) dependsOn(engine, payment, data, protocol, httpGateway)
-
-  lazy val ai = Project(
-    id = "pokerno-ai",
-    base = file("pokerno-ai"),
-    settings = Project.defaultSettings ++ Seq(
-      name := "pokerno-ai",
-      version := "0.0.2",
-      libraryDependencies ++= Seq(
-        "com.github.scopt" %% "scopt" % scoptVersion
-      ) ++ testDeps
-    ) ++ assemblySettings
-  ) dependsOn(engine, server)
-
-  lazy val replay = Project(
-    id = "pokerno-replay",
-    base = file("pokerno-replay"),
-    settings = Project.defaultSettings ++ Seq(
-      name := "pokerno-replay",
-      libraryDependencies ++= Seq(
-        "jline" % "jline" % "2.11",
-        "com.github.scopt" %% "scopt" % scoptVersion
-      )
-    ) ++ assemblySettings ++ Seq(
-      assemblyOption in assembly ~= { _.copy(includeScala = false, includeDependency = false) }
-    )
-  ) dependsOn(engine, server)
+  ) dependsOn(engine, protocol, httpGateway)
 
 }

@@ -127,10 +127,6 @@ object Main {
       ))
     }
     
-    opt[String]("db-props") text("Database props file") action { (value, c) =>
-      c.copy(config = c.config.copy(dbProps = Some(value)))
-    }
-
     // --http-api-port 3000
     opt[Int]("http-api-port") text "HTTP API port" action { (value, c) ⇒
       c.copy(config = c.config.copy(

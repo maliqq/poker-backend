@@ -18,21 +18,17 @@ import de.pokerno.form.Room.{Metrics => RoomMetrics}
 import de.pokerno.form.Room.{Created => RoomCreated}
 import de.pokerno.form.Room.{ChangedState => RoomChangedState}
 
-case class RoomEnv(
-    balance: de.pokerno.payment.Service,
-    notificationConsumers: Seq[ActorRef] = Seq(),
-    topicConsumers: Map[String, Seq[ActorRef]] = Map.empty()
-  )
-
 class Room(val id: java.util.UUID,
     val variation: model.Variation,
     val stake: model.Stake,
-    env: RoomEnv)
+    val balance: de.pokerno.payment.thrift.Payment.FutureIface,
+    notificationConsumers: Seq[ActorRef] = Seq(),
+    topicConsumers: Map[String, Seq[ActorRef]] = Map.empty()
+    )
     extends de.pokerno.form.CashRoom {
 
   import context._
 
-  val balance = env.balance
   val table = new model.Table(variation.tableSize)
 
   implicit protected def actor2consumer[T](ref: ActorRef): de.pokerno.hub.Consumer[T] = {
@@ -44,7 +40,7 @@ class Room(val id: java.util.UUID,
       Props(classOf[de.pokerno.form.room.Journal], "/tmp", roomId),
       name = f"room-$roomId-journal")
   _consumers += journal
-  
+
   private val metrics = actorOf(
       Props(new de.pokerno.form.cash.MetricsCollector{
         def reportPlayersCountUpdate() {
@@ -57,7 +53,7 @@ class Room(val id: java.util.UUID,
       name = f"room-$roomId-metrics")
   _consumers += metrics
 
-  env.notificationConsumers.foreach { ref =>
+  notificationConsumers.foreach { ref =>
     _consumers += ref
   }
 
@@ -65,7 +61,7 @@ class Room(val id: java.util.UUID,
     gameplayEvents.subscribe(consumer)
   }
 
-  env.topicConsumers.foreach { case (topic, consumers) =>
+  topicConsumers.foreach { case (topic, consumers) =>
     consumers.foreach { consumer =>
       roomEvents.subscribe(consumer, to = topic)
     }
@@ -79,5 +75,5 @@ class Room(val id: java.util.UUID,
     roomEvents.publish(RoomCreated(roomId), to = RoomTopics.State)
     roomEvents.publish(RoomChangedState(roomId, RoomState.Waiting), to = RoomTopics.State)
   }
-  
+
 }

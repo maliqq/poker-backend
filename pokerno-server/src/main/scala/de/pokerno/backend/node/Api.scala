@@ -1,4 +1,4 @@
-package de.pokerno.backend.server.node
+package de.pokerno.backend.node
 
 import de.pokerno.backend.server.{Node, Room}
 
@@ -19,7 +19,7 @@ object Api {
   trait Service extends HttpService { a: ActorLogging =>
     val codec = de.pokerno.protocol.Codec.Json
     val node: ActorRef
-    
+
     implicit def executionContext = actorRefFactory.dispatcher
 
     val route =
@@ -27,11 +27,6 @@ object Api {
       path("metrics") {
         get { ctx =>
           askNode(Node.Metrics, ctx)
-        }
-      } ~
-      pathEnd {
-        get {
-          complete("ok")
         }
       }
     } ~
@@ -41,34 +36,9 @@ object Api {
           askRoom(roomId, de.pokerno.form.Room.PlayState, ctx)
         }
       }
-    } ~
-    path("rooms") {
-      get {
-        // index
-        complete("ok")
-      } ~
-      post {
-        // create room
-        complete("ok")
-      } ~
-      put {
-        // update room
-        complete("ok")
-      } ~
-      delete {
-        complete("ok")
-      }
-    } ~
-    pathPrefix("players" / Segment) { playerId =>
-      pathEnd {
-        get {
-          complete("ok")
-        }
-      }
     }
-    
     // asks
-    
+
     def askNode(msg: Any, ctx: RequestContext) {
       val f = node.ask(msg)(1 second)
       f.onComplete {
@@ -79,7 +49,7 @@ object Api {
           ctx.complete(StatusCodes.InternalServerError)
       }
     }
-    
+
     def askRoom(roomId: String, msg: Any, ctx: RequestContext) {
       actorRefFactory.actorSelection(f"../node-main/$roomId").resolveOne(1 second).onComplete {
         case Success(room) =>
@@ -96,5 +66,5 @@ object Api {
           ctx.complete(StatusCodes.NotFound)
       }
     }
-  } 
+  }
 }

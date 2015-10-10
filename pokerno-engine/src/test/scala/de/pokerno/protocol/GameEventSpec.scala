@@ -6,7 +6,7 @@ import org.scalatest.Matchers._
 class GameEventSpec extends FunSpec {
   import msg._
   import de.pokerno.model._
-  import de.pokerno.model.table.seat.Sitting
+  import de.pokerno.model.seat.impl._
   import de.pokerno.poker._
   import de.pokerno.gameplay
   

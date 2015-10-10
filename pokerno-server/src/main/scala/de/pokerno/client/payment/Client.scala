@@ -1,4 +1,4 @@
-package de.pokerno.backend.server
+package de.pokerno.client.payment
 
 import com.twitter.util.Future
 import com.twitter.finagle.builder.ClientBuilder
@@ -6,21 +6,15 @@ import com.twitter.finagle.thrift.ThriftClientFramedCodec
 import org.apache.thrift.protocol.{TBinaryProtocol, TProtocolFactory}
 import com.twitter.finagle.{Service => FinagleService}
 
-object Payment {
+object Client {
   def buildClient(addr: java.net.SocketAddress) = {
     val protocol = new TBinaryProtocol.Factory()
-    val balanceService = ClientBuilder().
+    val paymentService = ClientBuilder().
                                 codec(ThriftClientFramedCodec()).
                                 hosts(Seq(addr)).
                                 hostConnectionLimit(1).
                                 build()
-    val balanceClient = new de.pokerno.payment.thrift.Payment.FinagledClient(balanceService)
-    balanceClient
-  }
-}
 
-trait Payment {
-  
-  val balance = Payment.buildClient(new java.net.InetSocketAddress("localhost", 3031))
-  
+    new de.pokerno.payment.thrift.Payment.FinagledClient(paymentService)
+  }
 }

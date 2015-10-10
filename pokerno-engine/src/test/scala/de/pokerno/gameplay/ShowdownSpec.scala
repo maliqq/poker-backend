@@ -7,7 +7,9 @@ import de.pokerno.poker.{Cards, Hand}
 import de.pokerno.model.{Player, SidePot}
 
 class ShowdownSpec extends FunSpec {
-  object Strategy extends stages.ShowdownStrategy {
+  import de.pokerno.gameplay.stage.impl._
+
+  object Strategy extends ShowdownStrategy {
   }
   
   describe("showdown strategy") {

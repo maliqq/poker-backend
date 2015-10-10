@@ -4,10 +4,11 @@ import org.scalatest._
 import org.scalatest.Matchers._
 
 class NextTurnSpec extends FunSpec {
+  
   import betting.NextTurn
   import de.pokerno.model._
-  import de.pokerno.model.table.seat.Sitting
-  import de.pokerno.model.table.Seat.State
+  import de.pokerno.model.seat.impl._
+  import de.pokerno.model.Seat.State
   
   describe("NextTurn") {
     it("SB ALLIN(5) BB(10)") {

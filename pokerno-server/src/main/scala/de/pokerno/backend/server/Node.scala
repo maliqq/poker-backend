@@ -7,88 +7,73 @@ import de.pokerno.model.{Variation, Stake}
 import de.pokerno.form.Room.{Topics => RoomTopics}
 import de.pokerno.backend.{ gateway ⇒ gw }
 import de.pokerno.backend.Gateway
-import de.pokerno.backend.server.node.Bootstrap
+import de.pokerno.backend.node.Setup
 import de.pokerno.protocol._
-import de.pokerno.data.pokerdb
-import de.pokerno.data.db
 
 object Node {
   val log = LoggerFactory.getLogger(getClass)
 
   implicit val system = ActorSystem("node")
-  
+
   def start(config: Config): ActorRef = {
     val id = config.id
     log.info(f"starting node $id (${config.host})")
-    
-    val connector = config.loadedDbProps.map { props =>
-      db.Connection.connector(props)
-    }
-    val broadcasts = collection.mutable.ListBuffer[Tuple2[Broadcast, List[String]]]()
-    config.broadcast.map { bcast =>
-      bcast.redis.map { addr =>
-        broadcasts += Tuple2(Broadcast.Redis(addr), List(
-          RoomTopics.State,
-          RoomTopics.Metrics
-        ))
-      }
-    }
-    
-    val node = system.actorOf(Props(classOf[Node], id, broadcasts.toList, connector), name = "node-main")
-    
-    val boot = new Bootstrap(node)
+
+    val node = system.actorOf(Props(classOf[Node], id), name = "node-main")
+
+    val setup = new Setup(node)
     config.rpc.map { c ⇒
-      boot.withRpc(c.addr)
+      setup.withRpc(c.addr)
     }
-    
+
     config.http.map { c ⇒
-      boot.withHttp(c, config.authService)
+      setup.withHttp(c, config.authService)
     }
-    
+
     config.apiAddress.map { addr =>
-      boot.withApi(addr)
+      setup.withApi(addr)
     }
 
     node
   }
 
   import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnoreProperties}
-  
+
   @JsonIgnoreProperties(ignoreUnknown = true)
   case class CreateRoom(
     @JsonProperty id: String,
     @JsonProperty variation: Variation,
     @JsonProperty stake: Stake
   )
-  
+
   case class ChangeRoomState(
     id: String,
     newState: de.pokerno.form.Room.ChangeState
   )
-  
+
   case class SendCommand(
     id: String,
     command: cmd.Command
   )
-  
-  case object Metrics
-  
+
+  case class Metrics(
+    id: String,
+    metrics: de.pokerno.backend.node.Metrics
+    )
+
 }
 
-class Node(
-    val nodeId: java.util.UUID,
-    val broadcastTopics: List[Tuple2[Broadcast, List[String]]] = List(),
-    val sessionConnector: Option[()=>org.squeryl.Session] 
-  ) extends Actor with ActorLogging with node.Initialize {
-  
+class Node(val nodeId: java.util.UUID) extends Actor with ActorLogging with de.pokerno.backend.node.Consumers {
+
   import context._
   import concurrent.duration._
   import util.{ Success, Failure }
   import CommandConversions._
-  
-  val balance = new de.pokerno.payment.Service()
-  
+
+  val balance = de.pokerno.client.payment.Client.buildClient(new java.net.InetSocketAddress("localhost", 3031))
+
   override def preStart {
+    // setup metrics
     system.scheduler.schedule(1.minute, 1.minute) {
       metrics.report()
     }
@@ -98,7 +83,7 @@ class Node(
     // new connection
     case msg @ Gateway.Connect(conn) if conn.room.isDefined ⇒
       metrics.connected(conn.player.isDefined)
-      
+
       val id = conn.room.get
 
       tryFindActor(id)  {
@@ -112,7 +97,7 @@ class Node(
 
     case msg @ Gateway.Disconnect(conn) if conn.room.isDefined ⇒
       metrics.disconnected(conn.player.isDefined)
-      
+
       val id = conn.room.get
 
       tryFindActor(id) {
@@ -126,7 +111,7 @@ class Node(
     // catch player messages
     case msg @ Gateway.Message(conn, event) if conn.player.isDefined && conn.room.isDefined ⇒
       metrics.messageReceived()
-      
+
       implicit val player = conn.player.get
       val id = conn.room.get
 
@@ -141,7 +126,10 @@ class Node(
           val room = context.actorOf(Props(classOf[Room], java.util.UUID.fromString(id), // FIXME
               variation,
               stake,
-              newRoomEnv), name = id)
+              balance,
+              notificationConsumers,
+              topicConsumers.toMap
+            ), name = id)
           room
         case _ ⇒
           log.warning("Room exists: {}", id)
@@ -150,18 +138,18 @@ class Node(
     case Node.ChangeRoomState(id, newState) ⇒ findRoom(id) { room =>
       room ! newState
     }
-    
+
     case Node.SendCommand(id, cmd) => findRoom(id) { room =>
       room ! cmd
     }
-      
+
     case Node.Metrics =>
       sender ! metrics.registry.getMetrics()
 
     case x ⇒
       log.warning("unhandled: {}", x)
   }
-  
+
   private def findRoom(id: String)(f: (ActorRef) => Any) {
     tryFindActor(id) {
       case Success(room) =>
@@ -170,15 +158,9 @@ class Node(
         log.warning("Room not found: {}", id)
     }
   }
-  
+
   private def tryFindActor(id: String)(f: util.Try[ActorRef] => Any) {
     actorSelection(id).resolveOne(1 second).onComplete(f)
-  }
-  
-  private def newRoomEnv = {
-    RoomEnv(balance,
-      notificationConsumers = notificationConsumers,
-      topicConsumers = topicConsumers.toMap)
   }
 
   override def postStop {

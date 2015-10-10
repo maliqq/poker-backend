@@ -102,6 +102,7 @@ object PokernoBuild extends Build {
             ExclusionRule(organization = "javax.jms")
           ),
         "org.slf4j" % "slf4j-simple" % "1.7.5",
+        "org.apache.httpcomponents" % "httpclient" % "4.5.1",
         "com.github.scopt" %% "scopt" % scoptVersion
       )
     ) ++ assemblySettings ++ Seq(

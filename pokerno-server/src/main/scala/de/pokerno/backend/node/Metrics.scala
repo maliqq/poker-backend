@@ -1,4 +1,4 @@
-package de.pokerno.backend.server.node
+package de.pokerno.backend.node
 
 import akka.actor.{Actor, ActorLogging}
 import de.pokerno.backend.Gateway
@@ -13,7 +13,7 @@ import de.pokerno.data.pokerdb.thrift
 //    rateUnit: TimeUnit,
 //    durationUnit: TimeUnit) extends ScheduledReporter(registry, "poker-db-room-reporter", filter, rateUnit, durationUnit) {
 //  import java.util.SortedMap
-//  
+//
 //  override def report(gauges: SortedMap[String, Gauge[_]],
 //                     counters: SortedMap[String, Counter],
 //                     histograms: SortedMap[String, Histogram],
@@ -21,18 +21,6 @@ import de.pokerno.data.pokerdb.thrift
 //                     timers: SortedMap[String, Timer]) {
 //  }
 //}
-
-object Metrics {
-  implicit def metrics2thrift(m: Metrics): thrift.metrics.Node =
-    thrift.metrics.Node(
-      m.totalConnections.getCount(),
-      m.playerConnections.getCount(),
-      m.offlinePlayers.getCount(),
-      thrift.metrics.Meter(mean = m.connects.getMeanRate(), rate15 = Some(m.connects.getFifteenMinuteRate())),
-      thrift.metrics.Meter(mean = m.disconnects.getMeanRate(), rate15 = Some(m.disconnects.getFifteenMinuteRate())),
-      thrift.metrics.Meter(mean = m.messagesReceived.getMeanRate(), rate15 = Some(m.messagesReceived.getFifteenMinuteRate()))
-    )
-}
 
 sealed class Metrics {
   final val registry = new MetricRegistry
@@ -55,13 +43,13 @@ trait MetricsReporter {
 abstract class MetricsHandler extends MetricsReporter {
   val metrics = new Metrics
   def registry = metrics.registry
-  
+
   def connected(isPlayer: Boolean = false) {
     metrics.totalConnections.inc()
     if (isPlayer) metrics.playerConnections.inc()
     metrics.connects.mark()
   }
-  
+
   def disconnected(isPlayer: Boolean = false) {
     metrics.totalConnections.dec()
     if (isPlayer) metrics.playerConnections.dec()

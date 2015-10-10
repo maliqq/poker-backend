@@ -11,18 +11,6 @@ import de.pokerno.protocol.{msg => message}
 import de.pokerno.model.{Bet, Street}
 import de.pokerno.gameplay.Notification
 
-object Metrics {
-  implicit def metrics2thrift(m: Metrics): thrift.metrics.Room =
-    thrift.metrics.Room(
-      m.players.getCount(),
-      m.waiting.getCount(),
-      m.watching.getCount(),
-      thrift.metrics.Histogram(mean = m.pots.getSnapshot().getMean() / 100.0), // 100 - for floats
-      thrift.metrics.Meter(mean = m.plays.getMeanRate(), rate15 = Some(m.plays.getFifteenMinuteRate())),
-      thrift.metrics.Meter(mean = m.playersPerFlop.getMeanRate(), rate15 = Some(m.playersPerFlop.getFifteenMinuteRate()))
-    )
-}
-
 trait PlayerMetrics {
   val registry: MetricRegistry
 

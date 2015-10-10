@@ -8,16 +8,18 @@ import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.fasterxml.jackson.annotation.{JsonCreator, JsonProperty}
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 
+import de.pokerno.backend.auth._
+
 object Config {
   final val defaultHost = "0.0.0.0"
-  
+
   import de.pokerno.util.HostPort._
 
   object Http {
     object Api {
       final val defaultPath = "/_api"
       final val defaultPort = 8080
-      
+
       def default: Api = Api(defaultPath, defaultPort)
     }
     case class Api(
@@ -45,7 +47,7 @@ object Config {
   }
   @JsonDeserialize(converter = classOf[RpcHostPortConverter])
   case class Rpc(addr: InetSocketAddress)
-  
+
   // redis
   trait DefaultRedisHostPort {
     final implicit val defaultHost = "localhost"
@@ -61,7 +63,7 @@ object Config {
   }
   @JsonDeserialize(converter = classOf[RedisHostPortConverter])
   case class Redis(addr: InetSocketAddress)
-  
+
   final val mapper = new com.fasterxml.jackson.databind.ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
 
@@ -86,11 +88,9 @@ case class Config(
 
     apiEnabled: Boolean = false,
     var api: Option[Config.Http.Api] = None,
-    
-    rpcEnabled: Boolean = false,
-    var rpc: Option[Config.Rpc] = None,
 
-    dbProps: Option[String] = None) {
+    rpcEnabled: Boolean = false,
+    var rpc: Option[Config.Rpc] = None) {
 
   if (apiEnabled) api = Some(
     Config.Http.Api.default
@@ -99,34 +99,27 @@ case class Config(
   if (rpcEnabled) rpc = Some(
     Config.Rpc.default
   )
-  
+
   if (websocketEnabled) http = Some(httpConfig.copy(
     webSocket = Right(true)
   ))
 
   def apiConfig =
     api.getOrElse(Config.Http.Api.default)
-  
+
   def apiAddress: Option[InetSocketAddress] = api.map { c =>
     new InetSocketAddress(host, c.port)
   }
-  
+
   def httpConfig =
     http.getOrElse(gw.http.Config.default)
 
   def rpcConfig =
     rpc.getOrElse(Config.Rpc.default)
-  
-  def loadedDbProps: Option[java.util.Properties] = dbProps.map { path =>
-    val f = new java.io.FileInputStream(path)
-    val props = new java.util.Properties
-    props.load(f)
-    props
-  }
-  
+
   def authService: Option[gw.http.AuthService] = {
     if (!authEnabled || !redis.isDefined) return None
-    Some(new RedisAuthService(redis.get.addr))
+    Some(new RedisTokenAuth(redis.get.addr))
   }
 
 }

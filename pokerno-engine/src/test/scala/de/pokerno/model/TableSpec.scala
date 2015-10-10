@@ -4,8 +4,8 @@ import org.scalatest._
 import org.scalatest.Matchers._
 
 class TableSpec extends FunSpec {
-  import de.pokerno.model.table.seat._
-  import de.pokerno.model.table.Seat.State
+  import de.pokerno.model.seat.impl._
+  import de.pokerno.model.Seat.State
   
   describe("Table") {
     it("new") {

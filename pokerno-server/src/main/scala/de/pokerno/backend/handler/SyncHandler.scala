@@ -14,7 +14,6 @@ Room, Table, Player state sync
 class SyncHandler(client: Client) extends Actor {
   def receive = {
     case Node.Metrics(id, metrics) =>
-      Console.println("sending node metrics")
       client.reportNodeMetrics(id, metrics)
 
     case Room.Metrics.PlayStatsUpdate(id, metrics) =>

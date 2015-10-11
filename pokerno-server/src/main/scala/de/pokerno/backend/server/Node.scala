@@ -79,7 +79,7 @@ class Node(
 
   override def preStart {
     // setup metrics
-    system.scheduler.schedule(5.second, 5.second) {
+    system.scheduler.schedule(1.minute, 1.minute) {
       metrics.report()
     }
     restoreFile.map(restore(_))

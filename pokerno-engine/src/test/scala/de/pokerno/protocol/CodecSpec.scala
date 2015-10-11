@@ -194,7 +194,8 @@ class CodecSpec extends FunSpec {
       val deck = new Deck
       val dealer = new Dealer(deck)
       dealer.dealBoard(3)
-      val events = new gameplay.Events("test")
+      val exchange = new de.pokerno.hub.impl.Topic[gameplay.Notification]("test")
+      val events = new gameplay.Publisher("test", exchange)
       val play = new Play(java.util.UUID.randomUUID())
       val ctx = new gameplay.Context("test", table, game, stake, null, events, dealer = dealer, play = play)
       Json.encode(msg.PlayState(ctx)) should equal("""{}""")

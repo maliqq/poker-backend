@@ -13,59 +13,68 @@ trait HttpClient {
   import org.apache.http.client.utils.URIBuilder
 
   private val mapper = new ObjectMapper
-
   private val client = HttpClients.createDefault
-
-  protected def get(url: String, options: Options) = {
-    val req = new HttpGet(baseUrl+url)
-    val resp = request(req, options)
-    resp.getEntity.getContent
-  }
+  final val defaultContentType = "application/json"
 
   type Data = Either[Option[Any], String]
-  case class Options(
+  case class Builder(
+      url: String,
       data: Data = Left(None),
-      params: Map[String, Any] = Map.empty
-      )
+      params: Map[String, Any] = Map.empty,
+      headers: Map[String, String] = Map(
+          "Content-Type" -> defaultContentType
+          )
+      ) {
 
-  protected def post(url: String, options: Options) {
-    val req = new HttpPost(baseUrl+url)
-    requestWithEntity(req, options)
-  }
-
-  protected def put(url: String, options: Options) {
-    val req = new HttpPut(baseUrl+url)
-    requestWithEntity(req, options)
-  }
-
-  protected def delete(url: String, options: Options) {
-    val req = new HttpDelete(baseUrl+url)
-    request(req, options)
-  }
-
-  private def requestWithEntity(req: HttpEntityEnclosingRequestBase, options: Options) = {
-    options.data match {
-      case Left(Some(data)) =>
-        val entity = new ByteArrayEntity(mapper.writeValueAsBytes(data))
-        req.setEntity(entity)
-      case Right(str) =>
-        val entity = new ByteArrayEntity(str.getBytes("UTF-8"))
-        req.setEntity(entity)
-      case _ =>
+    def data(s: String): Builder = copy(data = Right(s))
+    def data(s: Any): Builder = copy(data = Left(Some(s)))
+    def params(d: Map[String, Any]) = copy(params = d)
+    
+    def get() = {
+      val req = new HttpGet(url)
+      val resp = request(req)
+      resp.getEntity().getContent()
     }
-    request(req, options)
-  }
 
-  private def request(req: HttpRequestBase, options: Options) = {
-    val params = req.getParams()
-    options.params.foreach { case (k, v) =>
-      params.setParameter(k, v)
+    def post() {
+      val req = new HttpPost(url)
+      requestWithEntity(req)
     }
-    client.execute(req)
+
+    def put() {
+      val req = new HttpPut(url)
+      requestWithEntity(req)
+    }
+
+    def delete() {
+      val req = new HttpDelete(url)
+      request(req)
+    }
+
+    private def requestWithEntity(req: HttpEntityEnclosingRequestBase) = {
+      data match {
+        case Left(Some(data)) =>
+          val entity = new ByteArrayEntity(mapper.writeValueAsBytes(data))
+          req.setEntity(entity)
+        case Right(str) =>
+          val entity = new ByteArrayEntity(str.getBytes("UTF-8"))
+          req.setEntity(entity)
+        case _ =>
+      }
+      request(req)
+    }
+
+    private def request(req: HttpRequestBase) = {
+      params.foreach { case (k, v) =>
+        req.getParams().setParameter(k, v)
+      }
+      headers.foreach { case (k, v) =>
+        req.setHeader(k, v)
+      }
+      client.execute(req)
+    }
   }
 
-}
+  def path(p: String) = Builder(baseUrl+p)
 
-trait RestClient {
-  final val defaultContentType = "application/json"
 }

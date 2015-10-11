@@ -22,7 +22,13 @@ object Config {
     // redis brodcast address
     redis: Option[String] = None
   )
-  
+
+  @JsonCreator
+  case class Services(
+    syncUrl: String,
+    paymentsAddr: String = null
+  )
+
   @JsonCreator
   case class Http(
       // Netty port
@@ -36,11 +42,11 @@ object Config {
 
 case class Config(
     id: java.util.UUID = null,
-    var syncUrl: String,
     host: String = "localhost",
     broadcast: Option[Config.Broadcast] = None,
+    services: Config.Services = Config.Services("http://localhost:3000"),
     redis: Option[String] = None,
-    
+
     apiEnabled: Boolean = false,
     rpcEnabled: Boolean = false,
     authEnabled: Boolean = false,
@@ -61,7 +67,7 @@ case class Config(
     implicit val defaultPort = 8087
     Some(api.get)
   }
-  
+
   def rpcAddress: Option[InetSocketAddress] = {
     if (!rpc.isDefined && !rpcEnabled) return None
     implicit val defaultHost = "localhost"

@@ -10,6 +10,7 @@ trait Consumers { a: Actor =>
   import de.pokerno.backend.server.Node.Metrics
 
   def nodeId: java.util.UUID
+  def syncClient: de.pokerno.client.HttpClient
 
   protected val notificationConsumers = collection.mutable.ListBuffer[ActorRef]()
   def subscribeNotifications(consumer: ActorRef) {
@@ -26,7 +27,7 @@ trait Consumers { a: Actor =>
   lazy val metrics = _metrics
 
   {
-    val consumer = actorOf(Props(classOf[handler.SyncHandler]))
+    val consumer = actorOf(Props(classOf[handler.SyncHandler], syncClient))
     subscribeNotifications(consumer)
     subscribeTopic(Topics.State, consumer)
     subscribeTopic(Topics.Metrics, consumer)
@@ -41,7 +42,7 @@ trait Consumers { a: Actor =>
 
   // history handler
   {
-    val consumer = actorOf(Props(classOf[handler.HistoryHandler]))
+    val consumer = actorOf(Props(classOf[handler.HistoryHandler], syncClient))
     subscribeTopic(Topics.Deals, consumer)
   }
 

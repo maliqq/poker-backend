@@ -13,7 +13,6 @@ import de.pokerno.backend.server.{Config, Node}
 private[pokerno] case class Options(
   val configFile: Option[String] = None,
   val restoreFile: Option[String] = None,
-  val syncUrl: Option[String] = None,
   val config: Config = Config())
 
 object Main {
@@ -25,22 +24,26 @@ object Main {
     opt[String]('c', "config") text "Path to config file" action { (value, c) ⇒
       c.copy(configFile = Some(value))
     }
-    
+
     // -r /tmp/restore.json
     opt[String]('r', "restore") text "restore node from file" action { (value, c) =>
       c.copy(restoreFile = Some(value))
     }
-    
+
     // -r /tmp/restore.json
     opt[String]('u', "sync") text "sync node from url" action { (value, c) =>
-      c.copy(syncUrl = Some(value))
+      c.copy(config = c.config.copy(
+        services = c.config.services.copy(
+          syncUrl = value
+        )
+      ))
     }
 
     // --host node1.localhost
     opt[String]('h', "host") text "Node hostname" action { (value, c) ⇒
       c.copy(config = c.config.copy(host = value))
     }
-    
+
     opt[String]("id") text "Node id" action { (value, c) ⇒
       c.copy(config = c.config.copy(id = java.util.UUID.fromString(value)))
     }
@@ -97,8 +100,8 @@ object Main {
         rpc = Some(value)
       ))
     }
-    
-    
+
+
     // --http-api
     opt[Unit]("http-api") text "HTTP API" action { (value, c) ⇒
       val config = c.config.api
@@ -107,21 +110,21 @@ object Main {
         apiEnabled = true
       ))
     }
-    
+
     // --redis
     opt[String]("redis") text "Redis address to connect for token exchange" action { (value, c) ⇒
       c.copy(config = c.config.copy(
         redis = Some(value)
       ))
     }
-    
+
     // --enable-auth
     opt[Unit]("enable-auth") text "Enable token based authentication" action { (value, c) ⇒
       c.copy(config = c.config.copy(
         authEnabled = true
       ))
     }
-    
+
     // --http-api-port 3000
     opt[Int]("http-api-port") text "HTTP API port" action { (value, c) ⇒
       c.copy(config = c.config.copy(
@@ -194,13 +197,11 @@ object Main {
             log.error("Invalid JSON: {}", e.getMessage)
             null
         }
-        
+
       }.getOrElse(opts.config)
-      
-      config.syncUrl = opts.syncUrl.get
-      
+
       // start
-      val node = Node.start(config)
+      val node = Node.start(config, opts.restoreFile)
     }
   }
 

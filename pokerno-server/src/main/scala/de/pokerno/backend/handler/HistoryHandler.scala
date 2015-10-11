@@ -3,10 +3,8 @@ package de.pokerno.backend.handler
 import akka.actor.Actor
 import de.pokerno.client.history.Client
 
-class HistoryHandler extends Actor {
+class HistoryHandler(client: Client) extends Actor {
   import de.pokerno.gameplay
-  
-  private val client = new Client()
 
   def receive = {
     case gameplay.Deal.Dump(id, game, stake, play) =>

@@ -10,9 +10,7 @@ import de.pokerno.client.sync.Client
 Room, Table, Player state sync
 */
 
-class SyncHandler extends Actor {
-  private val client = new Client()
-  
+class SyncHandler(client: Client) extends Actor {
   def receive = {
     case Room.Metrics.PlayStatsUpdate(id, metrics) =>
       client.reportRoomMetrics(id, metrics)

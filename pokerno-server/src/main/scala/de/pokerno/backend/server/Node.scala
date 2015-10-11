@@ -17,13 +17,13 @@ object Node {
 
   implicit val system = ActorSystem("node")
 
-  def start(config: Config): ActorRef = {
+  def start(config: Config, restoreFile: Option[String]): ActorRef = {
     val id = config.id
     log.info(f"starting node $id (${config.host})")
-    
+
     val balance = payment.Client.buildClient(new java.net.InetSocketAddress("localhost", 3031))
-    val syncClient = new sync.Client(config.syncUrl)
-    val node = system.actorOf(Props(classOf[Node], id, balance, syncClient), name = "node-main")
+    val syncClient = new sync.Client(config.services.syncUrl)
+    val node = system.actorOf(Props(classOf[Node], id, balance, syncClient, restoreFile), name = "node-main")
 
     val setup = new Setup(node)
     config.rpcAddress.map { addr ⇒
@@ -70,7 +70,8 @@ object Node {
 class Node(
     val nodeId: java.util.UUID,
     val balance: payment.Client,
-    val syncClient: sync.Client
+    val syncClient: sync.Client,
+    restoreFile: Option[String] = None
     ) extends Actor with ActorLogging with de.pokerno.backend.node.Consumers {
 
   import context._
@@ -83,7 +84,7 @@ class Node(
     system.scheduler.schedule(1.minute, 1.minute) {
       metrics.report()
     }
-    restore()
+    restoreFile.map(restore(_))
     fetch()
   }
 
@@ -173,7 +174,7 @@ class Node(
 
   override def postStop {
   }
-  
+
   import de.pokerno.protocol.Codec.{Json => codec}
   import collection.JavaConversions._
   def fetch() {
@@ -181,10 +182,8 @@ class Node(
     val msgs = codec.decodeValuesFromStream[Node.CreateRoom](stream)
     msgs.foreach { self ! _ }
   }
-  
-  def restorePath: String
-  
-  def restore() {
+
+  def restore(restorePath: String) {
     val stream = new java.io.FileInputStream(restorePath)
     val msgs = codec.decodeValuesFromStream[Node.CreateRoom](stream)
     msgs.foreach { self ! _ }

@@ -36,15 +36,16 @@ object Config {
 
 case class Config(
     id: java.util.UUID = null,
+    var syncUrl: String,
     host: String = "localhost",
     broadcast: Option[Config.Broadcast] = None,
     redis: Option[String] = None,
-
+    
     apiEnabled: Boolean = false,
     rpcEnabled: Boolean = false,
     authEnabled: Boolean = false,
     eventSourceEnabled: Boolean = false,
-    websocketEnabled: Boolean = false,
+    webSocketEnabled: Boolean = false,
 
     var http: Option[Config.Http] = None,
 
@@ -69,7 +70,7 @@ case class Config(
   }
 
   def httpConfig = http.getOrElse(Config.Http())
-  if (websocketEnabled) http = Some(httpConfig.copy(
+  if (webSocketEnabled) http = Some(httpConfig.copy(
     webSocket = Right(true)
   ))
   if (eventSourceEnabled) http = Some(httpConfig.copy(

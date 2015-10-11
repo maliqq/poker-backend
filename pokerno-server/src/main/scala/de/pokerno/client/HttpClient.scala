@@ -1,6 +1,8 @@
 package de.pokerno.client
 
 trait HttpClient {
+  def baseUrl: String
+  
   import com.fasterxml.jackson.databind.ObjectMapper
 
   import org.apache.http.entity.ByteArrayEntity
@@ -14,9 +16,9 @@ trait HttpClient {
 
   private val client = HttpClients.createDefault
 
-  protected def get(url: String) = {
-    val req = new HttpGet(url)
-    val resp = client.execute(req)
+  protected def get(url: String, options: Options) = {
+    val req = new HttpGet(baseUrl+url)
+    val resp = request(req, options)
     resp.getEntity.getContent
   }
 
@@ -27,17 +29,17 @@ trait HttpClient {
       )
 
   protected def post(url: String, options: Options) {
-    val req = new HttpPost(url)
+    val req = new HttpPost(baseUrl+url)
     requestWithEntity(req, options)
   }
 
   protected def put(url: String, options: Options) {
-    val req = new HttpPut(url)
+    val req = new HttpPut(baseUrl+url)
     requestWithEntity(req, options)
   }
 
   protected def delete(url: String, options: Options) {
-    val req = new HttpDelete(url)
+    val req = new HttpDelete(baseUrl+url)
     request(req, options)
   }
 

@@ -3,7 +3,7 @@ package de.pokerno.client.history
 import math.{BigDecimal => Decimal}
 import de.pokerno.{model, poker}
 
-class Client extends de.pokerno.client.HttpClient {
+class Client(val baseUrl: String) extends de.pokerno.client.HttpClient {
   case class FormData(
       game: model.Game,
       stake: model.Stake,

@@ -9,12 +9,11 @@ import de.pokerno.gameplay._
 import de.pokerno.backend.{ gateway ⇒ gw }
 import akka.actor.{ ActorSystem, Props }
 import de.pokerno.backend.server.{Config, Node}
-import de.pokerno.protocol.Codec.{Json => codec}
 
 private[pokerno] case class Options(
   val configFile: Option[String] = None,
   val restoreFile: Option[String] = None,
-  val restoreUrl: Option[String] = None,
+  val syncUrl: Option[String] = None,
   val config: Config = Config())
 
 object Main {
@@ -28,13 +27,13 @@ object Main {
     }
     
     // -r /tmp/restore.json
-    opt[String]('r', "restore") text "restore node from json" action { (value, c) =>
+    opt[String]('r', "restore") text "restore node from file" action { (value, c) =>
       c.copy(restoreFile = Some(value))
     }
     
     // -r /tmp/restore.json
-    opt[String]('u', "restore-url") text "restore node from json" action { (value, c) =>
-      c.copy(restoreUrl = Some(value))
+    opt[String]('u', "sync") text "sync node from url" action { (value, c) =>
+      c.copy(syncUrl = Some(value))
     }
 
     // --host node1.localhost
@@ -55,51 +54,47 @@ object Main {
 
     // --websocket
     opt[Unit]("websocket") text "With WebSocket" action { (value, c) ⇒
-      val config = c.config.httpConfig.webSocketConfig
-      if (config.isDefined) c // skip
-      else c.copy(config = c.config.copy(
-        http = Some(c.config.httpConfig.copy(webSocket = Right(true)))
+      val config = c.config.httpConfig
+      c.copy(config = c.config.copy(
+        webSocketEnabled = true
       ))
     }
 
     // --websocket-path /_ws
     opt[String]("websocket-path") text "WebSocket path" action { (value, c) ⇒
-      val config = c.config.httpConfig.webSocketConfig
-      if (config.isDefined) c.copy(config = c.config.copy(
-        http = Some(c.config.httpConfig.copy(webSocket = Left(config.get.copy(path = value))))
+      val config = c.config.httpConfig
+      c.copy(config = c.config.copy(
+        http = Some(c.config.httpConfig.copy(webSocket = Left(value)))
       ))
-      else c
     }
 
     // --eventsource
     opt[Unit]("eventsource") text "With EventSource" action { (value, c) ⇒
-      val config = c.config.httpConfig.eventSourceConfig
-      if (config.isDefined) c // skip
-      else c.copy(config = c.config.copy(
-        http = Some(c.config.httpConfig.copy(eventSource = Right(true)))
+      val config = c.config.httpConfig
+      c.copy(config = c.config.copy(
+        eventSourceEnabled = true
       ))
     }
 
     // --eventsource-path /_es
     opt[String]("eventsource-path") text "EventSource path" action { (value, c) ⇒
-      val config = c.config.httpConfig.eventSourceConfig
-      if (config.isDefined) c.copy(config = c.config.copy(
-        http = Some(c.config.httpConfig.copy(eventSource = Left(config.get.copy(path = value))))
+      val config = c.config.httpConfig
+      c.copy(config = c.config.copy(
+        http = Some(c.config.httpConfig.copy(eventSource = Left(value)))
       ))
-      else c
     }
 
     // --rpc
     opt[Unit]("rpc") text "RPC with default options" action { (value, c) ⇒
       c.copy(config = c.config.copy(
-        rpc = Some(Config.Rpc.default)
+        rpcEnabled = true
       ))
     }
 
     // --rpc-addr 192.168.1.1:8081
     opt[String]("rpc-addr") text "RPC Address" action { (value, c) ⇒
       c.copy(config = c.config.copy(
-        rpc = Some(Config.Rpc(value))
+        rpc = Some(value)
       ))
     }
     
@@ -109,14 +104,14 @@ object Main {
       val config = c.config.api
       if (config.isDefined) c // skip
       else c.copy(config = c.config.copy(
-        api = Some(c.config.apiConfig)
+        apiEnabled = true
       ))
     }
     
     // --redis
     opt[String]("redis") text "Redis address to connect for token exchange" action { (value, c) ⇒
       c.copy(config = c.config.copy(
-        redis = Some(Config.Redis(value))
+        redis = Some(value)
       ))
     }
     
@@ -130,7 +125,7 @@ object Main {
     // --http-api-port 3000
     opt[Int]("http-api-port") text "HTTP API port" action { (value, c) ⇒
       c.copy(config = c.config.copy(
-          api = Some(c.config.apiConfig.copy(port = value))
+          api = Some(":"+value.toString)
       ))
     }
 //
@@ -202,26 +197,10 @@ object Main {
         
       }.getOrElse(opts.config)
       
+      config.syncUrl = opts.syncUrl.get
+      
       // start
       val node = Node.start(config)
-
-      // restore state from file
-      val in: Option[java.io.InputStream] = opts.restoreFile.map { path =>
-        log.info(f"restoring from file $path")
-        new FileInputStream(path)
-      } orElse opts.restoreUrl.map { url =>
-        log.info(f"restoring from url $url")
-        new URL(url).openStream()
-      }
-      
-      in.map { f =>
-        //try {
-          val msgs = codec.decodeValuesFromStream[Node.CreateRoom](f)
-          msgs.foreach { node ! _ }
-//        } catch { case err: Throwable =>
-//          log.warn("can't restore from {}: {}", Array[AnyRef](path, err.getMessage):_*)
-//        }
-      }
     }
   }
 

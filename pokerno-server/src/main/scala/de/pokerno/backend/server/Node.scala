@@ -9,6 +9,8 @@ import de.pokerno.backend.{ gateway ⇒ gw }
 import de.pokerno.backend.Gateway
 import de.pokerno.backend.node.Setup
 import de.pokerno.protocol._
+import de.pokerno.client.payment
+import de.pokerno.client.sync
 
 object Node {
   val log = LoggerFactory.getLogger(getClass)
@@ -18,8 +20,10 @@ object Node {
   def start(config: Config): ActorRef = {
     val id = config.id
     log.info(f"starting node $id (${config.host})")
-
-    val node = system.actorOf(Props(classOf[Node], id), name = "node-main")
+    
+    val balance = payment.Client.buildClient(new java.net.InetSocketAddress("localhost", 3031))
+    val syncClient = new sync.Client(config.syncUrl)
+    val node = system.actorOf(Props(classOf[Node], id, balance, syncClient), name = "node-main")
 
     val setup = new Setup(node)
     config.rpcAddress.map { addr ⇒
@@ -63,20 +67,24 @@ object Node {
 
 }
 
-class Node(val nodeId: java.util.UUID) extends Actor with ActorLogging with de.pokerno.backend.node.Consumers {
+class Node(
+    val nodeId: java.util.UUID,
+    val balance: payment.Client,
+    val syncClient: sync.Client
+    ) extends Actor with ActorLogging with de.pokerno.backend.node.Consumers {
 
   import context._
   import concurrent.duration._
   import util.{ Success, Failure }
   import CommandConversions._
 
-  val balance = de.pokerno.client.payment.Client.buildClient(new java.net.InetSocketAddress("localhost", 3031))
-
   override def preStart {
     // setup metrics
     system.scheduler.schedule(1.minute, 1.minute) {
       metrics.report()
     }
+    restore()
+    fetch()
   }
 
   def receive = {
@@ -164,5 +172,21 @@ class Node(val nodeId: java.util.UUID) extends Actor with ActorLogging with de.p
   }
 
   override def postStop {
+  }
+  
+  import de.pokerno.protocol.Codec.{Json => codec}
+  import collection.JavaConversions._
+  def fetch() {
+    val stream = syncClient.getRooms(nodeId.toString())
+    val msgs = codec.decodeValuesFromStream[Node.CreateRoom](stream)
+    msgs.foreach { self ! _ }
+  }
+  
+  def restorePath: String
+  
+  def restore() {
+    val stream = new java.io.FileInputStream(restorePath)
+    val msgs = codec.decodeValuesFromStream[Node.CreateRoom](stream)
+    msgs.foreach { self ! _ }
   }
 }

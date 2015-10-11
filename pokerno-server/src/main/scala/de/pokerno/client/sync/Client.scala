@@ -4,7 +4,13 @@ import de.pokerno.form.Room
 import de.pokerno.backend.server.Node
 import de.pokerno.form.cash.Metrics
 
-class Client extends de.pokerno.client.HttpClient {
+class Client(val baseUrl: String) extends de.pokerno.client.HttpClient {
+  def getRooms(id: String) = {
+    get(f"/api/v1/rooms.json", Options(
+      params = Map("node_id" -> id)
+    ))
+  }
+  
   def reportNodeMetrics(id: String, metrics: Node.Metrics) {
     post(f"/api/v1/node/$id/metrics", Options(data = Left(Some(metrics))))
   }

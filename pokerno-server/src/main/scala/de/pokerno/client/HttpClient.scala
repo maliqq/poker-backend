@@ -2,10 +2,10 @@ package de.pokerno.client
 
 trait HttpClient {
   def baseUrl: String
-  
+
   import com.fasterxml.jackson.databind.ObjectMapper
 
-  import org.apache.http.entity.ByteArrayEntity
+  import org.apache.http.entity.{ByteArrayEntity, StringEntity}
   import org.apache.http.client.methods.HttpEntityEnclosingRequestBase
   import org.apache.http.client.methods.HttpRequestBase
   import org.apache.http.impl.client.HttpClients
@@ -13,7 +13,6 @@ trait HttpClient {
   import org.apache.http.client.utils.URIBuilder
 
   private val mapper = new ObjectMapper
-  private val client = HttpClients.createDefault
   final val defaultContentType = "application/json"
 
   type Data = Either[Option[Any], String]
@@ -26,10 +25,12 @@ trait HttpClient {
           )
       ) {
 
+    private def client = HttpClients.createDefault
+
     def data(s: String): Builder = copy(data = Right(s))
     def data(s: Any): Builder = copy(data = Left(Some(s)))
     def params(d: Map[String, Any]) = copy(params = d)
-    
+
     def get() = {
       val req = new HttpGet(url)
       val resp = request(req)
@@ -54,10 +55,10 @@ trait HttpClient {
     private def requestWithEntity(req: HttpEntityEnclosingRequestBase) = {
       data match {
         case Left(Some(data)) =>
-          val entity = new ByteArrayEntity(mapper.writeValueAsBytes(data))
+          val entity = new StringEntity(mapper.writeValueAsString(data))
           req.setEntity(entity)
         case Right(str) =>
-          val entity = new ByteArrayEntity(str.getBytes("UTF-8"))
+          val entity = new StringEntity(str)
           req.setEntity(entity)
         case _ =>
       }

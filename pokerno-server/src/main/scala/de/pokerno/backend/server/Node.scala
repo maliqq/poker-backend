@@ -10,7 +10,6 @@ import de.pokerno.backend.Gateway
 import de.pokerno.backend.node.Setup
 import de.pokerno.protocol._
 import de.pokerno.client.payment
-import de.pokerno.client.sync
 
 object Node {
   val log = LoggerFactory.getLogger(getClass)
@@ -22,8 +21,7 @@ object Node {
     log.info(f"starting node $id (${config.host})")
 
     val balance = payment.Client.buildClient(config.paymentAddress)
-    val syncClient = new sync.Client(config.syncUrl)
-    val node = system.actorOf(Props(classOf[Node], id, balance, syncClient, restoreFile), name = "node-main")
+    val node = system.actorOf(Props(classOf[Node], id, balance, config.syncUrl, restoreFile), name = "node-main")
 
     val setup = new Setup(node)
     config.rpcAddress.map { addr ⇒
@@ -70,7 +68,7 @@ object Node {
 class Node(
     val nodeId: java.util.UUID,
     val balance: payment.Client,
-    val syncClient: sync.Client,
+    val syncUrl: String,
     restoreFile: Option[String] = None
     ) extends Actor with ActorLogging with de.pokerno.backend.node.Consumers {
 
@@ -81,7 +79,7 @@ class Node(
 
   override def preStart {
     // setup metrics
-    system.scheduler.schedule(1.minute, 1.minute) {
+    system.scheduler.schedule(5.second, 5.second) {
       metrics.report()
     }
     restoreFile.map(restore(_))
@@ -153,7 +151,7 @@ class Node(
     }
 
     case Node.Metrics =>
-      sender ! metrics.registry.getMetrics()
+      sender ! metrics.metrics.serializable
 
     case x ⇒
       log.warning("unhandled: {}", x)
@@ -177,6 +175,7 @@ class Node(
 
   import de.pokerno.protocol.Codec.{Json => codec}
   import collection.JavaConversions._
+  val syncClient = new de.pokerno.client.sync.Client(syncUrl)
   def fetch() {
     val stream = syncClient.getRooms(nodeId.toString())
     val msgs = codec.decodeValuesFromStream[Node.CreateRoom](stream)

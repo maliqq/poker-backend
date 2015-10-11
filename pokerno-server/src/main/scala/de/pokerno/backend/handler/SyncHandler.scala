@@ -4,6 +4,7 @@ import akka.actor.Actor
 import de.pokerno.gameplay.Notification
 import de.pokerno.protocol.msg
 import de.pokerno.form.Room
+import de.pokerno.backend.server.Node
 import de.pokerno.client.sync.Client
 
 /*
@@ -13,6 +14,7 @@ Room, Table, Player state sync
 class SyncHandler(client: Client) extends Actor {
   def receive = {
     case Node.Metrics(id, metrics) =>
+      Console.println("sending node metrics")
       client.reportNodeMetrics(id, metrics)
 
     case Room.Metrics.PlayStatsUpdate(id, metrics) =>

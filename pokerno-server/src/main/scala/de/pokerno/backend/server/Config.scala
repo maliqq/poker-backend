@@ -60,20 +60,20 @@ case class Config(
     if (!api.isDefined && !apiEnabled) return None
     implicit val defaultHost = "localhost"
     implicit val defaultPort = 8087
-    Some(api.get)
+    Some(api.getOrElse(null))
   }
 
   def rpcAddress: Option[InetSocketAddress] = {
     if (!rpc.isDefined && !rpcEnabled) return None
     implicit val defaultHost = "localhost"
     implicit val defaultPort = 9091
-    Some(rpc.get)
+    Some(rpc.getOrElse(null))
   }
 
   def paymentAddress: InetSocketAddress = {
     implicit val defaultHost = "localhost"
     implicit val defaultPort = 3031
-    payment.get
+    payment.getOrElse(null)
   }
 
   def httpConfig = http.getOrElse(Config.Http())

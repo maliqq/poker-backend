@@ -6,31 +6,26 @@ import com.codahale.metrics._
 import concurrent.duration._
 import java.util.concurrent.TimeUnit
 import de.pokerno.data.pokerdb.thrift
-
-//class PokerDBReporter(
-//    registry: MetricRegistry,
-//    filter: MetricFilter,
-//    rateUnit: TimeUnit,
-//    durationUnit: TimeUnit) extends ScheduledReporter(registry, "poker-db-room-reporter", filter, rateUnit, durationUnit) {
-//  import java.util.SortedMap
-//
-//  override def report(gauges: SortedMap[String, Gauge[_]],
-//                     counters: SortedMap[String, Counter],
-//                     histograms: SortedMap[String, Histogram],
-//                     meters: SortedMap[String, Meter],
-//                     timers: SortedMap[String, Timer]) {
-//  }
-//}
+import com.fasterxml.jackson.annotation.JsonGetter
 
 sealed class Metrics {
-  final val registry = new MetricRegistry
+  private final val registry = new MetricRegistry
 
-  val totalConnections    = registry.counter("total_connections")
-  val playerConnections   = registry.counter("player_connections")
-  val offlinePlayers      = registry.counter("offlinePlayers")
-  val connects            = registry.meter("connects")
-  val disconnects         = registry.meter("disconnects")
-  val messagesReceived    = registry.meter("messages_received")
+  def serializable = registry.getMetrics()
+
+  lazy val totalConnections    = registry.counter("total_connections")
+  lazy val playerConnections   = registry.counter("player_connections")
+  lazy val offlinePlayers      = registry.counter("offlinePlayers")
+  lazy val connects            = registry.meter("connects")
+  lazy val disconnects         = registry.meter("disconnects")
+  lazy val messagesReceived    = registry.meter("messages_received")
+
+  @JsonGetter("total_connections_count") def totalConnectionsCount = totalConnections.getCount()
+  @JsonGetter("player_connections_count") def playerConnectionsCount = playerConnections.getCount()
+  @JsonGetter("offline_players_count") def offlinePlayersCount = offlinePlayers.getCount()
+  @JsonGetter("connects_rate") def connectsRate = connects.getFifteenMinuteRate()
+  @JsonGetter("disconnects_rate") def disconnectsRate = disconnects.getFifteenMinuteRate()
+  @JsonGetter("messages_received_rate") def messagesReceivedRate = messagesReceived.getFifteenMinuteRate()
 
   //val messagesBroadcasted = registry.meter("messages_broadcasted")
   //val messagesSent        = registry.meter("messages_sent")
@@ -42,7 +37,6 @@ trait MetricsReporter {
 
 abstract class MetricsHandler extends MetricsReporter {
   val metrics = new Metrics
-  def registry = metrics.registry
 
   def connected(isPlayer: Boolean = false) {
     metrics.totalConnections.inc()

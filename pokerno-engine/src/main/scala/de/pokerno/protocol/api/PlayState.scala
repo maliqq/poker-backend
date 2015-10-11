@@ -7,32 +7,31 @@ import de.pokerno.gameplay
 import de.pokerno.model
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-sealed class Play(
+sealed class PlayState(
     ctx: gameplay.Context
   ) {
   @JsonUnwrapped val play = ctx.play
   @JsonUnwrapped val round = ctx.round
-  @JsonUnwrapped val dealer = ctx.dealer
 }
 
-object PlayState {
+object RoomState {
   
   def apply(id: String, state: String, table: Table, variation: Variation, stake: Stake) =
-    new PlayState(id, state, table, variation, stake)
+    new RoomState(id, state, table, variation, stake)
   
   def apply(ctx: gameplay.Context, state: String) =
-    new PlayState(ctx.id, state, ctx.table, ctx.variation, ctx.stake, new Play(ctx))
+    new RoomState(ctx.id, state, ctx.table, ctx.variation, ctx.stake, new PlayState(ctx))
   
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-sealed class PlayState(
-    @JsonProperty val id: String,
-    @JsonProperty val state: String,
-    @JsonProperty val table: Table,
-    @JsonProperty val variation: Variation,
-    @JsonProperty val stake: Stake,
-    @JsonProperty val play: Play = null
+sealed class RoomState(
+    @JsonProperty val id: String, // room id
+    @JsonProperty val state: String, // room state
+    @JsonProperty val table: Table, // room table seating
+    @JsonProperty val variation: Variation, // room variation
+    @JsonProperty val stake: Stake, // room stake
+    @JsonProperty val play: PlayState = null // play state
 ) {
   
 }

@@ -178,12 +178,12 @@ abstract class CashRoom extends Room with cash.JoinLeave with cash.Cycle with ca
       }
       tryResume()
 
-    case Event(PlayState, NoneRunning) =>
-      sender ! api.PlayState(roomId, stateName.toString(), table, variation, stake)
+    case Event(RoomState, NoneRunning) =>
+      sender ! api.RoomState(roomId, stateName.toString(), table, variation, stake)
       stay()
 
-    case Event(PlayState, Running(ctx, _)) =>
-      sender ! api.PlayState(ctx, stateName.toString())
+    case Event(RoomState, Running(ctx, _)) =>
+      sender ! api.RoomState(ctx, stateName.toString())
       stay()
 
     case Event(x: Any, _) ⇒

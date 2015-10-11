@@ -35,7 +35,7 @@ class Replay(
   private val _exchange = new de.pokerno.hub.impl.Exchange[Notification]()
   private def newEventsPublisher = new Publisher(id, _exchange)
 
-  val gameplay = new Gameplay(id, table, variation, stake, balance, newEventsPublisher, dealer)
+  val gameplay = new Gameplay(id, table, variation, stake, balance, newEventsPublisher)
 
   val ctx = new Context(gameplay, self)
   import ctx._

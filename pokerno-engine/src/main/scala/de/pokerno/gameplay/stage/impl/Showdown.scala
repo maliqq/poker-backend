@@ -45,6 +45,7 @@ private[gameplay] trait ShowdownStrategy {
 private[gameplay] case class Showdown(ctx: Stage.Context) extends Stage with ShowdownStrategy {
   
   import ctx.gameplay._
+  import play.dealer
   
   def apply() = {
     val inPot = table.sitting filter (_.inPot)

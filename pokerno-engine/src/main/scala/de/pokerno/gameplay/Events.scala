@@ -53,7 +53,7 @@ object Events {
     start.play = Some(msg.PlayState(ctx))
     // include information on own cards
     player map { p =>
-      start.pocket = ctx.dealer.pocket(p)
+      start.pocket = ctx.play.dealer.pocket(p)
     }
     start
   }

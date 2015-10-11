@@ -4,9 +4,10 @@ import de.pokerno.model._
 import de.pokerno.gameplay.{Events, Stage}
 
 private[gameplay] case class Dealing(ctx: Stage.Context, _type: DealType.Value, cardsNum: Option[Int] = None) extends Stage {
-  
+
   import ctx.gameplay._
-  
+  import play.dealer
+
   def apply() = _type match {
     case DealType.Hole | DealType.Door ⇒
       val n: Int = {
@@ -17,8 +18,8 @@ private[gameplay] case class Dealing(ctx: Stage.Context, _type: DealType.Value, 
 
       table.sitting filter (_.isActive) foreach { seat =>
         val player = seat.player
-        val cards = dealer dealPocket (n, player)
-        
+        val cards = dealer.dealPocket(n, player)
+
         assert(cards.size == n)
         assert(cards.forall { _.toByte != 0 })
 
@@ -34,12 +35,11 @@ private[gameplay] case class Dealing(ctx: Stage.Context, _type: DealType.Value, 
 
     case DealType.Board if cardsNum.isDefined ⇒
 
-      val cards = dealer dealBoard (cardsNum.get)
-    
+      val cards = dealer.dealBoard(cardsNum.get)
+
       assert(cards.size == cardsNum.get)
       assert(cards.forall { _.toByte != 0 })
-    
-      play.board ++= cards.toBuffer
+
       events broadcast Events.dealBoard(cards)
 
     case _ ⇒

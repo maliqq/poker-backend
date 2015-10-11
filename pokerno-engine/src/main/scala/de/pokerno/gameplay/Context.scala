@@ -19,18 +19,16 @@ trait ContextLike extends context.Button {
   //
   val table: Table
   //
-  val dealer: Dealer
-  //
   val play: Play
   val mode: Mode.Value
   val bettingRound: betting.Round
   val discardingRound: discarding.Round
-  
+
   val balance: Balance
-  
+
   def isTournament = mode == Mode.Tournament
   def isCash = mode == Mode.Cash
-  
+
   def gameOptions = game.options
 
   override def toString = f"table:${table} game: ${game} stake: ${stake}"
@@ -45,13 +43,12 @@ class Context(
     val stake: Stake,
     val balance: Balance,
     val events: Publisher[_],
-    val dealer: Dealer = new Dealer,
     val play: Play = new Play,
     val mode: Mode.Value = Mode.Cash
   ) extends ContextLike {
-  
+
   lazy val bettingRound: betting.Round = new betting.Round(table, game, stake, play)
-  lazy val discardingRound: discarding.Round = new discarding.Round(table, game, dealer)
+  lazy val discardingRound: discarding.Round = new discarding.Round(table, game, play.dealer)
   lazy val gameRotation = new Rotation(variation.asInstanceOf[Mix].games)
 
 }

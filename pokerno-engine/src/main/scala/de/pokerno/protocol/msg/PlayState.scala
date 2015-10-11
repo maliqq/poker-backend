@@ -14,5 +14,4 @@ sealed class PlayState(
   ) {
   @JsonUnwrapped val play = ctx.play
   @JsonUnwrapped val round = ctx.round
-  @JsonUnwrapped val dealer = ctx.dealer
 }

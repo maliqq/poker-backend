@@ -14,6 +14,7 @@ private[replay] case class Dealing(
   
   import ctx._
   import ctx.gameplay._
+  import play.dealer
   
   private val dealActions = actions.filter { action ⇒
     action match {

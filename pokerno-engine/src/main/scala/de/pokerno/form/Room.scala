@@ -31,7 +31,7 @@ object Room {
   // case class Subscribe(name: String)
   // case class Observe(observer: ActorRef, name: String)
   
-  case object PlayState
+  case object RoomState
 
   sealed trait Data
   case object NoneRunning extends Data

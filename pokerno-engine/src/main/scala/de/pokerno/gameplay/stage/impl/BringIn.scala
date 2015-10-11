@@ -8,6 +8,7 @@ import de.pokerno.gameplay.Stage
 private[gameplay] case class BringIn(ctx: Stage.Context) extends Stage {
   
   import ctx.gameplay._
+  import play.dealer
   
   def apply() = {
     val seat = round.seats filter (_.isActive) minBy { _seat ⇒

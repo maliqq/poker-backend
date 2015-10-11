@@ -12,6 +12,8 @@ object Service {
   import com.twitter.finagle.builder.ServerBuilder
   import com.twitter.finagle.thrift.ThriftServerFramedCodec
 
+  final val defaultPort = 9091
+  
   def apply(node: ActorRef, addr: java.net.InetSocketAddress) = {
     val protocol = new TBinaryProtocol.Factory()
 

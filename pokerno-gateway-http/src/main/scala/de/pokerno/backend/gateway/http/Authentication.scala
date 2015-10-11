@@ -8,7 +8,7 @@ trait AuthService {
 
 object TokenBasedAuthentication {
   final val TOKEN_PARAM = "token"
-  final val TOKEN_HEADER = "X-Token-Based-Auth"
+  final val TOKEN_HEADER = "X-Token"
 }
 
 class TokenBasedAuthentication(authService: AuthService)

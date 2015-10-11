@@ -16,6 +16,9 @@ class Api(val node: ActorRef) extends Actor with ActorLogging with Api.Service {
 }
 
 object Api {
+  final val defaultPort = 8080
+  final val defaultPath = "/_api"
+
   trait Service extends HttpService { a: ActorLogging =>
     val codec = de.pokerno.protocol.Codec.Json
     val node: ActorRef

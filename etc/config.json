@@ -1,9 +1,8 @@
 {
   "id": "02b82428-fc15-4d66-ba53-bc0b85c1330f",
   "host": "localhost",
-  "dbProps": "./etc/database.properties",
   "authEnabled": true,
-  
+
   "redis": "127.0.0.1:6379",
   "rpc": "127.0.0.1:9091",
 

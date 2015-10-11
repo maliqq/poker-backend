@@ -11,7 +11,18 @@ import io.netty.channel.socket.nio.NioServerSocketChannel
 import java.util.concurrent.{ FutureTask, Callable }
 import io.netty.util.CharsetUtil
 
-case class Server(gw: ActorRef, authService: Option[AuthService], config: Config) {
+object Server {
+  final val defaultPort = 8081
+}
+
+case class Server(
+    gw: ActorRef,
+    authService: Option[AuthService],
+    port: Int = Server.defaultPort,
+    eventSource: Either[String, Boolean] = Right(false),
+    webSocket: Either[String, Boolean] = Right(false),
+    handlers: List[Tuple2[String, () ⇒ ChannelHandlerAdapter]] = List.empty
+    ) {
   private var channel: Channel = null
 
   def isActive = channel != null && channel.isActive
@@ -33,15 +44,22 @@ case class Server(gw: ActorRef, authService: Option[AuthService], config: Config
         p.addLast("token-auth-service", new TokenBasedAuthentication(s))
       }
 
-      config.webSocketConfig.foreach { ws ⇒
-        p.addLast(WebSocket.Handler.Name, new WebSocket.Handler(ws.path, gw))
+      webSocket match {
+        case Left(path) => 
+          p.addLast(WebSocket.Handler.Name, new WebSocket.Handler(path, gw))
+        case Right(true) =>
+          p.addLast(WebSocket.Handler.Name, new WebSocket.Handler(WebSocket.defaultPath, gw))
+        case _ =>
       }
 
-      config.eventSourceConfig.foreach { es ⇒
-        p.addLast(EventSource.Handler.Name, new EventSource.Handler(es.path, gw))
+      eventSource match {
+        case Left(path) =>
+          p.addLast(EventSource.Handler.Name, new EventSource.Handler(path, gw))
+        case Right(true) =>
+          p.addLast(EventSource.Handler.Name, new WebSocket.Handler(EventSource.defaultPath, gw))
       }
 
-      config.handlers.map { case (name, handler) ⇒
+      handlers.map { case (name, handler) ⇒
         p.addLast(name, handler())
       }
     }
@@ -56,7 +74,7 @@ case class Server(gw: ActorRef, authService: Option[AuthService], config: Config
   def run() {
     if (isActive) throw new IllegalStateException("Server already running!")
 
-    channel = bootstrap.bind(config.port).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE).sync.channel
+    channel = bootstrap.bind(port).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE).sync.channel
     channel.closeFuture.sync
   }
 

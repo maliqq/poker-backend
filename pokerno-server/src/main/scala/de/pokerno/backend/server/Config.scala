@@ -11,59 +11,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import de.pokerno.backend.auth._
 
 object Config {
-  final val defaultHost = "0.0.0.0"
-
-  import de.pokerno.util.HostPort._
-
-  object Http {
-    object Api {
-      final val defaultPath = "/_api"
-      final val defaultPort = 8080
-
-      def default: Api = Api(defaultPath, defaultPort)
-    }
-    case class Api(
-      var path: String,
-      var port: Int
-    )
-  }
-
-  private abstract class HostPortConverter[T] extends com.fasterxml.jackson.databind.util.StdConverter[String, T] {
-    def convert(hostport: String): T
-  }
-
-  // RPC
-  trait DefaultRpcHostPort {
-    final implicit val defaultHost = "localhost"
-    final implicit val defaultPort = 9091
-  }
-  object Rpc extends DefaultRpcHostPort {
-    def default = Rpc(defaultHost, defaultPort)
-    def apply(host: String, port: Int): Rpc = Rpc(new InetSocketAddress(host, port))
-    def apply(s: String): Rpc = Rpc(s: InetSocketAddress)
-  }
-  private class RpcHostPortConverter extends HostPortConverter[Rpc] with DefaultRpcHostPort {
-    def convert(s: String) = Rpc(s: InetSocketAddress)
-  }
-  @JsonDeserialize(converter = classOf[RpcHostPortConverter])
-  case class Rpc(addr: InetSocketAddress)
-
-  // redis
-  trait DefaultRedisHostPort {
-    final implicit val defaultHost = "localhost"
-    final implicit val defaultPort = 6379
-  }
-  object Redis extends DefaultRedisHostPort {
-    def default: Redis = Redis(defaultHost, defaultPort)
-    def apply(host: String, port: Int): Redis = Redis(new InetSocketAddress(host, port))
-    def apply(s: String): Redis = Redis(s: InetSocketAddress)
-  }
-  private class RedisHostPortConverter extends HostPortConverter[Redis] with DefaultRedisHostPort {
-    def convert(s: String) = Redis(s: InetSocketAddress)
-  }
-  @JsonDeserialize(converter = classOf[RedisHostPortConverter])
-  case class Redis(addr: InetSocketAddress)
-
   final val mapper = new com.fasterxml.jackson.databind.ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
 
@@ -72,54 +19,68 @@ object Config {
 
   @JsonCreator
   case class Broadcast(
-    @JsonProperty("redis") redis: Option[String] = None
+    // redis brodcast address
+    redis: Option[String] = None
+  )
+  
+  @JsonCreator
+  case class Http(
+      // Netty port
+      port: Int = gw.http.Server.defaultPort,
+      // web socket path
+      webSocket: Either[String, Boolean] = Right(false),
+      // event source path
+      eventSource: Either[String, Boolean] = Right(false)
   )
 }
 
 case class Config(
     id: java.util.UUID = null,
     host: String = "localhost",
-    authEnabled: Boolean = false,
     broadcast: Option[Config.Broadcast] = None,
-    redis: Option[Config.Redis] = None,
-
-    websocketEnabled: Boolean = false,
-    var http: Option[gw.http.Config] = None,
+    redis: Option[String] = None,
 
     apiEnabled: Boolean = false,
-    var api: Option[Config.Http.Api] = None,
-
     rpcEnabled: Boolean = false,
-    var rpc: Option[Config.Rpc] = None) {
+    authEnabled: Boolean = false,
+    eventSourceEnabled: Boolean = false,
+    websocketEnabled: Boolean = false,
 
-  if (apiEnabled) api = Some(
-    Config.Http.Api.default
-  )
+    var http: Option[Config.Http] = None,
 
-  if (rpcEnabled) rpc = Some(
-    Config.Rpc.default
-  )
+    var api: Option[String] = None,
 
+    var rpc: Option[String] = None) {
+
+  import de.pokerno.util.HostPort._
+
+  def apiAddress: Option[InetSocketAddress] = {
+    if (!api.isDefined && !apiEnabled) return None
+    implicit val defaultHost = "localhost"
+    implicit val defaultPort = 8087
+    Some(api.get)
+  }
+  
+  def rpcAddress: Option[InetSocketAddress] = {
+    if (!rpc.isDefined && !rpcEnabled) return None
+    implicit val defaultHost = "localhost"
+    implicit val defaultPort = 9091
+    Some(rpc.get)
+  }
+
+  def httpConfig = http.getOrElse(Config.Http())
   if (websocketEnabled) http = Some(httpConfig.copy(
     webSocket = Right(true)
   ))
-
-  def apiConfig =
-    api.getOrElse(Config.Http.Api.default)
-
-  def apiAddress: Option[InetSocketAddress] = api.map { c =>
-    new InetSocketAddress(host, c.port)
-  }
-
-  def httpConfig =
-    http.getOrElse(gw.http.Config.default)
-
-  def rpcConfig =
-    rpc.getOrElse(Config.Rpc.default)
+  if (eventSourceEnabled) http = Some(httpConfig.copy(
+    eventSource = Right(true)
+  ))
 
   def authService: Option[gw.http.AuthService] = {
     if (!authEnabled || !redis.isDefined) return None
-    Some(new RedisTokenAuth(redis.get.addr))
+    implicit val defaultHost = "0.0.0.0"
+    implicit val defaultPort = 6379
+    Some(new RedisTokenAuth(redis.get))
   }
 
 }

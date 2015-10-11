@@ -3,6 +3,7 @@ package de.pokerno.backend.node
 import de.pokerno.backend.gateway.http.AuthService
 import akka.actor.{ActorRef, ActorSystem, Props}
 import java.net.InetSocketAddress
+import de.pokerno.backend.server.Config
 
 class Setup(node: ActorRef)(implicit val system: ActorSystem) {
 
@@ -16,12 +17,15 @@ class Setup(node: ActorRef)(implicit val system: ActorSystem) {
   import de.pokerno.backend.{gateway => gw}
   import de.pokerno.backend.Gateway
 
-  def withHttp(httpConfig: gw.http.Config, authService: Option[AuthService]) {
-
+  def withHttp(conf: Config.Http, authService: Option[AuthService]) {
     val httpGateway = system.actorOf(Props(classOf[gw.Http.Gateway], node, Gateway), name = "http-gateway")
 
-    log("starting http gateway with config: %s\n", httpConfig)
-    val server = new gw.http.Server(httpGateway, authService, httpConfig)
+    log("starting http gateway with config: %s\n", conf)
+    val server = new gw.http.Server(httpGateway, authService,
+      port = conf.port,
+      webSocket = conf.webSocket,
+      eventSource = conf.eventSource
+    )
     server.start
   }
 

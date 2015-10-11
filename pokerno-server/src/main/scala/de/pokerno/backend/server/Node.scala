@@ -22,8 +22,8 @@ object Node {
     val node = system.actorOf(Props(classOf[Node], id), name = "node-main")
 
     val setup = new Setup(node)
-    config.rpc.map { c ⇒
-      setup.withRpc(c.addr)
+    config.rpcAddress.map { addr ⇒
+      setup.withRpc(addr)
     }
 
     config.http.map { c ⇒

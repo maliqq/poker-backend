@@ -21,8 +21,8 @@ object Node {
     val id = config.id
     log.info(f"starting node $id (${config.host})")
 
-    val balance = payment.Client.buildClient(new java.net.InetSocketAddress("localhost", 3031))
-    val syncClient = new sync.Client(config.services.syncUrl)
+    val balance = payment.Client.buildClient(config.paymentAddress)
+    val syncClient = new sync.Client(config.syncUrl)
     val node = system.actorOf(Props(classOf[Node], id, balance, syncClient, restoreFile), name = "node-main")
 
     val setup = new Setup(node)

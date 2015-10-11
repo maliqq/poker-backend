@@ -39,13 +39,13 @@ case class Server(
       p.addLast("http-request-decoder", new HttpRequestDecoder)
       p.addLast("http-object-aggregator", new HttpObjectAggregator(65536))
       p.addLast("http-response-encoder", new HttpResponseEncoder)
-      
+
       authService.map { s =>
         p.addLast("token-auth-service", new TokenBasedAuthentication(s))
       }
 
       webSocket match {
-        case Left(path) => 
+        case Left(path) =>
           p.addLast(WebSocket.Handler.Name, new WebSocket.Handler(path, gw))
         case Right(true) =>
           p.addLast(WebSocket.Handler.Name, new WebSocket.Handler(WebSocket.defaultPath, gw))
@@ -57,6 +57,7 @@ case class Server(
           p.addLast(EventSource.Handler.Name, new EventSource.Handler(path, gw))
         case Right(true) =>
           p.addLast(EventSource.Handler.Name, new WebSocket.Handler(EventSource.defaultPath, gw))
+        case _ =>
       }
 
       handlers.map { case (name, handler) ⇒

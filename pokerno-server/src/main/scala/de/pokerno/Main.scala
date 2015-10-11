@@ -33,9 +33,7 @@ object Main {
     // -r /tmp/restore.json
     opt[String]('u', "sync") text "sync node from url" action { (value, c) =>
       c.copy(config = c.config.copy(
-        services = c.config.services.copy(
-          syncUrl = value
-        )
+        syncUrl = value
       ))
     }
 

@@ -1,5 +1,9 @@
 {
   "id": "02b82428-fc15-4d66-ba53-bc0b85c1330f",
+
+  "syncUrl": "http://localhost:3000",
+  "payment": "localhost:3031",
+
   "host": "localhost",
   "authEnabled": true,
 
@@ -7,7 +11,7 @@
   "rpc": "127.0.0.1:9091",
 
   "apiEnabled": true,
-  "websocketEnabled": true,
+  "webSocketEnabled": true,
 
   "broadcast": {
     "redis": "127.0.0.1:6379"

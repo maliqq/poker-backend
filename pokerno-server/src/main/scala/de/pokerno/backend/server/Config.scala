@@ -24,12 +24,6 @@ object Config {
   )
 
   @JsonCreator
-  case class Services(
-    syncUrl: String,
-    paymentsAddr: String = null
-  )
-
-  @JsonCreator
   case class Http(
       // Netty port
       port: Int = gw.http.Server.defaultPort,
@@ -43,8 +37,9 @@ object Config {
 case class Config(
     id: java.util.UUID = null,
     host: String = "localhost",
+    syncUrl: String = "http://localhost:3000",
+    payment: Option[String] = None,
     broadcast: Option[Config.Broadcast] = None,
-    services: Config.Services = Config.Services("http://localhost:3000"),
     redis: Option[String] = None,
 
     apiEnabled: Boolean = false,
@@ -73,6 +68,12 @@ case class Config(
     implicit val defaultHost = "localhost"
     implicit val defaultPort = 9091
     Some(rpc.get)
+  }
+
+  def paymentAddress: InetSocketAddress = {
+    implicit val defaultHost = "localhost"
+    implicit val defaultPort = 3031
+    payment.get
   }
 
   def httpConfig = http.getOrElse(Config.Http())

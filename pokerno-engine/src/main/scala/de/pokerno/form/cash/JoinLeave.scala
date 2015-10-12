@@ -175,6 +175,4 @@ trait JoinLeave extends de.pokerno.form.room.JoinLeave { room: CashRoom =>
     }
   }
 
-  protected def handleThrift(err: )
-
 }

@@ -35,9 +35,9 @@ class Client(val baseUrl: String) extends de.pokerno.client.HttpClient {
         "room_id" -> roomId,
         "player_id" -> playerId,
         "session" -> Map(
-	        "pos" -> pos,
-	        "amount" -> amount
-	      )
+          "pos" -> pos,
+          "amount" -> amount
+        )
       )).
       get()
   }
@@ -48,9 +48,9 @@ class Client(val baseUrl: String) extends de.pokerno.client.HttpClient {
         "room_id" -> roomId,
         "player_id" -> playerId,
         "session" -> Map(
-	        "pos" -> pos,
-	        "amount" -> amount
-	      )
+          "pos" -> pos,
+          "amount" -> amount
+        )
       )).
       delete()
   }

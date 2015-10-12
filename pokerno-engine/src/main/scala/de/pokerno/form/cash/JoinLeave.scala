@@ -9,7 +9,7 @@ import de.pokerno.form.{Room, CashRoom}
 import math.{BigDecimal => Decimal}
 
 trait JoinLeave extends de.pokerno.form.room.JoinLeave { room: CashRoom =>
-  
+
   def joinPlayer(player: Player, pos: Int, amount: Option[Decimal]) {
     reserveSeat(pos, player) match {
       case Some(seat) =>
@@ -19,36 +19,36 @@ trait JoinLeave extends de.pokerno.form.room.JoinLeave { room: CashRoom =>
           askBuyIn(seat)
           // TODO notify seat reserved
         }
-        
+
       case _ =>
     }
   }
-  
+
   protected def joinPlayer(join: cmd.JoinPlayer) {
     val cmd.JoinPlayer(pos, player, _amount) = join
-    
+
     joinPlayer(player, pos, Option(_amount))
   }
-  
+
   protected def reserveSeat(pos: Int, player: Player): Option[Sitting] = {
     try {
       val seat = table.take(pos, player)
       return Some(seat)
     } catch {
       case _: Seat.IsTaken ⇒
-	val seat = table.seats(pos)
-	val e = new err.Table.Seat.Taken(seat.pos, seat.player)
-	log.warning(e.message)
-	events.one(player).publish(e)
-      
+        val seat = table.seats(pos)
+        val e = new err.Table.Seat.Taken(seat.pos, seat.player)
+        log.warning(e.message)
+        events.one(player).publish(e)
+
       case err: Table.AlreadyJoined ⇒
-	val e = new err.Table.Player.AlreadyJoined(pos, player)
-	log.warning(e.message)
-	events.one(player).publish(e)
+        val e = new err.Table.Player.AlreadyJoined(pos, player)
+        log.warning(e.message)
+        events.one(player).publish(e)
     }
     None
   }
-  
+
   protected def askBuyIn(seat: Sitting) {
     val player = seat.player
     // ask buy in
@@ -57,8 +57,8 @@ trait JoinLeave extends de.pokerno.form.room.JoinLeave { room: CashRoom =>
     f.onSuccess { amount =>
       if (amount < min) {
         table.clear(seat.pos)
-	val e = new err.BuyIn.Balance.NotEnoughToBuyIn(player, amount, min)
-	events.one(player).publish(e)
+        val e = new err.BuyIn.Balance.NotEnoughToBuyIn(player, amount, min)
+        events.one(player).publish(e)
       } else {
         events.one(player).publish(gameplay.Events.requireBuyIn(seat, stake, amount))
       }
@@ -67,7 +67,7 @@ trait JoinLeave extends de.pokerno.form.room.JoinLeave { room: CashRoom =>
 
   protected def askRebuy(seat: Sitting) {
     val player = seat.player
-    
+
     val (min, max) = stake.buyInAmount
     val stack = seat.stackAmount
 
@@ -80,14 +80,14 @@ trait JoinLeave extends de.pokerno.form.room.JoinLeave { room: CashRoom =>
     val f = balance.availableWithBonus(player, min.toDouble)
     f.onSuccess { amount =>
       if (amount + stack < min) {
-	val e = new err.BuyIn.Balance.NotEnoughToRebuy(player, amount, stack, min)
-	events.one(player).publish(e)
+        val e = new err.BuyIn.Balance.NotEnoughToRebuy(player, amount, stack, min)
+        events.one(player).publish(e)
       } else {
-	events.one(player).publish(gameplay.Events.requireRebuy(seat, stake, amount))
+        events.one(player).publish(gameplay.Events.requireRebuy(seat, stake, amount))
       }
     }
   }
-  
+
   protected def buyInSeat(seat: Sitting, amount: Decimal) {
     val player = seat.player
 
@@ -101,16 +101,16 @@ trait JoinLeave extends de.pokerno.form.room.JoinLeave { room: CashRoom =>
 
     val f = balance.join(roomId, player, amount.toDouble)
     f.onSuccess { _ =>
-      // TODO: reserve seat first 
+      // TODO: reserve seat first
       seat.buyIn(amount)
       events broadcast gameplay.Events.playerJoin(seat)
     }
-    
+
     f.onFailure {
       case err: de.pokerno.payment.thrift.NotEnoughMoney =>
         log.error("balance error: {}", err.message)
         events.one(player).publish(gameplay.Events.error(err))
-      
+
       case err: de.pokerno.payment.thrift.BuyInRequired =>
         log.error("balance error: {}", err.message)
         events.one(player).publish(gameplay.Events.error(err))
@@ -142,18 +142,18 @@ trait JoinLeave extends de.pokerno.form.room.JoinLeave { room: CashRoom =>
         events.broadcast(gameplay.Events.stackChange(seat))
       }
     }
-    
+
     f.onFailure {
       case err: de.pokerno.payment.thrift.NotEnoughMoney =>
         log.error("balance error: {}", err.message)
         events.one(player).publish(gameplay.Events.error(err))
-      
+
       case err: de.pokerno.payment.thrift.BuyInRequired =>
         log.error("balance error: {}", err.message)
         events.one(player).publish(gameplay.Events.error(err))
     }
   }
-  
+
   def leaveSeat(seat: Sitting, kick: Boolean = false) {
     table.clear(seat.pos)
     if (seat.buyInAmount > 0) {
@@ -161,7 +161,7 @@ trait JoinLeave extends de.pokerno.form.room.JoinLeave { room: CashRoom =>
     }
     events broadcast gameplay.Events.playerLeave(seat, kick)
   }
-  
+
   def leavePlayer(player: Player, kick: Boolean = false) {
     table(player) map { seat =>
       if (seat.notActive || notRunning) {

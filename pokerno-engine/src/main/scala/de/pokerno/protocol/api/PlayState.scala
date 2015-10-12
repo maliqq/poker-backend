@@ -2,7 +2,7 @@ package de.pokerno.protocol.api
 
 import de.pokerno.model._
 
-import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnore, JsonUnwrapped, JsonInclude}
+import com.fasterxml.jackson.annotation.{JsonProperty, JsonGetter, JsonIgnore, JsonUnwrapped, JsonInclude}
 import de.pokerno.gameplay
 import de.pokerno.model
 
@@ -14,24 +14,39 @@ sealed class PlayState(
   @JsonUnwrapped val round = ctx.round
 }
 
-object RoomState {
-  
-  def apply(id: String, state: String, table: Table, variation: Variation, stake: Stake) =
-    new RoomState(id, state, table, variation, stake)
-  
-  def apply(ctx: gameplay.Context, state: String) =
-    new RoomState(ctx.id, state, ctx.table, ctx.variation, ctx.stake, new PlayState(ctx))
-  
+trait Round {
+  def ctx: gameplay.Context
+  @JsonUnwrapped val round = ctx.round
 }
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
-sealed class RoomState(
-    @JsonProperty val id: String, // room id
-    @JsonProperty val state: String, // room state
-    @JsonProperty val table: Table, // room table seating
-    @JsonProperty val variation: Variation, // room variation
-    @JsonProperty val stake: Stake, // room stake
-    @JsonProperty val play: PlayState = null // play state
-) {
-  
+trait Button {
+  def ctx: gameplay.Context
+  @JsonGetter("button") def button = ctx.table.button
+}
+
+trait Seating {
+  def play: model.Play
+  @JsonGetter("seating") def seating = play.seating
+  @JsonGetter("stacks") def stacks = play.stacks
+}
+
+// winners and losers
+trait Winners {
+  def play: model.Play
+  @JsonGetter("net") def net = play.net
+}
+
+trait Deck {
+  def play: model.Play
+  @JsonGetter("deck") def deck = play.dealer.deck
+}
+
+// actions
+trait Actions {
+  def play: model.Play
+  @JsonGetter("actions") def actions = play.actions
+}
+
+class PlayWrapper(_play: model.Play) {
+  @JsonUnwrapped val play = _play
 }

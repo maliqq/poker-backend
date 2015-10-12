@@ -9,7 +9,6 @@ private[gameplay] trait Button { g: ContextLike ⇒
   
   def setButton(pos: Int) {
     table.button = pos
-    play.button = pos
     
     round.reset()
     

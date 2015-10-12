@@ -79,7 +79,8 @@ object PokernoBuild extends Build {
       name := "pokerno-gateway-http",
       version := "0.0.1",
       libraryDependencies ++= deps ++ testDeps ++ Seq(
-        "io.netty" % "netty-all" % nettyVersion
+        "io.netty" % "netty-all" % nettyVersion,
+        "org.bitbucket.b_c" % "jose4j" % "0.4.4"
       )
     ) ++ assemblySettings
   ) dependsOn(engine)
@@ -103,6 +104,7 @@ object PokernoBuild extends Build {
           ),
         "org.slf4j" % "slf4j-simple" % "1.7.5",
         "org.apache.httpcomponents" % "httpclient" % "4.5.1",
+
         "com.github.scopt" %% "scopt" % scoptVersion
       )
     ) ++ assemblySettings ++ Seq(

@@ -13,25 +13,7 @@ import de.pokerno.backend.auth._
 object Config {
   final val mapper = new com.fasterxml.jackson.databind.ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
-
-  def from(f: java.io.InputStream): Config =
-    mapper.readValue(f, classOf[Config])
-
-  @JsonCreator
-  case class Broadcast(
-    // redis brodcast address
-    redis: Option[String] = None
-  )
-
-  @JsonCreator
-  case class Http(
-      // Netty port
-      port: Int = gw.http.Server.defaultPort,
-      // web socket path
-      webSocket: Either[String, Boolean] = Right(false),
-      // event source path
-      eventSource: Either[String, Boolean] = Right(false)
-  )
+  def from(f: java.io.InputStream): Config = mapper.readValue(f, classOf[Config])
 }
 
 case class Config(
@@ -39,25 +21,32 @@ case class Config(
     host: String = "localhost",
     syncUrl: String = "http://localhost:3000",
     payment: Option[String] = None,
-    broadcast: Option[Config.Broadcast] = None,
     redis: Option[String] = None,
+    broadcastRedis: Option[String] = None,
+
+    authSecret: Option[String] = None,
+
+    // http
+    httpEnabled: Boolean = true,
+    httpPort: Option[Int] = None,
 
     apiEnabled: Boolean = false,
+    api: Option[String] = None,
+
     rpcEnabled: Boolean = false,
-    authEnabled: Boolean = false,
+    rpc: Option[String] = None,
+
     eventSourceEnabled: Boolean = false,
-    webSocketEnabled: Boolean = false,
+    eventSourcePath: Option[String] = None,
 
-    var http: Option[Config.Http] = None,
-
-    var api: Option[String] = None,
-
-    var rpc: Option[String] = None) {
+    webSocketEnabled: Boolean = true,
+    webSocketPath: Option[String] = None
+    ) {
 
   import de.pokerno.util.HostPort._
 
   def apiAddress: Option[InetSocketAddress] = {
-    if (!api.isDefined && !apiEnabled) return None
+    if (!apiEnabled) return None
     implicit val defaultHost = "localhost"
     implicit val defaultPort = 8087
     Some(api.getOrElse(null))
@@ -76,19 +65,18 @@ case class Config(
     payment.getOrElse(null)
   }
 
-  def httpConfig = http.getOrElse(Config.Http())
-  if (webSocketEnabled) http = Some(httpConfig.copy(
-    webSocket = Right(true)
-  ))
-  if (eventSourceEnabled) http = Some(httpConfig.copy(
-    eventSource = Right(true)
-  ))
+  var webSocket: Either[String, Boolean] = Right(webSocketEnabled)
+  var eventSource: Either[String, Boolean] = Right(eventSourceEnabled)
 
   def authService: Option[gw.http.AuthService] = {
-    if (!authEnabled || !redis.isDefined) return None
-    implicit val defaultHost = "0.0.0.0"
-    implicit val defaultPort = 6379
-    Some(new RedisTokenAuth(redis.get))
+//    if (!authEnabled || !redis.isDefined) return None
+//    implicit val defaultHost = "0.0.0.0"
+//    implicit val defaultPort = 6379
+//    Some(new RedisTokenAuth(redis.get))
+
+	authSecret.map { secret =>
+      new de.pokerno.backend.auth.JwtAuth(secret)
+	} orElse None
   }
 
 }

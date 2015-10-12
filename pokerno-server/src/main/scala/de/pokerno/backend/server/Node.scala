@@ -28,8 +28,10 @@ object Node {
       setup.withRpc(addr)
     }
 
-    config.http.map { c ⇒
-      setup.withHttp(c, config.authService)
+    if (config.httpEnabled) {
+      setup.withHttp(
+          config.httpPort.getOrElse(gw.http.Server.defaultPort),
+          config.webSocket, config.eventSource, config.authService)
     }
 
     config.apiAddress.map { addr =>

@@ -17,14 +17,13 @@ class Setup(node: ActorRef)(implicit val system: ActorSystem) {
   import de.pokerno.backend.{gateway => gw}
   import de.pokerno.backend.Gateway
 
-  def withHttp(conf: Config.Http, authService: Option[AuthService]) {
+  def withHttp(port: Int, webSocket: Either[String, Boolean], eventSource: Either[String, Boolean], authService: Option[AuthService]) {
     val httpGateway = system.actorOf(Props(classOf[gw.Http.Gateway], node, Gateway), name = "http-gateway")
 
-    log("starting http gateway with config: %s\n", conf)
     val server = new gw.http.Server(httpGateway, authService,
-      port = conf.port,
-      webSocket = conf.webSocket,
-      eventSource = conf.eventSource
+      port = port,
+      webSocket = webSocket,
+      eventSource = eventSource
     )
     server.start
   }

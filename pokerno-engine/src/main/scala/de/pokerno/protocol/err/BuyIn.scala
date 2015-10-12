@@ -8,9 +8,9 @@ object BuyIn {
       min: Decimal
     ) extends Err("buy_in.amount.less_than_minimum") {
       val payload = Map[String, Any](
-	  "min" -> min,
-	  "amount" -> amount
-	)
+        "min" -> min,
+        "amount" -> amount
+      )
       val message = f"player=[$player] has required buy in amount=[$amount] that is less than required amount min=[$min]")
     }
 
@@ -20,9 +20,9 @@ object BuyIn {
       max: Decimal
     ) extends Err("buy_in.amount.greater_than_minimum") {
       val payload = Map[String, Any](
-	  "max" -> min,
-	  "amount" -> amount
-	)
+        "max" -> min,
+        "amount" -> amount
+      )
       val message = f"player=[$player] has required buy in amount=[$amount] that is greater than required amount max=[$max]")
     }
   }
@@ -33,9 +33,9 @@ object BuyIn {
       stack: Decimal,
       max: Decimal
     ) extends Err("buy_in.stack.enough_to_play") {
-      val paylaod = Map(
-	"stack" -> stack,
-	"max" -> max,
+      val payload = Map(
+        "stack" -> stack,
+        "max" -> max,
       )
       val message = "player=[$player] has enough stack=[$stack] to play at this table with buy in max=[$max]")
     }

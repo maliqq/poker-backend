@@ -49,13 +49,12 @@ object Main {
     // --http-port 8080
     opt[Int]("http-port") text "HTTP port" action { (value, c) ⇒
       c.copy(config = c.config.copy(
-        http = Some(c.config.httpConfig.copy(port = value))
+        httpPort = Some(value)
       ))
     }
 
     // --websocket
     opt[Unit]("websocket") text "With WebSocket" action { (value, c) ⇒
-      val config = c.config.httpConfig
       c.copy(config = c.config.copy(
         webSocketEnabled = true
       ))
@@ -63,15 +62,14 @@ object Main {
 
     // --websocket-path /_ws
     opt[String]("websocket-path") text "WebSocket path" action { (value, c) ⇒
-      val config = c.config.httpConfig
       c.copy(config = c.config.copy(
-        http = Some(c.config.httpConfig.copy(webSocket = Left(value)))
+        webSocketEnabled = true,
+        webSocketPath = Some(value)
       ))
     }
 
     // --eventsource
     opt[Unit]("eventsource") text "With EventSource" action { (value, c) ⇒
-      val config = c.config.httpConfig
       c.copy(config = c.config.copy(
         eventSourceEnabled = true
       ))
@@ -79,9 +77,9 @@ object Main {
 
     // --eventsource-path /_es
     opt[String]("eventsource-path") text "EventSource path" action { (value, c) ⇒
-      val config = c.config.httpConfig
       c.copy(config = c.config.copy(
-        http = Some(c.config.httpConfig.copy(eventSource = Left(value)))
+        eventSourceEnabled = true,
+        eventSourcePath = Some(value)
       ))
     }
 
@@ -102,9 +100,7 @@ object Main {
 
     // --http-api
     opt[Unit]("http-api") text "HTTP API" action { (value, c) ⇒
-      val config = c.config.api
-      if (config.isDefined) c // skip
-      else c.copy(config = c.config.copy(
+      c.copy(config = c.config.copy(
         apiEnabled = true
       ))
     }

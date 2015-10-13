@@ -8,13 +8,13 @@ import com.twitter.finagle.{Service => FinagleService}
 
 object Client {
   def buildClient(addr: java.net.SocketAddress) = {
-    val protocol = new TBinaryProtocol.Factory()
+    val protocolFactory = new TBinaryProtocol.Factory()
     val paymentService = ClientBuilder().
-                                codec(ThriftClientFramedCodec()).
-                                hosts(Seq(addr)).
-                                hostConnectionLimit(1).
-                                build()
+      codec(ThriftClientFramedCodec()).
+      hosts(addr).
+      hostConnectionLimit(1).
+      build()
 
-    new de.pokerno.payment.thrift.Payment.FinagledClient(paymentService)
+    new de.pokerno.payment.thrift.Payment.FinagledClient(paymentService, protocolFactory)
   }
 }

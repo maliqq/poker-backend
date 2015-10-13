@@ -28,11 +28,9 @@ object Node {
       setup.withRpc(addr)
     }
 
-    if (config.httpEnabled) {
-      setup.withHttp(
-          config.httpPort.getOrElse(gw.http.Server.defaultPort),
-          config.webSocket, config.eventSource, config.authService)
-    }
+    setup.withHttp(
+      config.httpPort.getOrElse(gw.http.Server.defaultPort),
+      config.webSocket, config.eventSource, config.authService)
 
     config.apiAddress.map { addr =>
       setup.withApi(addr)

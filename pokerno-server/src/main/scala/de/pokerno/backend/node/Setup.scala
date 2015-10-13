@@ -20,6 +20,7 @@ class Setup(node: ActorRef)(implicit val system: ActorSystem) {
   def withHttp(port: Int, webSocket: Either[String, Boolean], eventSource: Either[String, Boolean], authService: Option[AuthService]) {
     val httpGateway = system.actorOf(Props(classOf[gw.Http.Gateway], node, Gateway), name = "http-gateway")
 
+    log("starting http server at %d\n", port)
     val server = new gw.http.Server(httpGateway, authService,
       port = port,
       webSocket = webSocket,

@@ -24,10 +24,10 @@ case class Config(
     redis: Option[String] = None,
     broadcastRedis: Option[String] = None,
 
+    authEnabled: Boolean = true,
     authSecret: Option[String] = None,
 
     // http
-    httpEnabled: Boolean = true,
     httpPort: Option[Int] = None,
 
     apiEnabled: Boolean = false,

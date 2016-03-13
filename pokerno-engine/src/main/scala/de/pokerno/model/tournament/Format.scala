@@ -1,5 +1,5 @@
 package de.pokerno.model.tournament
 
-object PlayingFormat extends Enumeration {
+object Format extends Enumeration {
   val Freezout, Knockout, Shootout = Value
 }

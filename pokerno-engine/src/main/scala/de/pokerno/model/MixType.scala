@@ -8,16 +8,16 @@ abstract class MixType(val name: String) {
 }
 
 object MixType {
-  
+
   case object Horse extends MixType("horse")
   case object Eight extends MixType("eight")
-  
+
   implicit def string2Mixed(v: String): MixType = v match {
-    case "eight" | "8-game" | "eight-game" ⇒
+    case "eight" | "8-game" | "eight-game" | "eightgame" ⇒
       Eight
     case "horse" ⇒
       Horse
     case _ ⇒ null // throw?
   }
-  
+
 }

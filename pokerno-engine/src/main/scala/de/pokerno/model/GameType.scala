@@ -44,7 +44,7 @@ object GameType {
   case object Badugi extends GameType {
     def name = "badugi"
   }
-  
+
   implicit def string2GameType(v: String): GameType = v match {
     case "texas" | "texas-holdem" | "holdem" ⇒
       Texas
@@ -60,7 +60,7 @@ object GameType {
       Razz
     case "london" ⇒
       London
-    case "five-card" ⇒
+    case "five-card" | "fivecard" ⇒
       FiveCard
     case "single27" | "single-27" ⇒
       Single27
